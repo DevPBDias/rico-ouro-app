@@ -22,6 +22,9 @@ export default function BoiDetalhePage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Detalhes do Boi</h1>
+      <Button className="mb-16" variant="outline" onClick={() => router.back()}>
+        Voltar
+      </Button>
       <div className="text-gray-700 bg-white shadow rounded-lg p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
           <div><span className="font-medium">RGN:</span> {boi.animal.rgn ?? "-"}</div>
@@ -113,7 +116,7 @@ export default function BoiDetalhePage() {
         </section>
 
             {/* Gráficos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
         <ChartBarLabel
           title="Pesos"
           description="Evolução mensal"
@@ -128,9 +131,7 @@ export default function BoiDetalhePage() {
         />
       </div>
 
-      <Button variant="outline" onClick={() => router.push("/bois")}>
-        Voltar
-      </Button>
+
     </div>
   );
 }

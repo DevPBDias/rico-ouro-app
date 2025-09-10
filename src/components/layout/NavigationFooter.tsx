@@ -11,7 +11,7 @@ export function Navigation() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2">
+    <nav className="fixed z-10 bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2">
       <div className="flex justify-around">
         <Link href="/home" className={`flex flex-col items-center p-2 ${getIconColor("/home")}`}>
           <Home className="w-6 h-6 mb-1" />

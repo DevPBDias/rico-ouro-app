@@ -16,7 +16,7 @@ export default function MobileApp() {
   }, [router])
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="absolute z-20 top-0 left-0 h-dvh w-full overflow-hidden">
       <Image src="/Opening.png" alt="Cow App Logo" fill className="object-cover" priority />
 
       <div className="absolute top-6 left-6">
