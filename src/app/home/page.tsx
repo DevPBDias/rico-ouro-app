@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Search, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default function HomePage() {
   const [isSearching, setIsSearching] = useState(false);
 
   // Função de busca por RGN
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -40,7 +40,7 @@ export default function HomePage() {
 
     setSearchResults(results);
     setIsSearching(false);
-  };
+  }, [dados]);
 
   // Função para selecionar um animal da busca
   const selectAnimal = (animal: AnimalData) => {
@@ -72,7 +72,7 @@ export default function HomePage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, dados]);
+  }, [searchQuery, dados, handleSearch]);
 
   return (
     <main className="min-h-screen bg-gray-50">

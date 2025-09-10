@@ -5,7 +5,7 @@ import { extractDataFromExcel } from "@/utils/extractData";
 import { useState } from "react";
 
 export default function UploadPage() {
-  const { dados, salvarOuAtualizar, limpar, excluirPorRgn } = useAnimalDB();
+  const { dados, salvarOuAtualizar, limpar } = useAnimalDB();
   const [arquivo, setArquivo] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

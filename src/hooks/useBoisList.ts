@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAnimalDB } from "@/hooks/useAnimalDB";
 
 interface UseBoisListOptions {
@@ -52,7 +52,7 @@ export function useBoisList(options: UseBoisListOptions = {}) {
   };
 
   // Reset pagination when filters change
-  useMemo(() => {
+  useEffect(() => {
     resetPagination();
   }, [query, sexo, parentQuery]);
 

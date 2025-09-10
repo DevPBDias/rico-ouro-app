@@ -78,7 +78,7 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
               required
             />
             <p className="text-xs text-gray-500">
-              Exemplos: "{getCurrentMonth()}", "Fev/24", "Março 2024", "Abril"
+              Exemplos: &quot;{getCurrentMonth()}&quot;, &quot;Fev/24&quot;, &quot;Março 2024&quot;, &quot;Abril&quot;
             </p>
           </div>
           <div className="space-y-2">

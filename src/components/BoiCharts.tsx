@@ -102,7 +102,7 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
               cursor={false} 
               content={<ChartTooltipContent 
                 hideLabel 
-                formatter={(value: any) => {
+                formatter={(value: unknown) => {
                   const unit = title.toLowerCase().includes('peso') ? 'kg' : 'cm';
                   return [`${value}${unit}`];
                 }}

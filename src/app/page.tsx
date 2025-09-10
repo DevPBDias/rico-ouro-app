@@ -13,7 +13,7 @@ export default function MobileApp() {
     }, 3000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [router])
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden lg:hidden">

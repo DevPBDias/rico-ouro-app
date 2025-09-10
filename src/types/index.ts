@@ -15,7 +15,7 @@ export interface Animal {
 }
 
 export interface SettingsOption {
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   label: string
   description: string
 }
