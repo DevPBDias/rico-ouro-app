@@ -9,14 +9,14 @@ export default function MobileApp() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push("/")
+      router.push("/home")
     }, 3000)
 
     return () => clearTimeout(timer)
   }, [router])
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden lg:hidden">
+    <div className="relative min-h-screen w-full overflow-hidden">
       <Image src="/Opening.png" alt="Cow App Logo" fill className="object-cover" priority />
 
       <div className="absolute top-6 left-6">
