@@ -1,7 +1,14 @@
+import Header from "@/components/layout/Header";
+import SearchCsvFile from "@/components/search/SearchCsvFile";
 import React from "react";
 
-const page = () => {
-  return <div>page</div>;
+const ImportCsvFilesPage = () => {
+  return (
+    <main>
+      <Header title="Importar planilhas" />
+      <SearchCsvFile />
+    </main>
+  );
 };
 
-export default page;
+export default ImportCsvFilesPage;
