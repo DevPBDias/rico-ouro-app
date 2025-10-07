@@ -50,16 +50,16 @@ export function useBoiDetail(id: number | null) {
   );
 
   // Pesos
-  const addPeso = useCallback(
-    async () => {
-      if (!boi) return;
-      const now = new Date();
-      const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
-      await salvar({ pesosMedidos: novo });
-    },
-    [boi, salvar]
-  );
+  const addPeso = useCallback(async () => {
+    if (!boi) return;
+    const now = new Date();
+    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}`;
+    const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
+    await salvar({ pesosMedidos: novo });
+  }, [boi, salvar]);
 
   // Salva um novo peso preservando os anteriores e anotando o mês desejado (formato YYYY-MM)
   const savePesoComMes = useCallback(
@@ -86,23 +86,28 @@ export function useBoiDetail(id: number | null) {
   const deletePeso = useCallback(
     async (index: number) => {
       if (!boi) return;
-      const novo = (boi.animal.pesosMedidos ?? []).filter((_, i) => i !== index);
+      const novo = (boi.animal.pesosMedidos ?? []).filter(
+        (_, i) => i !== index
+      );
       await salvar({ pesosMedidos: novo });
     },
     [boi, salvar]
   );
 
   // Circunferência Escrotal
-  const addCirc = useCallback(
-    async () => {
-      if (!boi) return;
-      const now = new Date();
-      const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const novo = [...(boi.animal.circunferenciaEscrotal ?? []), { mes, valor: 0 }];
-      await salvar({ circunferenciaEscrotal: novo });
-    },
-    [boi, salvar]
-  );
+  const addCirc = useCallback(async () => {
+    if (!boi) return;
+    const now = new Date();
+    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}`;
+    const novo = [
+      ...(boi.animal.circunferenciaEscrotal ?? []),
+      { mes, valor: 0 },
+    ];
+    await salvar({ circunferenciaEscrotal: novo });
+  }, [boi, salvar]);
 
   // Salva nova circunferência preservando as anteriores e anotando o mês (YYYY-MM)
   const saveCircComMes = useCallback(
@@ -129,7 +134,9 @@ export function useBoiDetail(id: number | null) {
   const deleteCirc = useCallback(
     async (index: number) => {
       if (!boi) return;
-      const novo = (boi.animal.circunferenciaEscrotal ?? []).filter((_, i) => i !== index);
+      const novo = (boi.animal.circunferenciaEscrotal ?? []).filter(
+        (_, i) => i !== index
+      );
       await salvar({ circunferenciaEscrotal: novo });
     },
     [boi, salvar]
@@ -159,5 +166,3 @@ export function useBoiDetail(id: number | null) {
     deleteCirc,
   };
 }
-
-

@@ -1,7 +1,13 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts";
-
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -25,26 +31,41 @@ type Props = {
   colorVar?: string; // e.g. --chart-1
 };
 
-export function ChartBarLabel({ title, description, data, colorVar = "--chart-1" }: Props) {
+export function ChartBarLabel({
+  title,
+  description,
+  data,
+  colorVar = "--chart-1",
+}: Props) {
   const formatMes = (s: string) => {
     // Se já é um nome de mês personalizado (não contém "-"), retorna como está
     if (!s.includes("-")) {
       return s;
     }
-    
+
     // Se é formato YYYY-MM, converte para MM/YYYY
     const [y, m] = String(s).split("-");
     if (y && m) {
       const monthNames = [
-        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+        "Jan",
+        "Fev",
+        "Mar",
+        "Abr",
+        "Mai",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Set",
+        "Out",
+        "Nov",
+        "Dez",
       ];
       const monthIndex = parseInt(m) - 1;
-      return monthIndex >= 0 && monthIndex < 12 
-        ? `${monthNames[monthIndex]}/${y.slice(-2)}` 
+      return monthIndex >= 0 && monthIndex < 12
+        ? `${monthNames[monthIndex]}/${y.slice(-2)}`
         : `${m}/${y.slice(-2)}`;
     }
-    
+
     return String(s);
   };
 
@@ -58,10 +79,10 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
     return 0;
   });
 
-  const chartData = sortedData.map((d) => ({ 
-    month: d.mes, 
-    label: formatMes(d.mes), 
-    value: d.valor 
+  const chartData = sortedData.map((d) => ({
+    month: d.mes,
+    label: formatMes(d.mes),
+    value: d.valor,
   }));
 
   const chartConfig = {
@@ -79,7 +100,11 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64">
-          <BarChart accessibilityLayer data={chartData} margin={{ top: 30, left: 4, right: 4, bottom: 20 }}>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{ top: 30, left: 4, right: 4, bottom: 20 }}
+          >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="month"
@@ -98,18 +123,27 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
               tickMargin={6}
               hide={true}
             />
-            <ChartTooltip 
-              cursor={false} 
-              content={<ChartTooltipContent 
-                hideLabel 
-                formatter={(value: unknown) => {
-                  const unit = title.toLowerCase().includes('peso') ? 'kg' : 'cm';
-                  return [`${value}${unit}`];
-                }}
-                labelFormatter={(value) => `Mês: ${formatMes(value)}`}
-              />}
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(value: unknown) => {
+                    const unit = title.toLowerCase().includes("peso")
+                      ? "kg"
+                      : "cm";
+                    return [`${value}${unit}`];
+                  }}
+                  labelFormatter={(value) => `Mês: ${formatMes(value)}`}
+                />
+              }
             />
-            <Bar dataKey="value" fill={`var(${colorVar})`} radius={6} barSize={16}>
+            <Bar
+              dataKey="value"
+              fill={`var(${colorVar})`}
+              radius={6}
+              barSize={16}
+            >
               <LabelList
                 position="top"
                 offset={12}
@@ -117,7 +151,9 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
                 fontSize={11}
                 dataKey="value"
                 formatter={(value: number) => {
-                  const unit = title.toLowerCase().includes('peso') ? 'kg' : 'cm';
+                  const unit = title.toLowerCase().includes("peso")
+                    ? "kg"
+                    : "cm";
                   return `${value}${unit}`;
                 }}
               />
@@ -128,5 +164,3 @@ export function ChartBarLabel({ title, description, data, colorVar = "--chart-1"
     </Card>
   );
 }
-
-

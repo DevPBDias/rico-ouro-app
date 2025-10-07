@@ -21,15 +21,15 @@ export function useRecentAnimals() {
   }, []);
 
   const addRecentAnimal = (animal: AnimalData) => {
-    setRecentAnimals(prev => {
+    setRecentAnimals((prev) => {
       // Remove se já existe
-      const filtered = prev.filter(a => a.id !== animal.id);
+      const filtered = prev.filter((a) => a.id !== animal.id);
       // Adiciona no início
       const updated = [animal, ...filtered].slice(0, 5); // Mantém apenas 5
-      
+
       // Salva no localStorage
       localStorage.setItem(RECENT_ANIMALS_KEY, JSON.stringify(updated));
-      
+
       return updated;
     });
   };
@@ -42,6 +42,6 @@ export function useRecentAnimals() {
   return {
     recentAnimals,
     addRecentAnimal,
-    clearRecentAnimals
+    clearRecentAnimals,
   };
 }

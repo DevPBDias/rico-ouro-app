@@ -28,7 +28,9 @@ export function useBoisList(options: UseBoisListOptions = {}) {
       if (sexo && String(a.animal.sexo ?? "") !== sexo) return false;
       if (pq) {
         const paiNome = String(a.pai?.nome ?? "").toLowerCase();
-        const maeLabel = `${String(a.mae?.serieRGD ?? "").toLowerCase()} ${String(a.mae?.rgn ?? "").toLowerCase()}`.trim();
+        const maeLabel = `${String(
+          a.mae?.serieRGD ?? ""
+        ).toLowerCase()} ${String(a.mae?.rgn ?? "").toLowerCase()}`.trim();
         if (!paiNome.includes(pq) && !maeLabel.includes(pq)) return false;
       }
       return true;
@@ -74,5 +76,3 @@ export function useBoisList(options: UseBoisListOptions = {}) {
     setParentQuery,
   };
 }
-
-

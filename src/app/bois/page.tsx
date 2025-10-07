@@ -8,24 +8,22 @@ import { Pagination } from "@/components/ui/pagination";
 import { Search, Trash2, Eye } from "lucide-react";
 
 export default function BoisPage() {
-  const { 
-    filtered, 
-    paginatedData, 
-    currentPage, 
-    totalPages, 
+  const {
+    filtered,
+    paginatedData,
+    currentPage,
+    totalPages,
     handlePageChange,
-    limpar, 
-    excluirPorRgn, 
-    query, 
-    setQuery, 
-    sexo, 
-    setSexo, 
-    parentQuery, 
-    setParentQuery 
+    limpar,
+    excluirPorRgn,
+    query,
+    setQuery,
+    sexo,
+    setSexo,
+    parentQuery,
+    setParentQuery,
   } = useBoisList({ itemsPerPage: 10 });
   const router = useRouter();
-
-  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,7 +33,11 @@ export default function BoisPage() {
             <h1 className="text-2xl font-bold text-gray-900">Gado</h1>
             <p className="text-gray-600">Gerencie seus animais</p>
           </div>
-          <Button onClick={limpar} variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+          <Button
+            onClick={limpar}
+            variant="outline"
+            className="text-red-600 border-red-200 hover:bg-red-50"
+          >
             <Trash2 className="w-4 h-4 mr-2" />
             Excluir tudo
           </Button>
@@ -82,24 +84,53 @@ export default function BoisPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RGN</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Série/RGD</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sexo</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DECA</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mae</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pai</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    RGN
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Série/RGD
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Sexo
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    DECA
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mae
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pai
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedData.map((a) => (
-                  <tr key={String(a.id)} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{a.animal.rgn ?? "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{a.animal.serieRGD ?? "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{a.animal.sexo ?? "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{a.animal.deca ?? "-"}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{a.mae.serieRGD + "-" + a.mae.rgn}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{a.pai.nome ?? "-"}</td>
+                  <tr
+                    key={String(a.id)}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      {a.animal.rgn ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {a.animal.serieRGD ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {a.animal.sexo ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {a.animal.deca ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {a.mae.serieRGD + "-" + a.mae.rgn}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {a.pai.nome ?? "-"}
+                    </td>
                     <td className="px-4 py-3 text-sm flex items-center gap-2">
                       <Button
                         size="sm"
@@ -110,7 +141,12 @@ export default function BoisPage() {
                         <Eye className="w-4 h-4" />
                       </Button>
                       {a.animal.rgn && (
-                        <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => excluirPorRgn(a.animal.rgn!)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => excluirPorRgn(a.animal.rgn!)}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
@@ -119,7 +155,12 @@ export default function BoisPage() {
                 ))}
                 {paginatedData.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-500">Nenhum registro encontrado</td>
+                    <td
+                      colSpan={7}
+                      className="px-4 py-12 text-center text-gray-500"
+                    >
+                      Nenhum registro encontrado
+                    </td>
                   </tr>
                 )}
               </tbody>

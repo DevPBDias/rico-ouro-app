@@ -34,12 +34,15 @@ export function useAnimalDB() {
             ...existente.animal,
             ...item.animal,
             pesosMedidos: existente.animal.pesosMedidos ?? [],
-            circunferenciaEscrotal: existente.animal.circunferenciaEscrotal ?? [],
+            circunferenciaEscrotal:
+              existente.animal.circunferenciaEscrotal ?? [],
             updatedAt: new Date().toISOString(),
           },
         };
         await db.animalData.put({ ...merged, id: existente.id! });
-        console.log(`🔄 Atualizado: ${item.animal.serieRGD}/${item.animal.rgn}`);
+        console.log(
+          `🔄 Atualizado: ${item.animal.serieRGD}/${item.animal.rgn}`
+        );
       } else {
         // Insere novo garantindo arrays vazios
         const toInsert: AnimalData = {

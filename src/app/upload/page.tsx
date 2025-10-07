@@ -44,7 +44,6 @@ export default function UploadPage() {
       <pre className="bg-gray-100 p-2 rounded text-sm overflow-auto max-h-64">
         {JSON.stringify(dados, null, 2)}
       </pre>
-
     </div>
   );
 }

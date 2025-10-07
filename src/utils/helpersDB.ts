@@ -36,11 +36,12 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
             ...item.animal,
             // Preserva dados que podem ter sido adicionados manualmente
             pesosMedidos: existente.animal.pesosMedidos ?? [],
-            circunferenciaEscrotal: existente.animal.circunferenciaEscrotal ?? [],
+            circunferenciaEscrotal:
+              existente.animal.circunferenciaEscrotal ?? [],
             updatedAt: new Date().toISOString(),
           },
         };
-        
+
         await db.animalData.put({ ...merged, id: existente.id! });
         atualizados++;
         console.log(`🔄 Atualizado: RGN ${item.animal.rgn}`);
@@ -55,14 +56,16 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
             updatedAt: new Date().toISOString(),
           },
         };
-        
+
         await db.animalData.add(toInsert);
         inseridos++;
         console.log(`➕ Inserido: RGN ${item.animal.rgn}`);
       }
     }
 
-    console.log(`✅ Processamento concluído: ${inseridos} inseridos, ${atualizados} atualizados`);
+    console.log(
+      `✅ Processamento concluído: ${inseridos} inseridos, ${atualizados} atualizados`
+    );
   } catch (error) {
     console.error("❌ Erro ao salvar/atualizar dados:", error);
     throw error;

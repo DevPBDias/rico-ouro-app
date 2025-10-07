@@ -37,18 +37,30 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
   const getCurrentMonth = () => {
     const now = new Date();
     const monthNames = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
     return monthNames[now.getMonth()];
   };
 
   const isPeso = type === "peso";
   const title = isPeso ? "Adicionar Peso" : "Adicionar Circunferência Escrotal";
-  const description = isPeso 
-    ? "Digite o nome do mês e o peso em kg" 
+  const description = isPeso
+    ? "Digite o nome do mês e o peso em kg"
     : "Digite o nome do mês e a circunferência em cm";
-  const placeholder = isPeso ? "Ex: Janeiro, Fev/24, Março 2024" : "Ex: Janeiro, Fev/24, Março 2024";
+  const placeholder = isPeso
+    ? "Ex: Janeiro, Fev/24, Março 2024"
+    : "Ex: Janeiro, Fev/24, Março 2024";
   const unit = isPeso ? "kg" : "cm";
 
   return (
@@ -61,9 +73,7 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {description}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -78,7 +88,8 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
               required
             />
             <p className="text-xs text-gray-500">
-              Exemplos: &quot;{getCurrentMonth()}&quot;, &quot;Fev/24&quot;, &quot;Março 2024&quot;, &quot;Abril&quot;
+              Exemplos: &quot;{getCurrentMonth()}&quot;, &quot;Fev/24&quot;,
+              &quot;Março 2024&quot;, &quot;Abril&quot;
             </p>
           </div>
           <div className="space-y-2">
@@ -96,7 +107,11 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={!mes.trim() || !valor.trim()}>

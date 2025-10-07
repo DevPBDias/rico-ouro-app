@@ -35,11 +35,27 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
               f: String(row[headers.indexOf("F %")] || ""),
             },
             pai: {
-              nome: String(row[headers.indexOf("NOME", headers.indexOf("F %") + 1)] || ""),
+              nome: String(
+                row[headers.indexOf("NOME", headers.indexOf("F %") + 1)] || ""
+              ),
             },
             mae: {
-              serieRGD: String(row[headers.indexOf("SERIE / RGD", headers.indexOf("RGN", headers.indexOf("F %") + 1) + 1)] || ""),
-              rgn: String(row[headers.indexOf("RGN", headers.indexOf("RGN", headers.indexOf("F %") + 1) + 1)] || ""),
+              serieRGD: String(
+                row[
+                  headers.indexOf(
+                    "SERIE / RGD",
+                    headers.indexOf("RGN", headers.indexOf("F %") + 1) + 1
+                  )
+                ] || ""
+              ),
+              rgn: String(
+                row[
+                  headers.indexOf(
+                    "RGN",
+                    headers.indexOf("RGN", headers.indexOf("F %") + 1) + 1
+                  )
+                ] || ""
+              ),
             },
           };
 
@@ -52,7 +68,7 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
 
       console.log("📦 Dados processados:", result.length, "registros válidos");
       console.log("🔄 Salvando/atualizando dados (evita duplicação)...");
-      
+
       await salvarOuAtualizarDados(result);
       resolve(result);
     };

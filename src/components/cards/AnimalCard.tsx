@@ -1,16 +1,17 @@
-"use client"
+"use client";
 
-import { Eye } from "lucide-react"
-import Link from "next/link"
-import { AnimalData } from "@/lib/db"
+import { Eye } from "lucide-react";
+import Link from "next/link";
+import { AnimalData } from "@/lib/db";
 
 interface AnimalCardProps {
-  animal: AnimalData
+  animal: AnimalData;
 }
 
 export function AnimalCard({ animal }: AnimalCardProps) {
-  const displayName = animal.animal.rgn || animal.animal.serieRGD || "Sem identificação";
-  
+  const displayName =
+    animal.animal.rgn || animal.animal.serieRGD || "Sem identificação";
+
   return (
     <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200">
       <div className="flex-1">
@@ -20,9 +21,12 @@ export function AnimalCard({ animal }: AnimalCardProps) {
           {animal.animal.deca && ` • DECA: ${animal.animal.deca}`}
         </div>
       </div>
-      <Link href={`/bois/${animal.id}`} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+      <Link
+        href={`/bois/${animal.id}`}
+        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+      >
         <Eye className="w-5 h-5 text-gray-400" />
       </Link>
     </div>
-  )
+  );
 }

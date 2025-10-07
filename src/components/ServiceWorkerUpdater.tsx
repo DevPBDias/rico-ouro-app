@@ -6,7 +6,8 @@ export default function ServiceWorkerUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator))
+      return;
 
     navigator.serviceWorker.ready.then((registration) => {
       const sw = registration.waiting;
@@ -16,7 +17,10 @@ export default function ServiceWorkerUpdater() {
         const newWorker = registration.installing;
         if (!newWorker) return;
         newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
             setWaiting(newWorker);
           }
         });
@@ -27,9 +31,15 @@ export default function ServiceWorkerUpdater() {
       // reload quando o novo SW assume o controle
       window.location.reload();
     };
-    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      onControllerChange
+    );
     return () => {
-      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      navigator.serviceWorker.removeEventListener(
+        "controllerchange",
+        onControllerChange
+      );
     };
   }, []);
 
@@ -62,12 +72,13 @@ export default function ServiceWorkerUpdater() {
       <span>Nova versão disponível.</span>
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={() => setWaiting(null)}>Depois</button>
-        <button onClick={update} style={{ background: "#2563eb", color: "#fff" }}>
+        <button
+          onClick={update}
+          style={{ background: "#2563eb", color: "#fff" }}
+        >
           Atualizar
         </button>
       </div>
     </div>
   );
 }
-
-
