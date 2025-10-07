@@ -1,7 +1,8 @@
 import HomeCow from "@/assets/images/HomeCow.png";
 import logoIndi from "@/assets/icons/Logo Jacir.png";
 import Image from "next/image";
-import HomeBtns from "@/components/homeBtns/HomeBtns";
+import RedirectButtons from "@/components/buttons/RedirectButtons";
+import { homeLinks } from "@/constants/HomeLinks";
 
 const HomePage = () => {
   return (
@@ -23,7 +24,10 @@ const HomePage = () => {
           priority
         />
       </picture>
-      <HomeBtns />
+      <RedirectButtons
+        data={homeLinks}
+        className="h-2/3 absolute bottom-0 left-0"
+      />
     </main>
   );
 };

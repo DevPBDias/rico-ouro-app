@@ -1,3 +1,5 @@
+import { StaticImageData } from "next/image";
+
 export type Screen = "splash" | "login" | "home" | "animal" | "settings";
 
 export interface Animal {
@@ -20,9 +22,9 @@ export interface SettingsOption {
   description: string;
 }
 
-export interface HomeLinks {
+export interface Links {
   id: number;
   name: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string }> | string;
 }

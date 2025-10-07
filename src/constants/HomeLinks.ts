@@ -1,4 +1,4 @@
-import { HomeLinks } from "@/types";
+import { Links } from "@/types";
 import {
   CornerRightDown,
   CornerRightUp,
@@ -8,7 +8,7 @@ import {
   Syringe,
 } from "lucide-react";
 
-export const homeLinks: HomeLinks[] = [
+export const homeLinks: Links[] = [
   {
     id: 1,
     name: "Consultar animal",
