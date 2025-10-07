@@ -19,3 +19,10 @@ export interface SettingsOption {
   label: string;
   description: string;
 }
+
+export interface HomeLinks {
+  id: number;
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
