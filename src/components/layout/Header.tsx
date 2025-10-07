@@ -1,22 +1,33 @@
+"use client";
+import { ArrowLeftCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import logoIndi from "@/assets/icons/Logo Jacir.png";
+import Image from "next/image";
+
 interface HeaderProps {
-  showAvatar?: boolean;
+  title: string;
 }
 
-export function Header({ showAvatar = true }: HeaderProps) {
+function Header({ title }: HeaderProps) {
+  const router = useRouter();
+
   return (
-    <header className="bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-orange-500 tracking-wide">
-          OURO
-          <br />
-          RICO
-        </h1>
-        {showAvatar && (
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-            <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
-          </div>
-        )}
-      </div>
+    <header className="w-full h-18 px-6 py-4 bg-[#1162AE] text-white flex items-center justify-between">
+      <ArrowLeftCircleIcon
+        size={30}
+        className="cursor-pointer"
+        onClick={() => router.back()}
+      />
+      <h1 className="text-xl font-medium uppercase">{title}</h1>
+      <Image
+        src={logoIndi}
+        alt="Icone do aplicativo"
+        width={30}
+        height={34}
+        priority
+      />
     </header>
   );
 }
+
+export default Header;
