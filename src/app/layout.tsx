@@ -36,16 +36,13 @@ export default function RootLayout({
           content="black-translucent"
         />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/vercel.svg" />
+        <link rel="icon" href="/public/Logo Jacir.png" />
+        <link rel="apple-touch-icon" href="/public/Logo Jacir.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
         {children}
-        <Navigation />
-
         <ServiceWorkerUpdater />
       </body>
     </html>
