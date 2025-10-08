@@ -68,7 +68,7 @@ function SearchAnimal() {
         </div>
       </div>
       {searchQuery && (
-        <div className="mt-12">
+        <div className="my-12">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
             Resultados da busca {isSearching && "(buscando...)"}
           </h2>

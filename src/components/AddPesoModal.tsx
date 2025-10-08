@@ -21,79 +21,68 @@ interface AddPesoModalProps {
 
 export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
   const [open, setOpen] = useState(false);
-  const [mes, setMes] = useState("");
   const [valor, setValor] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (mes.trim() && valor.trim()) {
-      onAddPeso(mes.trim(), Number(valor));
-      setMes("");
+    if (valor.trim()) {
+      const now = new Date();
+      const day = now.getDate().toString().padStart(2, "0");
+      const monthNames = [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro",
+      ];
+      const month = monthNames[now.getMonth()];
+      const year = now.getFullYear();
+      const mesFormatado = `${day} de ${month} de ${year}`;
+
+      onAddPeso(mesFormatado, Number(valor));
       setValor("");
       setOpen(false);
     }
   };
 
-  const getCurrentMonth = () => {
-    const now = new Date();
-    const monthNames = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro",
-    ];
-    return monthNames[now.getMonth()];
-  };
-
   const isPeso = type === "peso";
   const title = isPeso ? "Adicionar Peso" : "Adicionar Circunferência Escrotal";
   const description = isPeso
-    ? "Digite o nome do mês e o peso em kg"
-    : "Digite o nome do mês e a circunferência em cm";
-  const placeholder = isPeso
-    ? "Ex: Janeiro, Fev/24, Março 2024"
-    : "Ex: Janeiro, Fev/24, Março 2024";
+    ? "Informe o peso em kg. A data será registrada automaticamente."
+    : "Informe a circunferência em cm. A data será registrada automaticamente.";
   const unit = isPeso ? "kg" : "cm";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-blue-900 text-white">
-          <Plus className="w-4 h-4 mr-1" /> Adicionar
+        <Button size="default" className="bg-[#1162AE] text-white">
+          <Plus className="w-4 h-4" /> Adicionar
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="w-full text-xl text-left font-bold text-[#1162AE]">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="w-full text-base text-left ">
+            {description}
+          </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="mes" className="text-sm font-medium">
-              Nome do Mês
-            </label>
-            <Input
-              id="mes"
-              value={mes}
-              onChange={(e) => setMes(e.target.value)}
-              placeholder={placeholder}
-              required
-            />
-            <p className="text-xs text-gray-500">
-              Exemplos: &quot;{getCurrentMonth()}&quot;, &quot;Fev/24&quot;,
-              &quot;Março 2024&quot;, &quot;Abril&quot;
-            </p>
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="valor" className="text-sm font-medium">
+            <label
+              htmlFor="valor"
+              className="text-lg font-semibold text-[#1162AE]"
+            >
               Valor ({unit})
             </label>
             <Input
@@ -101,20 +90,27 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
               type="number"
               step="0.1"
               value={valor}
+              className="my-2 h-10"
               onChange={(e) => setValor(e.target.value)}
               placeholder={`Digite o valor em ${unit}`}
               required
             />
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="outline"
+              className="w-full text-base"
               onClick={() => setOpen(false)}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={!mes.trim() || !valor.trim()}>
+            <Button
+              type="submit"
+              className="w-full text-base bg-[#1162AE]"
+              disabled={!valor.trim()}
+            >
               Adicionar
             </Button>
           </DialogFooter>

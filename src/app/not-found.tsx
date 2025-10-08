@@ -30,7 +30,7 @@ export default function NotFoundPage() {
         </p>
 
         <Link
-          href="/"
+          href="/home"
           className="mt-6 bg-[#1162AE] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:scale-105 transition-transform duration-200"
         >
           Voltar ao início

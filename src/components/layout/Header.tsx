@@ -24,6 +24,7 @@ function Header({ title }: HeaderProps) {
         alt="Icone do aplicativo"
         width={30}
         height={34}
+        onClick={() => router.push("/home")}
         priority
       />
     </header>

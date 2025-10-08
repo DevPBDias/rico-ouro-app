@@ -13,7 +13,10 @@ export function AnimalCard({ animal }: AnimalCardProps) {
     animal.animal.rgn || animal.animal.serieRGD || "Sem identificação";
 
   return (
-    <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <Link
+      href={`/bois/${animal.id}`}
+      className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+    >
       <div className="flex-1">
         <div className="font-medium text-gray-800">{displayName}</div>
         <div className="text-sm text-gray-500">
@@ -21,12 +24,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
           {animal.animal.deca && ` • DECA: ${animal.animal.deca}`}
         </div>
       </div>
-      <Link
-        href={`/bois/${animal.id}`}
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <Eye className="w-5 h-5 text-gray-400" />
-      </Link>
-    </div>
+      <Eye className="w-5 h-5 text-gray-400" />
+    </Link>
   );
 }
