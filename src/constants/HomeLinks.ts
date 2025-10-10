@@ -22,18 +22,6 @@ export const homeLinks: Links[] = [
     icon: File,
   },
   {
-    id: 3,
-    name: "Exportar dados",
-    href: "/exportar",
-    icon: CornerRightUp,
-  },
-  {
-    id: 4,
-    name: "Importar dados",
-    href: "/importar",
-    icon: CornerRightDown,
-  },
-  {
     id: 5,
     name: "Nascimentos",
     href: "/nascimentos",
@@ -44,5 +32,17 @@ export const homeLinks: Links[] = [
     name: "Vacinas",
     href: "/vacinas",
     icon: Syringe,
+  },
+  {
+    id: 3,
+    name: "Exportar dados",
+    href: "/exportar",
+    icon: CornerRightUp,
+  },
+  {
+    id: 4,
+    name: "Importar dados",
+    href: "/importar",
+    icon: CornerRightDown,
   },
 ];

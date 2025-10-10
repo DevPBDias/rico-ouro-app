@@ -66,7 +66,6 @@ const WeightAnimalPage = () => {
       <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn} - Pesagem`} />
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 px-4">
-        {/* 📦 Pesos */}
         <div className="space-y-3">
           <h2 className="font-semibold text-xl text-[#1162AE] flex justify-between items-center">
             Pesos Medidos

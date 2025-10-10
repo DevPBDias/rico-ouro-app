@@ -1,34 +1,21 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   ArrowUpNarrowWide,
   CircleDashed,
   CircleQuestionMark,
   FileBadge,
-  Trash2,
 } from "lucide-react";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
-import { ChartBarLabel } from "@/components/BoiCharts";
-import { AddPesoModal } from "@/components/AddPesoModal";
+
 import Header from "@/components/layout/Header";
 import Link from "next/link";
 
 export default function BoiDetalhePage() {
   const params = useParams();
   const id = Number(params.id);
-  const {
-    boi,
-    loading,
-    editPeso,
-    deletePeso,
-    editCirc,
-    deleteCirc,
-    savePesoComMes,
-    saveCircComMes,
-  } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
 
   if (loading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;

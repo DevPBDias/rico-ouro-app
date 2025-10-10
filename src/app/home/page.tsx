@@ -1,20 +1,37 @@
 import HomeCow from "@/assets/images/HomeCow.png";
 import logoIndi from "@/assets/icons/Logo Jacir.png";
+import logoABCZ from "@/assets/icons/ABCZ.png";
+import logoPMGZ from "@/assets/icons/PMGZ.png";
 import Image from "next/image";
 import RedirectButtons from "@/components/buttons/RedirectButtons";
 import { homeLinks } from "@/constants/HomeLinks";
 
 const HomePage = () => {
   return (
-    <main className="relative top-0 left-0 h-dvh w-full overflow-hidden">
-      <Image
-        src={logoIndi}
-        alt="Icone do aplicativo"
-        width={44}
-        height={48}
-        className="absolute top-6 left-6"
-        priority
-      />
+    <main className="relative h-dvh w-full overflow-hidden">
+      <picture className="absolute flex flex-row z-10 items-center top-6 left-0 w-full justify-between px-6">
+        <Image
+          src={logoPMGZ}
+          alt="Icone do aplicativo"
+          width={40}
+          height={44}
+          priority
+        />
+        <Image
+          src={logoIndi}
+          alt="Icone do aplicativo"
+          width={40}
+          height={44}
+          priority
+        />
+        <Image
+          src={logoABCZ}
+          alt="Icone do aplicativo"
+          width={40}
+          height={44}
+          priority
+        />
+      </picture>
       <picture className="w-full bg-red-500">
         <Image
           src={HomeCow}
