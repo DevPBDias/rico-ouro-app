@@ -2,64 +2,120 @@
 import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { AnimalData } from "@/lib/db";
 import { extractDataFromExcel } from "@/utils/extractData";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { CheckCircle2, X } from "lucide-react";
+import Link from "next/link";
 
 const SearchCsvFile = () => {
-  const { dados, salvarOuAtualizar, limpar } = useAnimalDB();
-  const [arquivo, setArquivo] = useState<File | null>(null);
+  const { salvarOuAtualizar } = useAnimalDB();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setArquivo(e.target.files[0]);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
     }
   };
 
-  const handleProcessar = async () => {
-    if (!arquivo) return;
+  const handleChooseFile = () => {
+    fileInputRef.current?.click();
+  };
 
-    const extractedData: AnimalData[] = await extractDataFromExcel(arquivo);
+  const handleProcessFile = async () => {
+    if (!selectedFile) return;
+
+    const extractedData: AnimalData[] = await extractDataFromExcel(
+      selectedFile
+    );
     await salvarOuAtualizar(extractedData);
+    setIsProcessing(false);
+    setShowSuccessModal(true);
   };
 
   return (
     <section className="p-4">
-      <div className="my-8">
-        <label
-          htmlFor="search-file"
-          className="text-xl font-bold text-[#1162AE]"
-        >
-          Importar arquivo:
-        </label>
-        <div className="relative mt-4">
-          <Input
-            id="search-file"
-            type="file"
-            className="py-2 h-12 cursor-pointer"
-            accept=".xls,.xlsx"
-            onChange={handleFileChange}
-          />
-        </div>
-        <button
-          onClick={handleProcessar}
-          className="mt-6 w-full rounded-lg px-4 py-2 bg-[#1162AE] text-white font-medium hover:bg-[#1162AE]/95 transition-colors cursor-pointer"
-        >
-          Processar dados
-        </button>
-      </div>
+      <main className="mx-auto max-w-md px-4 py-8">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <label className="text-xl text-[#1162AE] font-medium">
+              Importar arquivo:
+            </label>
 
-      <div className="">
-        <h2 className="text-xl font-bold text-[#1162AE]">Dados salvos:</h2>
-        <pre className="bg-gray-100 p-2 rounded text-sm overflow-auto max-h-96 mt-4">
-          {JSON.stringify(dados, null, 2)}
-        </pre>
-        <button
-          onClick={limpar}
-          className="mt-6 w-full px-4 py-2 rounded-lg bg-red-700 text-white font-medium cursor-pointer"
-        >
-          Limpar dados
-        </button>
-      </div>
+            <div className="rounded-lg bg-muted px-4 py-3 mt-2">
+              <p className="text-sm italic text-muted-foreground">
+                {selectedFile
+                  ? selectedFile.name
+                  : "Nenhum arquivo selecionado"}
+              </p>
+            </div>
+
+            <Button
+              onClick={handleChooseFile}
+              className="w-full rounded-lg bg-[#1162AE] py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              Escolher arquivo
+            </Button>
+
+            <Input
+              ref={fileInputRef}
+              type="file"
+              accept=".xls,.xlsx"
+              onChange={handleFileSelect}
+              className="hidden"
+              aria-label="Selecionar arquivo CSV"
+            />
+          </div>
+
+          <div className="border-t-1 border-[#1162AE]" />
+
+          <Button
+            onClick={handleProcessFile}
+            disabled={!selectedFile || isProcessing}
+            className="w-full rounded-lg bg-[#1162AE] py-6 text-base font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
+          >
+            {isProcessing ? "Processando..." : "Processar arquivo"}
+          </Button>
+        </div>
+      </main>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="relative w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
+            <Button
+              size="icon"
+              variant={"ghost"}
+              className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Fechar"
+            >
+              <X />
+            </Button>
+
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <CheckCircle2 className="h-12 w-12 text-green-600" />
+              <h2 className="text-xl font-semibold text-[#1162AE]">
+                Processamento Concluído
+              </h2>
+              <p className="text-muted-foreground">
+                O arquivo{" "}
+                <span className="font-medium text-foreground">
+                  {selectedFile?.name}
+                </span>{" "}
+                foi processado com sucesso!
+              </p>
+              <Link
+                href="/home"
+                className="mt-4 w-full rounded-lg bg-[#1162AE] py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                Ir para a página inicial
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
