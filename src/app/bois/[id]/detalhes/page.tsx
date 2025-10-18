@@ -60,6 +60,28 @@ const DetailsAnimalPage = () => {
             <span className="font-semibold text-lg text-[#1162AE]">Mãe:</span>{" "}
             {`${boi.mae?.serieRGD ?? "-"} ${boi.mae?.rgn ?? ""}`.trim()}
           </p>
+          {boi.animal.corNascimento && (
+            <p>
+              <span className="font-semibold text-lg text-[#1162AE]">
+                Cor de Nascimento:
+              </span>{" "}
+              {boi.animal.corNascimento ?? "-"}
+            </p>
+          )}
+          {boi.animal.vacinas && boi.animal.vacinas.length > 0 && (
+            <div className="md:col-span-3">
+              <span className="font-semibold text-lg text-[#1162AE]">
+                Vacinas:
+              </span>
+              <ul className="list-disc list-inside mt-1">
+                {boi.animal.vacinas.map((vacina, index) => (
+                  <li key={index}>
+                    {vacina.nome} - {vacina.data}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div>

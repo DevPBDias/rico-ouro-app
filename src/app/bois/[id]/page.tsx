@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowUpNarrowWide,
   CircleDashed,
@@ -11,14 +11,29 @@ import { useBoiDetail } from "@/hooks/useBoiDetail";
 
 import Header from "@/components/layout/Header";
 import Link from "next/link";
+import { excluirPorRgn } from "@/utils/helpersDB";
+import { Button } from "@/components/ui/button";
 
 export default function BoiDetalhePage() {
   const params = useParams();
   const id = Number(params.id);
+  const router = useRouter();
   const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
 
   if (loading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
+
+  function handleExcluir() {
+    if (!boi || !boi.animal.rgn) {
+      console.error("RGN do animal não disponível.");
+      return;
+    }
+
+    excluirPorRgn(boi.animal.rgn).then(() => {
+      console.log(`Dados do animal com RGN ${boi.animal.rgn} excluídos.`);
+      router.push("/home");
+    });
+  }
 
   return (
     <main>
@@ -53,7 +68,13 @@ export default function BoiDetalhePage() {
           <p className="font-medium w-full text-center text-lg ">CE</p>
         </Link>
       </section>
-      <section className="p-4 space-y-6"></section>
+      <Button
+        variant="default"
+        onClick={handleExcluir}
+        className="mb-auto w-4/5 mx-auto mt-8 bg-red-600 hover:bg-red-700 flex items-center justify-center gap-2"
+      >
+        Excluir dados do animal
+      </Button>
     </main>
   );
 }
