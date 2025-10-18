@@ -15,10 +15,8 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
 
       const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      // ⚡ Linha 7 da planilha (index 6) contém os cabeçalhos certos
       const headers = rows[6].map((h: unknown) => String(h).trim());
 
-      // Dados a partir da linha 8
       const dataRows = rows.slice(7);
 
       const result: AnimalData[] = dataRows
@@ -44,7 +42,7 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
                 row[
                   headers.indexOf(
                     "SERIE / RGD",
-                    headers.indexOf("RGN", headers.indexOf("F %") + 1) + 1
+                    headers.indexOf("RGN", headers.indexOf("F %") + 3) + 1
                   )
                 ] || ""
               ),
@@ -65,9 +63,6 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
           // Filtra apenas registros que têm RGN válido (chave única)
           return item.animal.rgn && item.animal.rgn.toString().trim() !== "";
         });
-
-      console.log("📦 Dados processados:", result.length, "registros válidos");
-      console.log("🔄 Salvando/atualizando dados (evita duplicação)...");
 
       await salvarOuAtualizarDados(result);
       resolve(result);
