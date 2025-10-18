@@ -53,7 +53,6 @@ export function useBoisList(options: UseBoisListOptions = {}) {
     setCurrentPage(1);
   };
 
-  // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
   }, [query, sexo, parentQuery]);

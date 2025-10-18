@@ -31,7 +31,6 @@ export function useBoiDetail(id: number | null) {
         animal: {
           ...(boi.animal ?? {}),
           ...partialAnimal,
-          // preserva arrays caso não venham no parcial
           pesosMedidos:
             partialAnimal.pesosMedidos !== undefined
               ? partialAnimal.pesosMedidos
@@ -49,7 +48,6 @@ export function useBoiDetail(id: number | null) {
     [boi]
   );
 
-  // Pesos
   const addPeso = useCallback(async () => {
     if (!boi) return;
     const now = new Date();
@@ -61,7 +59,6 @@ export function useBoiDetail(id: number | null) {
     await salvar({ pesosMedidos: novo });
   }, [boi, salvar]);
 
-  // Salva um novo peso preservando os anteriores e anotando o mês desejado (formato YYYY-MM)
   const savePesoComMes = useCallback(
     async (mes: string, valor: string | number) => {
       if (!boi) return;
@@ -94,7 +91,6 @@ export function useBoiDetail(id: number | null) {
     [boi, salvar]
   );
 
-  // Circunferência Escrotal
   const addCirc = useCallback(async () => {
     if (!boi) return;
     const now = new Date();
@@ -109,7 +105,6 @@ export function useBoiDetail(id: number | null) {
     await salvar({ circunferenciaEscrotal: novo });
   }, [boi, salvar]);
 
-  // Salva nova circunferência preservando as anteriores e anotando o mês (YYYY-MM)
   const saveCircComMes = useCallback(
     async (mes: string, valor: string | number) => {
       if (!boi) return;
@@ -142,7 +137,6 @@ export function useBoiDetail(id: number | null) {
     [boi, salvar]
   );
 
-  // View helpers para compatibilidade com a tela
   const pesosMedidos = useMemo(() => boi?.animal.pesosMedidos ?? [], [boi]);
   const circunferenciaEscrotal = useMemo(
     () => boi?.animal.circunferenciaEscrotal ?? [],

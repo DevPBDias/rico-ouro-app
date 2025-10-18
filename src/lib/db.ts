@@ -1,4 +1,3 @@
-// db.ts
 import Dexie, { Table } from "dexie";
 
 export interface AnimalData {
@@ -13,8 +12,10 @@ export interface AnimalData {
     deca?: string;
     p?: string;
     f?: string;
+    corNascimento?: string;
     pesosMedidos?: { mes: string; valor: number }[];
     circunferenciaEscrotal?: { mes: string; valor: number }[];
+    vacinas?: { nome: string; data: string }[];
     updatedAt?: string;
   };
   pai: {
@@ -32,7 +33,6 @@ export class MyDatabase extends Dexie {
   constructor() {
     super("MyDatabase");
     this.version(3).stores({
-      // adiciona índice por RGN para facilitar exclusão
       animalData: "++id, [animal.serieRGD+animal.rgn], animal.nome, animal.rgn",
     });
   }
