@@ -1,5 +1,5 @@
 "use client";
-import { ChartBarLabel } from "@/components/BoiCharts";
+import { ChartLineLabel } from "@/components/BoiCharts";
 import Header from "@/components/layout/Header";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { useParams } from "next/navigation";
@@ -20,7 +20,7 @@ const GraphicsAnimalPage = () => {
         <h1 className="text-2xl font-bold mb-4 text-[#1162AE] border-b-2 border-[#1162AE] pb-2">
           Pesagem
         </h1>
-        <ChartBarLabel
+        <ChartLineLabel
           title="Pesos"
           description="Evolução mensal"
           data={boi.animal.pesosMedidos ?? []}
@@ -29,7 +29,7 @@ const GraphicsAnimalPage = () => {
         <h1 className="text-2xl font-bold my-4 text-[#1162AE] border-b-2 border-[#1162AE] pb-2">
           CE
         </h1>
-        <ChartBarLabel
+        <ChartLineLabel
           title="Circunferência"
           description="Evolução mensal"
           data={boi.animal.circunferenciaEscrotal ?? []}
