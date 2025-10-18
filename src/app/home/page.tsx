@@ -32,7 +32,7 @@ const HomePage = () => {
           priority
         />
       </picture>
-      <picture className="w-full bg-red-500">
+      <picture className="w-full">
         <Image
           src={HomeCow}
           alt="Cow App Logo"
