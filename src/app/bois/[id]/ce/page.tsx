@@ -2,24 +2,24 @@
 
 import { AddPesoModal } from "@/components/AddPesoModal";
 import Header from "@/components/layout/Header";
-import { WeightList } from "@/components/lists/WeightList";
+import { CircunfList } from "@/components/lists/CircunfList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { getTodayFormatted } from "@/utils/formatDates";
 import { useParams } from "next/navigation";
 
-const WeightAnimalPage = () => {
+const CircunfAnimalPage = () => {
   const params = useParams();
   const id = Number(params.id);
-  const { boi, loading, editPeso, deletePeso, savePesoComMes } = useBoiDetail(
+  const { boi, loading, editCirc, deleteCirc, saveCircComMes } = useBoiDetail(
     Number.isNaN(id) ? null : id
   );
 
   if (loading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
-  const handleAddPeso = (valor: number) => {
+  const handleAddCirc = (valor: number) => {
     const dataAtual = getTodayFormatted();
-    savePesoComMes(dataAtual, valor);
+    saveCircComMes(dataAtual, valor);
   };
 
   return (
@@ -28,23 +28,23 @@ const WeightAnimalPage = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 px-4">
         <div className="space-y-3">
-          <h2 className="font-semibold text-xl text-[#1162AE] flex justify-between items-center">
-            Pesos Medidos
+          <h2 className="font-semibold text-gray-800 flex justify-between items-center">
+            Circunferência Escrotal
             <AddPesoModal
-              type="peso"
-              onAddPeso={(_, valor) => handleAddPeso(valor)}
+              type="circunferencia"
+              onAddPeso={(_, valor) => handleAddCirc(valor)}
             />
           </h2>
 
-          <WeightList
-            deletePeso={deletePeso}
-            editPeso={editPeso}
-            pesosMedidos={boi.animal.pesosMedidos ?? []}
+          <CircunfList
+            deleteCE={deleteCirc}
+            editCE={editCirc}
+            CEMedidos={boi.animal.circunferenciaEscrotal ?? []}
           />
 
-          {(!boi.animal.pesosMedidos ||
-            boi.animal.pesosMedidos.length === 0) && (
-            <p className="text-gray-500 text-sm">Nenhum peso registrado</p>
+          {(!boi.animal.circunferenciaEscrotal ||
+            boi.animal.circunferenciaEscrotal.length === 0) && (
+            <p className="text-gray-500 text-sm">Nenhum valor registrado</p>
           )}
         </div>
       </section>
@@ -52,4 +52,4 @@ const WeightAnimalPage = () => {
   );
 };
 
-export default WeightAnimalPage;
+export default CircunfAnimalPage;
