@@ -6,6 +6,7 @@ import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { useCallback, useEffect, useState } from "react";
 import { AnimalData } from "@/lib/db";
 import { AnimalCard } from "../cards/AnimalCard";
+import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 
 function SearchAnimal() {
   const { dados } = useAnimalDB();
@@ -67,10 +68,19 @@ function SearchAnimal() {
           />
         </div>
       </div>
-      {searchQuery && (
+      {isSearching ? (
+        <div className="space-y-3 my-12">
+          <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
+            Resultados da busca:
+          </h2>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonSearchAnimal key={index} />
+          ))}
+        </div>
+      ) : (
         <div className="my-12">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-            Resultados da busca {isSearching && "(buscando...)"}
+            Resultados da busca:
           </h2>
           {searchResults.length > 0 ? (
             <div className="space-y-3">
@@ -80,12 +90,12 @@ function SearchAnimal() {
                 </div>
               ))}
             </div>
-          ) : !isSearching ? (
+          ) : (
             <div className="flex pt-2 text-gray-500 text-base">
               <AlertCircle className="w-5 h-5 mr-2" />
               Nenhum animal encontrado
             </div>
-          ) : null}
+          )}
         </div>
       )}
     </section>
