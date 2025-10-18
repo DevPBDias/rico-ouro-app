@@ -1,7 +1,7 @@
 import { Links } from "@/types";
 import {
   CornerRightDown,
-  CornerRightUp,
+  Database,
   File,
   Search,
   Star,
@@ -17,30 +17,31 @@ export const homeLinks: Links[] = [
   },
   {
     id: 2,
-    name: "Relatórios",
-    href: "/relatorios",
-    icon: File,
+    name: "Dados gerais",
+    href: "/geral",
+    icon: Database,
   },
   {
-    id: 5,
+    id: 3,
     name: "Nascimentos",
     href: "/nascimentos",
     icon: Star,
   },
   {
-    id: 6,
+    id: 4,
     name: "Vacinas",
     href: "/vacinas",
     icon: Syringe,
   },
+
   {
-    id: 3,
-    name: "Exportar dados",
-    href: "/exportar",
-    icon: CornerRightUp,
+    id: 5,
+    name: "Relatórios",
+    href: "/relatorios",
+    icon: File,
   },
   {
-    id: 4,
+    id: 6,
     name: "Importar dados",
     href: "/importar",
     icon: CornerRightDown,
