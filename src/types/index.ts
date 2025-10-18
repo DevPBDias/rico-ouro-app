@@ -1,5 +1,3 @@
-import { StaticImageData } from "next/image";
-
 export type Screen = "splash" | "login" | "home" | "animal" | "settings";
 
 export interface Animal {

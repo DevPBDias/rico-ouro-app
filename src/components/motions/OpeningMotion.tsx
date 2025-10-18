@@ -23,7 +23,7 @@ const OpeningMotion = () => {
   return (
     <motion.picture
       className="absolute flex flex-col z-10 gap-4 items-center top-6 left-0 w-full justify-between px-6"
-      // @ts-ignore
+      // @ts-expect-error lint error
       variants={pictureAnimation}
       initial="hidden"
       animate="visible"

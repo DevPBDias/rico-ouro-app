@@ -127,7 +127,7 @@ export function generateAnimalReportPDF(
     body: body.map((row) =>
       columns.map(
         (col) =>
-          //@ts-ignore
+          // @ts-expect-error lint error
           row[col.key]
       )
     ),
