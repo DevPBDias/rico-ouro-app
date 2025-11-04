@@ -9,16 +9,15 @@ interface AnimalCardProps {
 }
 
 export function AnimalCard({ animal }: AnimalCardProps) {
-  const displayName =
-    animal.animal.rgn || animal.animal.serieRGD || "Sem identificação";
-
   return (
     <Link
       href={`/bois/${animal.id}`}
       className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200"
     >
       <div className="flex-1">
-        <div className="font-medium text-gray-800">{displayName}</div>
+        <div className="font-medium text-gray-800">
+          {animal.animal.serieRGD} {animal.animal.rgn}
+        </div>
         <div className="text-sm text-gray-500">
           {animal.animal.sexo && `Sexo: ${animal.animal.sexo}`}
           {animal.animal.deca && ` • DECA: ${animal.animal.deca}`}

@@ -1,8 +1,8 @@
 "use client";
-import { ArrowLeftCircleIcon } from "lucide-react";
+import { ArrowLeftCircleIcon, HomeIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import logoIndi from "@/assets/icons/Logo Jacir.png";
 import Image from "next/image";
+import logo from "@/assets/icons/Logo Jacir.png";
 
 interface HeaderProps {
   title: string;
@@ -12,21 +12,23 @@ function Header({ title }: HeaderProps) {
   const router = useRouter();
 
   return (
-    <header className="w-full h-18 px-6 py-4 bg-[#1162AE] text-white flex items-center justify-between">
-      <ArrowLeftCircleIcon
-        size={30}
-        className="cursor-pointer"
-        onClick={() => router.back()}
-      />
-      <h1 className="text-xl font-medium uppercase">{title}</h1>
-      <Image
-        src={logoIndi}
-        alt="Icone do aplicativo"
-        width={30}
-        height={34}
-        onClick={() => router.push("/home")}
-        priority
-      />
+    <header className="w-full p-4 bg-[#1162AE] text-white flex flex-col items-center gap-5">
+      <div className="flex items-center justify-center">
+        <Image src={logo} alt="Logo" width={32} height={32} />
+      </div>
+      <nav className="flex items-center justify-between w-full py-2">
+        <ArrowLeftCircleIcon
+          size={30}
+          className="cursor-pointer"
+          onClick={() => router.back()}
+        />
+        <h1 className="text-xl font-medium uppercase">{title}</h1>
+        <HomeIcon
+          onClick={() => router.push("/home")}
+          size={30}
+          color="white"
+        />
+      </nav>
     </header>
   );
 }

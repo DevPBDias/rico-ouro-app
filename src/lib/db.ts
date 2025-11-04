@@ -16,6 +16,8 @@ export interface AnimalData {
     pesosMedidos?: { mes: string; valor: number }[];
     circunferenciaEscrotal?: { mes: string; valor: number }[];
     vacinas?: { nome: string; data: string }[];
+    status?: string;
+    farm?: string;
     updatedAt?: string;
   };
   pai: {

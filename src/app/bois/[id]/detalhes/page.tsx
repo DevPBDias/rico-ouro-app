@@ -17,78 +17,133 @@ const DetailsAnimalPage = () => {
     <main>
       <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn} - Detalhes`} />
       <section className="p-4 mt-8">
-        <h1 className="text-2xl font-bold mb-4 text-[#1162AE] border-b-2 border-[#1162AE] pb-2">
-          {boi.animal.serieRGD ?? "-"} {boi.animal.rgn ?? "-"}
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4 text-base border-b-2 border-[#1162AE] pb-8">
-          <p className="font-normal text-black">
-            <span className="font-semibold text-lg  text-[#1162AE] ">
-              Sexo:
-            </span>{" "}
-            {boi.animal.sexo ?? "-"}
+        <div className="flex flex-row justify-start items-center gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
+          <span className="text-gray-400 text-sm font-medium uppercase">
+            fazenda
+          </span>
+          <p className="font-bold uppercase text-lg text-[#1162AE]">
+            {boi.animal.farm ?? "SEM DADO"}
           </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">
-              Nascimento:
-            </span>{" "}
-            {boi.animal.nasc ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">
-              iABCZg:
-            </span>{" "}
-            {boi.animal.iabcgz ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">DECA:</span>{" "}
-            {boi.animal.deca ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">P%:</span>{" "}
-            {boi.animal.p ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">F%:</span>{" "}
-            {boi.animal.f ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">Pai:</span>{" "}
-            {boi.pai?.nome ?? "-"}
-          </p>
-          <p>
-            <span className="font-semibold text-lg text-[#1162AE]">Mãe:</span>{" "}
-            {`${boi.mae?.serieRGD ?? "-"} ${boi.mae?.rgn ?? ""}`.trim()}
-          </p>
-          {boi.animal.corNascimento && (
-            <p>
-              <span className="font-semibold text-lg text-[#1162AE]">
-                Cor de Nascimento:
-              </span>{" "}
-              {boi.animal.corNascimento ?? "-"}
-            </p>
-          )}
-          {boi.animal.vacinas && boi.animal.vacinas.length > 0 && (
-            <div className="md:col-span-3">
-              <span className="font-semibold text-lg text-[#1162AE]">
-                Vacinas:
-              </span>
-              <ul className="list-disc list-inside mt-1">
-                {boi.animal.vacinas.map((vacina, index) => (
-                  <li key={index}>
-                    {vacina.nome} - {vacina.data}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
 
-        <div>
-          <h1 className="text-xl font-semibold mb-4 text-[#1162AE] mt-8">
-            Observações:
-          </h1>
-          <p>Nenhuma observação.</p>
+        <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Sexo
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal?.sexo === "M" ? "Macho" : "Fêmea"}
+              </span>
+            </div>
+
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Nascimento
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.nasc ?? "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                iABCZg
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.iabcgz ?? "-"}
+              </span>
+            </div>
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                DECA
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.deca ?? "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Pai
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.pai?.nome ?? "-"}
+              </span>
+            </div>
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Mãe
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {`${boi.mae?.serieRGD ?? "-"} ${boi.mae?.rgn ?? ""}`.trim()}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                P%
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.p ?? "-"}
+              </span>
+            </div>
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                F%
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.f ?? "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Cor Nascimento
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.corNascimento ?? "-"}
+              </span>
+            </div>
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Status
+              </span>
+              <span className="font-bold uppercase  text-[#1162AE]">
+                {boi.animal.status ?? "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="md:col-span-3">
+            <span className="text-gray-400 text-sm font-medium uppercase">
+              Vacinas:
+            </span>
+            <ul className="list-disc list-inside mt-1">
+              {boi.animal.vacinas && boi.animal.vacinas.length > 0 ? (
+                boi.animal.vacinas.map((vacina, index) => (
+                  <li
+                    className="font-bold uppercase  text-[#1162AE]"
+                    key={index}
+                  >
+                    {vacina.nome} - {vacina.data}
+                  </li>
+                ))
+              ) : (
+                <span className="font-bold uppercase  text-[#1162AE]">
+                  Sem vacinas anotadas
+                </span>
+              )}
+            </ul>
+          </div>
         </div>
       </section>
     </main>
