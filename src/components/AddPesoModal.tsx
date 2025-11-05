@@ -22,32 +22,17 @@ interface AddPesoModalProps {
 export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
   const [open, setOpen] = useState(false);
   const [valor, setValor] = useState("");
+  const [data, setData] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (valor.trim()) {
-      const now = new Date();
-      const day = now.getDate().toString().padStart(2, "0");
-      const monthNames = [
-        "Janeiro",
-        "Fevereiro",
-        "Março",
-        "Abril",
-        "Maio",
-        "Junho",
-        "Julho",
-        "Agosto",
-        "Setembro",
-        "Outubro",
-        "Novembro",
-        "Dezembro",
-      ];
-      const month = monthNames[now.getMonth()];
-      const year = now.getFullYear();
-      const mesFormatado = `${day} de ${month} de ${year}`;
+    if (valor.trim() && data.trim()) {
+      const [ano, mes, dia] = data.split("-");
+      const dataFormatada = `${dia}/${mes}/${ano}`;
 
-      onAddPeso(mesFormatado, Number(valor));
+      onAddPeso(dataFormatada, Number(valor));
       setValor("");
+      setData("");
       setOpen(false);
     }
   };
@@ -55,14 +40,17 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
   const isPeso = type === "peso";
   const title = isPeso ? "Adicionar Peso" : "Adicionar Circunferência Escrotal";
   const description = isPeso
-    ? "Informe o peso em kg. A data será registrada automaticamente."
-    : "Informe a circunferência em cm. A data será registrada automaticamente.";
+    ? "Informe o peso em kg e selecione a data da pesagem."
+    : "Informe a circunferência em cm e selecione a data da medição.";
   const unit = isPeso ? "kg" : "cm";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="default" className="bg-[#1162AE] text-white">
+        <Button
+          size="default"
+          className="bg-[#1162AE] text-white w-full uppercase h-10"
+        >
           <Plus className="w-4 h-4" /> Adicionar
         </Button>
       </DialogTrigger>
@@ -72,7 +60,7 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
           <DialogTitle className="w-full text-xl text-left font-bold text-[#1162AE]">
             {title}
           </DialogTitle>
-          <DialogDescription className="w-full text-base text-left ">
+          <DialogDescription className="w-full text-base text-left">
             {description}
           </DialogDescription>
         </DialogHeader>
@@ -97,6 +85,23 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
             />
           </div>
 
+          <div className="space-y-2">
+            <label
+              htmlFor="data"
+              className="text-lg font-semibold text-[#1162AE]"
+            >
+              Data da medição
+            </label>
+            <Input
+              id="data"
+              type="date"
+              value={data}
+              className="my-2 h-10"
+              onChange={(e) => setData(e.target.value)}
+              required
+            />
+          </div>
+
           <DialogFooter className="grid grid-cols-2 gap-2">
             <Button
               type="button"
@@ -109,7 +114,7 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
             <Button
               type="submit"
               className="w-full text-base bg-[#1162AE]"
-              disabled={!valor.trim()}
+              disabled={!valor.trim() || !data.trim()}
             >
               Adicionar
             </Button>

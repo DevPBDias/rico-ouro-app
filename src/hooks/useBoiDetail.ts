@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { db, AnimalData } from "@/lib/db";
+import { calcularGanhoDiario } from "@/utils/gainDaily";
 
 export function useBoiDetail(id: number | null) {
   const [boi, setBoi] = useState<AnimalData | null>(null);
@@ -39,6 +40,10 @@ export function useBoiDetail(id: number | null) {
             partialAnimal.circunferenciaEscrotal !== undefined
               ? partialAnimal.circunferenciaEscrotal
               : boi.animal.circunferenciaEscrotal ?? [],
+          ganhoDiario:
+            partialAnimal.pesosMedidos !== undefined
+              ? calcularGanhoDiario(partialAnimal.pesosMedidos)
+              : boi.animal.ganhoDiario ?? [],
           updatedAt: new Date().toISOString(),
         },
       };
@@ -48,13 +53,14 @@ export function useBoiDetail(id: number | null) {
     [boi]
   );
 
+  // 🔹 Pesos
   const addPeso = useCallback(async () => {
     if (!boi) return;
     const now = new Date();
     const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
       2,
       "0"
-    )}`;
+    )}-${String(now.getDate()).padStart(2, "0")}`;
     const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
     await salvar({ pesosMedidos: novo });
   }, [boi, salvar]);
@@ -91,13 +97,14 @@ export function useBoiDetail(id: number | null) {
     [boi, salvar]
   );
 
+  // 🔹 Circunferência
   const addCirc = useCallback(async () => {
     if (!boi) return;
     const now = new Date();
     const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
       2,
       "0"
-    )}`;
+    )}-${String(now.getDate()).padStart(2, "0")}`;
     const novo = [
       ...(boi.animal.circunferenciaEscrotal ?? []),
       { mes, valor: 0 },

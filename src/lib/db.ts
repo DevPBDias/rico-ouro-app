@@ -14,6 +14,13 @@ export interface AnimalData {
     f?: string;
     corNascimento?: string;
     pesosMedidos?: { mes: string; valor: number }[];
+    ganhoDiario?: {
+      initialDate: string;
+      endDate: string;
+      days: number;
+      totalGain: number;
+      dailyGain: number;
+    }[];
     circunferenciaEscrotal?: { mes: string; valor: number }[];
     vacinas?: { nome: string; data: string }[];
     status?: string;

@@ -4,7 +4,6 @@ import { AddPesoModal } from "@/components/AddPesoModal";
 import Header from "@/components/layout/Header";
 import { WeightList } from "@/components/lists/WeightList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
-import { getTodayFormatted } from "@/utils/formatDates";
 import { useParams } from "next/navigation";
 
 const WeightAnimalPage = () => {
@@ -17,9 +16,8 @@ const WeightAnimalPage = () => {
   if (loading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
-  const handleAddPeso = (valor: number) => {
-    const dataAtual = getTodayFormatted();
-    savePesoComMes(dataAtual, valor);
+  const handleAddPeso = (date: string, valor: number) => {
+    savePesoComMes(date, valor);
   };
 
   return (
@@ -28,13 +26,10 @@ const WeightAnimalPage = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 px-4">
         <div className="space-y-3">
-          <h2 className="font-semibold text-xl text-[#1162AE] flex justify-between items-center">
-            Pesos Medidos
-            <AddPesoModal
-              type="peso"
-              onAddPeso={(_, valor) => handleAddPeso(valor)}
-            />
-          </h2>
+          <AddPesoModal
+            type="peso"
+            onAddPeso={(date, valor) => handleAddPeso(date, valor)}
+          />
 
           <WeightList
             deletePeso={deletePeso}

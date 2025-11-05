@@ -1,6 +1,14 @@
 "use client";
 
-import { CartesianGrid, LabelList, Line, LineChart } from "recharts";
+import {
+  CartesianGrid,
+  LabelList,
+  Line,
+  LineChart,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -26,6 +34,7 @@ export function ChartLineLabel({
   data,
   colorVar = "--chart-1",
 }: Props) {
+  // 🔹 Ordena as datas caso estejam em formato "YYYY-MM-DD" (ISO)
   const sortedData = [...data].sort((a, b) => {
     if (a.mes.includes("-") && b.mes.includes("-")) {
       return a.mes.localeCompare(b.mes);
@@ -33,8 +42,22 @@ export function ChartLineLabel({
     return 0;
   });
 
+  // 🔹 Função para formatar para MM/YY
+  const formatToMonthYear = (dataString: string) => {
+    // Suporta tanto "DD/MM/YYYY" quanto "YYYY-MM-DD"
+    if (dataString.includes("/")) {
+      const [dia, mes, ano] = dataString.split("/");
+      return `${mes}/${ano.slice(-2)}`;
+    } else if (dataString.includes("-")) {
+      const [ano, mes] = dataString.split("-");
+      return `${mes}/${ano.slice(-2)}`;
+    }
+    return dataString;
+  };
+
+  // 🔹 Mapeia dados do gráfico
   const chartData = sortedData.map((d) => ({
-    month: d.mes,
+    month: formatToMonthYear(d.mes),
     label: FormatData(d.mes),
     value: d.valor,
   }));
@@ -49,48 +72,61 @@ export function ChartLineLabel({
   const unit = title.toLowerCase().includes("peso") ? "kg" : "cm";
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-[#1162AE]">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
+
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-40 w-full">
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              top: 30,
-              left: 20,
-              right: 20,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <Line
-              dataKey="value"
-              type="monotone"
-              stroke={chartConfig.value.color}
-              strokeWidth={2}
-              dot={{
-                fill: chartConfig.value.color,
-                strokeWidth: 2,
-                r: 4,
-              }}
-              activeDot={{
-                r: 6,
-              }}
+        <ChartContainer config={chartConfig} className="h-56 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              accessibilityLayer
+              data={chartData}
+              margin={{ top: 30, left: 10, right: 20, bottom: 20 }}
             >
-              <LabelList
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
-                dataKey="value"
-                formatter={(value: number) => `${value}${unit}`}
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+
+              {/* 🔹 Eixo X formatado como MM/YY */}
+              <XAxis
+                dataKey="month"
+                tick={{ fontSize: 12, fill: "#555" }}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
               />
-            </Line>
-          </LineChart>
+
+              {/* 🔹 Tooltip simples */}
+              <Tooltip
+                formatter={(value: number) => `${value}${unit}`}
+                labelFormatter={(label) => `Data: ${label}`}
+              />
+
+              {/* 🔹 Linha principal */}
+              <Line
+                dataKey="value"
+                type="monotone"
+                stroke={chartConfig.value.color}
+                strokeWidth={2}
+                dot={{
+                  fill: chartConfig.value.color,
+                  strokeWidth: 2,
+                  r: 4,
+                }}
+                activeDot={{ r: 6 }}
+              >
+                <LabelList
+                  position="top"
+                  offset={10}
+                  className="fill-foreground"
+                  fontSize={12}
+                  dataKey="value"
+                  formatter={(value: number) => `${value}${unit}`}
+                />
+              </Line>
+            </LineChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>
