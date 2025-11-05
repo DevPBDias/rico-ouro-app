@@ -21,10 +21,10 @@ export interface AnimalData {
       totalGain: number;
       dailyGain: number;
     }[];
-    circunferenciaEscrotal?: { mes: string; valor: number }[];
-    vacinas?: { nome: string; data: string }[];
     status?: string;
     farm?: string;
+    circunferenciaEscrotal?: { mes: string; valor: number }[];
+    vacinas?: { nome: string; data: string }[];
     updatedAt?: string;
   };
   pai: {

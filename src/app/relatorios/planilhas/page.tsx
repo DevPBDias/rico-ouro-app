@@ -8,8 +8,6 @@ import { useAnimalDB } from "@/hooks/useAnimalDB";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 
-// Assumindo que a estrutura de dados seja similar a esta, com base no seu outro código.
-// Ajuste conforme a sua estrutura real.
 interface AnimalData {
   animal: {
     rgn?: string;
@@ -23,8 +21,17 @@ interface AnimalData {
     p?: string | number;
     f?: string | number;
     pesosMedidos?: { valor: number; mes: string }[];
+    ganhoDiario?: {
+      initialDate: string;
+      endDate: string;
+      days: number;
+      totalGain: number;
+      dailyGain: number;
+    }[];
     vacinas?: { nome: string; data: string }[];
     circunferenciaEscrotal?: { valor: number; mes: string }[];
+    status?: string;
+    farm?: string;
   };
   pai?: {
     nome?: string;
@@ -43,7 +50,6 @@ export default function ExcelExport() {
   const router = useRouter();
 
   const handleExportFile = async () => {
-    // >>> MELHORIA 1: Validação de dados <<<
     if (!dados || dados.length === 0) {
       alert("Não há dados para exportar.");
       return;
@@ -51,8 +57,6 @@ export default function ExcelExport() {
 
     setIsExporting(true);
 
-    // >>> MELHORIA 2: Pré-processamento e achatamento dos dados <<<
-    // Transforma a estrutura de dados complexa em uma lista de objetos simples.
     const flattenedData = dados.map((item: AnimalData) => ({
       "Nome Animal":
         item.animal?.nome ||
@@ -70,16 +74,22 @@ export default function ExcelExport() {
       Pai: item.pai?.nome || "-",
       "Mãe Série/RGD": item.mae?.serieRGD || "-",
       "Mãe RGN": item.mae?.rgn || "-",
-      "Pesos Medidos":
+      Pesos:
         item.animal?.pesosMedidos
           ?.map((p) => `${p.valor}kg (${p.mes})`)
           .join("; ") || "-",
       Vacinas:
         item.animal?.vacinas?.map((v) => `${v.nome} (${v.data})`).join("; ") ||
         "-",
-      "Circunferência Escrotal":
+      CE:
         item.animal?.circunferenciaEscrotal
           ?.map((c) => `${c.valor}cm (${c.mes})`)
+          .join("; ") || "-",
+      Status: item.animal?.status || "-",
+      Fazenda: item.animal?.farm || "-",
+      GMD:
+        item.animal?.ganhoDiario
+          ?.map((v) => `${v.dailyGain} (${v.days})`)
           .join("; ") || "-",
     }));
 
@@ -87,11 +97,9 @@ export default function ExcelExport() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Animais");
 
-    // Adiciona auto-filtro e ajusta a largura das colunas
     const range = XLSX.utils.decode_range(worksheet["!ref"]!);
     worksheet["!autofilter"] = { ref: XLSX.utils.encode_range(range) };
 
-    // Calcula a largura ideal para cada coluna
     const colWidths = Object.keys(flattenedData[0]).map((key) => {
       const maxLength = Math.max(
         key.length,
@@ -99,7 +107,7 @@ export default function ExcelExport() {
           (row) => String(row[key as keyof typeof row] || "").length
         )
       );
-      return { wch: maxLength + 2 }; // Adiciona um padding
+      return { wch: maxLength + 2 };
     });
     worksheet["!cols"] = colWidths;
 
@@ -108,7 +116,6 @@ export default function ExcelExport() {
       date.getMonth() + 1
     ).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}.xlsx`;
 
-    // A função writeFile é síncrona, não precisa de 'await'.
     XLSX.writeFile(workbook, fileName);
 
     setExportedFileName(fileName);
@@ -156,7 +163,6 @@ export default function ExcelExport() {
 
           <Button
             onClick={handleExportFile}
-            // >>> MELHORIA 3: Desabilitar botão se não houver dados <<<
             disabled={!dados || dados.length === 0 || isExporting}
             className="w-full rounded-lg bg-primary py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -190,7 +196,6 @@ export default function ExcelExport() {
                 </span>{" "}
                 foi exportado com sucesso!
               </p>
-              {/* >>> MELHORIA 4: UI dos botões do modal <<< */}
               <div className="grid w-full grid-cols-2 gap-4 pt-4">
                 <Button variant="outline" onClick={handleCloseModal}>
                   Fechar

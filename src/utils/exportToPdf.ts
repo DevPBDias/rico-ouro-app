@@ -19,6 +19,9 @@ export interface SelectedReportFields {
   nomePai: boolean;
   maeSerieRGD: boolean;
   maeRGN: boolean;
+  status: boolean;
+  farm: boolean;
+  ganhoDiario: boolean;
 }
 
 export function generateAnimalReportPDF(
@@ -30,11 +33,9 @@ export function generateAnimalReportPDF(
     return;
   }
 
-  // Inicializa o PDF em modo paisagem
   const doc = new jsPDF({ orientation: "landscape" });
 
-  // Cabeçalho principal
-  doc.setFillColor(25, 98, 174); // Azul (#1162AE)
+  doc.setFillColor(25, 98, 174);
   doc.rect(0, 0, doc.internal.pageSize.width, 30, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
@@ -49,7 +50,6 @@ export function generateAnimalReportPDF(
     { align: "center" }
   );
 
-  // Mapeia os campos selecionados para colunas da tabela
   const columns: { header: string; key: string }[] = [];
 
   if (selectedFields.nomeAnimal)
@@ -71,13 +71,28 @@ export function generateAnimalReportPDF(
     columns.push({ header: "Mãe Série/RGD", key: "maeSerieRGD" });
   if (selectedFields.maeRGN) columns.push({ header: "Mãe RGN", key: "maeRGN" });
   if (selectedFields.pesosMedidos)
-    columns.push({ header: "Pesos Medidos", key: "pesosMedidos" });
+    columns.push({ header: "Pesos", key: "pesosMedidos" });
   if (selectedFields.vacinas)
     columns.push({ header: "Vacinas", key: "vacinas" });
   if (selectedFields.circunferenciaEscrotal)
     columns.push({
-      header: "Circunf. Escrotal",
+      header: "CE",
       key: "circunferenciaEscrotal",
+    });
+  if (selectedFields.farm)
+    columns.push({
+      header: "Fazenda",
+      key: "farm",
+    });
+  if (selectedFields.status)
+    columns.push({
+      header: "Status",
+      key: "status",
+    });
+  if (selectedFields.ganhoDiario)
+    columns.push({
+      header: "GMD",
+      key: "ganhoDiario",
     });
 
   const sortedData = [...data].sort((a, b) => {
@@ -86,7 +101,6 @@ export function generateAnimalReportPDF(
     return rgnB - rgnA;
   });
 
-  // Monta os dados de cada linha (animal) usando os dados ordenados
   const body = sortedData.map((animal) => {
     const nome =
       animal.animal.nome?.trim() ||
@@ -117,10 +131,15 @@ export function generateAnimalReportPDF(
         animal.animal.circunferenciaEscrotal
           ?.map((c) => `${c.valor}cm (${c.mes})`)
           .join(", ") || "-",
+      status: animal.animal?.status || "-",
+      farm: animal.animal?.farm || "-",
+      ganhoDiario:
+        animal.animal?.ganhoDiario
+          ?.map((v) => `${v.dailyGain} (${v.days})`)
+          .join("; ") || "-",
     };
   });
 
-  // Define estilos e tabela principal
   autoTable(doc, {
     startY: 40,
     head: [columns.map((col) => col.header)],
@@ -154,7 +173,6 @@ export function generateAnimalReportPDF(
     margin: { top: 40, left: 10, right: 10 },
   });
 
-  // Rodapé com paginação
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);

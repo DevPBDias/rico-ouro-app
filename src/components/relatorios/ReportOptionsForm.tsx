@@ -18,7 +18,7 @@ export function ReportOptionsForm({
   onCheckboxChange,
 }: ReportOptionsFormProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 grid grid-cols-2 gap-2">
       {options.map((option) => (
         <ReportCheckboxItem
           key={option.key}

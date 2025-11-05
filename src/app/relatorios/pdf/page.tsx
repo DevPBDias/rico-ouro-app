@@ -23,21 +23,24 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
 const REPORT_OPTIONS: ReportOption[] = [
-  { key: "nomeAnimal", label: "Nome do Animal" },
+  { key: "nomeAnimal", label: "Nome Animal" },
   { key: "rgn", label: "RGN" },
   { key: "serieRGD", label: "Série RGD" },
   { key: "sexo", label: "Sexo" },
-  { key: "dataNascimento", label: "Data de Nascimento" },
-  { key: "corNascimento", label: "Cor de Nascimento" },
+  { key: "dataNascimento", label: "Data Nascimento" },
+  { key: "corNascimento", label: "Cor Nascimento" },
   { key: "iabcgz", label: "iABCGz" },
   { key: "deca", label: "DECA" },
   { key: "p", label: "P%" },
   { key: "f", label: "F%" },
-  { key: "pesosMedidos", label: "Pesos Medidos" },
-  { key: "circunferenciaEscrotal", label: "Circunferência Escrotal" },
+  { key: "pesosMedidos", label: "Pesos" },
+  { key: "circunferenciaEscrotal", label: "Ce" },
+  { key: "status", label: "Status" },
+  { key: "farm", label: "Fazenda" },
+  { key: "ganhoDiario", label: "GMD" },
   { key: "vacinas", label: "Vacinas" },
-  { key: "nomePai", label: "Nome do Pai" },
-  { key: "maeSerieRGD", label: "Mãe - Série RGD" },
+  { key: "nomePai", label: "Nome Pai" },
+  { key: "maeSerieRGD", label: "Mãe - RGD" },
   { key: "maeRGN", label: "Mãe - RGN" },
 ];
 
@@ -72,6 +75,9 @@ export default function RelatoriosPage() {
     nomePai: false,
     maeSerieRGD: false,
     maeRGN: false,
+    status: false,
+    farm: false,
+    ganhoDiario: false,
   });
 
   const handleCheckboxChange = (key: string) => {
@@ -136,8 +142,8 @@ export default function RelatoriosPage() {
       <Header title="RELATÓRIO - pdf" />
 
       <div className="p-6">
-        <h2 className="text-[#1976D2] text-lg font-semibold mb-4">
-          Incluir no relatório:
+        <h2 className="text-[#1976D2] text-base font-bold mb-4 uppercase">
+          Incluir:
         </h2>
 
         <ReportOptionsForm
