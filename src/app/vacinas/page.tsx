@@ -31,7 +31,6 @@ const VaccinesPage = () => {
     data: "",
   });
 
-  // Prepare RGN options for the dropdown
   const rgnOptions = useMemo(() => {
     return dados
       .map((animal) => ({
@@ -40,10 +39,9 @@ const VaccinesPage = () => {
           `${animal.animal.serieRGD || ""} ${animal.animal.rgn || ""}`.trim(),
         value: animal.animal.rgn || "",
       }))
-      .filter((option) => option.value); // Filter out options without RGN
+      .filter((option) => option.value);
   }, [dados]);
 
-  // Filter options based on search term
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return rgnOptions;
 
@@ -54,7 +52,6 @@ const VaccinesPage = () => {
     );
   }, [rgnOptions, searchTerm]);
 
-  // Update handleSubmit to clear search term
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -77,7 +74,6 @@ const VaccinesPage = () => {
     }
   };
 
-  // Update handleCloseModal to also clear search term
   const handleCloseModal = () => {
     setShowModal(false);
     setFormData({
@@ -100,9 +96,9 @@ const VaccinesPage = () => {
         <div className="flex flex-col justify-start items-start w-full gap-2">
           <label
             htmlFor="sexo"
-            className="text-primary font-medium w-full text-left"
+            className="text-primary font-bold text-sm uppercase w-full text-left"
           >
-            Tipo da vacina:
+            Vacina:
           </label>
           <Select
             value={formData.vacina}
@@ -133,7 +129,7 @@ const VaccinesPage = () => {
         <div className="flex flex-col justify-start items-start w-full gap-2 relative">
           <label
             htmlFor="rgn"
-            className="text-primary font-medium w-full text-left"
+            className="text-primary font-bold text-sm uppercase w-full text-left"
           >
             Animal vacinado (RGN):
           </label>
@@ -180,7 +176,7 @@ const VaccinesPage = () => {
         <div className="flex flex-col justify-start items-start w-full gap-2">
           <label
             htmlFor="date"
-            className="text-primary font-medium w-full text-left"
+            className="text-primary font-bold text-sm uppercase w-full text-left"
           >
             Dia da vacina:
           </label>
@@ -200,7 +196,7 @@ const VaccinesPage = () => {
         <Button
           variant="default"
           type="submit"
-          className="w-full text-base font-semibold py-5 rounded-lg mt-8 "
+          className="w-full text-sm font-semibold py-5 rounded-lg mt-8 uppercase "
         >
           Registrar vacina
         </Button>
@@ -218,22 +214,22 @@ const VaccinesPage = () => {
                   className="w-16 h-16 text-green-500"
                   strokeWidth={2.5}
                 />
-                <p className="text-primary text-xl font-semibold text-center">
+                <p className="text-primary text-base uppercase font-bold text-center">
                   Cadastrado com sucesso!
                 </p>
                 <div className="grid grid-cols-2 gap-3 w-full">
                   <Button
                     variant="outline"
                     onClick={handleCloseModal}
-                    className="w-full border-2 border-primary text-primary font-semibold py-3 rounded-lg hover:bg-primary/5 transition-colors"
+                    className="w-full border-2 border-primary text-sm uppercase text-primary font-bold py-3 rounded-lg hover:bg-primary/5 transition-colors"
                   >
-                    Continuar cadastro
+                    Continuar
                   </Button>
                   <Button
                     onClick={() => router.push("/home")}
-                    className="w-full border-2 border-primary text-white font-semibold py-3 rounded-lg hover:bg-primary/5 transition-colors"
+                    className="w-full border-2 border-primary text-sm uppercase text-white font-semibold py-3 rounded-lg hover:bg-primary/5 transition-colors"
                   >
-                    Pagina inicial
+                    Início
                   </Button>
                 </div>
               </div>

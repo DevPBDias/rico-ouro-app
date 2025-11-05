@@ -41,7 +41,7 @@ const SearchCsvFile = () => {
       <main className="mx-auto max-w-md px-4 py-8">
         <div className="space-y-6">
           <div className="space-y-4">
-            <label className="text-xl text-[#1162AE] font-medium">
+            <label className="text-base text-primary uppercase font-bold">
               Importar arquivo:
             </label>
 
@@ -55,7 +55,7 @@ const SearchCsvFile = () => {
 
             <Button
               onClick={handleChooseFile}
-              className="w-full rounded-lg bg-[#1162AE] py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+              className="w-full rounded-lg uppercase bg-[#1162AE] py-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Escolher arquivo
             </Button>
@@ -75,7 +75,7 @@ const SearchCsvFile = () => {
           <Button
             onClick={handleProcessFile}
             disabled={!selectedFile || isProcessing}
-            className="w-full rounded-lg bg-[#1162AE] py-6 text-base font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
+            className="w-full rounded-lg bg-[#1162AE] py-6 text-sm uppercase font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
           >
             {isProcessing ? "Processando..." : "Processar arquivo"}
           </Button>

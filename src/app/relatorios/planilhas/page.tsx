@@ -135,7 +135,7 @@ export default function ExcelExport() {
       <main className="mx-auto max-w-md px-6 py-8">
         <div className="space-y-6">
           <div className="space-y-4">
-            <label className="text-xl font-medium text-primary">
+            <label className="text-base font-bold uppercase text-primary">
               Exportar arquivo:
             </label>
 

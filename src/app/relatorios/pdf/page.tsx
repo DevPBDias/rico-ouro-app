@@ -142,7 +142,7 @@ export default function RelatoriosPage() {
       <Header title="RELATÓRIO - pdf" />
 
       <div className="p-6">
-        <h2 className="text-[#1976D2] text-base font-bold mb-4 uppercase">
+        <h2 className="font-bold text-base text-primary mb-4 uppercase">
           Incluir:
         </h2>
 
