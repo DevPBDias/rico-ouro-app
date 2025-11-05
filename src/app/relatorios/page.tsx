@@ -6,7 +6,11 @@ const ReportPage = () => {
   return (
     <main>
       <Header title="Relatórios" />
-      <RedirectButtons data={exportLinks} />
+      <RedirectButtons
+        data={exportLinks}
+        className="grid-cols-2"
+        btnHeight="py-8"
+      />
     </main>
   );
 };

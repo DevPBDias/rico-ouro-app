@@ -5,8 +5,12 @@ import globalDataLinks from "@/constants/globalDataLinks";
 const ReportPage = () => {
   return (
     <main>
-      <Header title="Relatórios" />
-      <RedirectButtons data={globalDataLinks} />
+      <Header title="Dados gerais" />
+      <RedirectButtons
+        data={globalDataLinks}
+        className="grid-cols-2"
+        btnHeight="py-8"
+      />
     </main>
   );
 };
