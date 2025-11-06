@@ -95,7 +95,7 @@ const VaccinesPage = () => {
         )}
         <div className="flex flex-col justify-start items-start w-full gap-2">
           <label
-            htmlFor="sexo"
+            htmlFor="vacina"
             className="text-primary font-bold text-sm uppercase w-full text-left"
           >
             Vacina:

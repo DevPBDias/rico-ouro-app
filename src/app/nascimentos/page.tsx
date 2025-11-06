@@ -89,7 +89,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="rgn"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               RGN:
             </label>
@@ -109,7 +109,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="data"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               Data:
             </label>
@@ -131,7 +131,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="peso"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               Peso:
             </label>
@@ -152,7 +152,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="peso"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               CE:
             </label>
@@ -173,9 +173,9 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="mae"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
-              Mãe:
+              Mãe RGN:
             </label>
             <Input
               type="text"
@@ -193,7 +193,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="mae"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               Pai:
             </label>
@@ -213,7 +213,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="cor"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               Cor:
             </label>
@@ -242,7 +242,7 @@ export default function NascimentosPage() {
           <div className="flex items-center gap-4">
             <label
               htmlFor="sexo"
-              className="text-primary font-medium w-16 text-left"
+              className="text-primary uppercase text-sm font-bold w-24 text-left"
             >
               Sexo:
             </label>
@@ -272,7 +272,7 @@ export default function NascimentosPage() {
           <Button
             variant="default"
             type="submit"
-            className="w-full text-base font-semibold py-5 rounded-lg mt-8 "
+            className="w-full text-sm uppercase font-semibold py-5 rounded-lg mt-8 "
           >
             Cadastrar
           </Button>
@@ -289,7 +289,7 @@ export default function NascimentosPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center px-3">
             <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm flex flex-col items-center gap-6">
               <CheckCircle2
-                className="w-16 h-16 text-green-500"
+                className="w-24 h-16 text-green-500"
                 strokeWidth={2.5}
               />
               <p className="text-primary text-xl font-semibold text-center">
