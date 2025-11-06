@@ -20,39 +20,64 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
         continue;
       }
 
-      // Verifica se já existe um registro com o mesmo RGN
-      const existente = await db.animalData
-        .where("animal.rgn")
-        .equals(item.animal.rgn)
-        .first();
+      let existente: AnimalData | undefined;
+
+      // Se tem ID, busca diretamente por ID (caso de edição pelo modal)
+      if (item.id) {
+        existente = await db.animalData.get(item.id);
+      }
+
+      // Se não encontrou por ID, busca por RGN (caso de importação do Excel)
+      if (!existente) {
+        existente = await db.animalData
+          .where("animal.rgn")
+          .equals(item.animal.rgn)
+          .first();
+      }
 
       if (existente) {
-        // Atualiza o registro existente, preservando dados importantes
+        // Atualiza o registro existente
+        // Se o item tem arrays definidos (vem do modal), usa eles
+        // Se não tem (vem do Excel), preserva os existentes
+        const temArraysNoItem = 
+          item.animal.pesosMedidos !== undefined ||
+          item.animal.circunferenciaEscrotal !== undefined ||
+          item.animal.ganhoDiario !== undefined;
+
         const merged: AnimalData = {
           ...existente,
           ...item,
           animal: {
             ...existente.animal,
             ...item.animal,
-            // Preserva dados que podem ter sido adicionados manualmente
-            pesosMedidos: existente.animal.pesosMedidos ?? [],
-            circunferenciaEscrotal:
-              existente.animal.circunferenciaEscrotal ?? [],
+            // Preserva arrays apenas se não vierem no item (importação do Excel)
+            // Se vierem no item (edição do modal), usa os do item
+            pesosMedidos: temArraysNoItem && item.animal.pesosMedidos !== undefined
+              ? item.animal.pesosMedidos
+              : existente.animal.pesosMedidos ?? [],
+            circunferenciaEscrotal: temArraysNoItem && item.animal.circunferenciaEscrotal !== undefined
+              ? item.animal.circunferenciaEscrotal
+              : existente.animal.circunferenciaEscrotal ?? [],
+            ganhoDiario: temArraysNoItem && item.animal.ganhoDiario !== undefined
+              ? item.animal.ganhoDiario
+              : existente.animal.ganhoDiario ?? [],
             updatedAt: new Date().toISOString(),
           },
         };
 
         await db.animalData.put({ ...merged, id: existente.id! });
         atualizados++;
-        console.log(`🔄 Atualizado: RGN ${item.animal.rgn}`);
+        console.log(`🔄 Atualizado: RGN ${item.animal.rgn} (ID: ${existente.id})`);
       } else {
-        // Insere novo registro
+        // Insere novo registro (importação do Excel - não tem arrays)
         const toInsert: AnimalData = {
           ...item,
           animal: {
             ...item.animal,
-            pesosMedidos: [],
-            circunferenciaEscrotal: [],
+            // Inicializa arrays vazios para novos registros
+            pesosMedidos: item.animal.pesosMedidos ?? [],
+            circunferenciaEscrotal: item.animal.circunferenciaEscrotal ?? [],
+            ganhoDiario: item.animal.ganhoDiario ?? [],
             updatedAt: new Date().toISOString(),
           },
         };

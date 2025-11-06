@@ -60,7 +60,6 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
           return obj;
         })
         .filter((item) => {
-          // Filtra apenas registros que têm RGN válido (chave única)
           return item.animal.rgn && item.animal.rgn.toString().trim() !== "";
         });
 

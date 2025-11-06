@@ -28,12 +28,21 @@ const SearchCsvFile = () => {
   const handleProcessFile = async () => {
     if (!selectedFile) return;
 
-    const extractedData: AnimalData[] = await extractDataFromExcel(
-      selectedFile
-    );
-    await salvarOuAtualizar(extractedData);
-    setIsProcessing(false);
-    setShowSuccessModal(true);
+    setIsProcessing(true);
+    try {
+      const extractedData: AnimalData[] = await extractDataFromExcel(
+        selectedFile
+      );
+
+      await salvarOuAtualizar(extractedData);
+
+      setIsProcessing(false);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Erro ao processar arquivo:", error);
+      setIsProcessing(false);
+      alert("Erro ao processar o arquivo. Tente novamente.");
+    }
   };
 
   return (

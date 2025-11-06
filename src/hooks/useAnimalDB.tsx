@@ -101,7 +101,6 @@ export function useAnimalDB() {
     await carregar();
   };
 
-  // Funções auxiliares
   const validarAnimal = (animal: AnimalData): boolean => {
     if (!animal.animal.rgn) {
       console.warn("⚠️ RGN é obrigatório");
@@ -137,7 +136,6 @@ export function useAnimalDB() {
     animal: AnimalData,
     vacina: Vacina
   ): Promise<void> => {
-    // Verificar se a vacina já existe para evitar duplicação
     const vacinaJaExiste = animal.animal.vacinas?.some(
       (v) => v.nome === vacina.nome && v.data === vacina.data
     );
@@ -158,7 +156,6 @@ export function useAnimalDB() {
         },
       });
 
-      // Atualizar o estado local sem fazer nova consulta ao banco
       setDados((prevDados) =>
         prevDados.map((item) =>
           item.id === animal.id
