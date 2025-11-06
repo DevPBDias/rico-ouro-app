@@ -12,13 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import IdentificacaoSection from "./IdentifySection";
 import DadosBasicosSection from "./BasicSection";
 import DadosGeneticosSection from "./GeneticSection";
 import GenealogiaSection from "./PedigreeSection";
 import VacinasSection from "./VaccineSection";
-import { FormatData } from "@/utils/formatDates";
 
 interface EditAnimalModalProps {
   open: boolean;
@@ -47,12 +45,19 @@ export function EditAnimalModal({
   const handleChange = (path: string, value: string) => {
     setFormData((prev) => {
       const keys = path.split(".");
-      const updated: any = { ...prev };
-      let current = updated;
+
+      const updated = structuredClone(prev);
+
+      let current = updated as unknown as Record<string, unknown>;
+
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
+        const key = keys[i];
+        if (typeof current[key] !== "object" || current[key] === null) {
+          current[key] = {};
+        }
+        current = current[key] as Record<string, unknown>;
       }
+
       current[keys[keys.length - 1]] = value;
       return updated;
     });

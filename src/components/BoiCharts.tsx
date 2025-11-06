@@ -34,7 +34,6 @@ export function ChartLineLabel({
   data,
   colorVar = "--chart-1",
 }: Props) {
-  // 🔹 Ordena as datas caso estejam em formato "YYYY-MM-DD" (ISO)
   const sortedData = [...data].sort((a, b) => {
     if (a.mes.includes("-") && b.mes.includes("-")) {
       return a.mes.localeCompare(b.mes);
@@ -42,11 +41,9 @@ export function ChartLineLabel({
     return 0;
   });
 
-  // 🔹 Função para formatar para MM/YY
   const formatToMonthYear = (dataString: string) => {
-    // Suporta tanto "DD/MM/YYYY" quanto "YYYY-MM-DD"
     if (dataString.includes("/")) {
-      const [dia, mes, ano] = dataString.split("/");
+      const [mes, ano] = dataString.split("/");
       return `${mes}/${ano.slice(-2)}`;
     } else if (dataString.includes("-")) {
       const [ano, mes] = dataString.split("-");
@@ -55,7 +52,6 @@ export function ChartLineLabel({
     return dataString;
   };
 
-  // 🔹 Mapeia dados do gráfico
   const chartData = sortedData.map((d) => ({
     month: formatToMonthYear(d.mes),
     label: FormatData(d.mes),

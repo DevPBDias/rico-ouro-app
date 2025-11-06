@@ -15,6 +15,15 @@ const IdentificacaoSection = ({ formData, handleChange, isSaving }: Props) => {
     { label: "Nome", key: "animal.nome", colSpan: 2 },
   ];
 
+  const getNestedValue = (obj: unknown, path: string): string => {
+    return path.split(".").reduce<unknown>((acc, key) => {
+      if (acc && typeof acc === "object" && key in acc) {
+        return (acc as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, obj) as string;
+  };
+
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-2">
@@ -35,9 +44,7 @@ const IdentificacaoSection = ({ formData, handleChange, isSaving }: Props) => {
               {f.required && <span className="text-red-500">*</span>}
             </Label>
             <Input
-              value={
-                f.key.split(".").reduce((o: any, k) => o?.[k], formData) || ""
-              }
+              value={getNestedValue(formData, f.key) || ""}
               onChange={(e) => handleChange(f.key, e.target.value)}
               disabled={isSaving}
               className="border-[#1162AE]/30 focus-visible:ring-2 focus-visible:ring-[#1162AE] h-9"

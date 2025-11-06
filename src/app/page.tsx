@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import openingImg from "@/assets/images/opening-page.png";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ export default function OpeningPage() {
           src={openingImg}
           alt="Cow App Logo"
           fill
-          className="object-cover w-full h-full"
+          className="w-full h-full"
           priority
         />
       </motion.main>

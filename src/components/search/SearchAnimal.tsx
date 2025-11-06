@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { useCallback, useEffect, useState } from "react";
@@ -23,7 +23,6 @@ function SearchAnimal() {
 
       setIsSearching(true);
 
-      // Busca por RGN exato ou parcial
       const results = dados.filter((animal) => {
         const rgn = animal.animal.rgn?.toString().toLowerCase() || "";
         const serieRGD = animal.animal.serieRGD?.toString().toLowerCase() || "";
