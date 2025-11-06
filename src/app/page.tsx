@@ -1,29 +1,45 @@
 "use client";
 
 import Image from "next/image";
-import OpeningImg from "@/assets/images/Opening.png";
-import OpeningMotion from "@/components/motions/OpeningMotion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import openingImg from "@/assets/images/opening-page.png";
+import { useRouter } from "next/navigation";
 
 export default function OpeningPage() {
+  const router = useRouter();
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      window.location.href = "/home";
-    }, 3500);
+      setTimeout(() => router.push("/home"), 1200);
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
-    <main className="relative top-0 left-0 h-dvh w-full overflow-hidden">
-      <OpeningMotion />
-      <Image
-        src={OpeningImg}
-        alt="Cow App Logo"
-        fill
-        className="object-cover"
-        priority
-      />
-    </main>
+    <AnimatePresence>
+      <motion.main
+        key="opening"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 1 }}
+        exit={{
+          opacity: 0,
+        }}
+        transition={{
+          duration: 1.2,
+          ease: "easeInOut",
+        }}
+        className="relative top-0 left-0 h-dvh w-full overflow-hidden"
+      >
+        <Image
+          src={openingImg}
+          alt="Cow App Logo"
+          fill
+          className="object-cover w-full h-full"
+          priority
+        />
+      </motion.main>
+    </AnimatePresence>
   );
 }

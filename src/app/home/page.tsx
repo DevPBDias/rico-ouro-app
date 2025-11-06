@@ -3,40 +3,40 @@
 import Image from "next/image";
 import RedirectButtons from "@/components/buttons/RedirectButtons";
 import { homeLinks } from "@/constants/HomeLinks";
-import logoIndi from "@/assets/icons/Logo Jacir.png";
-import logoABCZ from "@/assets/icons/ABCZ.png";
-import logoPMGZ from "@/assets/icons/PMGZ.png";
-import HomeCow from "@/assets/images/Opening.png";
+import homePage from "@/assets/images/home-page.png";
+import { motion } from "framer-motion";
 
 const HomePage = () => {
   return (
-    <main className="relative h-dvh w-full overflow-hidde bg-blue-500">
-      <div className="absolute z-10 flex flex-row items-center top-6 left-0 w-full justify-between px-6">
-        <Image src={logoPMGZ} alt="Logo PMGZ" width={40} height={44} priority />
-        <Image
-          src={logoIndi}
-          alt="Logo Jacir"
-          width={40}
-          height={44}
-          priority
-        />
-        <Image src={logoABCZ} alt="Logo ABCZ" width={40} height={44} priority />
-      </div>
-
-      <picture className="w-full h-dvh">
-        <Image
-          src={HomeCow}
-          alt="Cow App Logo"
-          className="h-full w-full object-cover"
-          priority
-        />
-      </picture>
+    <motion.main
+      key="home"
+      initial={{
+        opacity: 0,
+      }}
+      animate={{
+        opacity: 1,
+      }}
+      transition={{
+        duration: 1.2,
+        ease: "easeInOut",
+      }}
+      className="relative h-dvh w-full overflow-hidden"
+    >
+      <Image
+        src={homePage}
+        alt="Cow App Logo"
+        className="h-full w-full"
+        priority
+        fill
+      />
 
       <RedirectButtons
         data={homeLinks}
-        className="absolute bottom-0 left-0 z-20 grid-cols-3 h-[35dvh]"
+        className="absolute bottom-0 left-0 z-20 grid-cols-2 gap-4 h-[70dvh] py-40"
+        colorBg="white"
+        textColor="text-[#1162AE]"
       />
-    </main>
+    </motion.main>
   );
 };
 

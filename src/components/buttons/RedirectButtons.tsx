@@ -5,12 +5,16 @@ interface RedirectButtonsProps {
   data: Links[];
   className?: string;
   btnHeight?: string;
+  colorBg?: string;
+  textColor?: string;
 }
 
 const RedirectButtons = ({
   data,
   className,
   btnHeight,
+  colorBg = "#1162AE",
+  textColor = "text-white",
 }: RedirectButtonsProps) => {
   return (
     <section
@@ -20,7 +24,7 @@ const RedirectButtons = ({
         <Link
           key={link.id}
           href={link.href}
-          className={`bg-[#1162AE] text-white w-full px-2 ${btnHeight} rounded-xl flex flex-col justify-center items-center font-medium text-lg shadow-lg gap-2 `}
+          className={`bg-${colorBg} ${textColor} w-full px-2 ${btnHeight} rounded-xl flex flex-col justify-center items-center font-medium text-lg shadow-lg gap-2 `}
         >
           {link.icon && <link.icon className="w-5 h-5" />}
           <p className="font-medium w-full text-center text-xs uppercase px-2">

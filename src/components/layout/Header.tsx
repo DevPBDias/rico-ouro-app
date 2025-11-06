@@ -2,7 +2,7 @@
 import { ArrowLeftCircleIcon, HomeIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import logo from "@/assets/icons/Logo Jacir.png";
+import logo from "@/assets/icons/logo-hor-indiouro.png";
 
 interface HeaderProps {
   title: string;
@@ -14,7 +14,7 @@ function Header({ title }: HeaderProps) {
   return (
     <header className="w-full p-4 bg-[#1162AE] text-white flex flex-col items-center gap-5">
       <div className="flex items-center justify-center">
-        <Image src={logo} alt="Logo" width={32} height={32} />
+        <Image src={logo} alt="Logo" width={113} height={36} />
       </div>
       <nav className="flex items-center justify-between w-full py-2">
         <ArrowLeftCircleIcon
