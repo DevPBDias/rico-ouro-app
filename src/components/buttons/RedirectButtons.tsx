@@ -13,7 +13,7 @@ const RedirectButtons = ({
   data,
   className,
   btnHeight,
-  colorBg = "#1162AE",
+  colorBg = "[#1162AE]",
   textColor = "text-white",
 }: RedirectButtonsProps) => {
   return (
