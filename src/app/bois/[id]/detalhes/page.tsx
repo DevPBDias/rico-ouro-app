@@ -1,14 +1,58 @@
 "use client";
 
 import Header from "@/components/layout/Header";
+import { EditAnimalModal } from "@/components/modals/edit-animal/EditAnimalModal";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
+import { AnimalData } from "@/lib/db";
+import { salvarOuAtualizarDados } from "@/utils/helpersDB";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { FormatData } from "@/utils/formatDates";
 
 const DetailsAnimalPage = () => {
   const params = useParams();
   const id = Number(params.id);
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const { boi, loading, reload } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
+
+  const handleSave = async (updatedAnimal: AnimalData) => {
+    try {
+      setSaveStatus({ type: null, message: "" });
+
+      // Garante que o ID está presente para atualização
+      if (!updatedAnimal.id && boi?.id) {
+        updatedAnimal.id = boi.id;
+      }
+
+      // Salva/atualiza no banco de dados
+      await salvarOuAtualizarDados([updatedAnimal]);
+
+      // Recarrega os dados atualizados
+      await reload();
+
+      setSaveStatus({
+        type: "success",
+        message: "Informações do animal atualizadas com sucesso!",
+      });
+
+      // Limpa a mensagem de sucesso após 3 segundos
+      setTimeout(() => {
+        setSaveStatus({ type: null, message: "" });
+      }, 3000);
+    } catch (error) {
+      console.error("Erro ao salvar animal:", error);
+      setSaveStatus({
+        type: "error",
+        message: "Erro ao salvar as alterações. Tente novamente.",
+      });
+      throw error; // Re-lança para o modal tratar
+    }
+  };
 
   if (loading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
@@ -16,7 +60,37 @@ const DetailsAnimalPage = () => {
   return (
     <main>
       <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn} - Detalhes`} />
+
       <section className="p-4 mt-8">
+        {/* Feedback de salvamento */}
+        {saveStatus.type && (
+          <div
+            className={`mb-4 px-4 py-3 rounded-md ${
+              saveStatus.type === "success"
+                ? "bg-green-50 border border-green-200 text-green-700"
+                : "bg-red-50 border border-red-200 text-red-700"
+            }`}
+          >
+            <p className="text-sm font-medium">{saveStatus.message}</p>
+          </div>
+        )}
+
+        {/* Botão para abrir modal de edição */}
+        <div className="mb-4 flex justify-end">
+          <Button
+            onClick={() => setIsEditOpen(true)}
+            className="bg-primary text-white hover:bg-[#0e4e8a] w-full text-sm uppercase mb-2"
+          >
+            Editar Informações
+          </Button>
+        </div>
+
+        <EditAnimalModal
+          open={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          data={boi}
+          onSave={handleSave}
+        />
         <div className="flex flex-row justify-start items-center gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
           <span className="text-gray-400 text-sm font-medium uppercase">
             fazenda
@@ -42,7 +116,7 @@ const DetailsAnimalPage = () => {
                 Nascimento
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.animal.nasc ?? "-"}
+                {FormatData(boi.animal.nasc) ?? "-"}
               </span>
             </div>
           </div>
@@ -134,7 +208,7 @@ const DetailsAnimalPage = () => {
                     className="font-bold uppercase  text-[#1162AE]"
                     key={index}
                   >
-                    {vacina.nome} - {vacina.data}
+                    {vacina.nome} - {FormatData(vacina.data)}
                   </li>
                 ))
               ) : (
