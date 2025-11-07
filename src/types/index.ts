@@ -26,3 +26,25 @@ export interface Links {
   href: string;
   icon: React.ComponentType<{ className?: string }> | string;
 }
+
+export interface SelectedReportFields {
+  nomeAnimal: boolean;
+  rgn: boolean;
+  serieRGD: boolean;
+  sexo: boolean;
+  dataNascimento: boolean;
+  corNascimento: boolean;
+  iabcgz: boolean;
+  deca: boolean;
+  p: boolean;
+  f: boolean;
+  pesosMedidos: boolean;
+  circunferenciaEscrotal: boolean;
+  vacinas: boolean;
+  nomePai: boolean;
+  maeSerieRGD: boolean;
+  maeRGN: boolean;
+  status: boolean;
+  farm: boolean;
+  ganhoDiario: boolean;
+}

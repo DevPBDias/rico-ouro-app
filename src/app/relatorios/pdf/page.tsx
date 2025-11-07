@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  generateAnimalReportPDF,
-  SelectedReportFields,
-} from "@/utils/exportToPdf";
+import { generateAnimalReportPDF } from "@/utils/exportToPdf";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +18,7 @@ import {
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { SelectedReportFields } from "@/types";
 
 const REPORT_OPTIONS: ReportOption[] = [
   { key: "nomeAnimal", label: "Nome Animal" },

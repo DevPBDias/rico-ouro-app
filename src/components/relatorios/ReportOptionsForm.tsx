@@ -1,5 +1,5 @@
+import { SelectedReportFields } from "@/types";
 import { ReportCheckboxItem } from "./ReportCheckboxItem";
-import { SelectedReportFields } from "@/utils/exportToPdf";
 
 export interface ReportOption {
   key: keyof SelectedReportFields;
