@@ -144,6 +144,7 @@ const VaccinesPage = () => {
                 setFormData({ ...formData, vacina: value })
               }
               disabled={loading}
+              required
             >
               <SelectTrigger
                 id="vacina"
@@ -211,6 +212,7 @@ const VaccinesPage = () => {
               setSearchTerm(e.target.value);
               setOpen(true);
             }}
+            required
             className="w-full bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
             onFocus={() => setOpen(true)}
           />
