@@ -13,15 +13,28 @@ import {
 } from "@/components/ui/select";
 import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { FormatData } from "@/utils/formatDates";
-import { CheckCircle2, CheckIcon } from "lucide-react";
+import { CheckIcon, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useVaccines } from "@/hooks/useVaccines";
+import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
+import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
+import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
 
 const VaccinesPage = () => {
   const router = useRouter();
   const { adicionarVacina, dados } = useAnimalDB();
-  const [showModal, setShowModal] = useState(false);
+  const {
+    vaccines,
+    loading,
+    error: vaccinesError,
+    addVaccine,
+    removeVaccine,
+  } = useVaccines();
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +80,7 @@ const VaccinesPage = () => {
         data: FormatData(formData.data),
       });
 
-      setShowModal(true);
+      setSuccessModalOpen(true);
     } catch (error) {
       console.error("❌ Erro ao registrar vacina:", error);
       setError("Animal não encontrado ou erro ao registrar vacina");
@@ -75,13 +88,31 @@ const VaccinesPage = () => {
   };
 
   const handleCloseModal = () => {
-    setShowModal(false);
+    setSuccessModalOpen(false);
     setFormData({
       rgn: "",
       vacina: "",
       data: "",
     });
     setSearchTerm("");
+  };
+
+  const handleCreateVaccine = async (name: string) => {
+    await addVaccine(name);
+    setFormData((prev) => ({ ...prev, vacina: name }));
+  };
+
+  const handleDeleteVaccine = async (id: number) => {
+    const vaccineToDelete = vaccines.find((vaccine) => vaccine.id === id);
+    await removeVaccine(id);
+
+    if (
+      vaccineToDelete &&
+      vaccineToDelete.vaccineName.toLowerCase() ===
+        formData.vacina.toLowerCase()
+    ) {
+      setFormData((prev) => ({ ...prev, vacina: "" }));
+    }
   };
 
   return (
@@ -93,6 +124,11 @@ const VaccinesPage = () => {
             {error}
           </div>
         )}
+        {vaccinesError && (
+          <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+            {vaccinesError}
+          </div>
+        )}
         <div className="flex flex-col justify-start items-start w-full gap-2">
           <label
             htmlFor="vacina"
@@ -100,30 +136,62 @@ const VaccinesPage = () => {
           >
             Vacina:
           </label>
-          <Select
-            value={formData.vacina}
-            name="vacina"
-            onValueChange={(value) =>
-              setFormData({ ...formData, vacina: value })
-            }
-          >
-            <SelectTrigger
-              id="vacina"
+          <div className="flex items-center gap-2 w-full">
+            <Select
+              value={formData.vacina}
               name="vacina"
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground w-full"
+              onValueChange={(value) =>
+                setFormData({ ...formData, vacina: value })
+              }
+              disabled={loading}
             >
-              <SelectValue placeholder="Selecione a vacina" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="Aftosa">Aftosa</SelectItem>
-                <SelectItem value="Brucelose">Brucelose</SelectItem>
-                <SelectItem value="Raiva">Raiva</SelectItem>
-                <SelectItem value="Clostridiose">Clostridiose</SelectItem>
-                <SelectItem value="Vermifugação">Vermifugação</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+              <SelectTrigger
+                id="vacina"
+                name="vacina"
+                className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground w-full"
+              >
+                <SelectValue placeholder="Selecione a vacina" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {loading && (
+                    <SelectItem value="__loading" disabled>
+                      Carregando vacinas...
+                    </SelectItem>
+                  )}
+                  {!loading && vaccines.length === 0 && (
+                    <SelectItem value="__empty" disabled>
+                      Nenhuma vacina cadastrada
+                    </SelectItem>
+                  )}
+                  {vaccines.map((vaccine) => (
+                    <SelectItem key={vaccine.id} value={vaccine.vaccineName}>
+                      {vaccine.vaccineName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="whitespace-nowrap bg-blue-300"
+                onClick={() => setAddModalOpen(true)}
+              >
+                <Plus color="black" size={16} />
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="whitespace-nowrap bg-red-400"
+                onClick={() => setDeleteModalOpen(true)}
+                disabled={vaccines.length === 0}
+              >
+                <Trash color="white" size={16} />
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col justify-start items-start w-full gap-2 relative">
@@ -200,43 +268,29 @@ const VaccinesPage = () => {
         >
           Registrar vacina
         </Button>
-
-        {showModal && (
-          <>
-            <div
-              className="fixed inset-0 bg-black/40 z-40"
-              onClick={handleCloseModal}
-            />
-
-            <div className="fixed inset-0 z-50 flex items-center justify-center px-3">
-              <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm flex flex-col items-center gap-6">
-                <CheckCircle2
-                  className="w-16 h-16 text-green-500"
-                  strokeWidth={2.5}
-                />
-                <p className="text-primary text-base uppercase font-bold text-center">
-                  Cadastrado com sucesso!
-                </p>
-                <div className="grid grid-cols-2 gap-3 w-full">
-                  <Button
-                    variant="outline"
-                    onClick={handleCloseModal}
-                    className="w-full border-2 border-primary text-sm uppercase text-primary font-bold py-3 rounded-lg hover:bg-primary/5 transition-colors"
-                  >
-                    Continuar
-                  </Button>
-                  <Button
-                    onClick={() => router.push("/home")}
-                    className="w-full border-2 border-primary text-sm uppercase text-white font-semibold py-3 rounded-lg hover:bg-primary/5 transition-colors"
-                  >
-                    Início
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </form>
+
+      <VaccineSuccessModal
+        open={successModalOpen}
+        onClose={handleCloseModal}
+        onNavigateHome={() => {
+          handleCloseModal();
+          router.push("/home");
+        }}
+      />
+
+      <AddVaccineModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onAdd={handleCreateVaccine}
+      />
+
+      <DeleteVaccineModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        vaccines={vaccines}
+        onDelete={handleDeleteVaccine}
+      />
     </main>
   );
 };
