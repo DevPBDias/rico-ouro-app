@@ -35,6 +35,9 @@ export interface AnimalData {
     serieRGD?: string;
     rgn?: string;
   };
+  avoMaterno: {
+    nome?: string;
+  };
 }
 
 export interface Vaccine {

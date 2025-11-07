@@ -59,7 +59,7 @@ const DetailsAnimalPage = () => {
 
   return (
     <main>
-      <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn} - Detalhes`} />
+      <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn}`} />
 
       <section className="p-4 mt-8">
         {/* Feedback de salvamento */}
@@ -79,7 +79,7 @@ const DetailsAnimalPage = () => {
         <div className="mb-4 flex justify-end">
           <Button
             onClick={() => setIsEditOpen(true)}
-            className="bg-primary text-white hover:bg-[#0e4e8a] w-full text-sm uppercase mb-2"
+            className="bg-white text-primary border border-[#1162AE] hover:bg-[#0e4e8a] w-full text-sm uppercase mb-2"
           >
             Editar Informações
           </Button>
@@ -116,7 +116,7 @@ const DetailsAnimalPage = () => {
                 Nascimento
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {FormatData(boi.animal.nasc) ?? "-"}
+                {boi.animal.nasc ?? "-"}
               </span>
             </div>
           </div>
@@ -140,7 +140,7 @@ const DetailsAnimalPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+          <div className="grid grid-cols-2 items-start mb-2 gap-20">
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Pai
@@ -170,10 +170,10 @@ const DetailsAnimalPage = () => {
             </div>
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
-                F%
+                avô MATERNO
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.animal.f ?? "-"}
+                {boi.avoMaterno?.nome ?? "-"}
               </span>
             </div>
           </div>
@@ -181,12 +181,13 @@ const DetailsAnimalPage = () => {
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
-                Cor Nascimento
+                F%
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.animal.corNascimento ?? "-"}
+                {boi.animal.f ?? "-"}
               </span>
             </div>
+
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Status

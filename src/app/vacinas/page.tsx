@@ -117,7 +117,7 @@ const VaccinesPage = () => {
 
   return (
     <main className="min-h-screen">
-      <Header title="Anotar vacinas" />
+      <Header title="Vacinação" />
       <form onSubmit={handleSubmit} className="flex flex-col gap-8 px-6 py-8">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
@@ -248,7 +248,7 @@ const VaccinesPage = () => {
             htmlFor="date"
             className="text-primary font-bold text-sm uppercase w-full text-left"
           >
-            Dia da vacina:
+            Data da vacinação:
           </label>
           <Input
             type="date"

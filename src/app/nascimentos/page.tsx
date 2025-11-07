@@ -56,6 +56,7 @@ export default function NascimentosPage() {
       },
       pai: { nome: formData.pai || "-" },
       mae: { serieRGD: "INDI", rgn: formData.mae },
+      avoMaterno: { nome: "-" },
     };
 
     try {
@@ -184,26 +185,6 @@ export default function NascimentosPage() {
               value={formData.mae}
               onChange={({ target }) =>
                 setFormData({ ...formData, mae: target.value })
-              }
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="mae"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              Pai:
-            </label>
-            <Input
-              type="text"
-              id="pai"
-              name="pai"
-              value={formData.pai}
-              onChange={({ target }) =>
-                setFormData({ ...formData, pai: target.value })
               }
               className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
               required

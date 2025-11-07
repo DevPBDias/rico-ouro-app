@@ -140,22 +140,20 @@ export default function RelatoriosPage() {
       <Header title="RELATÓRIO - pdf" />
 
       <div className="p-6">
-        <h2 className="font-bold text-base text-primary mb-4 uppercase">
-          Incluir:
-        </h2>
-
         <ReportOptionsForm
           options={REPORT_OPTIONS}
           selectedItems={selectedItems}
           onCheckboxChange={handleCheckboxChange}
         />
 
-        <Button
-          onClick={handleGenerate}
-          className="w-full mt-6 bg-[#1976D2] hover:bg-[#1565C0] text-white font-semibold py-6 text-lg rounded-lg"
-        >
-          Gerar
-        </Button>
+        <div className="flex items-center justify-center w-full">
+          <Button
+            onClick={handleGenerate}
+            className="w-1/2 mt-6 bg-primary hover:bg-[#1565C0] text-white font-semibold py-4 text-lg rounded-lg"
+          >
+            Gerar
+          </Button>
+        </div>
       </div>
 
       <Dialog open={modalState.isOpen} onOpenChange={closeModal}>

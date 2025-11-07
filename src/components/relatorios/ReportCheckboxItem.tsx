@@ -14,7 +14,7 @@ export function ReportCheckboxItem({
   onCheckedChange,
 }: ReportCheckboxItemProps) {
   return (
-    <div className="flex items-center justify-between gap-2 bg-[#F5F5F5] rounded-lg p-4">
+    <div className="flex items-center justify-between gap-2 bg-[#F5F5F5] rounded-xs px-2 py-1">
       <label
         htmlFor={id}
         className="text-xs uppercase font-medium text-gray-900 cursor-pointer flex-1"

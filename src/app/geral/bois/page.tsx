@@ -27,13 +27,13 @@ export default function BoisPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <Header title="Gado" />
+      <Header title="Animais" />
       <div className="p-4 space-y-6">
         <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Buscar por RGN ou Série/RGD"
+              placeholder="Buscar por RGN"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10"

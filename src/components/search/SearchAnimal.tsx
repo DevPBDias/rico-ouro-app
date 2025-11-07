@@ -37,7 +37,6 @@ function SearchAnimal() {
     [dados]
   );
 
-  // Debounce da busca
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       handleSearch(searchQuery);
@@ -77,17 +76,28 @@ function SearchAnimal() {
         </div>
       ) : (
         <div className="my-12">
-          {searchResults.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-                Animal encontrado:
-              </h2>
-              {searchResults.map((animal) => (
-                <div key={animal.id} className="cursor-pointer">
-                  <AnimalCard animal={animal} />
+          {searchQuery.trim() && (
+            <>
+              {searchResults.length > 0 ? (
+                <div className="space-y-3">
+                  <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
+                    Animal encontrado:
+                  </h2>
+                  {searchResults.map((animal) => (
+                    <div key={animal.id} className="cursor-pointer">
+                      <AnimalCard animal={animal} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-base font-semibold text-red-500">
+                    Animal não encontrado... <br />
+                    Verifique o RGN e tente novamente.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
