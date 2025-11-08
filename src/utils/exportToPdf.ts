@@ -35,7 +35,7 @@ export async function generateAnimalReportPDF(
 
   const columns = Object.entries(fieldMap)
     .filter(([key]) => selectedFields[key as keyof SelectedReportFields])
-    .map(([_, [header, key]]) => ({ header, key }));
+    .map(([, [header, key]]) => ({ header, key }));
 
   // Ordena por RGN (descendente)
   const sortedData = [...data].sort((a, b) => {
@@ -45,7 +45,29 @@ export async function generateAnimalReportPDF(
   });
 
   // Monta corpo da tabela
-  const body = sortedData.map((animal) => {
+  type ReportRow = {
+    nomeAnimal: string;
+    rgn: string;
+    serieRGD: string;
+    sexo: string;
+    nasc: string;
+    corNascimento: string;
+    iabcgz: string;
+    deca: string;
+    p: string;
+    f: string;
+    paiNome: string;
+    maeSerieRGD: string;
+    maeRGN: string;
+    pesosMedidos: string;
+    vacinas: string;
+    circunferenciaEscrotal: string;
+    status: string;
+    farm: string;
+    ganhoDiario: string;
+  };
+
+  const body: ReportRow[] = sortedData.map((animal) => {
     const nome =
       animal.animal.nome?.trim() ||
       `${animal.animal.serieRGD || ""} ${animal.animal.rgn || ""}`.trim();
@@ -92,7 +114,9 @@ export async function generateAnimalReportPDF(
   autoTable(doc, {
     startY: 35,
     head: [columns.map((col) => col.header)],
-    body: body.map((row) => columns.map((col) => (row as any)[col.key])),
+    body: body.map((row) =>
+      columns.map((col) => row[col.key as keyof ReportRow])
+    ),
     theme: "grid",
     styles: {
       fontSize: 9,

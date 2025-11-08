@@ -1,10 +1,30 @@
+interface WindowWithFileSystemAccess extends Window {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{
+      description: string;
+      accept: Record<string, string[]>;
+    }>;
+  }) => Promise<FileSystemFileHandle>;
+}
+
+interface FileSystemFileHandle {
+  createWritable: () => Promise<FileSystemWritableFileStream>;
+}
+
+interface FileSystemWritableFileStream {
+  write: (data: Blob) => Promise<void>;
+  close: () => Promise<void>;
+}
+
 export async function saveBlobAsFile(blob: Blob, fileName: string) {
   const blobUrl = URL.createObjectURL(blob);
 
   // Tenta usar File System Access API
-  if ("showSaveFilePicker" in window) {
+  const windowWithFS = window as WindowWithFileSystemAccess;
+  if (windowWithFS.showSaveFilePicker) {
     try {
-      const handle = await (window as any).showSaveFilePicker({
+      const handle = await windowWithFS.showSaveFilePicker({
         suggestedName: fileName,
         types: [
           { description: "PDF Files", accept: { "application/pdf": [".pdf"] } },
