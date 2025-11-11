@@ -28,9 +28,8 @@ export default function NascimentosPage() {
     peso: "",
     ce: "",
     mae: "",
-    pai: "",
     cor: "Branco",
-    sexo: "Macho",
+    sexo: "",
   });
 
   const { adicionarAnimal } = useAnimalDB();
@@ -51,10 +50,13 @@ export default function NascimentosPage() {
         f: "-",
         corNascimento: formData.cor,
         pesosMedidos: [{ mes: "", valor: Number(formData.peso) }],
-        circunferenciaEscrotal: [{ mes: "", valor: Number(formData.ce) }],
+        circunferenciaEscrotal:
+          formData.sexo === "Macho" && formData.ce
+            ? [{ mes: "", valor: Number(formData.ce) }]
+            : [],
         updatedAt: FormatData(formData.data),
       },
-      pai: { nome: formData.pai || "-" },
+      pai: { nome: "-" },
       mae: { serieRGD: "INDI", rgn: formData.mae },
       avoMaterno: { nome: "-" },
     };
@@ -75,9 +77,8 @@ export default function NascimentosPage() {
       peso: "",
       ce: "",
       mae: "",
-      pai: "",
       cor: "Branco",
-      sexo: "Macho",
+      sexo: "",
     });
   };
 
@@ -87,139 +88,6 @@ export default function NascimentosPage() {
 
       <main className="flex-1 px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="rgn"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              RGN:
-            </label>
-            <Input
-              type="text"
-              id="rgn"
-              name="rgn"
-              value={formData.rgn}
-              onChange={({ target }) =>
-                setFormData({ ...formData, rgn: target.value })
-              }
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="data"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              Data:
-            </label>
-            <div className="flex-1 relative">
-              <Input
-                type="date"
-                id="data"
-                name="data"
-                value={formData.data}
-                onChange={({ target }) =>
-                  setFormData({ ...formData, data: target.value })
-                }
-                className="w-full bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="peso"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              Peso:
-            </label>
-            <Input
-              type="text"
-              id="peso"
-              name="peso"
-              value={formData.peso}
-              onChange={({ target }) =>
-                setFormData({ ...formData, peso: target.value })
-              }
-              placeholder="kg"
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="peso"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              CE:
-            </label>
-            <Input
-              type="text"
-              id="ce"
-              name="ce"
-              value={formData.ce}
-              onChange={({ target }) =>
-                setFormData({ ...formData, ce: target.value })
-              }
-              placeholder="cm"
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="mae"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              Mãe RGN:
-            </label>
-            <Input
-              type="text"
-              id="mae"
-              name="mae"
-              value={formData.mae}
-              onChange={({ target }) =>
-                setFormData({ ...formData, mae: target.value })
-              }
-              className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <label
-              htmlFor="cor"
-              className="text-primary uppercase text-sm font-bold w-24 text-left"
-            >
-              Cor:
-            </label>
-            <Select
-              value={formData.cor}
-              onValueChange={(value) =>
-                setFormData({ ...formData, cor: value })
-              }
-            >
-              <SelectTrigger
-                id="cor"
-                name="cor"
-                className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground"
-              >
-                <SelectValue placeholder="Selecione a cor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="Branco">Branco</SelectItem>
-                  <SelectItem value="Vermelho">Vermelho</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="flex items-center gap-4">
             <label
               htmlFor="sexo"
@@ -250,13 +118,152 @@ export default function NascimentosPage() {
             </Select>
           </div>
 
-          <Button
-            variant="default"
-            type="submit"
-            className="w-full text-sm uppercase font-semibold py-5 rounded-lg mt-8 "
-          >
-            Cadastrar
-          </Button>
+          {formData.sexo && (
+            <>
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="rgn"
+                  className="text-primary uppercase text-sm font-bold w-24 text-left"
+                >
+                  RGN:
+                </label>
+                <Input
+                  type="text"
+                  id="rgn"
+                  name="rgn"
+                  value={formData.rgn}
+                  onChange={({ target }) =>
+                    setFormData({ ...formData, rgn: target.value })
+                  }
+                  className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="data"
+                  className="text-primary uppercase text-sm font-bold w-24 text-left"
+                >
+                  Data:
+                </label>
+                <div className="flex-1 relative">
+                  <Input
+                    type="date"
+                    id="data"
+                    name="data"
+                    value={formData.data}
+                    onChange={({ target }) =>
+                      setFormData({ ...formData, data: target.value })
+                    }
+                    className="w-full bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="peso"
+                  className="text-primary uppercase text-sm font-bold w-24 text-left"
+                >
+                  Peso:
+                </label>
+                <Input
+                  type="text"
+                  id="peso"
+                  name="peso"
+                  value={formData.peso}
+                  onChange={({ target }) =>
+                    setFormData({ ...formData, peso: target.value })
+                  }
+                  placeholder="kg"
+                  className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
+                  required
+                />
+              </div>
+
+              {formData.sexo === "Macho" && (
+                <div className="flex items-center gap-4">
+                  <label
+                    htmlFor="ce"
+                    className="text-primary uppercase text-sm font-bold w-24 text-left"
+                  >
+                    CE:
+                  </label>
+                  <Input
+                    type="text"
+                    id="ce"
+                    name="ce"
+                    value={formData.ce}
+                    onChange={({ target }) =>
+                      setFormData({ ...formData, ce: target.value })
+                    }
+                    placeholder="cm"
+                    className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="mae"
+                  className="text-primary uppercase text-sm font-bold w-24 text-left"
+                >
+                  Mãe RGN:
+                </label>
+                <Input
+                  type="text"
+                  id="mae"
+                  name="mae"
+                  value={formData.mae}
+                  onChange={({ target }) =>
+                    setFormData({ ...formData, mae: target.value })
+                  }
+                  className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="cor"
+                  className="text-primary uppercase text-sm font-bold w-24 text-left"
+                >
+                  Cor:
+                </label>
+                <Select
+                  value={formData.cor}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, cor: value })
+                  }
+                >
+                  <SelectTrigger
+                    id="cor"
+                    name="cor"
+                    className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground"
+                  >
+                    <SelectValue placeholder="Selecione a cor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="Branco">Branco</SelectItem>
+                      <SelectItem value="Vermelho">Vermelho</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                variant="default"
+                type="submit"
+                className="w-full text-sm uppercase font-semibold py-5 rounded-lg mt-8 "
+              >
+                Cadastrar
+              </Button>
+            </>
+          )}
         </form>
       </main>
 
