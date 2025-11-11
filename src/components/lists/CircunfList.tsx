@@ -67,7 +67,8 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
               <span className="text-xs font-medium text-gray-400">{p.mes}</span>
             </div>
             <div className="text-lg font-bold text-[#1162AE] flex flex-row items-center  gap-1">
-              {p.valor} <span className="text-xs">cm</span>
+              {p.valor}
+              <span className="text-xs">cm</span>
             </div>
           </div>
 

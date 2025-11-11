@@ -1,5 +1,5 @@
 import { Links } from "@/types";
-import { ChartColumnDecreasing, Columns3Cog } from "lucide-react";
+import { Columns3Cog, File } from "lucide-react";
 
 const globalDataLinks: Links[] = [
   {
@@ -10,9 +10,9 @@ const globalDataLinks: Links[] = [
   },
   {
     id: 2,
-    name: "Gráficos",
-    href: "/geral/graficos",
-    icon: ChartColumnDecreasing,
+    name: "Relatórios",
+    href: "/geral/relatorios",
+    icon: File,
   },
 ];
 

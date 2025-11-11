@@ -17,7 +17,7 @@ export const homeLinks: Links[] = [
   },
   {
     id: 2,
-    name: "Dados gerais",
+    name: "Dados/Relatórios",
     href: "/geral",
     icon: Database,
   },
@@ -36,8 +36,8 @@ export const homeLinks: Links[] = [
 
   {
     id: 5,
-    name: "Relatórios",
-    href: "/relatorios",
+    name: "Fazendas",
+    href: "/fazendas",
     icon: File,
   },
   {

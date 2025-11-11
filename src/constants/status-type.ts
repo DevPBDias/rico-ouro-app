@@ -1,4 +1,4 @@
-type IStatus =
+export type IStatus =
   | "Descarte"
   | "RGD"
   | "RGN"
