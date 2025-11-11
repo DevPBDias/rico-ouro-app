@@ -26,7 +26,6 @@ export default function NascimentosPage() {
     rgn: "",
     data: "",
     peso: "",
-    ce: "",
     mae: "",
     cor: "Branco",
     sexo: "",
@@ -50,10 +49,7 @@ export default function NascimentosPage() {
         f: "-",
         corNascimento: formData.cor,
         pesosMedidos: [{ mes: "", valor: Number(formData.peso) }],
-        circunferenciaEscrotal:
-          formData.sexo === "Macho" && formData.ce
-            ? [{ mes: "", valor: Number(formData.ce) }]
-            : [],
+        circunferenciaEscrotal: [],
         updatedAt: FormatData(formData.data),
       },
       pai: { nome: "-" },
@@ -75,7 +71,6 @@ export default function NascimentosPage() {
       rgn: "",
       data: "",
       peso: "",
-      ce: "",
       mae: "",
       cor: "Branco",
       sexo: "",
@@ -182,29 +177,6 @@ export default function NascimentosPage() {
                   required
                 />
               </div>
-
-              {formData.sexo === "Macho" && (
-                <div className="flex items-center gap-4">
-                  <label
-                    htmlFor="ce"
-                    className="text-primary uppercase text-sm font-bold w-24 text-left"
-                  >
-                    CE:
-                  </label>
-                  <Input
-                    type="text"
-                    id="ce"
-                    name="ce"
-                    value={formData.ce}
-                    onChange={({ target }) =>
-                      setFormData({ ...formData, ce: target.value })
-                    }
-                    placeholder="cm"
-                    className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-                    required
-                  />
-                </div>
-              )}
 
               <div className="flex items-center gap-4">
                 <label
