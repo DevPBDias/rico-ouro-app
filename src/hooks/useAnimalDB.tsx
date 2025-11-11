@@ -73,6 +73,24 @@ export function useAnimalDB() {
     }
   };
 
+  const atualizarFazenda = async (
+    rgn: string,
+    farmName: string | null
+  ): Promise<boolean> => {
+    try {
+      const animal = await buscarPorRgn(rgn);
+      if (!animal) {
+        throw new Error("Animal não encontrado");
+      }
+
+      await atualizarFazendaAnimal(animal, farmName);
+      return true;
+    } catch (error) {
+      console.error("❌ Erro ao atualizar fazenda:", error);
+      throw error;
+    }
+  };
+
   const salvarOuAtualizar = async (novos: AnimalData[]): Promise<void> => {
     const operacoes = novos.map(async (item) => {
       if (!validarAnimal(item)) return;
@@ -176,6 +194,39 @@ export function useAnimalDB() {
     }
   };
 
+  const atualizarFazendaAnimal = async (
+    animal: AnimalData,
+    farmName: string | null
+  ): Promise<void> => {
+    try {
+      await db.animalData.update(animal.id!, {
+        animal: {
+          ...animal.animal,
+          farm: farmName || undefined,
+          updatedAt: new Date().toISOString(),
+        },
+      });
+
+      setDados((prevDados) =>
+        prevDados.map((item) =>
+          item.id === animal.id
+            ? {
+                ...item,
+                animal: {
+                  ...item.animal,
+                  farm: farmName || undefined,
+                  updatedAt: new Date().toISOString(),
+                },
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("❌ Erro ao atualizar fazenda:", error);
+      throw error;
+    }
+  };
+
   const prepararDadosAnimal = (animal: AnimalData): AnimalData => {
     return {
       ...animal,
@@ -212,6 +263,7 @@ export function useAnimalDB() {
     limpar,
     excluirPorRgn,
     adicionarVacina,
+    atualizarFazenda,
     buscarPorRgn,
   };
 }

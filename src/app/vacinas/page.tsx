@@ -3,24 +3,17 @@
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
+import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
 import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { FormatData } from "@/utils/formatDates";
-import { CheckIcon, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
 import { useVaccines } from "@/hooks/useVaccines";
 import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
 import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
 import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
+import { Plus, Trash } from "lucide-react";
 
 const VaccinesPage = () => {
   const router = useRouter();
@@ -35,50 +28,42 @@ const VaccinesPage = () => {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     rgn: "",
-    vacina: "",
+    vacinas: [] as string[],
     data: "",
   });
 
   const rgnOptions = useMemo(() => {
+    // label e value passam a ser o próprio RGN (exibição apenas do RGN)
     return dados
       .map((animal) => ({
-        label:
-          animal.animal.nome?.trim() ||
-          `${animal.animal.serieRGD || ""} ${animal.animal.rgn || ""}`.trim(),
+        label: animal.animal.rgn || "",
         value: animal.animal.rgn || "",
       }))
       .filter((option) => option.value);
   }, [dados]);
-
-  const filteredOptions = useMemo(() => {
-    if (!searchTerm) return rgnOptions;
-
-    return rgnOptions.filter(
-      (option) =>
-        option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        option.value.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [rgnOptions, searchTerm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     try {
-      if (!formData.rgn || !formData.vacina || !formData.data) {
-        setError("Preencha todos os campos");
+      if (!formData.rgn || formData.vacinas.length === 0 || !formData.data) {
+        setError("Preencha todos os campos e selecione pelo menos uma vacina");
         return;
       }
 
-      await adicionarVacina(formData.rgn, {
-        nome: formData.vacina,
-        data: FormatData(formData.data),
-      });
+      const dataFormatada = FormatData(formData.data);
+
+      // Registra todas as vacinas selecionadas para o mesmo animal/data
+      for (const vacinaNome of formData.vacinas) {
+        await adicionarVacina(formData.rgn, {
+          nome: vacinaNome,
+          data: dataFormatada,
+        });
+      }
 
       setSuccessModalOpen(true);
     } catch (error) {
@@ -91,28 +76,42 @@ const VaccinesPage = () => {
     setSuccessModalOpen(false);
     setFormData({
       rgn: "",
-      vacina: "",
+      vacinas: [],
       data: "",
     });
-    setSearchTerm("");
   };
 
   const handleCreateVaccine = async (name: string) => {
     await addVaccine(name);
-    setFormData((prev) => ({ ...prev, vacina: name }));
+    setFormData((prev) => ({
+      ...prev,
+      vacinas: prev.vacinas.includes(name)
+        ? prev.vacinas
+        : [...prev.vacinas, name],
+    }));
   };
 
   const handleDeleteVaccine = async (id: number) => {
     const vaccineToDelete = vaccines.find((vaccine) => vaccine.id === id);
     await removeVaccine(id);
 
-    if (
-      vaccineToDelete &&
-      vaccineToDelete.vaccineName.toLowerCase() ===
-        formData.vacina.toLowerCase()
-    ) {
-      setFormData((prev) => ({ ...prev, vacina: "" }));
+    if (vaccineToDelete) {
+      setFormData((prev) => ({
+        ...prev,
+        vacinas: prev.vacinas.filter(
+          (v) => v.toLowerCase() !== vaccineToDelete.vaccineName.toLowerCase()
+        ),
+      }));
     }
+  };
+
+  const toggleVaccine = (name: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      vacinas: checked
+        ? [...prev.vacinas, name]
+        : prev.vacinas.filter((v) => v !== name),
+    }));
   };
 
   return (
@@ -130,69 +129,37 @@ const VaccinesPage = () => {
           </div>
         )}
         <div className="flex flex-col justify-start items-start w-full gap-2">
-          <label
-            htmlFor="vacina"
-            className="text-primary font-bold text-sm uppercase w-full text-left"
-          >
-            Vacina:
-          </label>
-          <div className="flex items-center gap-2 w-full">
-            <Select
-              value={formData.vacina}
-              name="vacina"
-              onValueChange={(value) =>
-                setFormData({ ...formData, vacina: value })
-              }
-              disabled={loading}
-              required
+          <div className="flex flex-row justify-between items-center w-full gap-2">
+            <label
+              htmlFor="vacinas"
+              className="text-primary font-bold text-sm uppercase w-full text-left"
             >
-              <SelectTrigger
-                id="vacina"
-                name="vacina"
-                className="flex-1 bg-muted border-0 rounded-md px-4 py-3 text-foreground w-full"
-              >
-                <SelectValue placeholder="Selecione a vacina" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {loading && (
-                    <SelectItem value="__loading" disabled>
-                      Carregando vacinas...
-                    </SelectItem>
-                  )}
-                  {!loading && vaccines.length === 0 && (
-                    <SelectItem value="__empty" disabled>
-                      Nenhuma vacina cadastrada
-                    </SelectItem>
-                  )}
-                  {vaccines.map((vaccine) => (
-                    <SelectItem key={vaccine.id} value={vaccine.vaccineName}>
-                      {vaccine.vaccineName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              Vacinas:
+            </label>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className="whitespace-nowrap bg-blue-300"
                 onClick={() => setAddModalOpen(true)}
               >
-                <Plus color="black" size={16} />
+                <Plus color="blue" size={16} />
               </Button>
               <Button
                 type="button"
-                variant="destructive"
-                className="whitespace-nowrap bg-red-400"
+                variant="outline"
                 onClick={() => setDeleteModalOpen(true)}
                 disabled={vaccines.length === 0}
               >
-                <Trash color="white" size={16} />
+                <Trash color="red" size={16} />
               </Button>
             </div>
           </div>
+          <VaccinesMultiSelect
+            vaccines={vaccines}
+            loading={loading}
+            selected={formData.vacinas}
+            onToggle={toggleVaccine}
+          />
         </div>
 
         <div className="flex flex-col justify-start items-start w-full gap-2 relative">
@@ -202,45 +169,11 @@ const VaccinesPage = () => {
           >
             Animal vacinado (RGN):
           </label>
-          <Input
-            type="text"
-            name="rgn"
-            id="rgn"
-            placeholder="Digite o RGN do animal..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setOpen(true);
-            }}
-            required
-            className="w-full bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-            onFocus={() => setOpen(true)}
+          <RgnAutocomplete
+            options={rgnOptions}
+            value={formData.rgn}
+            onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
           />
-          {open && filteredOptions.length > 0 && (
-            <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-md border shadow-lg z-50 max-h-60 overflow-y-auto">
-              {filteredOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={cn(
-                    "px-4 py-2 cursor-pointer hover:bg-muted",
-                    formData.rgn === option.value && "bg-muted"
-                  )}
-                  onClick={() => {
-                    setFormData((prev) => ({ ...prev, rgn: option.value }));
-                    setSearchTerm(option.label);
-                    setOpen(false);
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    {formData.rgn === option.value && (
-                      <CheckIcon className="h-4 w-4" />
-                    )}
-                    <span>{option.label}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="flex flex-col justify-start items-start w-full gap-2">
@@ -268,7 +201,7 @@ const VaccinesPage = () => {
           type="submit"
           className="w-full text-sm font-semibold py-5 rounded-lg mt-8 uppercase "
         >
-          Registrar vacina
+          Registrar vacina(s)
         </Button>
       </form>
 
