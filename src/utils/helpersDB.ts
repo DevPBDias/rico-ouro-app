@@ -3,9 +3,9 @@ import { AnimalData, db } from "@/lib/db";
 export async function salvarDados(dados: AnimalData[]) {
   try {
     await db.animalData.bulkPut(dados);
-    console.log("✅ Dados salvos no IndexedDB:", dados);
+    console.log("✅ Dados salvos no SQLite:", dados);
   } catch (error) {
-    console.error("❌ Erro ao salvar no IndexedDB:", error);
+    console.error("❌ Erro ao salvar no SQLite:", error);
   }
 }
 
@@ -100,7 +100,7 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
 export async function limparTodosDados() {
   try {
     await db.animalData.clear();
-    console.log("🗑️ Todos os dados foram excluídos do IndexedDB!");
+    console.log("🗑️ Todos os dados foram excluídos do SQLite!");
   } catch (err) {
     console.error("❌ Erro ao limpar dados:", err);
   }
