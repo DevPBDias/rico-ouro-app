@@ -1,23 +1,27 @@
 {
-    "name": "Rico Ouro",
-    "short_name": "RicoOuro",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#111827",
-    "lang": "pt-BR",
-    "icons": [
-        {
-            "src": "/vercel.svg",
-            "sizes": "192x192",
-            "type": "image/svg+xml",
-            "purpose": "any"
-        },
-        {
-            "src": "/next.svg",
-            "sizes": "512x512",
-            "type": "image/svg+xml",
-            "purpose": "any"
-        }
-    ]
+  "name": "INDI Ouro",
+  "short_name": "INDIOuro",
+  "start_url": "/",
+  "display": "standalone",
+  "lang": "pt-BR",
+  "description": "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
+  "scope": "/",
+  "orientation": "portrait",
+  "background_color": "#1162ae",
+  "theme_color": "#1162ae",
+  "categories": ["farm", "productivity", "tools"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
