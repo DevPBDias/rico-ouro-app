@@ -1,7 +1,7 @@
 {
   "name": "INDI Ouro",
   "short_name": "INDI Ouro",
-  "start_url": "/",
+  "start_url": "/splash.html",
   "display": "standalone",
   "lang": "pt-BR",
   "description": "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",

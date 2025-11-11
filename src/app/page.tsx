@@ -1,45 +1,43 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import openingImg from "@/assets/images/opening-page.png";
-import { useRouter } from "next/navigation";
+import HomeButtons from "@/components/buttons/HomeButtons";
+import { homeLinks } from "@/constants/HomeLinks";
+import homePage from "@/assets/images/home-page.png";
+import { motion } from "framer-motion";
 
-export default function OpeningPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setTimeout(() => router.push("/home"), 1200);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
+const HomePage = () => {
   return (
-    <AnimatePresence>
-      <motion.main
-        key="opening"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 1 }}
-        exit={{
-          opacity: 0,
-        }}
-        transition={{
-          duration: 1.2,
-          ease: "easeInOut",
-        }}
-        className="relative top-0 left-0 h-dvh w-full overflow-hidden"
-      >
-        <Image
-          src={openingImg}
-          alt="Cow App Logo"
-          fill
-          className="w-full h-full"
-          priority
-        />
-      </motion.main>
-    </AnimatePresence>
+    <motion.main
+      key="home"
+      initial={{
+        opacity: 0,
+      }}
+      animate={{
+        opacity: 1,
+      }}
+      transition={{
+        duration: 1.2,
+        ease: "easeInOut",
+      }}
+      className="relative h-dvh w-full overflow-hidden"
+    >
+      <Image
+        src={homePage}
+        alt="Cow App Logo"
+        className="h-full w-full"
+        priority
+        fill
+      />
+
+      <HomeButtons
+        data={homeLinks}
+        className="absolute bottom-0 left-0 z-20 grid-cols-2 gap-4 h-[70dvh] py-40"
+        colorBg="white"
+        textColor="text-[#1162AE]"
+      />
+    </motion.main>
   );
-}
+};
+
+export default HomePage;

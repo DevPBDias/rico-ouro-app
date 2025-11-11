@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "INDI Ouro",
-  description: "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
+  description:
+    "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   manifest: "/manifest.json",
   themeColor: "#1162ae",
   appleWebApp: {
@@ -32,9 +33,7 @@ export const metadata: Metadata = {
       { url: "/logo.svg", sizes: "192x192", type: "image/svg+xml" },
       { url: "/logo.svg", sizes: "512x512", type: "image/svg+xml" },
     ],
-    apple: [
-      { url: "/logo.svg", sizes: "180x180", type: "image/svg+xml" },
-    ],
+    apple: [{ url: "/logo.svg", sizes: "180x180", type: "image/svg+xml" }],
   },
 };
 
@@ -54,11 +53,50 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="INDI Ouro" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo.svg" />
+        {/* Splash screens for iOS */}
         <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/logo.svg"
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
         />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+          href="/splash.png"
+        />
+        {/* Android splash screen */}
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
