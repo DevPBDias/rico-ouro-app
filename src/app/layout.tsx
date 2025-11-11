@@ -17,10 +17,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rico Ouro",
-  description: "Aplicativo offline para gestão de bois",
+  title: "INDI Ouro",
+  description: "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   manifest: "/manifest.json",
-  themeColor: "#111827",
+  themeColor: "#1162ae",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "INDI Ouro",
+  },
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/logo.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/logo.svg", sizes: "512x512", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/logo.svg", sizes: "180x180", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -36,9 +51,14 @@ export default function RootLayout({
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
+        <meta name="apple-mobile-web-app-title" content="INDI Ouro" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/public/Logo Jacir.png" />
-        <link rel="apple-touch-icon" href="/public/Logo Jacir.png" />
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/logo.svg"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

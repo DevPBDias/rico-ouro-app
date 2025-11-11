@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners for maskable icon -->
+  <rect width="512" height="512" rx="102" fill="#1162ae"/>
+  <!-- Logo content centered in safe zone (80% of canvas for maskable icons) -->
+  <g transform="translate(256, 256)">
+    <g transform="scale(8) translate(-22.5, -24)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M5.30829 30.8674C-12.0917 5.55382 18.5243 6.73801 22.4054 0V2.45837C17.7073 10.4106 -9.1805 8.16503 9.94647 30.8674H5.30829Z" fill="#FFCB04"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M39.4983 30.8674C56.8983 5.55382 26.2822 6.73801 22.4026 0V2.45837C27.1008 10.4106 53.9885 8.16503 34.8615 30.8674H39.4997H39.4983Z" fill="#FFCB04"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M21.0141 16.3486L24.0867 17.9785L27.2479 16.3615L27.2307 19.9069L25.4795 20.9282L25.6109 40.3209C25.498 51.57 8.15948 49.3073 7.45097 40.9451L4.41551 39.8467L5.16545 36.9598L8.22233 37.7111L10.355 35.8641L12.2006 38.5196L10.4379 40.3181C11.4949 46.0861 22.8211 46.6675 22.7111 39.7367L22.6468 20.8797L21.0084 19.9669L21.0127 16.3486H21.0141Z" fill="#FFCB04"/>
+    </g>
+  </g>
+</svg>
