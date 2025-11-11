@@ -9,7 +9,7 @@ import {
 // Importações de constantes como fallback (arrays vazios se não houver dados no Supabase)
 import { vaccines as defaultVaccines } from "@/constants/vaccinesName";
 import { farms as defaultFarms } from "@/constants/farmName";
-import type { IStatus } from "@/constants/status-type";
+import type { IStatus } from "@/types/status-type";
 
 // Exporta tipos (mantidos para compatibilidade)
 export interface AnimalData {

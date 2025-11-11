@@ -1,6 +1,6 @@
 "use client";
 
-import { AddPesoModal } from "@/components/AddPesoModal";
+import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import Header from "@/components/layout/Header";
 import { CircunfList } from "@/components/lists/CircunfList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";

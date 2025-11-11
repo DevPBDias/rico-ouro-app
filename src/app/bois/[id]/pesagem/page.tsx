@@ -1,6 +1,6 @@
 "use client";
 
-import { AddPesoModal } from "@/components/AddPesoModal";
+import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import Header from "@/components/layout/Header";
 import { WeightList } from "@/components/lists/WeightList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";

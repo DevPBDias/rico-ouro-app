@@ -1,5 +1,5 @@
 "use client";
-import { ChartLineLabel } from "@/components/BoiCharts";
+import { ChartLineLabel } from "@/components/charts/BoiCharts";
 import Header from "@/components/layout/Header";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { useParams } from "next/navigation";

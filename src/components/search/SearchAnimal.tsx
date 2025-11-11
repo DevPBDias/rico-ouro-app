@@ -13,26 +13,29 @@ function SearchAnimal() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AnimalData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = useCallback(
     async (query: string) => {
       if (!query.trim()) {
         setSearchResults([]);
+        setHasSearched(false);
         return;
       }
 
       setIsSearching(true);
+      setHasSearched(false);
 
       const results = dados.filter((animal) => {
         const rgn = animal.animal.rgn?.toString().toLowerCase() || "";
-        const serieRGD = animal.animal.serieRGD?.toString().toLowerCase() || "";
         const queryLower = query.toLowerCase();
 
-        return rgn.includes(queryLower) || serieRGD.includes(queryLower);
+        return rgn.includes(queryLower);
       });
 
       setSearchResults(results);
       setIsSearching(false);
+      setHasSearched(true);
     },
     [dados]
   );
@@ -76,7 +79,7 @@ function SearchAnimal() {
         </div>
       ) : (
         <div className="my-12">
-          {searchQuery.trim() && (
+          {searchQuery.trim() && hasSearched && (
             <>
               {searchResults.length > 0 ? (
                 <div className="space-y-3">

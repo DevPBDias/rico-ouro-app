@@ -2,8 +2,8 @@ import { Links } from "@/types";
 import {
   CornerRightDown,
   Database,
-  File,
   Search,
+  Settings,
   Star,
   Syringe,
 } from "lucide-react";
@@ -36,9 +36,9 @@ export const homeLinks: Links[] = [
 
   {
     id: 5,
-    name: "Fazendas",
-    href: "/fazendas",
-    icon: File,
+    name: "Gerenciar",
+    href: "/gerenciar",
+    icon: Settings,
   },
   {
     id: 6,

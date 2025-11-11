@@ -24,7 +24,7 @@ export interface Links {
   id: number;
   name: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }> | string;
+  icon?: React.ComponentType<{ className?: string }> | string;
 }
 
 export interface SelectedReportFields {
