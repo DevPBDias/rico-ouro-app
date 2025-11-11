@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { db, AnimalData } from "../lib/db";
+import type { IStatus } from "@/types/status-type";
 
 type Vacina = {
   nome: string;
@@ -87,6 +88,24 @@ export function useAnimalDB() {
       return true;
     } catch (error) {
       console.error("❌ Erro ao atualizar fazenda:", error);
+      throw error;
+    }
+  };
+
+  const atualizarStatus = async (
+    rgn: string,
+    status: IStatus | null
+  ): Promise<boolean> => {
+    try {
+      const animal = await buscarPorRgn(rgn);
+      if (!animal) {
+        throw new Error("Animal não encontrado");
+      }
+
+      await atualizarStatusAnimal(animal, status);
+      return true;
+    } catch (error) {
+      console.error("❌ Erro ao atualizar status:", error);
       throw error;
     }
   };
@@ -227,6 +246,39 @@ export function useAnimalDB() {
     }
   };
 
+  const atualizarStatusAnimal = async (
+    animal: AnimalData,
+    status: IStatus | null
+  ): Promise<void> => {
+    try {
+      await db.animalData.update(animal.id!, {
+        animal: {
+          ...animal.animal,
+          status: status || undefined,
+          updatedAt: new Date().toISOString(),
+        },
+      });
+
+      setDados((prevDados) =>
+        prevDados.map((item) =>
+          item.id === animal.id
+            ? {
+                ...item,
+                animal: {
+                  ...item.animal,
+                  status: status || undefined,
+                  updatedAt: new Date().toISOString(),
+                },
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("❌ Erro ao atualizar status:", error);
+      throw error;
+    }
+  };
+
   const prepararDadosAnimal = (animal: AnimalData): AnimalData => {
     return {
       ...animal,
@@ -264,6 +316,7 @@ export function useAnimalDB() {
     excluirPorRgn,
     adicionarVacina,
     atualizarFazenda,
+    atualizarStatus,
     buscarPorRgn,
   };
 }
