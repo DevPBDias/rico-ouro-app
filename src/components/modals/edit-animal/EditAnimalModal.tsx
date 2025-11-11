@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info } from "lucide-react";
-import IdentificacaoSection from "./IdentifySection";
 import DadosBasicosSection from "./BasicSection";
 import DadosGeneticosSection from "./GeneticSection";
 import GenealogiaSection from "./PedigreeSection";
@@ -114,12 +113,6 @@ export function EditAnimalModal({
             )}
 
             <div className="space-y-6 pb-8">
-              <IdentificacaoSection
-                formData={formData}
-                handleChange={handleChange}
-                isSaving={isSaving}
-              />
-
               <DadosBasicosSection
                 formData={formData}
                 handleChange={(e) =>

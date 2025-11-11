@@ -27,8 +27,9 @@ export function useBoiDetail(id: number | null) {
   const salvar = useCallback(
     async (partialAnimal: Partial<AnimalData["animal"]>) => {
       if (!boi?.id) return;
-      const next: AnimalData = {
+      const next: AnimalData & { id: number } = {
         ...boi,
+        id: boi.id,
         animal: {
           ...(boi.animal ?? {}),
           ...partialAnimal,
