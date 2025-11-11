@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/ServiceWorkerUpdater";
+import SyncManager from "@/components/SyncManager";
+import DatabaseInitializer from "@/components/DatabaseInitializer";
+import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +43,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <DatabaseInitializer />
+        <SyncStatusIndicator />
         {children}
         <ServiceWorkerUpdater />
+        <SyncManager />
       </body>
     </html>
   );

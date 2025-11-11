@@ -50,6 +50,18 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   /* outras opções de config podem ser adicionadas aqui */
+  webpack: (config, { isServer }) => {
+    // Configuração para sql.js
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default withPWA(nextConfig);

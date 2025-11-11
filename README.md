@@ -39,17 +39,11 @@ O **Rico Ouro App** é uma solução completa para gestão de rebanhos bovinos, 
 - **Exportação para planilhas**: Exportação de dados em formato Excel/CSV
 - **Filtros personalizados**: Seleção de campos específicos para relatórios
 
-### 📥 Importação de Dados
-
-- **Importação em lote**: Carregamento de múltiplos animais via planilhas CSV/Excel
-- **Validação de dados**: Verificação automática de duplicatas e dados inválidos
-- **Atualização inteligente**: Mesclagem automática de dados existentes
-
 ### 🌐 Funcionalidades Offline
 
 - **PWA completo**: Instalável como aplicativo nativo
-- **Armazenamento local**: Todos os dados salvos localmente usando IndexedDB
-- **Sincronização**: Dados disponíveis mesmo sem conexão à internet
+- **Armazenamento local**: Todos os dados salvos localmente em SQLite (sql.js), persistido no `localStorage`
+- **Sincronização**: Sincronização automática com Supabase quando online
 - **Service Worker**: Cache inteligente para melhor performance
 
 ## 🛠️ Tecnologias Utilizadas
@@ -64,8 +58,8 @@ O **Rico Ouro App** é uma solução completa para gestão de rebanhos bovinos, 
 
 ### Armazenamento e Dados
 
-- **Dexie.js** - Wrapper para IndexedDB
-- **IndexedDB** - Banco de dados local do navegador
+- **SQLite (sql.js)** - Banco local em memória com persistência no `localStorage`
+- **Supabase (Postgres + RLS)** - Repositório remoto e sincronização
 
 ### Bibliotecas de UI
 
@@ -173,10 +167,10 @@ rico-ouro-app/
 
 ### Armazenamento de Dados
 
-- Banco de dados local usando IndexedDB via Dexie.js
-- Versionamento de schema para migrações
-- Índices otimizados para buscas rápidas
-- Validação de dados antes do armazenamento
+- Banco de dados local usando SQLite (sql.js) com persistência no `localStorage`
+- Sincronização bidirecional com Supabase (last-write-wins via `updated_at`)
+- Fila de sincronização local para operações offline
+- Validação e normalização antes de persistir
 
 ### Performance
 
@@ -194,14 +188,13 @@ rico-ouro-app/
 
 ## 🔒 Segurança e Privacidade
 
-- Todos os dados são armazenados localmente no dispositivo
-- Nenhuma informação é enviada para servidores externos
+- Todos os dados são armazenados localmente no dispositivo (SQLite)
+- Somente sincronização com Supabase quando online
 - Controle total dos dados pelo usuário
 - Possibilidade de limpeza completa dos dados
 
 ## 🚧 Melhorias Futuras
 
-- [ ] Sincronização com servidor (opcional)
 - [ ] Backup e restauração de dados
 - [ ] Modo escuro
 - [ ] Notificações de vacinas pendentes
