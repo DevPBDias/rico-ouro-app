@@ -6,11 +6,7 @@ const ImportDataPage = () => {
   return (
     <main>
       <Header title="Importar dados" />
-      <RedirectButtons
-        data={importLinks}
-        className="grid-cols-2"
-        btnHeight="py-8"
-      />
+      <RedirectButtons data={importLinks} />
     </main>
   );
 };

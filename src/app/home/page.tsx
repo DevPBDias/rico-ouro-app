@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import RedirectButtons from "@/components/buttons/RedirectButtons";
+import HomeButtons from "@/components/buttons/HomeButtons";
 import { homeLinks } from "@/constants/HomeLinks";
 import homePage from "@/assets/images/home-page.png";
 import { motion } from "framer-motion";
@@ -30,7 +30,7 @@ const HomePage = () => {
         fill
       />
 
-      <RedirectButtons
+      <HomeButtons
         data={homeLinks}
         className="absolute bottom-0 left-0 z-20 grid-cols-2 gap-4 h-[70dvh] py-40"
         colorBg="white"
