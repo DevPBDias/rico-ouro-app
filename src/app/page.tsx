@@ -11,7 +11,7 @@ export default function OpeningPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setTimeout(() => router.push("/home"), 1000);
+      setTimeout(() => router.push("/login"), 1000);
     }, 2000);
 
     return () => clearTimeout(timer);
