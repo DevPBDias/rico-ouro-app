@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import loginImg from "@/assets/images/login-page.png";
 import logoImg from "@/assets/icons/logo-hor-indiouro.png";
 
@@ -40,8 +41,19 @@ export default function LoginPage() {
   };
 
   return (
-    <main
-      className="relativep-6 flex flex-col gap-6 items-center
+    <motion.main
+      key="home"
+      initial={{
+        opacity: 0,
+      }}
+      animate={{
+        opacity: 1,
+      }}
+      transition={{
+        duration: 1.2,
+        ease: "easeInOut",
+      }}
+      className="relative p-6 flex flex-col gap-6 items-center
       justify-center w-full min-h-dvh"
     >
       <div className="absolute inset-0 -z-10">
@@ -101,6 +113,6 @@ export default function LoginPage() {
           {loadingLocal ? "Entrando..." : "Entrar"}
         </Button>
       </form>
-    </main>
+    </motion.main>
   );
 }
