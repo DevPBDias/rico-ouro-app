@@ -33,8 +33,14 @@ export default function LoginPage() {
     setErr(null);
     try {
       await signIn(email, password);
-    } catch (error: any) {
-      setErr(error.message || "Erro ao autenticar");
+    } catch (error: unknown) {
+      const message =
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+          ? error.message
+          : "Erro ao autenticar";
+      setErr(message);
     } finally {
       setLoadingLocal(false);
     }
