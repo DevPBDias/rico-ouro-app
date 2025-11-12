@@ -65,7 +65,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 -z-10">
         <Image
           src={logoImg}
-          className="absolute top-10 left-1/2 transform -translate-x-1/2 w-52 h-40 object-contain z-10"
+          className="absolute top-6 left-1/2 transform -translate-x-1/2 w-52 h-40 object-contain z-10"
           alt="cow login page"
           priority
         />
@@ -79,10 +79,13 @@ export default function LoginPage() {
       </div>
       <form
         onSubmit={handleSubmit}
-        className="absolute w-full max-w-sm flex flex-col gap-4 bg-muted-white/50 p-6 rounded-lg shadow-md"
+        className="absolute w-full bottom-4 max-w-sm flex flex-col gap-4 bg-muted-white/50 p-6 rounded-lg shadow-md"
       >
         <div className="mt-1 flex flex-col gap-1">
-          <label htmlFor="email" className="text-lg font-bold text-white">
+          <label
+            htmlFor="email"
+            className="text-sm font-bold text-white uppercase"
+          >
             E-mail:
           </label>
           <Input
@@ -91,12 +94,15 @@ export default function LoginPage() {
             placeholder="E-mail"
             required
             id="email"
-            className="pl-2 h-10 bg-white border border-gray-200 rounded-lg text-base"
+            className="pl-2 h-10 bg-white border border-gray-200 rounded-lg text-base placeholder:text-sm placeholder:italic"
             type="email"
           />
         </div>
-        <div className="mt-1 flex flex-col gap-1">
-          <label htmlFor="password" className="text-lg font-bold text-white">
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="password"
+            className="text-sm font-bold text-white uppercase"
+          >
             Senha:
           </label>
           <Input
@@ -105,7 +111,7 @@ export default function LoginPage() {
             placeholder="Senha"
             id="password"
             type="password"
-            className="pl-2 h-10 bg-white border border-gray-200 rounded-lg text-base"
+            className="pl-2 h-10 bg-white border border-gray-200 rounded-lg text-base placeholder:text-sm placeholder:italic"
             required
           />
         </div>
@@ -114,7 +120,7 @@ export default function LoginPage() {
         <Button
           disabled={loadingLocal}
           type="submit"
-          className="uppercase text-sm font-bold mt-6"
+          className="uppercase text-sm font-bold mt-4"
         >
           {loadingLocal ? "Entrando..." : "Entrar"}
         </Button>
