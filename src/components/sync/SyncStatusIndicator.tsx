@@ -23,11 +23,11 @@ export function SyncStatusIndicator() {
   const getStatusTitle = () => {
     switch (status) {
       case "synced":
-        return "Banco sincronizado com Supabase";
+        return "Online";
       case "error":
-        return "Erro na sincronização ou não sincronizado";
+        return "Não sincronizado";
       case "offline":
-        return "Sem conexão com a internet";
+        return "Offline";
       case "checking":
         return "Verificando status...";
       default:
@@ -36,10 +36,8 @@ export function SyncStatusIndicator() {
   };
 
   return (
-    <div
-      className="fixed top-4 right-4 z-50"
-      title={getStatusTitle()}
-    >
+    <div className="fixed top-4 right-4 z-50 flex flex-row items-center gap-2">
+      <p className="text-xs text-white">{getStatusTitle()}</p>
       <div
         className={`w-4 h-4 rounded-full ${getStatusColor()} shadow-lg border-2 border-white`}
       />
