@@ -33,13 +33,7 @@ const HomePage = () => {
           priority
           fill
         />
-
-        <HomeButtons
-          data={homeLinks}
-          className="absolute bottom-0 left-0 z-20 grid-cols-2 gap-4 h-[70dvh] py-40"
-          colorBg="white"
-          textColor="text-[#1162AE]"
-        />
+        <HomeButtons data={homeLinks} />
       </motion.main>
     </ProtectedClient>
   );
