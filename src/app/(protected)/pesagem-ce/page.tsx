@@ -9,13 +9,13 @@ import { WeightList } from "@/components/lists/WeightList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
+import { AnimalData } from "@/lib/db";
 
 const PesagemPage = () => {
   const { dados } = useAnimalDB();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
-  const [selectedAnimal, setSelectedAnimal] = useState<any | null>(null);
-  const [showAddPeso, setShowAddPeso] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalData | null>(null);
   const [type, setType] = useState<string>("");
   const {
     boi,
@@ -81,7 +81,6 @@ const PesagemPage = () => {
     setError(null);
     try {
       await savePesoComMes(date, valor);
-      setShowAddPeso(false);
     } catch (err) {
       console.error("Erro ao adicionar peso:", err);
       setError("Erro ao adicionar peso");
