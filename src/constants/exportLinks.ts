@@ -4,12 +4,12 @@ const reportLinks: Links[] = [
   {
     id: 1,
     name: "PDF",
-    href: "/relatorios/pdf",
+    href: "/geral/relatorios/pdf",
   },
   {
     id: 2,
     name: "Planilhas",
-    href: "/relatorios/planilhas",
+    href: "/geral/relatorios/planilhas",
   },
 ];
 

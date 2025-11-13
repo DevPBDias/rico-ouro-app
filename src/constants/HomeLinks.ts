@@ -11,7 +11,7 @@ import {
 export const homeLinks: Links[] = [
   {
     id: 1,
-    name: "Consultar animal",
+    name: "Informação animal",
     href: "/consulta",
     icon: Search,
   },
@@ -36,7 +36,7 @@ export const homeLinks: Links[] = [
 
   {
     id: 5,
-    name: "Gerenciar",
+    name: "Gerenciar rebanhos",
     href: "/gerenciar",
     icon: Settings,
   },

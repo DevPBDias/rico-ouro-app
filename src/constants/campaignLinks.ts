@@ -3,12 +3,12 @@ import { Links } from "@/types";
 const campaignLinks: Links[] = [
   {
     id: 1,
-    name: "Fazendas",
+    name: "Animal / Fazendas",
     href: "/gerenciar/fazendas",
   },
   {
     id: 2,
-    name: "Status do animal",
+    name: "Situação animal",
     href: "/gerenciar/status",
   },
 ];
