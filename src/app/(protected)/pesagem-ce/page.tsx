@@ -143,14 +143,14 @@ const PesagemPage = () => {
               onClick={() => setType("pesagem")}
               className="text-primary border-primary font-semibold text-sm uppercase w-full"
             >
-              Pesos
+              Pesagem
             </Button>
             <Button
               variant="outline"
               onClick={() => setType("circunferencia")}
-              className="text-primary border-primary font-bold text-sm uppercase w-full"
+              className="text-primary border-primary font-semibold text-sm uppercase w-full"
             >
-              CE
+              Perím. Escrotal
             </Button>
           </div>
         </div>
@@ -180,7 +180,7 @@ const PesagemPage = () => {
         <section className="w-full px-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
-              Circunferência Escrotal
+              Perímetro Escrotal
             </h2>
             <AddPesoModal type="circunferencia" onAddPeso={handleAddCE} />
           </div>

@@ -45,7 +45,7 @@ export const homeLinks: Links[] = [
   {
     id: 6,
     name: "Pesagem / CE",
-    href: "/pesagem",
+    href: "/pesagem-ce",
     icon: ArrowUpNarrowWideIcon,
   },
   {
