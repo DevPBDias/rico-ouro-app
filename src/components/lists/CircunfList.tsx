@@ -53,7 +53,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
   }
 
   return (
-    <div className="space-y-4 mt-8">
+    <div className="space-y-4 mt-6">
       {CEMedidos?.map((p, i) => (
         <div
           key={i}
@@ -62,7 +62,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
           <div className="flex flex-col items-start gap-3 uppercase">
             <div className="flex flex-col items-start gap-[2px]">
               <span className="text-sm font-semibold text-gray-400">
-                {i === 0 ? "Medição Nascimento" : `${i + 1}ª Medição`}
+                {`${i + 1}ª Medição`}
               </span>
               <span className="text-xs font-medium text-gray-400">{p.mes}</span>
             </div>
@@ -87,7 +87,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
                 onClick={() => handleOpen(i, p.valor)}
                 className="text-gray-500 border-gray-400"
               >
-                <Pencil className="w-4 h-4" />
+                <Pencil className="w-4 h-4" color="blue" />
               </Button>
               <Button
                 variant="outline"
@@ -95,7 +95,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
                 onClick={() => deleteCE(i)}
                 className="text-gray-500 border-gray-400"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" color="red" />
               </Button>
             </div>
           </div>

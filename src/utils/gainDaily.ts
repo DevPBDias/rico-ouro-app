@@ -1,10 +1,12 @@
 // 🔹 Função auxiliar para converter string em Date
 export function parseData(dataStr: string): Date {
-  if (dataStr.includes("/")) {
-    const [dia, mes, ano] = dataStr.split("/").map(Number);
+  const s = (dataStr || "").trim();
+  if (!s) throw new Error("Formato de data inválido: " + dataStr);
+  if (s.includes("/")) {
+    const [dia, mes, ano] = s.split("/").map(Number);
     return new Date(ano, mes - 1, dia);
-  } else if (dataStr.includes("-")) {
-    const [ano, mes, dia] = dataStr.split("-").map(Number);
+  } else if (s.includes("-")) {
+    const [ano, mes, dia] = s.split("-").map(Number);
     return new Date(ano, mes - 1, dia);
   }
   throw new Error("Formato de data inválido: " + dataStr);
@@ -30,7 +32,14 @@ export function calcularGanhoDiario(
 }[] {
   if (!pesosMedidos || pesosMedidos.length < 2) return [];
 
-  const ordenado = [...pesosMedidos].sort(
+  // Filter out invalid entries (missing mes or non-numeric valor)
+  const valid = pesosMedidos
+    .map((p) => ({ mes: p?.mes ?? "", valor: Number(p?.valor ?? NaN) }))
+    .filter((p) => p.mes && !Number.isNaN(p.valor));
+
+  if (valid.length < 2) return [];
+
+  const ordenado = [...valid].sort(
     (a, b) => parseData(a.mes).getTime() - parseData(b.mes).getTime()
   );
 

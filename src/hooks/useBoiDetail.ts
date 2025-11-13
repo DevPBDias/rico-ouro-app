@@ -54,85 +54,120 @@ export function useBoiDetail(id: number | null) {
     [boi]
   );
 
-  // 🔹 Pesos
-  const addPeso = useCallback(async () => {
-    if (!boi) return;
-    const now = new Date();
-    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(now.getDate()).padStart(2, "0")}`;
-    const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
-    await salvar({ pesosMedidos: novo });
-  }, [boi, salvar]);
+    function formatToDDMMYYYY(dateStr?: string): string {
+      if (!dateStr) return "";
+      const s = dateStr.trim();
+      // already DD/MM/YYYY
+      if (s.includes("/")) return s;
+      // YYYY-MM-DD or ISO
+      if (s.includes("-")) {
+        const parts = s.split("-");
+        if (parts.length >= 3) {
+          const [y, m, d] = parts;
+          // if d contains time, strip
+          const day = d.split("T")[0];
+          return `${day}/${m.padStart(2, "0")}/${y}`;
+        }
+      }
+      // fallback: try Date
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime())) {
+        const d = String(dt.getDate()).padStart(2, "0");
+        const m = String(dt.getMonth() + 1).padStart(2, "0");
+        const y = dt.getFullYear();
+        return `${d}/${m}/${y}`;
+      }
+      return s;
+    }
 
-  const savePesoComMes = useCallback(
-    async (mes: string, valor: string | number) => {
+    // 🔹 Pesos
+    const addPeso = useCallback(async () => {
       if (!boi) return;
-      const atual = boi.animal.pesosMedidos ?? [];
-      const novo = [...atual, { mes, valor: Number(valor) }];
+      const now = new Date();
+      const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(now.getDate()).padStart(2, "0")}`;
+      const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
       await salvar({ pesosMedidos: novo });
-    },
-    [boi, salvar]
-  );
+    }, [boi, salvar]);
 
-  const editPeso = useCallback(
-    async (index: number, valor: string) => {
+    const savePesoComMes = useCallback(
+      async (mes: string, valor: string | number) => {
+        if (!boi) return;
+        const atual = boi.animal.pesosMedidos ?? [];
+        const novo = [...atual, { mes, valor: Number(valor) }];
+        await salvar({ pesosMedidos: novo });
+      },
+      [boi, salvar]
+    );
+
+    const editPeso = useCallback(
+      async (index: number, valor: string) => {
+        if (!boi) return;
+        const novo = [...(boi.animal.pesosMedidos ?? [])];
+        const current = novo[index] ?? { mes: "", valor: 0 };
+        // preserve nascimento date if current.mes is empty
+        const mes =
+          current.mes && current.mes.trim() !== ""
+            ? current.mes
+            : formatToDDMMYYYY(boi.animal.nasc);
+        novo[index] = { ...current, mes, valor: Number(valor) };
+        await salvar({ pesosMedidos: novo });
+      },
+      [boi, salvar]
+    );
+
+    const deletePeso = useCallback(
+      async (index: number) => {
+        if (!boi) return;
+        const novo = (boi.animal.pesosMedidos ?? []).filter(
+          (_, i) => i !== index
+        );
+        await salvar({ pesosMedidos: novo });
+      },
+      [boi, salvar]
+    );
+
+    // 🔹 Circunferência
+    const addCirc = useCallback(async () => {
       if (!boi) return;
-      const novo = [...(boi.animal.pesosMedidos ?? [])];
-      const current = novo[index] ?? { mes: "", valor: 0 };
-      novo[index] = { ...current, valor: Number(valor) };
-      await salvar({ pesosMedidos: novo });
-    },
-    [boi, salvar]
-  );
-
-  const deletePeso = useCallback(
-    async (index: number) => {
-      if (!boi) return;
-      const novo = (boi.animal.pesosMedidos ?? []).filter(
-        (_, i) => i !== index
-      );
-      await salvar({ pesosMedidos: novo });
-    },
-    [boi, salvar]
-  );
-
-  // 🔹 Circunferência
-  const addCirc = useCallback(async () => {
-    if (!boi) return;
-    const now = new Date();
-    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(now.getDate()).padStart(2, "0")}`;
-    const novo = [
-      ...(boi.animal.circunferenciaEscrotal ?? []),
-      { mes, valor: 0 },
-    ];
-    await salvar({ circunferenciaEscrotal: novo });
-  }, [boi, salvar]);
-
-  const saveCircComMes = useCallback(
-    async (mes: string, valor: string | number) => {
-      if (!boi) return;
-      const atual = boi.animal.circunferenciaEscrotal ?? [];
-      const novo = [...atual, { mes, valor: Number(valor) }];
+      const now = new Date();
+      const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(now.getDate()).padStart(2, "0")}`;
+      const novo = [
+        ...(boi.animal.circunferenciaEscrotal ?? []),
+        { mes, valor: 0 },
+      ];
       await salvar({ circunferenciaEscrotal: novo });
-    },
-    [boi, salvar]
-  );
+    }, [boi, salvar]);
 
-  const editCirc = useCallback(
-    async (index: number, valor: string) => {
-      if (!boi) return;
-      const novo = [...(boi.animal.circunferenciaEscrotal ?? [])];
-      const current = novo[index] ?? { mes: "", valor: 0 };
-      novo[index] = { ...current, valor: Number(valor) };
-      await salvar({ circunferenciaEscrotal: novo });
-    },
-    [boi, salvar]
-  );
+    const saveCircComMes = useCallback(
+      async (mes: string, valor: string | number) => {
+        if (!boi) return;
+        const atual = boi.animal.circunferenciaEscrotal ?? [];
+        const novo = [...atual, { mes, valor: Number(valor) }];
+        await salvar({ circunferenciaEscrotal: novo });
+      },
+      [boi, salvar]
+    );
+
+    const editCirc = useCallback(
+      async (index: number, valor: string) => {
+        if (!boi) return;
+        const novo = [...(boi.animal.circunferenciaEscrotal ?? [])];
+        const current = novo[index] ?? { mes: "", valor: 0 };
+        const mes =
+          current.mes && current.mes.trim() !== ""
+            ? current.mes
+            : formatToDDMMYYYY(boi.animal.nasc);
+        novo[index] = { ...current, mes, valor: Number(valor) };
+        await salvar({ circunferenciaEscrotal: novo });
+      },
+      [boi, salvar]
+    );
 
   const deleteCirc = useCallback(
     async (index: number) => {

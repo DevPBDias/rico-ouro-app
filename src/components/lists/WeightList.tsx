@@ -90,7 +90,7 @@ export function WeightList({
                 onClick={() => handleOpen(i, p.valor)}
                 className="text-gray-500 border-gray-400"
               >
-                <Pencil className="w-4 h-4" />
+                <Pencil className="w-4 h-4" color="blue" />
               </Button>
               <Button
                 variant="outline"
@@ -98,7 +98,7 @@ export function WeightList({
                 onClick={() => deletePeso(i)}
                 className="text-gray-500 border-gray-400"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" color="red" />
               </Button>
             </div>
           </div>

@@ -47,11 +47,8 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          size="default"
-          className="bg-[#1162AE] text-white w-full uppercase h-10"
-        >
-          <Plus className="w-4 h-4" /> Adicionar
+        <Button size="default" variant="default" className="bg-[#1162AE]">
+          <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
 
