@@ -36,7 +36,6 @@ const VaccinesPage = () => {
   });
 
   const rgnOptions = useMemo(() => {
-    // label e value passam a ser o próprio RGN (exibição apenas do RGN)
     return dados
       .map((animal) => ({
         label: animal.animal.rgn || "",
@@ -57,7 +56,6 @@ const VaccinesPage = () => {
 
       const dataFormatada = FormatData(formData.data);
 
-      // Registra todas as vacinas selecionadas para o mesmo animal/data
       for (const vacinaNome of formData.vacinas) {
         await adicionarVacina(formData.rgn, {
           nome: vacinaNome,

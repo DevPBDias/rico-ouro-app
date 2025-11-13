@@ -68,14 +68,12 @@ export function RgnAutocomplete({
               )}
               onClick={() => {
                 onSelect(option.value);
-                // Mostra somente o RGN no campo
                 setSearchTerm(option.value);
                 setOpen(false);
               }}
             >
               <div className="flex items-center gap-2">
                 {value === option.value && <CheckIcon className="h-4 w-4" />}
-                {/* Mostrar apenas o RGN na lista */}
                 <span>{option.value}</span>
               </div>
             </div>

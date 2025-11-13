@@ -171,6 +171,7 @@ const PesagemPage = () => {
             deletePeso={(index) => deletePeso(index)}
             editPeso={(index, valor) => editPeso(index, valor)}
             pesosMedidos={getPesosWithDefault()}
+            gainDaily={boi?.animal.ganhoDiario || []}
           />
         </section>
       )}

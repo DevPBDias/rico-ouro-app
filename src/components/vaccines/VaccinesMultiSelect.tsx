@@ -46,7 +46,7 @@ export function VaccinesMultiSelect({
                     onCheckedChange={(val) => onToggle(name, Boolean(val))}
                     aria-label={name}
                   />
-                  <span className="text-sm uppercase text-primary font-medium">
+                  <span className="text-xs uppercase text-primary font-medium">
                     {name}
                   </span>
                 </label>

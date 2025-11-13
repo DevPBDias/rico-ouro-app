@@ -15,16 +15,26 @@ interface PesoMedido {
   mes: string;
 }
 
+interface GainDaily {
+  dailyGain: number;
+  days: number;
+  endDate: string;
+  initialDate: string;
+  totalGain: number;
+}
+
 interface WeightListProps {
   pesosMedidos: PesoMedido[];
   editPeso: (index: number, valor: string) => void;
   deletePeso: (index: number) => void;
+  gainDaily: GainDaily[];
 }
 
 export function WeightList({
   pesosMedidos,
   editPeso,
   deletePeso,
+  gainDaily,
 }: WeightListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
@@ -54,21 +64,38 @@ export function WeightList({
     return Math.floor(diffEmMs / (1000 * 60 * 60 * 24));
   }
 
+  const valueInteval = (i: number): string => {
+    if (i === 0) return "0";
+
+    const days = diferencaEmDias(pesosMedidos[i].mes, pesosMedidos[i - 1].mes);
+    return String(days);
+  };
+
+  const valueGmd = (i: number): string => {
+    if (i === 0) return "0";
+
+    const entry = gainDaily.find((g) => g.endDate === pesosMedidos[i].mes);
+    if (!entry) return "0";
+    return String(entry.dailyGain);
+  };
+
   return (
     <div className="space-y-4 mt-6">
       {pesosMedidos?.map((p, i) => (
         <div
           key={i}
-          className="flex items-center justify-between border rounded-xl p-3 bg-white shadow-sm"
+          className="flex items-center justify-between gap-3 border rounded-xl p-3 bg-white shadow-sm"
         >
-          <div className="flex flex-col items-start gap-3 uppercase">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400">
+          <div className="relative w-full flex flex-col items-start gap-3 border border-gray-400 px-1 py-2.5 rounded-lg">
+            <div className="flex flex-col items-start gap-[2px] pl-3">
+              <span className="absolute bg-white -top-2 left-2 px-2 text-xs font-semibold text-gray-400">
                 {i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
               </span>
-              <span className="text-xs font-medium text-gray-400">{p.mes}</span>
+              <span className="text-xs font-semibold text-primary mt-1">
+                {p.mes}
+              </span>
             </div>
-            <div className="text-lg font-bold text-[#1162AE] flex flex-row items-center  gap-1">
+            <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
               {p.valor}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 kg
@@ -76,14 +103,31 @@ export function WeightList({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-center border border-[#1162AE] px-1 py-2 rounded-lg">
-              <span className="uppercase text-sm font-bold text-[#1162AE]">
-                {i === 0 ? 0 : diferencaEmDias(p.mes, pesosMedidos[i - 1].mes)}{" "}
-                dias
-              </span>
+          <div className="flex flex-row gap-2">
+            <div className="flex flex-col justify-center items-center gap-3">
+              <div className="relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
+                <h4 className="absolute bg-white -top-2 left-2 px-1 text-xs font-semibold text-gray-400">
+                  Intervalo
+                </h4>
+                <div className="flex flex-row gap-1 items-center justify-center">
+                  <span className="uppercase text-sm font-bold text-primary">
+                    {valueInteval(i)}
+                  </span>
+                  <span className="text-xs text-gray-400">dias</span>
+                </div>
+              </div>
+              <div className="relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
+                <h4 className="absolute bg-white -top-2 left-2 px-1 text-xs font-semibold text-gray-400">
+                  GMD
+                </h4>
+                <div className="flex flex-row gap-1 items-center justify-center">
+                  <span className="uppercase text-sm font-bold text-primary">
+                    {valueGmd(i)}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-4">
               <Button
                 variant="outline"
                 size="icon"
