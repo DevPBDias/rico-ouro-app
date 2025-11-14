@@ -41,7 +41,7 @@ export default function NascimentosPage() {
         nome: "",
         serieRGD: "INDI",
         rgn: formData.rgn,
-        sexo: formData.sexo,
+        sexo: formData.sexo === "Macho" ? "M" : "F",
         nasc: FormatData(formData.data),
         iabcgz: "-",
         deca: "-",
