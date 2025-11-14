@@ -1,5 +1,5 @@
 import initSqlJs, { Database, SqlJsStatic } from "sql.js";
-import { AnimalData, Vaccine, Farm } from "./db";
+import { AnimalData, Vaccine, Farm, Matriz } from "./db";
 import {
   serializeAnimalData,
   deserializeAnimalData,
@@ -107,6 +107,23 @@ async function createTables(database: Database) {
     CREATE INDEX IF NOT EXISTS idx_farms_uuid ON farms(uuid)
   `);
 
+  // Tabela matrizes (armazenamos o objeto como JSON similar a animal_data)
+  database.run(`
+    CREATE TABLE IF NOT EXISTS matrizes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      uuid TEXT UNIQUE,
+      matriz_json TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      synced_at TEXT,
+      is_synced INTEGER DEFAULT 0
+    )
+  `);
+
+  database.run(`
+    CREATE INDEX IF NOT EXISTS idx_matrizes_uuid ON matrizes(uuid)
+  `);
+
   // Tabela sync_queue (fila de sincronização)
   database.run(`
     CREATE TABLE IF NOT EXISTS sync_queue (
@@ -122,7 +139,10 @@ async function createTables(database: Database) {
 }
 
 // Operações AnimalData
-export async function addAnimalData(animal: AnimalData, providedUuid?: string): Promise<number> {
+export async function addAnimalData(
+  animal: AnimalData,
+  providedUuid?: string
+): Promise<number> {
   const database = await initSQLite();
   const uuid = providedUuid || crypto.randomUUID();
 
@@ -146,18 +166,28 @@ export async function addAnimalData(animal: AnimalData, providedUuid?: string): 
     ]
   );
 
-  const id = database.exec("SELECT last_insert_rowid() as id")[0].values[0][0] as number;
+  const id = database.exec("SELECT last_insert_rowid() as id")[0]
+    .values[0][0] as number;
 
   // Adiciona à fila de sincronização apenas se não foi sincronizado
   if (!isSynced) {
-    addToSyncQueue(database, "animal_data", "INSERT", id, uuid, JSON.stringify(normalized));
+    addToSyncQueue(
+      database,
+      "animal_data",
+      "INSERT",
+      id,
+      uuid,
+      JSON.stringify(normalized)
+    );
   }
 
   return id;
 }
 
 // Busca animal por UUID (usado na sincronização)
-export async function getAnimalDataByUuid(uuid: string): Promise<AnimalData | undefined> {
+export async function getAnimalDataByUuid(
+  uuid: string
+): Promise<AnimalData | undefined> {
   const database = await initSQLite();
   const result = database.exec(
     `SELECT id, uuid, animal_json, pai_json, mae_json, avo_materno_json 
@@ -179,19 +209,21 @@ export async function getAnimalDataByUuid(uuid: string): Promise<AnimalData | un
   );
 }
 
-export async function updateAnimalData(id: number, animal: AnimalData): Promise<void> {
+export async function updateAnimalData(
+  id: number,
+  animal: AnimalData
+): Promise<void> {
   const database = await initSQLite();
 
   // Normaliza e serializa os dados garantindo estrutura correta
   const normalized = normalizeAnimalData(animal);
   const serialized = serializeAnimalData(normalized);
 
-  const result = database.exec(
-    `SELECT uuid FROM animal_data WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM animal_data WHERE id = ?`, [
+    id,
+  ]);
 
-  const uuid = result.length > 0 ? result[0].values[0][0] as string : null;
+  const uuid = result.length > 0 ? (result[0].values[0][0] as string) : null;
 
   database.run(
     `UPDATE animal_data 
@@ -209,11 +241,20 @@ export async function updateAnimalData(id: number, animal: AnimalData): Promise<
 
   // Adiciona à fila de sincronização
   if (uuid) {
-    addToSyncQueue(database, "animal_data", "UPDATE", id, uuid, JSON.stringify(normalized));
+    addToSyncQueue(
+      database,
+      "animal_data",
+      "UPDATE",
+      id,
+      uuid,
+      JSON.stringify(normalized)
+    );
   }
 }
 
-export async function getAnimalDataById(id: number): Promise<AnimalData | undefined> {
+export async function getAnimalDataById(
+  id: number
+): Promise<AnimalData | undefined> {
   const database = await initSQLite();
   const result = database.exec(
     `SELECT id, uuid, animal_json, pai_json, mae_json, avo_materno_json 
@@ -235,7 +276,9 @@ export async function getAnimalDataById(id: number): Promise<AnimalData | undefi
   );
 }
 
-export async function getAnimalDataByRgn(rgn: string): Promise<AnimalData | undefined> {
+export async function getAnimalDataByRgn(
+  rgn: string
+): Promise<AnimalData | undefined> {
   // Busca todos e filtra no JavaScript (mais confiável que json_extract no sql.js)
   const allAnimals = await getAllAnimalData();
   return allAnimals.find((animal) => animal.animal?.rgn === rgn);
@@ -267,14 +310,14 @@ export async function getAllAnimalData(): Promise<AnimalData[]> {
 export async function deleteAnimalData(id: number): Promise<void> {
   const database = await initSQLite();
 
-  const result = database.exec(
-    `SELECT uuid FROM animal_data WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM animal_data WHERE id = ?`, [
+    id,
+  ]);
 
-  const uuid = result.length > 0 && result[0].values.length > 0 
-    ? result[0].values[0][0] as string 
-    : null;
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
 
   database.run(`DELETE FROM animal_data WHERE id = ?`, [id]);
 
@@ -291,7 +334,10 @@ export async function clearAnimalData(): Promise<void> {
 }
 
 // Operações Vaccines
-export async function addVaccine(vaccine: Vaccine, providedUuid?: string): Promise<number> {
+export async function addVaccine(
+  vaccine: Vaccine,
+  providedUuid?: string
+): Promise<number> {
   const database = await initSQLite();
   const uuid = providedUuid || crypto.randomUUID();
 
@@ -304,18 +350,28 @@ export async function addVaccine(vaccine: Vaccine, providedUuid?: string): Promi
     [uuid, vaccine.vaccineName, isSynced]
   );
 
-  const id = database.exec("SELECT last_insert_rowid() as id")[0].values[0][0] as number;
+  const id = database.exec("SELECT last_insert_rowid() as id")[0]
+    .values[0][0] as number;
 
   // Adiciona à fila de sincronização apenas se não foi sincronizado
   if (!isSynced) {
-    addToSyncQueue(database, "vaccines", "INSERT", id, uuid, JSON.stringify(vaccine));
+    addToSyncQueue(
+      database,
+      "vaccines",
+      "INSERT",
+      id,
+      uuid,
+      JSON.stringify(vaccine)
+    );
   }
 
   return id;
 }
 
 // Busca vacina por UUID (usado na sincronização)
-export async function getVaccineByUuid(uuid: string): Promise<Vaccine | undefined> {
+export async function getVaccineByUuid(
+  uuid: string
+): Promise<Vaccine | undefined> {
   const database = await initSQLite();
   const result = database.exec(
     `SELECT id, uuid, vaccine_name FROM vaccines WHERE uuid = ?`,
@@ -333,17 +389,18 @@ export async function getVaccineByUuid(uuid: string): Promise<Vaccine | undefine
   };
 }
 
-export async function updateVaccine(id: number, vaccine: Vaccine): Promise<void> {
+export async function updateVaccine(
+  id: number,
+  vaccine: Vaccine
+): Promise<void> {
   const database = await initSQLite();
 
-  const result = database.exec(
-    `SELECT uuid FROM vaccines WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM vaccines WHERE id = ?`, [id]);
 
-  const uuid = result.length > 0 && result[0].values.length > 0 
-    ? result[0].values[0][0] as string 
-    : null;
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
 
   database.run(
     `UPDATE vaccines 
@@ -353,7 +410,14 @@ export async function updateVaccine(id: number, vaccine: Vaccine): Promise<void>
   );
 
   if (uuid) {
-    addToSyncQueue(database, "vaccines", "UPDATE", id, uuid, JSON.stringify(vaccine));
+    addToSyncQueue(
+      database,
+      "vaccines",
+      "UPDATE",
+      id,
+      uuid,
+      JSON.stringify(vaccine)
+    );
   }
 }
 
@@ -375,7 +439,9 @@ export async function getVaccineById(id: number): Promise<Vaccine | undefined> {
   };
 }
 
-export async function getVaccineByName(name: string): Promise<Vaccine | undefined> {
+export async function getVaccineByName(
+  name: string
+): Promise<Vaccine | undefined> {
   const database = await initSQLite();
   const result = database.exec(
     `SELECT id, uuid, vaccine_name FROM vaccines WHERE vaccine_name = ?`,
@@ -412,14 +478,12 @@ export async function getAllVaccines(): Promise<Vaccine[]> {
 export async function deleteVaccine(id: number): Promise<void> {
   const database = await initSQLite();
 
-  const result = database.exec(
-    `SELECT uuid FROM vaccines WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM vaccines WHERE id = ?`, [id]);
 
-  const uuid = result.length > 0 && result[0].values.length > 0 
-    ? result[0].values[0][0] as string 
-    : null;
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
 
   database.run(`DELETE FROM vaccines WHERE id = ?`, [id]);
 
@@ -429,7 +493,10 @@ export async function deleteVaccine(id: number): Promise<void> {
 }
 
 // Operações Farms
-export async function addFarm(farm: Farm, providedUuid?: string): Promise<number> {
+export async function addFarm(
+  farm: Farm,
+  providedUuid?: string
+): Promise<number> {
   const database = await initSQLite();
   const uuid = providedUuid || crypto.randomUUID();
   const isSynced = providedUuid ? 1 : 0;
@@ -440,7 +507,8 @@ export async function addFarm(farm: Farm, providedUuid?: string): Promise<number
     [uuid, farm.farmName, isSynced]
   );
 
-  const id = database.exec("SELECT last_insert_rowid() as id")[0].values[0][0] as number;
+  const id = database.exec("SELECT last_insert_rowid() as id")[0]
+    .values[0][0] as number;
 
   if (!isSynced) {
     addToSyncQueue(database, "farms", "INSERT", id, uuid, JSON.stringify(farm));
@@ -521,14 +589,12 @@ export async function getAllFarms(): Promise<Farm[]> {
 
 export async function updateFarm(id: number, farm: Farm): Promise<void> {
   const database = await initSQLite();
-  const result = database.exec(
-    `SELECT uuid FROM farms WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM farms WHERE id = ?`, [id]);
 
-  const uuid = result.length > 0 && result[0].values.length > 0
-    ? (result[0].values[0][0] as string)
-    : null;
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
 
   database.run(
     `UPDATE farms
@@ -544,20 +610,152 @@ export async function updateFarm(id: number, farm: Farm): Promise<void> {
 
 export async function deleteFarm(id: number): Promise<void> {
   const database = await initSQLite();
-  const result = database.exec(
-    `SELECT uuid FROM farms WHERE id = ?`,
-    [id]
-  );
+  const result = database.exec(`SELECT uuid FROM farms WHERE id = ?`, [id]);
 
-  const uuid = result.length > 0 && result[0].values.length > 0
-    ? (result[0].values[0][0] as string)
-    : null;
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
 
   database.run(`DELETE FROM farms WHERE id = ?`, [id]);
 
   if (uuid) {
     addToSyncQueue(database, "farms", "DELETE", id, uuid, null);
   }
+}
+
+// Operações Matrizes
+export async function addMatriz(
+  matriz: Matriz,
+  providedUuid?: string
+): Promise<number> {
+  const database = await initSQLite();
+  const uuid = providedUuid || crypto.randomUUID();
+  const isSynced = providedUuid ? 1 : 0;
+
+  database.run(
+    `INSERT INTO matrizes (uuid, matriz_json, updated_at, is_synced)
+     VALUES (?, ?, datetime('now'), ?)`,
+    [uuid, JSON.stringify(matriz), isSynced]
+  );
+
+  const id = database.exec("SELECT last_insert_rowid() as id")[0]
+    .values[0][0] as number;
+
+  if (!isSynced) {
+    addToSyncQueue(
+      database,
+      "matrizes",
+      "INSERT",
+      id,
+      uuid,
+      JSON.stringify(matriz)
+    );
+  }
+
+  return id;
+}
+
+export async function getMatrizByUuid(
+  uuid: string
+): Promise<{ id: number; matriz: Matriz } | undefined> {
+  const database = await initSQLite();
+  const result = database.exec(
+    `SELECT id, uuid, matriz_json FROM matrizes WHERE uuid = ?`,
+    [uuid]
+  );
+
+  if (result.length === 0 || result[0].values.length === 0) return undefined;
+  const row = result[0].values[0];
+  return {
+    id: row[0] as number,
+    matriz: JSON.parse(row[2] as string) as Matriz,
+  };
+}
+
+export async function getMatrizById(
+  id: number
+): Promise<{ id: number; matriz: Matriz } | undefined> {
+  const database = await initSQLite();
+  const result = database.exec(
+    `SELECT id, uuid, matriz_json FROM matrizes WHERE id = ?`,
+    [id]
+  );
+
+  if (result.length === 0 || result[0].values.length === 0) return undefined;
+  const row = result[0].values[0];
+  return {
+    id: row[0] as number,
+    matriz: JSON.parse(row[2] as string) as Matriz,
+  };
+}
+
+export async function getAllMatrizes(): Promise<
+  Array<{ id: number; matriz: Matriz }>
+> {
+  const database = await initSQLite();
+  const result = database.exec(
+    `SELECT id, uuid, matriz_json FROM matrizes ORDER BY id DESC`
+  );
+  if (result.length === 0) return [];
+  return result[0].values.map((row) => ({
+    id: row[0] as number,
+    matriz: JSON.parse(row[2] as string) as Matriz,
+  }));
+}
+
+export async function getMatrizesByType(
+  type: string
+): Promise<Array<{ id: number; matriz: Matriz }>> {
+  const all = await getAllMatrizes();
+  return all.filter((item) => item.matriz.type === type);
+}
+
+export async function updateMatriz(id: number, matriz: Matriz): Promise<void> {
+  const database = await initSQLite();
+
+  const result = database.exec(`SELECT uuid FROM matrizes WHERE id = ?`, [id]);
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
+
+  database.run(
+    `UPDATE matrizes SET matriz_json = ?, updated_at = datetime('now'), is_synced = 0 WHERE id = ?`,
+    [JSON.stringify(matriz), id]
+  );
+
+  if (uuid) {
+    addToSyncQueue(
+      database,
+      "matrizes",
+      "UPDATE",
+      id,
+      uuid,
+      JSON.stringify(matriz)
+    );
+  }
+}
+
+export async function deleteMatriz(id: number): Promise<void> {
+  const database = await initSQLite();
+  const result = database.exec(`SELECT uuid FROM matrizes WHERE id = ?`, [id]);
+  const uuid =
+    result.length > 0 && result[0].values.length > 0
+      ? (result[0].values[0][0] as string)
+      : null;
+
+  database.run(`DELETE FROM matrizes WHERE id = ?`, [id]);
+
+  if (uuid) {
+    addToSyncQueue(database, "matrizes", "DELETE", id, uuid, null);
+  }
+}
+
+export async function clearMatrizes(): Promise<void> {
+  const database = await initSQLite();
+  database.run(`DELETE FROM matrizes`);
+  database.run(`DELETE FROM sync_queue WHERE table_name = 'matrizes'`);
 }
 
 // Fila de sincronização
@@ -576,14 +774,16 @@ function addToSyncQueue(
   );
 }
 
-export async function getSyncQueue(): Promise<Array<{
-  id: number;
-  table_name: string;
-  operation: string;
-  record_id: number;
-  uuid: string | null;
-  data_json: string | null;
-}>> {
+export async function getSyncQueue(): Promise<
+  Array<{
+    id: number;
+    table_name: string;
+    operation: string;
+    record_id: number;
+    uuid: string | null;
+    data_json: string | null;
+  }>
+> {
   const database = await initSQLite();
   const result = database.exec(
     `SELECT id, table_name, operation, record_id, uuid, data_json FROM sync_queue ORDER BY created_at`
@@ -615,19 +815,24 @@ export async function markAsSynced(
   _uuid: string // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<void> {
   const database = await initSQLite();
-  
+
   // Valida nome da tabela para prevenir SQL injection
-  if (tableName !== "animal_data" && tableName !== "vaccines" && tableName !== "farms") {
+  if (
+    tableName !== "animal_data" &&
+    tableName !== "vaccines" &&
+    tableName !== "farms" &&
+    tableName !== "matrizes"
+  ) {
     throw new Error(`Tabela inválida: ${tableName}`);
   }
-  
+
   database.run(
     `UPDATE ${tableName} 
      SET is_synced = 1, synced_at = datetime('now')
      WHERE id = ?`,
     [recordId]
   );
-  
+
   // Remove da fila de sincronização se existir
   database.run(
     `DELETE FROM sync_queue 
@@ -639,15 +844,15 @@ export async function markAsSynced(
 // Verifica se o banco já foi sincronizado (tem pelo menos um registro sincronizado)
 export async function hasSyncedRecords(): Promise<boolean> {
   const database = await initSQLite();
-  
+
   // Verifica se há registros sincronizados em qualquer tabela
-  const tables = ["animal_data", "vaccines", "farms"];
-  
+  const tables = ["animal_data", "vaccines", "farms", "matrizes"];
+
   for (const table of tables) {
     const result = database.exec(
       `SELECT COUNT(*) FROM ${table} WHERE is_synced = 1`
     );
-    
+
     if (result.length > 0 && result[0].values.length > 0) {
       const count = result[0].values[0][0] as number;
       if (count > 0) {
@@ -655,7 +860,7 @@ export async function hasSyncedRecords(): Promise<boolean> {
       }
     }
   }
-  
+
   return false;
 }
 

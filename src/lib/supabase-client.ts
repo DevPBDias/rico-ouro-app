@@ -1,13 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-import { AnimalData, Vaccine, Farm } from "./db";
+import { AnimalData, Vaccine, Farm, Matriz } from "./db";
 import { normalizeAnimalData } from "./db-helpers";
 
 // Variáveis de ambiente
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
 export const isSupabaseConfigured = (): boolean => {
-  return !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+  return !!(supabaseUrl && supabaseAnonKey);
 };
 
 if (!isSupabaseConfigured()) {
@@ -16,12 +16,10 @@ if (!isSupabaseConfigured()) {
   );
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-});
+export const supabase = createClient(
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseAnonKey || "placeholder-key"
+);
 
 // Tipos para Supabase
 export interface SupabaseAnimalData {
@@ -51,6 +49,14 @@ export interface SupabaseFarm {
   updated_at: string;
 }
 
+export interface SupabaseMatriz {
+  id: string;
+  uuid: string;
+  matriz_json: Matriz;
+  created_at: string;
+  updated_at: string;
+}
+
 // Operações AnimalData no Supabase
 export async function syncAnimalDataToSupabase(
   animal: AnimalData,
@@ -70,10 +76,18 @@ export async function syncAnimalDataToSupabase(
   const normalized = normalizeAnimalData(animal);
 
   // Remove valores undefined/null que podem causar problemas no Supabase
-  let cleanAnimal: Record<string, unknown> = removeUndefinedValues(normalized.animal) as Record<string, unknown>;
-  const cleanPai: Record<string, unknown> = removeUndefinedValues(normalized.pai) as Record<string, unknown>;
-  const cleanMae: Record<string, unknown> = removeUndefinedValues(normalized.mae) as Record<string, unknown>;
-  const cleanAvoMaterno: Record<string, unknown> = removeUndefinedValues(normalized.avoMaterno) as Record<string, unknown>;
+  let cleanAnimal: Record<string, unknown> = removeUndefinedValues(
+    normalized.animal
+  ) as Record<string, unknown>;
+  const cleanPai: Record<string, unknown> = removeUndefinedValues(
+    normalized.pai
+  ) as Record<string, unknown>;
+  const cleanMae: Record<string, unknown> = removeUndefinedValues(
+    normalized.mae
+  ) as Record<string, unknown>;
+  const cleanAvoMaterno: Record<string, unknown> = removeUndefinedValues(
+    normalized.avoMaterno
+  ) as Record<string, unknown>;
 
   // Garante que animal_json sempre tenha pelo menos um campo (obrigatório)
   // Se animal_json estiver vazio, adiciona um campo mínimo
@@ -444,6 +458,71 @@ export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
         : "Erro desconhecido ao buscar fazendas";
     throw new Error(`Erro ao buscar fazendas: ${errorMessage}`);
   }
+}
+
+// Operações Matrizes no Supabase
+export async function syncMatrizToSupabase(
+  matriz: Matriz,
+  uuid: string
+): Promise<string> {
+  if (!isSupabaseConfigured()) {
+    throw new Error(
+      "Supabase não está configurado. Verifique as variáveis de ambiente."
+    );
+  }
+
+  const payload = {
+    uuid: uuid.trim(),
+    matriz_json: matriz,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("matrizes")
+    .upsert(payload, { onConflict: "uuid", ignoreDuplicates: false })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Erro ao sincronizar matriz no Supabase:", error);
+    throw error;
+  }
+
+  return data.id;
+}
+
+export async function deleteMatrizFromSupabase(uuid: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error(
+      "Supabase não está configurado. Verifique as variáveis de ambiente."
+    );
+  }
+
+  const { error } = await supabase.from("matrizes").delete().eq("uuid", uuid);
+
+  if (error) {
+    console.error("Erro ao deletar matriz no Supabase:", error);
+    throw error;
+  }
+}
+
+export async function fetchMatrizesFromSupabase(): Promise<SupabaseMatriz[]> {
+  if (!isSupabaseConfigured()) {
+    console.warn("Supabase não configurado, retornando array vazio");
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("matrizes")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao buscar matrizes do Supabase:", error);
+    throw error;
+  }
+
+  return data || [];
 }
 
 // Verifica se está online

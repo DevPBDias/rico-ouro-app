@@ -1,4 +1,3 @@
-// Importações primeiro
 import { dbAdapter as db } from "./db-adapter";
 import { initSQLite } from "./sqlite-db";
 import {
@@ -6,12 +5,10 @@ import {
   fetchFarmsFromSupabase,
   isSupabaseConfigured,
 } from "./supabase-client";
-// Importações de constantes como fallback (arrays vazios se não houver dados no Supabase)
 import { vaccines as defaultVaccines } from "@/constants/vaccinesName";
 import { farms as defaultFarms } from "@/constants/farmName";
 import type { IStatus } from "@/types/status-type";
 
-// Exporta tipos (mantidos para compatibilidade)
 export interface AnimalData {
   id?: number;
   animal: {
@@ -61,7 +58,67 @@ export interface Farm {
   farmName: string;
 }
 
-// Inicializa SQLite na primeira importação
+export interface Matriz {
+  nome?: string;
+  serieRGD?: string;
+  rgn?: string;
+  sexo?: string;
+  nasc?: string;
+  iabcgz?: string;
+  deca?: string;
+  p?: string;
+  f?: string;
+  status?: IStatus;
+  farm?: string;
+  vacinas?: { nome: string; data: string }[];
+  type?: "Doadora" | "Reprodutora" | "Receptora FIV";
+  genotipagem?: "Sim" | "Não";
+  condition?: "Parida" | "Solteira";
+  parturitionFrom?: {
+    sexo?: "M" | "F";
+    rgn?: string;
+  };
+  protocolosReproducao?: {
+    iatf?: {
+      data?: string;
+      touro?: string;
+      peso?: string;
+      diagnosticoGestacional2?: {
+        data?: string;
+        type?: "Prenha" | "Vazia";
+      };
+      dataPrevistaParto?: {
+        data270?: string;
+        data305?: string;
+      };
+    };
+    montaNatural: {
+      data: string;
+      touro?: string;
+      peso?: string;
+      rgn?: string;
+    };
+    fivTETF?: {
+      data?: string;
+      doadora?: string;
+      touro?: string;
+      peso?: string;
+      rgn?: string;
+      diagnosticoGestacional?: {
+        data?: string;
+        type?: "Prenha" | "Vazia";
+      };
+      sexo?: "M" | "F";
+      dataPrevistaParto?: {
+        data270?: string;
+        data305?: string;
+      };
+    };
+  };
+
+  updatedAt?: string;
+}
+
 if (typeof window !== "undefined") {
   initSQLite().catch((error) => {
     console.error("Erro ao inicializar SQLite:", error);
@@ -79,7 +136,6 @@ export async function seedVaccines(): Promise<void> {
 
     let vaccinesToAdd: { vaccineName: string }[] = [];
 
-    // Tenta buscar do Supabase primeiro
     if (isSupabaseConfigured()) {
       try {
         const supabaseVaccines = await fetchVaccinesFromSupabase();
@@ -89,7 +145,6 @@ export async function seedVaccines(): Promise<void> {
             (vaccine) => !existingNames.has(vaccine.vaccineName.toLowerCase())
           );
 
-        // Se encontrou vacinas no Supabase, adiciona com UUID
         if (vaccinesToAdd.length > 0) {
           const { addVaccine } = await import("./sqlite-db");
           for (const supabaseVaccine of supabaseVaccines) {
@@ -102,18 +157,16 @@ export async function seedVaccines(): Promise<void> {
               );
             }
           }
-          return; // Sai da função se conseguiu buscar do Supabase
+          return;
         }
       } catch (error) {
         console.warn(
           "Erro ao buscar vacinas do Supabase, usando constantes:",
           error
         );
-        // Continua para usar constantes como fallback
       }
     }
 
-    // Fallback: usa constantes se Supabase não estiver configurado ou houver erro
     vaccinesToAdd = defaultVaccines.filter(
       (vaccine: { vaccineName: string }) =>
         !existingNames.has(vaccine.vaccineName.toLowerCase())
@@ -138,7 +191,6 @@ export async function seedFarms(): Promise<void> {
 
     let farmsToAdd: { farmName: string }[] = [];
 
-    // Tenta buscar do Supabase primeiro
     if (isSupabaseConfigured()) {
       try {
         const supabaseFarms = await fetchFarmsFromSupabase();
@@ -146,7 +198,6 @@ export async function seedFarms(): Promise<void> {
           .map((f) => ({ farmName: f.farm_name }))
           .filter((farm) => !existingNames.has(farm.farmName.toLowerCase()));
 
-        // Se encontrou fazendas no Supabase, adiciona com UUID
         if (farmsToAdd.length > 0) {
           const { addFarm } = await import("./sqlite-db");
           for (const supabaseFarm of supabaseFarms) {
@@ -157,18 +208,16 @@ export async function seedFarms(): Promise<void> {
               );
             }
           }
-          return; // Sai da função se conseguiu buscar do Supabase
+          return;
         }
       } catch (error) {
         console.warn(
           "Erro ao buscar fazendas do Supabase, usando constantes:",
           error
         );
-        // Continua para usar constantes como fallback
       }
     }
 
-    // Fallback: usa constantes se Supabase não estiver configurado ou houver erro
     farmsToAdd = defaultFarms.filter(
       (farm: { farmName: string }) =>
         !existingNames.has(farm.farmName.toLowerCase())
