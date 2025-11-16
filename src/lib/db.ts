@@ -91,13 +91,13 @@ export interface Matriz {
         data270?: string;
         data305?: string;
       };
-    };
+    }[];
     montaNatural: {
       data: string;
       touro?: string;
       peso?: string;
       rgn?: string;
-    };
+    }[];
     fivTETF?: {
       data?: string;
       doadora?: string;
@@ -113,7 +113,7 @@ export interface Matriz {
         data270?: string;
         data305?: string;
       };
-    };
+    }[];
   };
 
   updatedAt?: string;
