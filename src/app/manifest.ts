@@ -10,17 +10,18 @@ export const manifest: MetadataRoute.Manifest = {
   background_color: "#1162ae",
   theme_color: "#1162ae",
   icons: [
+    // Use a single allowed purpose string to satisfy TypeScript's Manifest type
     {
       src: "/logo.svg",
       sizes: "192x192",
       type: "image/svg+xml",
-      purpose: "any maskable",
+      purpose: "maskable",
     },
     {
       src: "/logo.svg",
       sizes: "512x512",
       type: "image/svg+xml",
-      purpose: "any maskable",
+      purpose: "maskable",
     },
   ],
 };
