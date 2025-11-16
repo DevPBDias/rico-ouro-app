@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 
-// App manifest exported for type-safety and documentation.
-// The app still serves `public/manifest.json` for compatibility with the browser.
-export const manifest: MetadataRoute.Manifest = {
+// Default export manifest (as required by Next's webmanifest route).
+// Exported as default directly to ensure the compiled module contains a default export
+// and avoid runtime errors during the Vercel build step.
+export default {
   name: "INDI Ouro",
   short_name: "INDI Ouro",
   start_url: "/",
@@ -10,7 +11,6 @@ export const manifest: MetadataRoute.Manifest = {
   background_color: "#1162ae",
   theme_color: "#1162ae",
   icons: [
-    // Use a single allowed purpose string to satisfy TypeScript's Manifest type
     {
       src: "/logo.svg",
       sizes: "192x192",
@@ -24,11 +24,10 @@ export const manifest: MetadataRoute.Manifest = {
       purpose: "maskable",
     },
   ],
-};
-
-export default manifest;
+} as MetadataRoute.Manifest;
 
 /*
-  Note: We maintain `public/manifest.json` for the browser to fetch directly at /manifest.json.
-  This `manifest` export provides TypeScript-level manifest shape and documents icons used.
+  Note: We also keep `public/manifest.json` for direct browser fetch; this file
+  provides a typed default export so the App Router's `/manifest.webmanifest` route
+  resolves a default export during build.
 */
