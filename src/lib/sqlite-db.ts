@@ -1,4 +1,4 @@
-import initSqlJs, { Database, SqlJsStatic } from "sql.js";
+import type { Database, SqlJsStatic } from "sql.js";
 import { AnimalData, Vaccine, Farm, Matriz } from "./db";
 import {
   serializeAnimalData,
@@ -11,9 +11,16 @@ let db: Database | null = null;
 
 // Inicializa o SQLite
 export async function initSQLite(): Promise<Database> {
+  if (typeof window === "undefined") {
+    throw new Error("initSQLite must be called on the client side only");
+  }
+
   if (db) return db;
 
   if (!SQL) {
+    // dynamic import to avoid server-side bundling of sql.js
+    const mod = await import("sql.js");
+    const initSqlJs = (mod && (mod as any).default) || mod;
     SQL = await initSqlJs({
       locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
     });
@@ -24,15 +31,18 @@ export async function initSQLite(): Promise<Database> {
   if (savedDb) {
     try {
       const buffer = Uint8Array.from(JSON.parse(savedDb));
+      if (!SQL) throw new Error("sql.js not initialized");
       db = new SQL.Database(buffer);
       // Garante que as tabelas existam (CREATE TABLE IF NOT EXISTS)
       await createTables(db);
     } catch (error) {
       console.warn("Erro ao carregar banco salvo, criando novo:", error);
+      if (!SQL) throw new Error("sql.js not initialized");
       db = new SQL.Database();
       await createTables(db);
     }
   } else {
+    if (!SQL) throw new Error("sql.js not initialized");
     db = new SQL.Database();
     await createTables(db);
   }
@@ -871,4 +881,3 @@ export async function saveDatabase(): Promise<void> {
     localStorage.setItem("rico_ouro_db", JSON.stringify(Array.from(data)));
   }
 }
-

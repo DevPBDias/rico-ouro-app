@@ -4,6 +4,7 @@ import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import SyncManager from "@/components/sync/SyncManager";
 import DatabaseInitializer from "@/components/sync/DatabaseInitializer";
+import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 
 const geistSans = Geist({
@@ -102,6 +103,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <DatabaseInitializer />
+        <RegisterSW />
         <SyncStatusIndicator />
         {children}
         <ServiceWorkerUpdater />
