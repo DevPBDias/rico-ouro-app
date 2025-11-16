@@ -18,9 +18,13 @@ export async function initSQLite(): Promise<Database> {
   if (db) return db;
 
   if (!SQL) {
-    // dynamic import to avoid server-side bundling of sql.js
     const mod = await import("sql.js");
-    const initSqlJs = (mod && (mod as any).default) || mod;
+    type InitSqlJsFunc = (config?: {
+      locateFile?: (file: string) => string;
+    }) => Promise<SqlJsStatic>;
+    const initSqlJs: InitSqlJsFunc =
+      (mod as { default?: InitSqlJsFunc }).default ??
+      (mod as unknown as InitSqlJsFunc);
     SQL = await initSqlJs({
       locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
     });
@@ -33,7 +37,6 @@ export async function initSQLite(): Promise<Database> {
       const buffer = Uint8Array.from(JSON.parse(savedDb));
       if (!SQL) throw new Error("sql.js not initialized");
       db = new SQL.Database(buffer);
-      // Garante que as tabelas existam (CREATE TABLE IF NOT EXISTS)
       await createTables(db);
     } catch (error) {
       console.warn("Erro ao carregar banco salvo, criando novo:", error);
@@ -58,9 +61,7 @@ export async function initSQLite(): Promise<Database> {
   return db;
 }
 
-// Cria as tabelas
 async function createTables(database: Database) {
-  // Tabela animal_data
   database.run(`
     CREATE TABLE IF NOT EXISTS animal_data (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,14 +77,10 @@ async function createTables(database: Database) {
     )
   `);
 
-  // Índices não são necessários para JSON no SQLite com nossa abordagem
-  // Mantemos apenas o índice do UUID que é usado para sincronização
-
   database.run(`
     CREATE INDEX IF NOT EXISTS idx_animal_uuid ON animal_data(uuid)
   `);
 
-  // Tabela vaccines
   database.run(`
     CREATE TABLE IF NOT EXISTS vaccines (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +97,6 @@ async function createTables(database: Database) {
     CREATE INDEX IF NOT EXISTS idx_vaccines_uuid ON vaccines(uuid)
   `);
 
-  // Tabela farms
   database.run(`
     CREATE TABLE IF NOT EXISTS farms (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,7 +113,6 @@ async function createTables(database: Database) {
     CREATE INDEX IF NOT EXISTS idx_farms_uuid ON farms(uuid)
   `);
 
-  // Tabela matrizes (armazenamos o objeto como JSON similar a animal_data)
   database.run(`
     CREATE TABLE IF NOT EXISTS matrizes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -134,7 +129,6 @@ async function createTables(database: Database) {
     CREATE INDEX IF NOT EXISTS idx_matrizes_uuid ON matrizes(uuid)
   `);
 
-  // Tabela sync_queue (fila de sincronização)
   database.run(`
     CREATE TABLE IF NOT EXISTS sync_queue (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -156,11 +150,9 @@ export async function addAnimalData(
   const database = await initSQLite();
   const uuid = providedUuid || crypto.randomUUID();
 
-  // Normaliza e serializa os dados garantindo estrutura correta
   const normalized = normalizeAnimalData(animal);
   const serialized = serializeAnimalData(normalized);
 
-  // Se UUID foi fornecido (sincronização), marca como sincronizado
   const isSynced = providedUuid ? 1 : 0;
 
   database.run(
@@ -179,7 +171,6 @@ export async function addAnimalData(
   const id = database.exec("SELECT last_insert_rowid() as id")[0]
     .values[0][0] as number;
 
-  // Adiciona à fila de sincronização apenas se não foi sincronizado
   if (!isSynced) {
     addToSyncQueue(
       database,
@@ -225,7 +216,6 @@ export async function updateAnimalData(
 ): Promise<void> {
   const database = await initSQLite();
 
-  // Normaliza e serializa os dados garantindo estrutura correta
   const normalized = normalizeAnimalData(animal);
   const serialized = serializeAnimalData(normalized);
 
@@ -249,7 +239,6 @@ export async function updateAnimalData(
     ]
   );
 
-  // Adiciona à fila de sincronização
   if (uuid) {
     addToSyncQueue(
       database,
@@ -289,7 +278,6 @@ export async function getAnimalDataById(
 export async function getAnimalDataByRgn(
   rgn: string
 ): Promise<AnimalData | undefined> {
-  // Busca todos e filtra no JavaScript (mais confiável que json_extract no sql.js)
   const allAnimals = await getAllAnimalData();
   return allAnimals.find((animal) => animal.animal?.rgn === rgn);
 }
@@ -331,7 +319,6 @@ export async function deleteAnimalData(id: number): Promise<void> {
 
   database.run(`DELETE FROM animal_data WHERE id = ?`, [id]);
 
-  // Adiciona à fila de sincronização
   if (uuid) {
     addToSyncQueue(database, "animal_data", "DELETE", id, uuid, null);
   }
@@ -351,7 +338,6 @@ export async function addVaccine(
   const database = await initSQLite();
   const uuid = providedUuid || crypto.randomUUID();
 
-  // Se UUID foi fornecido (sincronização), marca como sincronizado
   const isSynced = providedUuid ? 1 : 0;
 
   database.run(
@@ -363,7 +349,6 @@ export async function addVaccine(
   const id = database.exec("SELECT last_insert_rowid() as id")[0]
     .values[0][0] as number;
 
-  // Adiciona à fila de sincronização apenas se não foi sincronizado
   if (!isSynced) {
     addToSyncQueue(
       database,
@@ -855,7 +840,6 @@ export async function markAsSynced(
 export async function hasSyncedRecords(): Promise<boolean> {
   const database = await initSQLite();
 
-  // Verifica se há registros sincronizados em qualquer tabela
   const tables = ["animal_data", "vaccines", "farms", "matrizes"];
 
   for (const table of tables) {
