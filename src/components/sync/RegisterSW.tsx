@@ -5,18 +5,20 @@ import { useEffect } from "react";
 export default function RegisterSW() {
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (process.env.NODE_ENV !== "production") return; // Only register in production
     if (!("serviceWorker" in navigator)) return;
 
-    // Check for existing registration
+    // Check for existing registration to avoid duplicates
     navigator.serviceWorker.getRegistrations().then((regs) => {
       const hasSw = regs.some((r) => (r.scope || "").includes(location.origin));
       if (hasSw) return;
 
-      // Try to register the generated service worker
+      // Register the custom service worker with conservative options.
+      // updateViaCache: 'none' helps the worker see immediate updates in dev/CI.
       navigator.serviceWorker
-        .register("/sw.js")
-        .then(() => {
-          console.log("Service Worker registrado em /sw.js");
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .then((reg) => {
+          console.log("Service Worker registrado em /sw.js", reg);
         })
         .catch((err) => {
           console.warn("Falha ao registrar Service Worker:", err);

@@ -1,1 +1,145 @@
-if(!self.define){let e,c={};const s=(s,a)=>(s=new URL(s+".js",a).href,c[s]||new Promise(c=>{if("document"in self){const e=document.createElement("script");e.src=s,e.onload=c,document.head.appendChild(e)}else e=s,importScripts(s),c()}).then(()=>{let e=c[s];if(!e)throw new Error(`Module ${s} didn’t register its module`);return e}));self.define=(a,t)=>{const i=e||("document"in self?document.currentScript.src:"")||location.href;if(c[i])return;let n={};const d=e=>s(e,i),r={module:{uri:i},exports:n,require:d};c[i]=Promise.all(a.map(e=>r[e]||d(e))).then(e=>(t(...e),n))}}define(["./workbox-00a24876"],function(e){"use strict";importScripts(),self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"/_next/app-build-manifest.json",revision:"0495553e5a69acc73902e1c5f9bbec74"},{url:"/_next/static/chunks/1255-f206d8cb7c37a3ff.js",revision:"f206d8cb7c37a3ff"},{url:"/_next/static/chunks/1646.a93085a0445ba909.js",revision:"a93085a0445ba909"},{url:"/_next/static/chunks/164f4fb6-743da619dc1f2c56.js",revision:"743da619dc1f2c56"},{url:"/_next/static/chunks/1691-e070f84d4d7333bd.js",revision:"e070f84d4d7333bd"},{url:"/_next/static/chunks/1733-1f8b2a790fca4605.js",revision:"1f8b2a790fca4605"},{url:"/_next/static/chunks/1767-68ae90c17ad9cad9.js",revision:"68ae90c17ad9cad9"},{url:"/_next/static/chunks/2170a4aa-3afc356e3d087d73.js",revision:"3afc356e3d087d73"},{url:"/_next/static/chunks/2381-f92cbd023375d330.js",revision:"f92cbd023375d330"},{url:"/_next/static/chunks/2619-b8db57ac19da49ac.js",revision:"b8db57ac19da49ac"},{url:"/_next/static/chunks/280273a7-6b496659f89996dc.js",revision:"6b496659f89996dc"},{url:"/_next/static/chunks/2931.ddde249eba11921d.js",revision:"ddde249eba11921d"},{url:"/_next/static/chunks/4199.bf43a4961fe5f7f5.js",revision:"bf43a4961fe5f7f5"},{url:"/_next/static/chunks/469-2c5ee2837fab9af8.js",revision:"2c5ee2837fab9af8"},{url:"/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",revision:"100b9d70ed4e49c1"},{url:"/_next/static/chunks/5139.e4ff9cc3669129ed.js",revision:"e4ff9cc3669129ed"},{url:"/_next/static/chunks/5239-b5d471afce036544.js",revision:"b5d471afce036544"},{url:"/_next/static/chunks/5269.cae75d096f7dae65.js",revision:"cae75d096f7dae65"},{url:"/_next/static/chunks/531-9e6af61099ccada2.js",revision:"9e6af61099ccada2"},{url:"/_next/static/chunks/5553-573d89fce7a2eb4b.js",revision:"573d89fce7a2eb4b"},{url:"/_next/static/chunks/594-1dbfe68748460a62.js",revision:"1dbfe68748460a62"},{url:"/_next/static/chunks/613-89ad5c97cc263a9f.js",revision:"89ad5c97cc263a9f"},{url:"/_next/static/chunks/7085-feb712e0b2743840.js",revision:"feb712e0b2743840"},{url:"/_next/static/chunks/760-f931f5e6f9343c8a.js",revision:"f931f5e6f9343c8a"},{url:"/_next/static/chunks/849-ac0ec7d2efb3c4a6.js",revision:"ac0ec7d2efb3c4a6"},{url:"/_next/static/chunks/8811-5e89cd851bdd7d67.js",revision:"5e89cd851bdd7d67"},{url:"/_next/static/chunks/9013-53294828156291a1.js",revision:"53294828156291a1"},{url:"/_next/static/chunks/9021-054e794cb06908fb.js",revision:"054e794cb06908fb"},{url:"/_next/static/chunks/9404-8e02945528fcf613.js",revision:"8e02945528fcf613"},{url:"/_next/static/chunks/aaea2bcf-64dc9bf886b80704.js",revision:"64dc9bf886b80704"},{url:"/_next/static/chunks/ad2866b8.e13a3cf75ccf0eb8.js",revision:"e13a3cf75ccf0eb8"},{url:"/_next/static/chunks/app/(protected)/bois/%5Bid%5D/ce/page-8e7bf3bc219f1e5a.js",revision:"8e7bf3bc219f1e5a"},{url:"/_next/static/chunks/app/(protected)/bois/%5Bid%5D/detalhes/page-fc977dfb49842bb3.js",revision:"fc977dfb49842bb3"},{url:"/_next/static/chunks/app/(protected)/bois/%5Bid%5D/graficos/page-8f7bfe67e473d3a8.js",revision:"8f7bfe67e473d3a8"},{url:"/_next/static/chunks/app/(protected)/bois/%5Bid%5D/page-987da97caac17122.js",revision:"987da97caac17122"},{url:"/_next/static/chunks/app/(protected)/bois/%5Bid%5D/pesagem/page-b49e6b6f0371e667.js",revision:"b49e6b6f0371e667"},{url:"/_next/static/chunks/app/(protected)/bois/page-4dde887ac060dbd9.js",revision:"4dde887ac060dbd9"},{url:"/_next/static/chunks/app/(protected)/consulta/page-58e7b535555be49e.js",revision:"58e7b535555be49e"},{url:"/_next/static/chunks/app/(protected)/geral/bois/page-086bcdc121ba8f1f.js",revision:"086bcdc121ba8f1f"},{url:"/_next/static/chunks/app/(protected)/geral/page-1ebe6c729c2bc382.js",revision:"1ebe6c729c2bc382"},{url:"/_next/static/chunks/app/(protected)/geral/relatorios/page-baf07f816bff7ab9.js",revision:"baf07f816bff7ab9"},{url:"/_next/static/chunks/app/(protected)/geral/relatorios/pdf/page-b5608ad3dbf7bfe8.js",revision:"b5608ad3dbf7bfe8"},{url:"/_next/static/chunks/app/(protected)/geral/relatorios/planilhas/page-5720282de4e2bfdc.js",revision:"5720282de4e2bfdc"},{url:"/_next/static/chunks/app/(protected)/gerenciar/fazendas/page-7d45148a23ccff0d.js",revision:"7d45148a23ccff0d"},{url:"/_next/static/chunks/app/(protected)/gerenciar/page-1ebe6c729c2bc382.js",revision:"1ebe6c729c2bc382"},{url:"/_next/static/chunks/app/(protected)/gerenciar/status/page-db4ad6cda6d3a88c.js",revision:"db4ad6cda6d3a88c"},{url:"/_next/static/chunks/app/(protected)/importar/page-1ebe6c729c2bc382.js",revision:"1ebe6c729c2bc382"},{url:"/_next/static/chunks/app/(protected)/importar/planilhas/page-05072367111e45e5.js",revision:"05072367111e45e5"},{url:"/_next/static/chunks/app/(protected)/layout-ba5b8e7bf1068c5b.js",revision:"ba5b8e7bf1068c5b"},{url:"/_next/static/chunks/app/(protected)/nascimentos/page-3783742192ed9ca4.js",revision:"3783742192ed9ca4"},{url:"/_next/static/chunks/app/(protected)/pesagem-ce/page-58951d6e2f9b2e52.js",revision:"58951d6e2f9b2e52"},{url:"/_next/static/chunks/app/(protected)/vacinas/page-118beb0c41db38be.js",revision:"118beb0c41db38be"},{url:"/_next/static/chunks/app/_not-found/page-e118451ead67f6c9.js",revision:"e118451ead67f6c9"},{url:"/_next/static/chunks/app/home/page-6f47321f6382a662.js",revision:"6f47321f6382a662"},{url:"/_next/static/chunks/app/layout-944dbe7b19d7d58c.js",revision:"944dbe7b19d7d58c"},{url:"/_next/static/chunks/app/login/page-19f64219274ee4d9.js",revision:"19f64219274ee4d9"},{url:"/_next/static/chunks/app/not-found-1e7ef28cba705e22.js",revision:"1e7ef28cba705e22"},{url:"/_next/static/chunks/app/page-f8bcc4ece9c62843.js",revision:"f8bcc4ece9c62843"},{url:"/_next/static/chunks/bc98253f.d6fc8a0138855acd.js",revision:"d6fc8a0138855acd"},{url:"/_next/static/chunks/framework-32492dd9c4fc5870.js",revision:"32492dd9c4fc5870"},{url:"/_next/static/chunks/main-app-40d4db116e020155.js",revision:"40d4db116e020155"},{url:"/_next/static/chunks/main-d189a96a05fde99f.js",revision:"d189a96a05fde99f"},{url:"/_next/static/chunks/pages/_app-e8b861c87f6f033c.js",revision:"e8b861c87f6f033c"},{url:"/_next/static/chunks/pages/_error-c8f84f7bd11d43d4.js",revision:"c8f84f7bd11d43d4"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-dae06f35a4074b32.js",revision:"dae06f35a4074b32"},{url:"/_next/static/css/b9dfa95162e5ca0d.css",revision:"b9dfa95162e5ca0d"},{url:"/_next/static/k2dpDu7isYSx70LNppYS_/_buildManifest.js",revision:"8c76085173936bbf83fba5e0a8a2b41b"},{url:"/_next/static/k2dpDu7isYSx70LNppYS_/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/_next/static/media/4cf2300e9c8272f7-s.p.woff2",revision:"18bae71b1e1b2bb25321090a3b563103"},{url:"/_next/static/media/747892c23ea88013-s.woff2",revision:"a0761690ccf4441ace5cec893b82d4ab"},{url:"/_next/static/media/8d697b304b401681-s.woff2",revision:"cc728f6c0adb04da0dfcb0fc436a8ae5"},{url:"/_next/static/media/93f479601ee12b01-s.p.woff2",revision:"da83d5f06d825c5ae65b7cca706cb312"},{url:"/_next/static/media/9610d9e46709d722-s.woff2",revision:"7b7c0ef93df188a852344fc272fc096b"},{url:"/_next/static/media/ba015fad6dcf6784-s.woff2",revision:"8ea4f719af3312a055caf09f34c89a77"},{url:"/_next/static/media/home-page.1eeb7709.png",revision:"38dfe9b26d7823d8830590a9f947c5a6"},{url:"/_next/static/media/login-page.96176cb5.png",revision:"1f53a5d3ad9776e471fd8025d9b01fac"},{url:"/_next/static/media/logo-hor-indiouro.f2edf774.png",revision:"5c901e8493938a2e4789b1c32e150d08"},{url:"/_next/static/media/not-found-img.55cb3b1e.png",revision:"4668e2cbf5dccb6564d4a111c5addf43"},{url:"/_next/static/media/opening-page.8350b5a0.png",revision:"d91e090ef0d38016f844454f0233e795"},{url:"/logo.svg",revision:"8e77e5b624929416f6110da1e5d46d94"},{url:"/manifest.json",revision:"0428155584e0c5c215e0f04b32e91707"},{url:"/splash.png",revision:"d91e090ef0d38016f844454f0233e795"}],{ignoreURLParametersMatching:[]}),e.cleanupOutdatedCaches(),e.registerRoute("/",new e.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:e,response:c,event:s,state:a})=>c&&"opaqueredirect"===c.type?new Response(c.body,{status:200,statusText:"OK",headers:c.headers}):c}]}),"GET"),e.registerRoute(/^\/(_next\/static|static)\//,new e.CacheFirst({cacheName:"static-assets",plugins:[new e.ExpirationPlugin({maxEntries:512,maxAgeSeconds:2592e3})]}),"GET"),e.registerRoute(/^\/_next\/image/,new e.StaleWhileRevalidate({cacheName:"next-image",plugins:[new e.ExpirationPlugin({maxEntries:256,maxAgeSeconds:2592e3})]}),"GET"),e.registerRoute(/\.(?:png|jpg|jpeg|svg|webp|gif|ico)$/i,new e.StaleWhileRevalidate({cacheName:"images",plugins:[new e.ExpirationPlugin({maxEntries:512,maxAgeSeconds:2592e3})]}),"GET"),e.registerRoute(/^\/$/,new e.NetworkFirst({cacheName:"pages",networkTimeoutSeconds:3,plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:604800})]}),"GET")});
+// Minimal service worker tuned for Next.js App Router deployments.
+// Purpose: provide offline fallback and runtime caching for safe assets,
+// avoiding precaching of dynamic `_next` manifests (prevents bad-precaching-response).
+
+const CACHE_NAME = "app-cache-v1";
+const RUNTIME = "runtime-cache-v1";
+const PRECACHE_URLS = [
+  "/",
+  "/offline.html",
+  "/logo.svg",
+  "/manifest.json",
+  "/splash.png",
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      // Cleanup old caches
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => k !== CACHE_NAME && k !== RUNTIME)
+          .map((k) => caches.delete(k))
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+
+// Simple helper: respond with network first for navigation/pages, cache-first for static assets
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) return;
+
+  // Avoid attempting to precache dynamic build manifest or other unpredictable build-time files
+  // (This is the core fix for `bad-precaching-response` when using automated precache lists.)
+  if (url.pathname.endsWith("/app-build-manifest.json")) return;
+
+  // Runtime caching rules
+  if (url.pathname.startsWith("/_next/static/")) {
+    // Cache static _next files (hashed) with CacheFirst
+    event.respondWith(
+      caches.open(RUNTIME).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+        try {
+          const res = await fetch(event.request);
+          if (res && res.status === 200) cache.put(event.request, res.clone());
+          return res;
+        } catch (err) {
+          return (
+            cached ||
+            fetch(event.request).catch(() => caches.match("/offline.html"))
+          );
+        }
+      })
+    );
+    return;
+  }
+
+  if (url.pathname.startsWith("/_next/image")) {
+    // Stale-While-Revalidate behaviour for optimized images
+    event.respondWith(
+      caches.open(RUNTIME).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        const networkFetch = fetch(event.request)
+          .then((res) => {
+            if (res && res.status === 200)
+              cache.put(event.request, res.clone());
+            return res;
+          })
+          .catch(() => null);
+        return cached || (await networkFetch) || caches.match("/offline.html");
+      })
+    );
+    return;
+  }
+
+  // For navigation requests (HTML pages) use NetworkFirst with a short timeout
+  if (
+    event.request.mode === "navigate" ||
+    (event.request.headers.get("accept") || "").includes("text/html")
+  ) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(RUNTIME);
+        try {
+          const resp = await Promise.race([
+            fetch(event.request),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("timeout")), 3000)
+            ),
+          ]);
+          if (resp && resp.status === 200) {
+            cache.put(event.request, resp.clone());
+          }
+          return resp;
+        } catch (err) {
+          const cached = await cache.match(event.request);
+          return cached || caches.match("/offline.html");
+        }
+      })()
+    );
+    return;
+  }
+
+  // Default fallback: try network then cache then offline page
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        // Optionally, cache successful GET responses for later
+        return res;
+      })
+      .catch(() =>
+        caches
+          .match(event.request)
+          .then((r) => r || caches.match("/offline.html"))
+      )
+  );
+});
+
+// Keep worker alive for debugging messages
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
+/*
+  Notes:
+  - We intentionally avoid precaching `_next` dynamic manifests like `app-build-manifest.json`.
+  - Use runtime caching for `_next/static/*` and `_next/image/*` which are safe (hashed files).
+  - Precaching should be limited to stable public assets and `/offline.html`.
+*/
