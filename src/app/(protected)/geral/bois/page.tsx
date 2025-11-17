@@ -2,6 +2,7 @@
 
 import { useBoisList } from "@/hooks/useBoisList";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -152,14 +153,13 @@ export default function BoisPage() {
                         : "-"}
                     </td>
                     <td className="px-4 py-2 text-sm flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => router.push(`/bois/${a.id}`)}
-                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      <Link
+                        href={`/bois/${a.id}`}
+                        prefetch
+                        className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >
                         <Eye className="w-4 h-4" />
-                      </Button>
+                      </Link>
                       {a.animal.rgn && (
                         <Button
                           size="sm"

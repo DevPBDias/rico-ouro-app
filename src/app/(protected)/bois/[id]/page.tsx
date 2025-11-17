@@ -7,6 +7,7 @@ import { excluirPorRgn } from "@/utils/helpersDB";
 import { Button } from "@/components/ui/button";
 import detailsAnimalLinks from "@/constants/detailsAnimalLinks";
 import DetailsAnimalButtons from "@/components/buttons/DetailsAnimalButtons";
+import Link from "next/link";
 
 export default function BoiDetalhePage() {
   const params = useParams();
@@ -32,6 +33,10 @@ export default function BoiDetalhePage() {
   return (
     <main>
       <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn}`} />
+      {/* Prefetch das subrotas para funcionar offline */}
+      <Link href={`/bois/${id}/detalhes`} prefetch aria-hidden className="hidden" />
+      <Link href={`/bois/${id}/pesagem`} prefetch aria-hidden className="hidden" />
+      <Link href={`/bois/${id}/ce`} prefetch aria-hidden className="hidden" />
       <DetailsAnimalButtons data={detailsAnimalLinks} className="grid-cols-1" />
       <Button
         variant="default"
