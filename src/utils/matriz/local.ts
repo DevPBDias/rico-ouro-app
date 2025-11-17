@@ -33,15 +33,15 @@ export async function getAllMatrizes() {
 export async function getMatrizesByType(type: string) {
   const all = await db.matrices.toArray();
   return all
-    .filter((m) => m.type === type)
-    .map((m) => ({ id: (m as any).id as number, matriz: m }));
+    .filter((m) => m.type === type && typeof m.id === 'number')
+    .map((m) => ({ id: m.id as number, matriz: m }));
 }
 
 export async function updateMatriz(id: number, matriz: Matriz) {
   const updated: Matriz = { ...matriz, updatedAt: new Date().toISOString() };
   await db.matrices.update(id, updated);
   const rec = await db.matrices.get(id);
-  const uuid = (rec as any)?.uuid || crypto.randomUUID();
+  const uuid = rec?.uuid || crypto.randomUUID();
   await db.matrices.update(id, { uuid });
   await db.syncQueue.add({
     id: crypto.randomUUID(),
@@ -56,7 +56,7 @@ export async function updateMatriz(id: number, matriz: Matriz) {
 export async function deleteMatriz(id: number) {
   const rec = await db.matrices.get(id);
   await db.matrices.delete(id);
-  const uuid = (rec as any)?.uuid || crypto.randomUUID();
+  const uuid = rec?.uuid || crypto.randomUUID();
   await db.syncQueue.add({
     id: crypto.randomUUID(),
     table: "matrices",
@@ -71,6 +71,6 @@ export async function clearMatrizes() {
   await db.matrices.clear();
   const items = await db.syncQueue.where("table").equals("matrices").toArray();
   for (const item of items) {
-    await db.syncQueue.delete((item as any).id);
+    await db.syncQueue.delete(item.id);
   }
 }

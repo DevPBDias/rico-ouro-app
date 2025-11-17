@@ -23,6 +23,23 @@ export function useOfflineStatus(): OfflineStatus {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [syncError, setSyncError] = useState<Error | null>(null);
 
+    const syncNow = useCallback(async () => {
+    if (isSyncing) return;
+    
+    setIsSyncing(true);
+    setSyncError(null);
+    
+    try {
+      await syncService.forceSync();
+      setLastSync(new Date());
+    } catch (error) {
+      console.error('Sync error:', error);
+      setSyncError(error instanceof Error ? error : new Error('Erro desconhecido'));
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing]);
+
   // Check online status
   useEffect(() => {
     const handleOnline = () => {
@@ -41,25 +58,10 @@ export function useOfflineStatus(): OfflineStatus {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [syncNow]);
 
   // Sync function
-  const syncNow = useCallback(async () => {
-    if (isSyncing) return;
-    
-    setIsSyncing(true);
-    setSyncError(null);
-    
-    try {
-      await syncService.forceSync();
-      setLastSync(new Date());
-    } catch (error) {
-      console.error('Sync error:', error);
-      setSyncError(error instanceof Error ? error : new Error('Erro desconhecido'));
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [isSyncing]);
+
 
   // Get pending changes count
   const getPendingChanges = useCallback(async () => {

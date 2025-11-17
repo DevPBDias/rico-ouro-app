@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { syncEngine } from '@/lib/offline/sync-engine';
+import { syncService } from '@/lib/sync-service';
 
 export function ServiceWorkerRegister() {
   const [isOnline, setIsOnline] = useState(true);
@@ -9,8 +9,8 @@ export function ServiceWorkerRegister() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    // Initialize sync engine
-    syncEngine.initialize().catch(console.error);
+    // Inicia sincronização automática
+    syncService.startAutoSync(30000);
 
     // Check if service workers are supported
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
@@ -46,7 +46,7 @@ export function ServiceWorkerRegister() {
       // Listen for messages from service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'SYNC_REQUEST') {
-          syncEngine.syncAll().catch(console.error);
+          syncService.forceSync().catch(console.error);
         }
       });
     }

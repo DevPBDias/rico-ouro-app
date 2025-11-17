@@ -118,7 +118,7 @@ export interface SyncQueueItem {
   id: string;
   table: "animals" | "farms" | "vaccines" | "matrices";
   operation: "create" | "update" | "delete";
-  payload: any;
+  payload: unknown;
   uuid?: string;
   createdAt: string;
   retries?: number;
@@ -130,7 +130,7 @@ export class AppDB extends Dexie {
   vaccines!: Dexie.Table<Vaccine, number | undefined>;
   matrices!: Dexie.Table<Matriz, number | undefined>;
   syncQueue!: Dexie.Table<SyncQueueItem, string>;
-  meta!: Dexie.Table<{ key: string; value: any }, string>;
+  meta!: Dexie.Table<{ key: string; value: unknown }, string>;
 
   constructor() {
     super("jmstudio_db");
@@ -142,7 +142,7 @@ export class AppDB extends Dexie {
       syncQueue: "id, table, operation, createdAt, uuid",
       meta: "key",
     });
-    this.open().catch((err) => {
+    this.open().catch((err: unknown) => {
       console.error("Failed to open db:", err);
     });
   }

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { syncEngine } from '@/lib/offline/sync-engine';
-import { offlineDB } from '@/lib/offline/db-offline';
-import type { EntityType } from '@/lib/offline/sync-engine';
+import { syncService } from '@/lib/sync-service';
+import { db } from '@/lib/dexie';
+type EntityType = 'animals' | 'vaccines' | 'farms' | 'matrices';
 
 type Operation = 'create' | 'update' | 'delete';
 
@@ -54,11 +54,11 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
       } as unknown as T;
 
       // Add to IndexedDB
-      await offlineDB[entityType].add(entity as any);
+      await (db as unknown as Record<EntityType, { add: (e: unknown) => Promise<unknown> }>)[entityType].add(entity as unknown);
       
       // Trigger sync if online
       if (syncAfterOperation) {
-        syncEngine.syncAll().catch(console.error);
+        syncService.forceSync().catch(console.error);
       }
 
       // Call success callback
@@ -88,7 +88,7 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
       const now = new Date().toISOString();
       
       // Get current entity to preserve existing fields
-      const current = await offlineDB[entityType].get(id);
+      const current = await (db as unknown as Record<EntityType, { get: (id: unknown) => Promise<unknown> }>)[entityType].get(id);
       if (!current) {
         throw new Error('Entity not found');
       }
@@ -103,15 +103,15 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
       };
 
       // Update in IndexedDB
-      await offlineDB[entityType].update(id, updatedEntity);
+      await (db as unknown as Record<EntityType, { update: (id: unknown, e: unknown) => Promise<void> }>)[entityType].update(id, updatedEntity as unknown);
       
       // Trigger sync if online
       if (syncAfterOperation) {
-        syncEngine.syncAll().catch(console.error);
+        syncService.forceSync().catch(console.error);
       }
 
       // Call success callback
-      onSuccess?.(updatedEntity as T);
+      onSuccess?.(updatedEntity as unknown as T);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to update entity');
       setError(error);
@@ -133,7 +133,7 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
 
     try {
       // Mark as deleted instead of actually deleting
-      await offlineDB[entityType].update(id, {
+      await (db as unknown as Record<EntityType, { update: (id: unknown, e: unknown) => Promise<void> }>)[entityType].update(id, {
         _dirty: true,
         _deleted: true,
         _rev: new Date().toISOString(),
@@ -142,7 +142,7 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
       
       // Trigger sync if online
       if (syncAfterOperation) {
-        syncEngine.syncAll().catch(console.error);
+        syncService.forceSync().catch(console.error);
       }
 
       // Call success callback
@@ -160,7 +160,7 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
   // Get a single entity by ID
   const getOne = useCallback(async (id: string): Promise<T | undefined> => {
     try {
-      return await offlineDB[entityType].get(id);
+      return await (db as unknown as Record<EntityType, { get: (id: unknown) => Promise<unknown> }>)[entityType].get(id) as unknown as T;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to fetch entity');
       setError(error);
@@ -176,16 +176,16 @@ export function useOfflineCrud<T extends { _id?: string }>(entityType: EntityTyp
     const { includeDeleted = false, filter } = options;
     
     try {
-      let query = offlineDB[entityType].toCollection();
+      let query = (db as unknown as Record<EntityType, { toCollection: () => { filter: (fn: (item: unknown) => boolean) => unknown; toArray: () => Promise<unknown[]> } }>)[entityType].toCollection();
       
       if (!includeDeleted) {
-        query = query.filter(item => !item._deleted);
+        query = (query as { filter: (fn: (item: unknown) => boolean) => { filter: (fn: (item: unknown) => boolean) => unknown; toArray: () => Promise<unknown[]> } }).filter((item: unknown) => !(item as { _deleted?: boolean })._deleted);
       }
       
       const items = await query.toArray();
       
       if (filter) {
-        return items.filter(filter);
+        return (items as T[]).filter(filter);
       }
       
       return items as unknown as T[];

@@ -8,12 +8,13 @@ import detailsMatrizLinks from "@/constants/detailsMatrizLinks";
 import useMatrizDB from "@/hooks/useMatrizDB";
 import { useEffect, useState } from "react";
 import DetailsMatrizButtons from "@/components/buttons/DetailsMatrizBtns";
+import { Matriz } from "@/lib/dexie";
 
 export default function DetailsMatrizPage() {
   const router = useRouter();
   const { rgn } = useParams();
   const { buscarPorRgn } = useMatrizDB();
-  const [animal, setAnimal] = useState<any>(null);
+  const [animal, setAnimal] = useState<Matriz | null>(null);
 
   useEffect(() => {
     if (!rgn) return;
@@ -23,19 +24,19 @@ export default function DetailsMatrizPage() {
       if (!animalData) {
         console.error(`Matriz com RGN ${rgnStr} não encontrada.`);
       }
-      setAnimal(animalData);
+      setAnimal(animalData || null);
     };
     fetchData();
   }, [rgn, buscarPorRgn]);
 
   function handleExcluir() {
-    if (!animal || !animal.animal?.rgn) {
+    if (!animal || !animal?.rgn) {
       console.error("RGN do animal não disponível.");
       return;
     }
 
-    excluirPorRgn(animal.animal.rgn).then(() => {
-      console.log(`Dados do animal com RGN ${animal.animal.rgn} excluídos.`);
+    excluirPorRgn(animal.rgn).then(() => {
+      console.log(`Dados do animal com RGN ${animal.rgn} excluídos.`);
       router.push("/home");
     });
   }
@@ -43,7 +44,7 @@ export default function DetailsMatrizPage() {
   return (
     <main>
       <Header
-        title={`${animal?.animal?.serieRGD ?? ""} ${animal?.animal?.rgn ?? ""}`}
+        title={`${animal?.serieRGD ?? ""} ${animal?.rgn ?? ""}`}
       />
       <DetailsMatrizButtons data={detailsMatrizLinks} className="grid-cols-1" />
       <Button

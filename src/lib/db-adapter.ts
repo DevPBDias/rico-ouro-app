@@ -23,7 +23,7 @@ import {
   // Matrizes
   addMatriz as sqliteAddMatriz,
   getMatrizById as sqliteGetMatrizById,
-  getMatrizByUuid as sqliteGetMatrizByUuid,
+
   getAllMatrizes as sqliteGetAllMatrizes,
   updateMatriz as sqliteUpdateMatriz,
   deleteMatriz as sqliteDeleteMatriz,
@@ -326,37 +326,37 @@ export class FarmTable {
 
 // Classe para tabela de matrizes
 export class MatrizTable {
-  async toArray(): Promise<any[]> {
+  async toArray(): Promise<{ id: number; matriz: import("./dexie").Matriz }[]> {
     await initSQLite();
     return await sqliteGetAllMatrizes();
   }
 
-  async get(id: number): Promise<any | undefined> {
+  async get(id: number): Promise<{ id: number; matriz: import("./dexie").Matriz } | undefined> {
     await initSQLite();
     return await sqliteGetMatrizById(id);
   }
 
-  async add(matriz: any): Promise<number> {
+  async add(matriz: import("./dexie").Matriz): Promise<number> {
     await initSQLite();
     const id = await sqliteAddMatriz(matriz);
     await saveDatabase();
     return id;
   }
 
-  async update(id: number, changes: Partial<any>): Promise<number> {
+  async update(id: number, changes: Partial<import("./dexie").Matriz>): Promise<number> {
     await initSQLite();
     const existing = await sqliteGetMatrizById(id);
     if (!existing) {
       throw new Error(`Matriz com id ${id} não encontrada`);
     }
 
-    const updated = {
+    const updated: import("./dexie").Matriz = {
       ...existing.matriz,
       ...changes,
       updatedAt: new Date().toISOString(),
     };
 
-    await sqliteUpdateMatriz(id, updated as any);
+    await sqliteUpdateMatriz(id, updated);
     await saveDatabase();
     return id;
   }

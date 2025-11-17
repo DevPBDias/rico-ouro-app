@@ -15,7 +15,7 @@ import {
   isOnline,
   onOnlineStatusChange,
 } from "./supabase-client";
-import { AnimalData, Vaccine, Farm, Matriz } from "./dexie";
+import { AnimalData, Vaccine, Farm, Matriz, SyncQueueItem } from "./dexie";
 import { normalizeAnimalData } from "./db-helpers";
 
 class SyncService {
@@ -134,24 +134,24 @@ class SyncService {
 
     for (const item of queue) {
       try {
-        const table = (item as any).table ?? (item as any).table_name;
+        const table = item.table ?? (item as unknown as { table_name?: string }).table_name;
         const t = typeof table === "string" ? table.toLowerCase() : table;
         if (t === "animal_data" || t === "animals") {
-          await this.syncAnimalItem(item as any);
+          await this.syncAnimalItem(item);
         } else if (t === "vaccines") {
-          await this.syncVaccineItem(item as any);
+          await this.syncVaccineItem(item);
         } else if (t === "farms") {
-          await this.syncFarmItem(item as any);
+          await this.syncFarmItem(item);
         } else if (t === "matrizes" || t === "matrices") {
-          await this.syncMatrizItem(item as any);
+          await this.syncMatrizItem(item);
         } else {
           console.warn(`⚠️ Tipo de tabela desconhecido: ${table}`);
-          await db.syncQueue.delete((item as any).id);
+          await db.syncQueue.delete(item.id);
           continue;
         }
 
-        await db.syncQueue.delete((item as any).id);
-        console.log(`✅ Item ${(item as any).id} sincronizado e removido da fila`);
+        await db.syncQueue.delete(item.id);
+        console.log(`✅ Item ${item.id} sincronizado e removido da fila`);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
@@ -169,7 +169,7 @@ class SyncService {
           console.warn(
             `⚠️ Removendo item ${item.id} da fila devido a erro não recuperável`
           );
-          await db.syncQueue.delete((item as any).id);
+          await db.syncQueue.delete(item.id);
         }
         // Caso contrário, mantém na fila para tentar novamente depois
       }
@@ -177,11 +177,7 @@ class SyncService {
   }
 
   // Sincroniza item de animal
-  private async syncAnimalItem(item: {
-    operation: string;
-    uuid: string | null;
-    payload: string | object | null;
-  }): Promise<void> {
+  private async syncAnimalItem(item: SyncQueueItem): Promise<void> {
     if (!item.uuid) {
       console.warn("⚠️ Item de sincronização sem UUID, pulando:", item);
       return;
@@ -230,11 +226,7 @@ class SyncService {
   }
 
   // Sincroniza item de vacina
-  private async syncVaccineItem(item: {
-    operation: string;
-    uuid: string | null;
-    payload: string | object | null;
-  }): Promise<void> {
+  private async syncVaccineItem(item: SyncQueueItem): Promise<void> {
     if (!item.uuid) return;
 
     const op = (item.operation || "").toLowerCase();
@@ -248,11 +240,7 @@ class SyncService {
   }
 
   // Sincroniza item de matriz
-  private async syncMatrizItem(item: {
-    operation: string;
-    uuid: string | null;
-    payload: string | object | null;
-  }): Promise<void> {
+  private async syncMatrizItem(item: SyncQueueItem): Promise<void> {
     if (!item.uuid) return;
 
     const op = (item.operation || "").toLowerCase();
@@ -266,11 +254,7 @@ class SyncService {
   }
 
   // Sincroniza item de fazenda
-  private async syncFarmItem(item: {
-    operation: string;
-    uuid: string | null;
-    payload: string | object | null;
-  }): Promise<void> {
+  private async syncFarmItem(item: SyncQueueItem): Promise<void> {
     if (!item.uuid) return;
 
     const op = (item.operation || "").toLowerCase();
@@ -311,8 +295,8 @@ class SyncService {
           mae: remote.mae_json || {},
           avoMaterno: remote.avo_materno_json || {},
         });
-        const { id: _ignoreId, ...animalNoId } = rawAnimal as any;
-        const animalWithUuid: AnimalData = { ...(animalNoId as AnimalData), uuid: remote.uuid, updatedAt: remote.updated_at };
+        const animalNoId: AnimalData = { ...rawAnimal, id: undefined };
+        const animalWithUuid: AnimalData = { ...animalNoId, uuid: remote.uuid, updatedAt: remote.updated_at };
 
         if (!localByUuid) {
           const byComposite = await db.animals
@@ -395,9 +379,10 @@ class SyncService {
         try {
           const localByUuid = await db.matrices.where("uuid").equals(remote.uuid).first();
 
-          const { id: _ignoreMid, ...matrizJsonNoId } = remote.matriz_json as any;
+          const base = remote.matriz_json as Partial<Matriz> & { id?: number };
           const matrizObj: Matriz = {
-            ...(matrizJsonNoId as Matriz),
+            ...(base as Matriz),
+            id: undefined,
             updatedAt: remote.updated_at,
             uuid: remote.uuid,
           };
@@ -406,12 +391,12 @@ class SyncService {
             await db.matrices.add(matrizObj);
           } else {
             const remoteTime = new Date(remote.updated_at).getTime();
-            const localUpdatedAt = (localByUuid as any).updatedAt || (localByUuid as any).updated_at || null;
+            const localUpdatedAt = (localByUuid as { updatedAt?: string; updated_at?: string }).updatedAt || (localByUuid as { updatedAt?: string; updated_at?: string }).updated_at || null;
             const localTime = localUpdatedAt ? new Date(localUpdatedAt as string).getTime() : 0;
 
             if (remoteTime >= localTime && localByUuid.id !== undefined) {
-              await db.matrices.update(localByUuid.id as number, matrizObj);
-            }
+            await db.matrices.update(localByUuid.id as number, matrizObj);
+          }
           }
         } catch (error) {
           console.error(`Erro ao sincronizar matriz ${remote.uuid}:`, error);
