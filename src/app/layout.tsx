@@ -30,11 +30,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/icon-192x192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512x512.png", type: "image/png", sizes: "512x512" },
       { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/logo.svg", sizes: "192x192", type: "image/svg+xml" },
-      { url: "/logo.svg", sizes: "512x512", type: "image/svg+xml" },
     ],
-    apple: [{ url: "/logo.svg", sizes: "180x180", type: "image/svg+xml" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
@@ -53,8 +55,12 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="INDI Ouro" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo.svg" />
+        <link rel="icon" href="/icon-192x192.png" type="image/png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
         {/* Splash screens for iOS */}
         <link
           rel="apple-touch-startup-image"
