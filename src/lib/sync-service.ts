@@ -12,6 +12,9 @@ import {
   addAnimalData,
   addVaccine,
   addFarm,
+  addMatriz,
+  getMatrizByUuid,
+  updateMatriz,
 } from "./sqlite-db";
 import {
   syncAnimalDataToSupabase,
@@ -23,6 +26,9 @@ import {
   syncFarmToSupabase,
   deleteFarmFromSupabase,
   fetchFarmsFromSupabase,
+  syncMatrizToSupabase,
+  deleteMatrizFromSupabase,
+  fetchMatrizesFromSupabase,
   isOnline,
   onOnlineStatusChange,
 } from "./supabase-client";
@@ -53,7 +59,7 @@ class SyncService {
   }
 
   // Inicia sincronização automática
-  startAutoSync(intervalMs: number = 30000) {
+  startAutoSync(intervalMs: number = 3000000) {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }
@@ -107,15 +113,18 @@ class SyncService {
       await this.syncRemoteToLocal();
 
       console.log("✅ Sincronização concluída");
-      
+
       // Emite evento de sucesso
       if (typeof window !== "undefined") {
         const { emitSyncEvent } = await import("@/hooks/useSyncNotifications");
-        emitSyncEvent("success", "Banco de dados sincronizado com Supabase com sucesso!");
+        emitSyncEvent(
+          "success",
+          "Banco de dados sincronizado com Supabase com sucesso!"
+        );
       }
     } catch (error) {
       console.error("❌ Erro na sincronização:", error);
-      
+
       // Emite evento de erro
       if (typeof window !== "undefined") {
         const { emitSyncEvent } = await import("@/hooks/useSyncNotifications");
@@ -149,6 +158,8 @@ class SyncService {
           await this.syncVaccineItem(item);
         } else if (item.table_name === "farms") {
           await this.syncFarmItem(item);
+        } else if (item.table_name === "matrizes") {
+          await this.syncMatrizItem(item);
         } else {
           console.warn(`⚠️ Tipo de tabela desconhecido: ${item.table_name}`);
           // Remove da fila mesmo assim para evitar loop infinito
@@ -248,6 +259,22 @@ class SyncService {
     }
   }
 
+  // Sincroniza item de matriz
+  private async syncMatrizItem(item: {
+    operation: string;
+    uuid: string | null;
+    data_json: string | null;
+  }): Promise<void> {
+    if (!item.uuid) return;
+
+    if (item.operation === "DELETE") {
+      await deleteMatrizFromSupabase(item.uuid);
+    } else if (item.data_json) {
+      const matriz = JSON.parse(item.data_json) as any;
+      await syncMatrizToSupabase(matriz, item.uuid);
+    }
+  }
+
   // Sincroniza item de fazenda
   private async syncFarmItem(item: {
     operation: string;
@@ -275,6 +302,9 @@ class SyncService {
 
       // Sincroniza fazendas
       await this.syncFarmsRemoteToLocal();
+
+      // Sincroniza matrizes
+      await this.syncMatrizesRemoteToLocal();
     } catch (error) {
       console.error("Erro ao sincronizar remoto → local:", error);
     }
@@ -379,8 +409,54 @@ class SyncService {
       }
     } catch (error) {
       // Se houver erro ao buscar fazendas (ex: tabela não existe), apenas loga e continua
-      console.warn("Erro ao buscar fazendas do Supabase para sincronização:", error);
+      console.warn(
+        "Erro ao buscar fazendas do Supabase para sincronização:",
+        error
+      );
       // Não relança o erro para não interromper a sincronização de outras tabelas
+    }
+  }
+
+  // Sincroniza matrizes remoto → local
+  private async syncMatrizesRemoteToLocal(): Promise<void> {
+    try {
+      const remoteMatrizes = await fetchMatrizesFromSupabase();
+
+      for (const remote of remoteMatrizes) {
+        try {
+          const localByUuid = await getMatrizByUuid(remote.uuid);
+
+          const matrizObj = remote.matriz_json as any;
+
+          if (!localByUuid) {
+            // Não existe localmente, adiciona com UUID do Supabase
+            await addMatriz(matrizObj, remote.uuid);
+          } else {
+            // Existe localmente, compara timestamps
+            const remoteTime = new Date(remote.updated_at).getTime();
+            // Tentativa defensiva de extrair timestamp local (suporta `updatedAt` ou `updated_at`)
+            const localUpdatedAt =
+              (localByUuid.matriz as any)?.updatedAt ||
+              (localByUuid.matriz as any)?.updated_at ||
+              null;
+            const localTime = localUpdatedAt
+              ? new Date(localUpdatedAt as string).getTime()
+              : 0;
+
+            if (remoteTime >= localTime && localByUuid.id) {
+              await updateMatriz(localByUuid.id, matrizObj);
+              await markAsSynced("matrizes", localByUuid.id, remote.uuid);
+            }
+          }
+        } catch (error) {
+          console.error(`Erro ao sincronizar matriz ${remote.uuid}:`, error);
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Erro ao buscar matrizes do Supabase para sincronização:",
+        error
+      );
     }
   }
 

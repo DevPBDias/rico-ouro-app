@@ -107,6 +107,11 @@ self.addEventListener("fetch", (event) => {
           }
           return resp;
         } catch (err) {
+          // If navigation fails, prefer returning the cached application shell ('/') so
+          // the client-side router can hydrate and operate offline. If '/' isn't cached,
+          // fall back to a lightweight offline page.
+          const appShell = await caches.match("/");
+          if (appShell) return appShell;
           const cached = await cache.match(event.request);
           return cached || caches.match("/offline.html");
         }
