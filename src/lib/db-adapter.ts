@@ -20,6 +20,13 @@ import {
   getAllFarms as sqliteGetAllFarms,
   deleteFarm as sqliteDeleteFarm,
   saveDatabase,
+  // Matrizes
+  addMatriz as sqliteAddMatriz,
+  getMatrizById as sqliteGetMatrizById,
+  getMatrizByUuid as sqliteGetMatrizByUuid,
+  getAllMatrizes as sqliteGetAllMatrizes,
+  updateMatriz as sqliteUpdateMatriz,
+  deleteMatriz as sqliteDeleteMatriz,
 } from "./sqlite-db";
 import { AnimalData, Vaccine, Farm } from "./db";
 
@@ -134,7 +141,10 @@ class AnimalDataWhereQuery {
       return await sqliteGetAnimalDataByRgn(this.value as string);
     }
 
-    if (this.field === "[animal.serieRGD+animal.rgn]" && this.operator === "equals") {
+    if (
+      this.field === "[animal.serieRGD+animal.rgn]" &&
+      this.operator === "equals"
+    ) {
       const [serieRGD, rgn] = this.value as [string, string];
       const animal = await sqliteGetAnimalDataByRgn(rgn);
       if (animal && animal.animal.serieRGD === serieRGD) {
@@ -314,6 +324,50 @@ export class FarmTable {
   }
 }
 
+// Classe para tabela de matrizes
+export class MatrizTable {
+  async toArray(): Promise<any[]> {
+    await initSQLite();
+    return await sqliteGetAllMatrizes();
+  }
+
+  async get(id: number): Promise<any | undefined> {
+    await initSQLite();
+    return await sqliteGetMatrizById(id);
+  }
+
+  async add(matriz: any): Promise<number> {
+    await initSQLite();
+    const id = await sqliteAddMatriz(matriz);
+    await saveDatabase();
+    return id;
+  }
+
+  async update(id: number, changes: Partial<any>): Promise<number> {
+    await initSQLite();
+    const existing = await sqliteGetMatrizById(id);
+    if (!existing) {
+      throw new Error(`Matriz com id ${id} não encontrada`);
+    }
+
+    const updated = {
+      ...existing.matriz,
+      ...changes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await sqliteUpdateMatriz(id, updated as any);
+    await saveDatabase();
+    return id;
+  }
+
+  async delete(id: number): Promise<void> {
+    await initSQLite();
+    await sqliteDeleteMatriz(id);
+    await saveDatabase();
+  }
+}
+
 class FarmOrderByClause {
   constructor(private field: string) {}
 
@@ -354,11 +408,13 @@ export class DatabaseAdapter {
   animalData: AnimalDataTable;
   vaccines: VaccineTable;
   farms: FarmTable;
+  matrizes: MatrizTable;
 
   constructor() {
     this.animalData = new AnimalDataTable();
     this.vaccines = new VaccineTable();
     this.farms = new FarmTable();
+    this.matrizes = new MatrizTable();
   }
 
   async transaction(

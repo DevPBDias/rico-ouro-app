@@ -4,8 +4,8 @@
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
-  "background_color": "#1162ae",
-  "theme_color": "#1162ae",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
   "description": "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   "icons": [
     {
@@ -22,9 +22,9 @@
     },
     {
       "src": "/logo.svg",
-      "sizes": "512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }

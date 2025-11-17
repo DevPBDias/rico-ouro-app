@@ -1,21 +1,4 @@
-import {
-  getSyncQueue,
-  removeFromSyncQueue,
-  markAsSynced,
-  updateAnimalData,
-  updateVaccine,
-  updateFarm,
-  saveDatabase,
-  getAnimalDataByUuid,
-  getVaccineByUuid,
-  getFarmByUuid,
-  addAnimalData,
-  addVaccine,
-  addFarm,
-  addMatriz,
-  getMatrizByUuid,
-  updateMatriz,
-} from "./sqlite-db";
+import { db } from "./dexie";
 import {
   syncAnimalDataToSupabase,
   deleteAnimalDataFromSupabase,
@@ -32,7 +15,7 @@ import {
   isOnline,
   onOnlineStatusChange,
 } from "./supabase-client";
-import { AnimalData, Vaccine, Farm, Matriz } from "./db";
+import { AnimalData, Vaccine, Farm, Matriz } from "./dexie";
 import { normalizeAnimalData } from "./db-helpers";
 
 class SyncService {
@@ -136,13 +119,12 @@ class SyncService {
       }
     } finally {
       this.isSyncing = false;
-      await saveDatabase();
     }
   }
 
   // Sincroniza dados locais → remoto
   private async syncLocalToRemote(): Promise<void> {
-    const queue = await getSyncQueue();
+    const queue = await db.syncQueue.toArray();
 
     if (queue.length === 0) {
       return;
@@ -152,29 +134,29 @@ class SyncService {
 
     for (const item of queue) {
       try {
-        if (item.table_name === "animal_data") {
-          await this.syncAnimalItem(item);
-        } else if (item.table_name === "vaccines") {
-          await this.syncVaccineItem(item);
-        } else if (item.table_name === "farms") {
-          await this.syncFarmItem(item);
-        } else if (item.table_name === "matrizes") {
-          await this.syncMatrizItem(item);
+        const table = (item as any).table ?? (item as any).table_name;
+        const t = typeof table === "string" ? table.toLowerCase() : table;
+        if (t === "animal_data" || t === "animals") {
+          await this.syncAnimalItem(item as any);
+        } else if (t === "vaccines") {
+          await this.syncVaccineItem(item as any);
+        } else if (t === "farms") {
+          await this.syncFarmItem(item as any);
+        } else if (t === "matrizes" || t === "matrices") {
+          await this.syncMatrizItem(item as any);
         } else {
-          console.warn(`⚠️ Tipo de tabela desconhecido: ${item.table_name}`);
-          // Remove da fila mesmo assim para evitar loop infinito
-          await removeFromSyncQueue(item.id);
+          console.warn(`⚠️ Tipo de tabela desconhecido: ${table}`);
+          await db.syncQueue.delete((item as any).id);
           continue;
         }
 
-        // Remove da fila após sucesso
-        await removeFromSyncQueue(item.id);
-        console.log(`✅ Item ${item.id} sincronizado e removido da fila`);
+        await db.syncQueue.delete((item as any).id);
+        console.log(`✅ Item ${(item as any).id} sincronizado e removido da fila`);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         console.error(
-          `❌ Erro ao sincronizar item ${item.id} (${item.table_name}):`,
+          `❌ Erro ao sincronizar item ${item.id} (${item.table}):`,
           errorMessage
         );
 
@@ -187,7 +169,7 @@ class SyncService {
           console.warn(
             `⚠️ Removendo item ${item.id} da fila devido a erro não recuperável`
           );
-          await removeFromSyncQueue(item.id);
+          await db.syncQueue.delete((item as any).id);
         }
         // Caso contrário, mantém na fila para tentar novamente depois
       }
@@ -198,7 +180,7 @@ class SyncService {
   private async syncAnimalItem(item: {
     operation: string;
     uuid: string | null;
-    data_json: string | null;
+    payload: string | object | null;
   }): Promise<void> {
     if (!item.uuid) {
       console.warn("⚠️ Item de sincronização sem UUID, pulando:", item);
@@ -206,12 +188,16 @@ class SyncService {
     }
 
     try {
-      if (item.operation === "DELETE") {
+      const op = (item.operation || "").toLowerCase();
+      if (op === "delete") {
         await deleteAnimalDataFromSupabase(item.uuid);
         console.log(`✅ Animal deletado no Supabase: ${item.uuid}`);
-      } else if (item.data_json) {
+      } else if (item.payload) {
         try {
-          const animal: AnimalData = JSON.parse(item.data_json);
+          const animal: AnimalData =
+            typeof item.payload === "string"
+              ? JSON.parse(item.payload)
+              : (item.payload as AnimalData);
 
           // Validação básica
           if (!animal || !animal.animal) {
@@ -234,7 +220,7 @@ class SyncService {
           );
         }
       } else {
-        console.warn("⚠️ Item de sincronização sem dados JSON, pulando:", item);
+        console.warn("⚠️ Item de sincronização sem payload, pulando:", item);
       }
     } catch (error) {
       console.error(`❌ Erro ao sincronizar animal ${item.uuid}:`, error);
@@ -247,14 +233,16 @@ class SyncService {
   private async syncVaccineItem(item: {
     operation: string;
     uuid: string | null;
-    data_json: string | null;
+    payload: string | object | null;
   }): Promise<void> {
     if (!item.uuid) return;
 
-    if (item.operation === "DELETE") {
+    const op = (item.operation || "").toLowerCase();
+    if (op === "delete") {
       await deleteVaccineFromSupabase(item.uuid);
-    } else if (item.data_json) {
-      const vaccine: Vaccine = JSON.parse(item.data_json);
+    } else if (item.payload) {
+      const vaccine: Vaccine =
+        typeof item.payload === "string" ? JSON.parse(item.payload) : (item.payload as Vaccine);
       await syncVaccineToSupabase(vaccine, item.uuid);
     }
   }
@@ -263,14 +251,16 @@ class SyncService {
   private async syncMatrizItem(item: {
     operation: string;
     uuid: string | null;
-    data_json: string | null;
+    payload: string | object | null;
   }): Promise<void> {
     if (!item.uuid) return;
 
-    if (item.operation === "DELETE") {
+    const op = (item.operation || "").toLowerCase();
+    if (op === "delete") {
       await deleteMatrizFromSupabase(item.uuid);
-    } else if (item.data_json) {
-      const matriz = JSON.parse(item.data_json) as Matriz;
+    } else if (item.payload) {
+      const matriz: Matriz =
+        typeof item.payload === "string" ? JSON.parse(item.payload) : (item.payload as Matriz);
       await syncMatrizToSupabase(matriz, item.uuid);
     }
   }
@@ -279,14 +269,16 @@ class SyncService {
   private async syncFarmItem(item: {
     operation: string;
     uuid: string | null;
-    data_json: string | null;
+    payload: string | object | null;
   }): Promise<void> {
     if (!item.uuid) return;
 
-    if (item.operation === "DELETE") {
+    const op = (item.operation || "").toLowerCase();
+    if (op === "delete") {
       await deleteFarmFromSupabase(item.uuid);
-    } else if (item.data_json) {
-      const farm: Farm = JSON.parse(item.data_json);
+    } else if (item.payload) {
+      const farm: Farm =
+        typeof item.payload === "string" ? JSON.parse(item.payload) : (item.payload as Farm);
       await syncFarmToSupabase(farm, item.uuid);
     }
   }
@@ -294,13 +286,8 @@ class SyncService {
   // Sincroniza dados remoto → local
   private async syncRemoteToLocal(): Promise<void> {
     try {
-      // Sincroniza animais
       await this.syncAnimalsRemoteToLocal();
-
-      // Sincroniza vacinas
       await this.syncVaccinesRemoteToLocal();
-
-      // Sincroniza fazendas
       await this.syncFarmsRemoteToLocal();
 
       // Sincroniza matrizes
@@ -316,36 +303,35 @@ class SyncService {
 
     for (const remote of remoteAnimals) {
       try {
-        // Verifica se existe localmente pelo UUID (mais confiável)
-        const localByUuid = await getAnimalDataByUuid(remote.uuid);
+        const localByUuid = await db.animals.where("uuid").equals(remote.uuid).first();
 
-        // Converte SupabaseAnimalData para AnimalData
-        // Usa normalizeAnimalData para garantir estrutura correta
-        const animal: AnimalData = normalizeAnimalData({
-          animal: {
-            ...remote.animal_json,
-            updatedAt: remote.updated_at,
-          },
+        const rawAnimal: AnimalData = normalizeAnimalData({
+          animal: { ...remote.animal_json, updatedAt: remote.updated_at },
           pai: remote.pai_json || {},
           mae: remote.mae_json || {},
           avoMaterno: remote.avo_materno_json || {},
         });
+        const { id: _ignoreId, ...animalNoId } = rawAnimal as any;
+        const animalWithUuid: AnimalData = { ...(animalNoId as AnimalData), uuid: remote.uuid, updatedAt: remote.updated_at };
 
         if (!localByUuid) {
-          // Não existe localmente, adiciona com UUID do Supabase (já sincronizado)
-          await addAnimalData(animal, remote.uuid);
+          const byComposite = await db.animals
+            .where("[animal.serieRGD+animal.rgn]")
+            .equals([animalWithUuid.animal.serieRGD || "", animalWithUuid.animal.rgn || ""]) 
+            .first();
+          if (byComposite && byComposite.id !== undefined) {
+            await db.animals.update(byComposite.id as number, animalWithUuid);
+          } else {
+            await db.animals.add(animalWithUuid);
+          }
         } else {
-          // Existe localmente, compara timestamps
           const remoteTime = new Date(remote.updated_at).getTime();
           const localTime = localByUuid.animal?.updatedAt
             ? new Date(localByUuid.animal.updatedAt).getTime()
             : 0;
 
-          // Se remoto é mais recente, atualiza local e marca como sincronizado
-          if (remoteTime >= localTime && localByUuid.id) {
-            await updateAnimalData(localByUuid.id, animal);
-            // Marca como sincronizado após atualizar (remove da fila se existir)
-            await markAsSynced("animal_data", localByUuid.id, remote.uuid);
+          if (remoteTime >= localTime && localByUuid.id !== undefined) {
+            await db.animals.update(localByUuid.id as number, animalWithUuid);
           }
         }
       } catch (error) {
@@ -360,23 +346,14 @@ class SyncService {
 
     for (const remote of remoteVaccines) {
       try {
-        // Verifica se existe localmente pelo UUID
-        const localByUuid = await getVaccineByUuid(remote.uuid);
+        const localByUuid = await db.vaccines.where("uuid").equals(remote.uuid).first();
 
-        const vaccine: Vaccine = {
-          vaccineName: remote.vaccine_name,
-        };
+        const vaccine: Vaccine = { vaccineName: remote.vaccine_name, uuid: remote.uuid, updatedAt: remote.updated_at };
 
         if (!localByUuid) {
-          // Não existe localmente, adiciona com UUID do Supabase (já sincronizado)
-          await addVaccine(vaccine, remote.uuid);
-        } else {
-          // Existe localmente, atualiza e marca como sincronizado
-          if (localByUuid.id) {
-            await updateVaccine(localByUuid.id, vaccine);
-            // Marca como sincronizado após atualizar (remove da fila se existir)
-            await markAsSynced("vaccines", localByUuid.id, remote.uuid);
-          }
+          await db.vaccines.add(vaccine);
+        } else if (localByUuid.id !== undefined) {
+          await db.vaccines.update(localByUuid.id as number, vaccine);
         }
       } catch (error) {
         console.error(`Erro ao sincronizar vacina ${remote.uuid}:`, error);
@@ -391,29 +368,21 @@ class SyncService {
 
       for (const remote of remoteFarms) {
         try {
-          const localByUuid = await getFarmByUuid(remote.uuid);
+          const localByUuid = await db.farms.where("uuid").equals(remote.uuid).first();
 
-          const farm: Farm = {
-            farmName: remote.farm_name,
-          };
+          const farm: Farm = { farmName: remote.farm_name, uuid: remote.uuid, updatedAt: remote.updated_at };
 
           if (!localByUuid) {
-            await addFarm(farm, remote.uuid);
-          } else if (localByUuid.id) {
-            await updateFarm(localByUuid.id, farm);
-            await markAsSynced("farms", localByUuid.id, remote.uuid);
+            await db.farms.add(farm);
+          } else if (localByUuid.id !== undefined) {
+            await db.farms.update(localByUuid.id as number, farm);
           }
         } catch (error) {
           console.error(`Erro ao sincronizar fazenda ${remote.uuid}:`, error);
         }
       }
     } catch (error) {
-      // Se houver erro ao buscar fazendas (ex: tabela não existe), apenas loga e continua
-      console.warn(
-        "Erro ao buscar fazendas do Supabase para sincronização:",
-        error
-      );
-      // Não relança o erro para não interromper a sincronização de outras tabelas
+      console.warn("Erro ao buscar fazendas do Supabase para sincronização:", error);
     }
   }
 
@@ -424,41 +393,24 @@ class SyncService {
 
       for (const remote of remoteMatrizes) {
         try {
-          const localByUuid = await getMatrizByUuid(remote.uuid);
+          const localByUuid = await db.matrices.where("uuid").equals(remote.uuid).first();
 
-          const matrizObj = remote.matriz_json as Matriz;
+          const { id: _ignoreMid, ...matrizJsonNoId } = remote.matriz_json as any;
+          const matrizObj: Matriz = {
+            ...(matrizJsonNoId as Matriz),
+            updatedAt: remote.updated_at,
+            uuid: remote.uuid,
+          };
 
           if (!localByUuid) {
-            // Não existe localmente, adiciona com UUID do Supabase
-            await addMatriz(matrizObj, remote.uuid);
+            await db.matrices.add(matrizObj);
           } else {
-            // Existe localmente, compara timestamps
             const remoteTime = new Date(remote.updated_at).getTime();
-            // Tentativa defensiva de extrair timestamp local (suporta `updatedAt` ou `updated_at`)
-            // Extract updated timestamp defensively; prefer `updatedAt`, fall back to `updated_at`.
-            let localUpdatedAt: string | null = null;
-            if (localByUuid.matriz) {
-              const matRecord = localByUuid.matriz as unknown as Record<
-                string,
-                unknown
-              >;
-              const v1 = matRecord["updatedAt"];
-              if (typeof v1 === "string") {
-                localUpdatedAt = v1;
-              } else {
-                const v2 = matRecord["updated_at"];
-                if (typeof v2 === "string") {
-                  localUpdatedAt = v2;
-                }
-              }
-            }
-            const localTime = localUpdatedAt
-              ? new Date(localUpdatedAt as string).getTime()
-              : 0;
+            const localUpdatedAt = (localByUuid as any).updatedAt || (localByUuid as any).updated_at || null;
+            const localTime = localUpdatedAt ? new Date(localUpdatedAt as string).getTime() : 0;
 
-            if (remoteTime >= localTime && localByUuid.id) {
-              await updateMatriz(localByUuid.id, matrizObj);
-              await markAsSynced("matrizes", localByUuid.id, remote.uuid);
+            if (remoteTime >= localTime && localByUuid.id !== undefined) {
+              await db.matrices.update(localByUuid.id as number, matrizObj);
             }
           }
         } catch (error) {
@@ -466,21 +418,13 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.warn(
-        "Erro ao buscar matrizes do Supabase para sincronização:",
-        error
-      );
+      console.warn("Erro ao buscar matrizes do Supabase para sincronização:", error);
     }
   }
 
-  // Força sincronização manual
   async forceSync(): Promise<void> {
     await this.sync();
   }
 }
 
-// Instância singleton
 export const syncService = new SyncService();
-
-// NOTA: A sincronização automática será iniciada pelo componente SyncManager
-// Isso garante que o componente React esteja montado antes de iniciar a sincronização

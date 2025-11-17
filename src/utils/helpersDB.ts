@@ -2,7 +2,7 @@ import { AnimalData, db } from "@/lib/db";
 
 export async function salvarDados(dados: AnimalData[]) {
   try {
-    await db.animalData.bulkPut(dados);
+    await db.animals.bulkPut(dados);
     console.log("✅ Dados salvos no SQLite:", dados);
   } catch (error) {
     console.error("❌ Erro ao salvar no SQLite:", error);
@@ -24,12 +24,12 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
 
       // Se tem ID, busca diretamente por ID (caso de edição pelo modal)
       if (item.id) {
-        existente = await db.animalData.get(item.id);
+        existente = await db.animals.get(item.id);
       }
 
       // Se não encontrou por ID, busca por RGN (caso de importação do Excel)
       if (!existente) {
-        existente = await db.animalData
+        existente = await db.animals
           .where("animal.rgn")
           .equals(item.animal.rgn)
           .first();
@@ -65,7 +65,7 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
           },
         };
 
-        await db.animalData.put({ ...merged, id: existente.id! });
+        await db.animals.put({ ...merged, id: existente.id! });
         atualizados++;
         console.log(`🔄 Atualizado: RGN ${item.animal.rgn} (ID: ${existente.id})`);
       } else {
@@ -82,7 +82,7 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
           },
         };
 
-        await db.animalData.add(toInsert);
+        await db.animals.add(toInsert);
         inseridos++;
         console.log(`➕ Inserido: RGN ${item.animal.rgn}`);
       }
@@ -99,7 +99,7 @@ export async function salvarOuAtualizarDados(dados: AnimalData[]) {
 
 export async function limparTodosDados() {
   try {
-    await db.animalData.clear();
+    await db.animals.clear();
     console.log("🗑️ Todos os dados foram excluídos do SQLite!");
   } catch (err) {
     console.error("❌ Erro ao limpar dados:", err);
@@ -108,7 +108,7 @@ export async function limparTodosDados() {
 
 export async function excluirPorRgn(rgn: string) {
   try {
-    await db.animalData.where("animal.rgn").equals(rgn).delete();
+    await db.animals.where("animal.rgn").equals(rgn).delete();
     console.log(`🗑️ Registro com RGN ${rgn} excluído.`);
   } catch (err) {
     console.error("❌ Erro ao excluir registro:", err);

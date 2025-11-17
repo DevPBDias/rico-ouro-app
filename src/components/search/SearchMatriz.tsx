@@ -26,7 +26,10 @@ const SearchMatriz = () => {
       setHasSearched(false);
 
       const results = dados.filter((animal) => {
-        const rgn = animal.matriz.rgn?.toString().toLowerCase() || "";
+        const rgn =
+          animal.matriz.rgn?.toString().toLowerCase() ||
+          animal.matriz.serieRGD?.toLowerCase() ||
+          "";
         const queryLower = query.toLowerCase();
 
         return rgn.includes(queryLower);
@@ -61,7 +64,7 @@ const SearchMatriz = () => {
           <Input
             id="search-animal"
             type="text"
-            className="pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
+            className="pl-2 py-3.5 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

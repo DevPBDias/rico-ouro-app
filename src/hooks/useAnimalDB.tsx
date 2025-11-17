@@ -15,7 +15,7 @@ export function useAnimalDB() {
   }, []);
 
   const carregar = async (): Promise<void> => {
-    const data = await db.animalData.toArray();
+    const data = await db.animals.toArray();
     const sortedData = data.sort((a, b) => {
       const rgnA = a.animal.rgn || "";
       const rgnB = b.animal.rgn || "";
@@ -26,16 +26,11 @@ export function useAnimalDB() {
 
   const buscarPorRgn = async (rgn: string): Promise<AnimalData | undefined> => {
     try {
-      const animal = await db.animalData
-        .where("animal.rgn")
-        .equals(rgn)
-        .first();
-
+      const animal = await db.animals.where("animal.rgn").equals(rgn).first();
       if (!animal) {
         console.warn(`⚠️ Animal não encontrado com RGN: ${rgn}`);
         return undefined;
       }
-
       return animal;
     } catch (error) {
       console.error("❌ Erro ao buscar animal:", error);
@@ -127,14 +122,12 @@ export function useAnimalDB() {
   };
 
   const limpar = async (): Promise<void> => {
-    await db.animalData.clear();
+    await db.animals.clear();
     setDados([]);
-    console.log("🗑️ Todos os dados foram excluídos!");
   };
 
   const excluirPorRgn = async (rgn: string): Promise<void> => {
-    await db.animalData.where("animal.rgn").equals(rgn).delete();
-    console.log(`🗑️ Registro(s) removido(s) por RGN: ${rgn}`);
+    await db.animals.where("animal.rgn").equals(rgn).delete();
     await carregar();
   };
 
@@ -149,15 +142,24 @@ export function useAnimalDB() {
   const buscarAnimalPorIdentificadores = async (
     animal: AnimalData
   ): Promise<AnimalData | undefined> => {
-    return await db.animalData
+    return await db.animals
       .where("[animal.serieRGD+animal.rgn]")
       .equals([animal.animal.serieRGD || "", animal.animal.rgn || ""])
       .first();
   };
 
   const persistirNovoAnimal = async (animal: AnimalData): Promise<void> => {
-    const animalParaSalvar = prepararDadosAnimal(animal);
-    await db.animalData.add(animalParaSalvar);
+    const uuid = crypto.randomUUID();
+    const animalParaSalvar = { ...prepararDadosAnimal(animal), uuid };
+    await db.animals.add(animalParaSalvar);
+    await db.syncQueue.add({
+      id: crypto.randomUUID(),
+      table: "animals",
+      operation: "create",
+      payload: animalParaSalvar,
+      uuid,
+      createdAt: new Date().toISOString(),
+    });
     await carregar();
   };
 
@@ -166,7 +168,21 @@ export function useAnimalDB() {
     novoDado: AnimalData
   ): Promise<void> => {
     const merged = mesclarDadosAnimal(existente, novoDado);
-    await db.animalData.put({ ...merged, id: existente.id! });
+    const uuid = existente.uuid || crypto.randomUUID();
+    if (!existente.uuid) {
+      await db.animals.update(existente.id!, { uuid });
+    }
+    await db.animals.put({ ...merged, id: existente.id! });
+    await db.syncQueue.add({
+      id: crypto.randomUUID(),
+      table: "animals",
+      operation: "update",
+      payload: merged,
+      uuid,
+      createdAt: new Date().toISOString(),
+    });
+    await carregar();
+
   };
 
   const atualizarVacinasAnimal = async (
@@ -185,28 +201,14 @@ export function useAnimalDB() {
     const vacinasAtualizadas = [...(animal.animal.vacinas || []), vacina];
 
     try {
-      await db.animalData.update(animal.id!, {
+      await db.animals.update(animal.id!, {
         animal: {
           ...animal.animal,
           vacinas: vacinasAtualizadas,
           updatedAt: new Date().toISOString(),
         },
       });
-
-      setDados((prevDados) =>
-        prevDados.map((item) =>
-          item.id === animal.id
-            ? {
-                ...item,
-                animal: {
-                  ...item.animal,
-                  vacinas: vacinasAtualizadas,
-                  updatedAt: new Date().toISOString(),
-                },
-              }
-            : item
-        )
-      );
+      await carregar();
     } catch (error) {
       console.error("❌ Erro ao atualizar vacinas:", error);
       throw error;
@@ -218,28 +220,14 @@ export function useAnimalDB() {
     farmName: string | null
   ): Promise<void> => {
     try {
-      await db.animalData.update(animal.id!, {
+      await db.animals.update(animal.id!, {
         animal: {
           ...animal.animal,
           farm: farmName || undefined,
           updatedAt: new Date().toISOString(),
         },
       });
-
-      setDados((prevDados) =>
-        prevDados.map((item) =>
-          item.id === animal.id
-            ? {
-                ...item,
-                animal: {
-                  ...item.animal,
-                  farm: farmName || undefined,
-                  updatedAt: new Date().toISOString(),
-                },
-              }
-            : item
-        )
-      );
+      await carregar();
     } catch (error) {
       console.error("❌ Erro ao atualizar fazenda:", error);
       throw error;
@@ -251,28 +239,14 @@ export function useAnimalDB() {
     status: IStatus | null
   ): Promise<void> => {
     try {
-      await db.animalData.update(animal.id!, {
+      await db.animals.update(animal.id!, {
         animal: {
           ...animal.animal,
           status: status || undefined,
           updatedAt: new Date().toISOString(),
         },
       });
-
-      setDados((prevDados) =>
-        prevDados.map((item) =>
-          item.id === animal.id
-            ? {
-                ...item,
-                animal: {
-                  ...item.animal,
-                  status: status || undefined,
-                  updatedAt: new Date().toISOString(),
-                },
-              }
-            : item
-        )
-      );
+      await carregar();
     } catch (error) {
       console.error("❌ Erro ao atualizar status:", error);
       throw error;

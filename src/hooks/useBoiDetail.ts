@@ -15,7 +15,7 @@ export function useBoiDetail(id: number | null) {
       return;
     }
     setLoading(true);
-    const found = await db.animalData.get(id);
+    const found = await db.animals.get(id);
     setBoi(found ?? null);
     setLoading(false);
   }, [id]);
@@ -48,7 +48,7 @@ export function useBoiDetail(id: number | null) {
           updatedAt: new Date().toISOString(),
         },
       };
-      await db.animalData.put(next);
+      await db.animals.put(next);
       setBoi(next);
     },
     [boi]

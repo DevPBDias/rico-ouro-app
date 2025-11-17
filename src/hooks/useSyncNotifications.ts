@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { hasSyncedRecords } from "@/lib/sqlite-db";
+import { db } from "@/lib/dexie";
 import { isSupabaseConfigured } from "@/lib/supabase-client";
 
 export type SyncNotificationType = "success" | "error" | null;
@@ -30,9 +30,14 @@ export function useSyncNotifications() {
         return;
       }
 
-      // Verifica se há registros sincronizados
       try {
-        const hasSynced = await hasSyncedRecords();
+        const [a, v, f, m] = await Promise.all([
+          db.animals.where("uuid").notEqual("").count(),
+          db.vaccines.where("uuid").notEqual("").count(),
+          db.farms.where("uuid").notEqual("").count(),
+          db.matrices.where("uuid").notEqual("").count(),
+        ]);
+        const hasSynced = a + v + f + m > 0;
         if (hasSynced) {
           setNotification({
             type: "success",

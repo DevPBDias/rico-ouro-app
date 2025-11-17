@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { hasSyncedRecords } from "@/lib/sqlite-db";
+import { db } from "@/lib/dexie";
 import { isSupabaseConfigured, isOnline, onOnlineStatusChange } from "@/lib/supabase-client";
 
 export type SyncStatus = "synced" | "error" | "offline" | "checking";
@@ -24,7 +24,13 @@ export function useSyncStatus() {
       }
 
       try {
-        const hasSynced = await hasSyncedRecords();
+        const [a, v, f, m] = await Promise.all([
+          db.animals.where("uuid").notEqual("").count(),
+          db.vaccines.where("uuid").notEqual("").count(),
+          db.farms.where("uuid").notEqual("").count(),
+          db.matrices.where("uuid").notEqual("").count(),
+        ]);
+        const hasSynced = a + v + f + m > 0;
         setStatus(hasSynced ? "synced" : "error");
       } catch (error) {
         console.error("Erro ao verificar status de sincronização:", error);

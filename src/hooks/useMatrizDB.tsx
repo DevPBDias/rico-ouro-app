@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Matriz } from "@/lib/db";
 import * as matrizLocal from "@/utils/matriz/local";
-import { getAllMatrizes as dbGetAllMatrizes } from "@/lib/sqlite-db";
-import { clearMatrizes as dbClearMatrizes } from "@/lib/sqlite-db";
+import { clearMatrizes as dbClearMatrizes } from "@/utils/matriz/local";
 
 export type MatrizItem = { id: number; matriz: Matriz };
 
@@ -27,7 +26,7 @@ export function useMatrizDB() {
     const found = dados.find((d) => d.matriz.rgn === rgn);
     if (found) return found;
 
-    const all = await dbGetAllMatrizes();
+    const all = await matrizLocal.getAllMatrizes();
     return all.find((d) => d.matriz.rgn === rgn);
   };
 
@@ -56,8 +55,8 @@ export function useMatrizDB() {
   };
 
   const persistirNovo = async (matriz: Matriz): Promise<void> => {
-    const id = await matrizLocal.addMatriz(matriz);
-    setDados((prev) => [{ id, matriz }, ...prev]);
+    await matrizLocal.addMatriz(matriz);
+    await carregar();
   };
 
   const adicionarMatriz = async (nova: Matriz): Promise<void> => {

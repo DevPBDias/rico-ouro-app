@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import SyncManager from "@/components/sync/SyncManager";
-import DatabaseInitializer from "@/components/sync/DatabaseInitializer";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 
@@ -108,7 +107,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <DatabaseInitializer />
         <RegisterSW />
         <SyncStatusIndicator />
         {children}
