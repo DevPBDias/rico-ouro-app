@@ -32,7 +32,7 @@ import {
   isOnline,
   onOnlineStatusChange,
 } from "./supabase-client";
-import { AnimalData, Vaccine, Farm } from "./db";
+import { AnimalData, Vaccine, Farm, Matriz } from "./db";
 import { normalizeAnimalData } from "./db-helpers";
 
 class SyncService {
@@ -270,7 +270,7 @@ class SyncService {
     if (item.operation === "DELETE") {
       await deleteMatrizFromSupabase(item.uuid);
     } else if (item.data_json) {
-      const matriz = JSON.parse(item.data_json) as any;
+      const matriz = JSON.parse(item.data_json) as Matriz;
       await syncMatrizToSupabase(matriz, item.uuid);
     }
   }
@@ -426,7 +426,7 @@ class SyncService {
         try {
           const localByUuid = await getMatrizByUuid(remote.uuid);
 
-          const matrizObj = remote.matriz_json as any;
+          const matrizObj = remote.matriz_json as Matriz;
 
           if (!localByUuid) {
             // Não existe localmente, adiciona com UUID do Supabase
@@ -435,10 +435,23 @@ class SyncService {
             // Existe localmente, compara timestamps
             const remoteTime = new Date(remote.updated_at).getTime();
             // Tentativa defensiva de extrair timestamp local (suporta `updatedAt` ou `updated_at`)
-            const localUpdatedAt =
-              (localByUuid.matriz as any)?.updatedAt ||
-              (localByUuid.matriz as any)?.updated_at ||
-              null;
+            // Extract updated timestamp defensively; prefer `updatedAt`, fall back to `updated_at`.
+            let localUpdatedAt: string | null = null;
+            if (localByUuid.matriz) {
+              const matRecord = localByUuid.matriz as unknown as Record<
+                string,
+                unknown
+              >;
+              const v1 = matRecord["updatedAt"];
+              if (typeof v1 === "string") {
+                localUpdatedAt = v1;
+              } else {
+                const v2 = matRecord["updated_at"];
+                if (typeof v2 === "string") {
+                  localUpdatedAt = v2;
+                }
+              }
+            }
             const localTime = localUpdatedAt
               ? new Date(localUpdatedAt as string).getTime()
               : 0;
