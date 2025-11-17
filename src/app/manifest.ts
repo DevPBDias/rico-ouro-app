@@ -1,9 +1,6 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from "next";
 
-// Default export manifest (as required by Next's webmanifest route).
-// Exported as default directly to ensure the compiled module contains a default export
-// and avoid runtime errors during the Vercel build step.
-export default {
+const manifest: MetadataRoute.Manifest = {
   name: "INDI Ouro",
   short_name: "INDI Ouro",
   start_url: "/",
@@ -24,10 +21,6 @@ export default {
       purpose: "maskable",
     },
   ],
-} as MetadataRoute.Manifest;
+};
 
-/*
-  Note: We also keep `public/manifest.json` for direct browser fetch; this file
-  provides a typed default export so the App Router's `/manifest.webmanifest` route
-  resolves a default export during build.
-*/
+export default manifest;
