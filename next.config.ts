@@ -7,7 +7,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* outras opções de config podem ser adicionadas aqui */
   webpack: (config, { isServer }) => {
-    // Configuração para sql.js
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

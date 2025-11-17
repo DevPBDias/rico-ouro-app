@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "INDI Ouro",
   description:
     "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   themeColor: "#1162ae",
   appleWebApp: {
     capable: true,
