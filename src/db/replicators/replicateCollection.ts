@@ -2,6 +2,7 @@ import {
   RxCollection,
   ReplicationPullOptions,
   ReplicationPushOptions,
+  WithDeleted,
 } from "rxdb";
 import { replicateRxCollection } from "rxdb/plugins/replication";
 
@@ -38,6 +39,8 @@ export interface ReplicateOptions<T extends BaseDocument> {
   batchSize?: number;
   supabaseUrl: string;
   supabaseKey: string;
+  transformPull?: (doc: any) => T;
+  transformPush?: (doc: T) => any;
 }
 
 // --------------------------------------------------------------
@@ -47,9 +50,11 @@ export interface ReplicateOptions<T extends BaseDocument> {
 export function replicateCollection<T extends BaseDocument>({
   collection,
   tableName,
-  batchSize = 50,
+  batchSize = 1000,
   supabaseUrl,
   supabaseKey,
+  transformPull,
+  transformPush,
 }: ReplicateOptions<T>): ReturnType<typeof replicateRxCollection<T, unknown>> {
   const endpoint = `${supabaseUrl}/rest/v1/${tableName}`;
 
@@ -88,11 +93,18 @@ export function replicateCollection<T extends BaseDocument>({
       const data: T[] = await response.json();
       const docs = Array.isArray(data) ? data : [];
 
-      // Ensure _deleted is boolean
-      const processedDocs = docs.map((doc) => ({
-        ...doc,
-        _deleted: !!doc._deleted,
-      }));
+      console.log(`📥 Pulled ${docs.length} documents from ${tableName}`);
+
+      // Ensure _deleted is boolean and apply transformation if needed
+      const processedDocs = docs.map((doc) => {
+        const processed = {
+          ...doc,
+          _deleted: !!doc._deleted,
+        };
+        return (
+          transformPull ? transformPull(processed) : processed
+        ) as WithDeleted<T>;
+      });
 
       return {
         documents: processedDocs,
@@ -104,7 +116,7 @@ export function replicateCollection<T extends BaseDocument>({
         },
       };
     } catch (error) {
-      console.error("Pull error:", error);
+      console.error(`❌ Pull error for ${tableName}:`, error);
       throw error;
     }
   };

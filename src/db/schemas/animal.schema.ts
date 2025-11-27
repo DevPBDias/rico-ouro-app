@@ -104,6 +104,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
     lastModified: { type: "string" },
   },
 
-  required: ["uuid"],
+  required: ["uuid", "updatedAt"],
   indexes: ["updatedAt"],
 };

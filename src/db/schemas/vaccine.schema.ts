@@ -14,6 +14,6 @@ export const vaccineSchema: RxJsonSchema<Vaccine> = {
     _deleted: { type: "boolean", default: false },
     lastModified: { type: "string" },
   },
-  required: ["uuid"],
+  required: ["uuid", "vaccineName"],
   indexes: ["vaccineName"],
 };

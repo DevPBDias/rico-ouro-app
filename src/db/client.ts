@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === "development") {
 
 let dbPromise: Promise<MyDatabase> | null = null;
 
-const DB_NAME = "indi_ouro_db";
+const DB_NAME = "indi_ouro_db_v6";
 
 /**
  * Cria e retorna a instância do banco de dados RxDB
@@ -92,19 +92,29 @@ const createDatabase = async (): Promise<MyDatabase> => {
     console.log("✅ RxDB initialized!");
     return db;
   } catch (error) {
-    // Handle schema conflicts (DB9 error) or any database creation error
+    // Handle schema conflicts (DB9 or DXE1 errors)
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorCode = (error as any)?.code || "";
 
     console.error("Database initialization error:", error);
 
-    if (errorMessage.includes("DB9") || errorCode === "DB9") {
+    if (
+      errorMessage.includes("DB9") ||
+      errorMessage.includes("DXE1") ||
+      errorCode === "DB9" ||
+      errorCode === "DXE1"
+    ) {
       console.warn(
-        "⚠️ Schema conflict detected (DB9). Removing old databases and retrying..."
+        "⚠️ Schema conflict detected. Removing old databases and retrying..."
       );
 
       // Try to remove all possible old database versions
       const oldDbNames = [
+        "indi_ouro_db",
+        "indi_ouro_db_v2",
+        "indi_ouro_db_v3",
+        "indi_ouro_db_v4",
+        "indi_ouro_db_v5",
         "rico_ouro_db",
         "rico_ouro_db_v2",
         "rico_ouro_db_v3",
