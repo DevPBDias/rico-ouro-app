@@ -26,8 +26,11 @@ if (process.env.NODE_ENV === "development") {
 
 let dbPromise: Promise<MyDatabase> | null = null;
 
+// Use v3 to avoid schema conflicts with previous versions
+const DB_NAME = "rico_ouro_db_v3";
+
 const createDatabase = async (): Promise<MyDatabase> => {
-  console.log("🚀 Initializing RxDB...");
+  console.log("� Initializing RxDB...");
 
   // Use validated storage in development mode
   const storage =
@@ -37,14 +40,14 @@ const createDatabase = async (): Promise<MyDatabase> => {
 
   try {
     const db = await createRxDatabase<MyDatabaseCollections>({
-      name: "rico_ouro_db_v2", // New name to avoid conflicts with old DB
+      name: DB_NAME,
       storage,
       multiInstance: true,
       eventReduce: true,
       ignoreDuplicate: true,
     });
 
-    console.log("📦 Adding collections...");
+    console.log("�📦 Adding collections...");
     await db.addCollections({
       animals: { schema: animalSchema },
       vaccines: { schema: vaccineSchema },
@@ -77,29 +80,38 @@ const createDatabase = async (): Promise<MyDatabase> => {
     console.log("✅ RxDB initialized!");
     return db;
   } catch (error) {
-    // Handle schema conflicts (DB9 error)
-    if (error instanceof Error && error.message.includes("DB9")) {
+    // Handle schema conflicts (DB9 error) or any database creation error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode = (error as any)?.code || "";
+    
+    console.error("Database initialization error:", error);
+    
+    if (errorMessage.includes("DB9") || errorCode === "DB9") {
       console.warn(
-        "⚠️ Schema conflict detected. Removing old database and retrying..."
+        "⚠️ Schema conflict detected (DB9). Removing old databases and retrying..."
       );
 
-      // Remove the old database
-      try {
-        await removeRxDatabase("rico_ouro_db_v2", storage);
-      } catch (removeError) {
-        console.error("Failed to remove old database:", removeError);
+      // Try to remove all possible old database versions
+      const oldDbNames = ["rico_ouro_db_v2", "rico_ouro_db", DB_NAME];
+      for (const dbName of oldDbNames) {
+        try {
+          await removeRxDatabase(dbName, storage);
+          console.log(`🗑️ Removed old database: ${dbName}`);
+        } catch (removeError) {
+          // Ignore errors when removing databases that don't exist
+        }
       }
 
       // Retry database creation
       const db = await createRxDatabase<MyDatabaseCollections>({
-        name: "rico_ouro_db_v2",
+        name: DB_NAME,
         storage,
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true,
       });
 
-      console.log("📦 Adding collections...");
+      console.log("📦 Adding collections after cleanup...");
       await db.addCollections({
         animals: { schema: animalSchema },
         vaccines: { schema: vaccineSchema },
@@ -132,7 +144,6 @@ const createDatabase = async (): Promise<MyDatabase> => {
     }
 
     // Re-throw other errors
-    console.error("Failed to initialize RxDB:", error);
     throw error;
   }
 };
