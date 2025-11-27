@@ -14,6 +14,6 @@ export const farmSchema: RxJsonSchema<Farm> = {
     _deleted: { type: "boolean", default: false },
     lastModified: { type: "string" },
   },
-  required: ["uuid", "farmName"],
+  required: ["uuid"],
   indexes: ["farmName"],
 };

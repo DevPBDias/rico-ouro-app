@@ -136,6 +136,6 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
     _deleted: { type: "boolean", default: false },
     lastModified: { type: "string" },
   },
-  required: ["uuid", "nome", "updatedAt", "farm"],
+  required: ["uuid"],
   indexes: ["nome", "updatedAt", "farm"],
 };

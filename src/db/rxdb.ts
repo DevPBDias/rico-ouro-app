@@ -26,8 +26,8 @@ if (process.env.NODE_ENV === "development") {
 
 let dbPromise: Promise<MyDatabase> | null = null;
 
-// Use v3 to avoid schema conflicts with previous versions
-const DB_NAME = "rico_ouro_db_v3";
+// Use v4 to avoid schema conflicts with previous versions
+const DB_NAME = "rico_ouro_db_v4";
 
 const createDatabase = async (): Promise<MyDatabase> => {
   console.log("� Initializing RxDB...");
@@ -92,7 +92,7 @@ const createDatabase = async (): Promise<MyDatabase> => {
       );
 
       // Try to remove all possible old database versions
-      const oldDbNames = ["rico_ouro_db_v2", "rico_ouro_db", DB_NAME];
+      const oldDbNames = ["rico_ouro_db_v2", "rico_ouro_db", "rico_ouro_db_v3", DB_NAME];
       for (const dbName of oldDbNames) {
         try {
           await removeRxDatabase(dbName, storage);
