@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getDatabase } from "@/db/rxdb";
+import { getDatabase } from "@/db/client";
 import { MyDatabase } from "@/db/collections";
 
 interface RxDBContextType {
@@ -40,6 +40,11 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // Só inicializar no cliente
+    if (typeof window === "undefined") {
+      return;
+    }
+
     let mounted = true;
 
     const initDB = async () => {

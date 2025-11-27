@@ -4,7 +4,6 @@ import {
   ReplicationPushOptions,
 } from "rxdb";
 import { replicateRxCollection } from "rxdb/plugins/replication";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 // --------------------------------------------------------------
 // 🟦 Tipos genéricos utilizados para replicação

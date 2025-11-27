@@ -5,6 +5,7 @@ import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import SyncManager from "@/components/sync/SyncManager";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,11 +111,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RegisterSW />
-        <SyncStatusIndicator />
-        {children}
-        <ServiceWorkerUpdater />
-        <SyncManager />
+        <Providers>
+          <RegisterSW />
+          <SyncStatusIndicator />
+          {children}
+          <ServiceWorkerUpdater />
+          <SyncManager />
+        </Providers>
       </body>
     </html>
   );
