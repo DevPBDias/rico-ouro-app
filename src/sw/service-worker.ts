@@ -1,0 +1,101 @@
+/// <reference lib="webworker" />
+
+export type {};
+declare const self: ServiceWorkerGlobalScope;
+
+const CACHE_NAME = "rico-ouro-cache-v1";
+const OFFLINE_URL = "/offline.html";
+
+const ASSETS_TO_CACHE = [
+  "/",
+  "/manifest.json",
+  "/icon-192x192.png",
+  "/icon-512x512.png",
+  OFFLINE_URL,
+];
+
+self.addEventListener("install", (event: any) => {
+  console.log("Service Worker: Installing...");
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log("Service Worker: Caching App Shell");
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event: any) => {
+  console.log("Service Worker: Activating...");
+  event.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log("Service Worker: Removing old cache", key);
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event: any) => {
+  // Ignore non-GET requests
+  if (event.request.method !== "GET") return;
+
+  // Ignore chrome-extension schemes
+  if (event.request.url.startsWith("chrome-extension")) return;
+
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      if (response) {
+        return response;
+      }
+
+      return fetch(event.request)
+        .then((networkResponse) => {
+          // Check if we received a valid response
+          if (
+            !networkResponse ||
+            networkResponse.status !== 200 ||
+            networkResponse.type !== "basic"
+          ) {
+            return networkResponse;
+          }
+
+          // Clone the response
+          const responseToCache = networkResponse.clone();
+
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline fallback
+          if (event.request.mode === "navigate") {
+            return caches.match(OFFLINE_URL) as Promise<Response>;
+          }
+          return new Response("Offline", { status: 503 });
+        });
+    })
+  );
+});
+
+self.addEventListener("sync", (event: any) => {
+  console.log("Service Worker: Sync event fired", event.tag);
+  if (event.tag === "sync-data") {
+    event.waitUntil(syncData());
+  }
+});
+
+async function syncData() {
+  // Implement your background sync logic here
+  // For RxDB, replication handles most of it, but this can be used for other tasks
+  console.log("Service Worker: Executing background sync...");
+  // Example: Check IndexedDB for pending tasks and process them
+}

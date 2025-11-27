@@ -1,43 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { syncService } from "@/lib/sync-service";
-import { isOnline, isSupabaseConfigured } from "@/lib/supabase-client";
+import { useEffect } from "react";
 
+/**
+ * SyncManager - Gerenciador de sincronização
+ *
+ * A sincronização agora é automática via RxDB Replication.
+ * Este componente foi mantido para compatibilidade, mas a replicação
+ * é iniciada automaticamente em src/db/rxdb.ts
+ */
 export default function SyncManager() {
-  const [, setOnline] = useState(false);
-  const [, setSupabaseConfigured] = useState(false);
-
   useEffect(() => {
-    // Verifica se Supabase está configurado
-    const configured = isSupabaseConfigured();
-    setSupabaseConfigured(configured);
-
-    if (!configured) {
-      console.warn(
-        "⚠️ Supabase não configurado. A sincronização não será iniciada."
-      );
-      return;
-    }
-
-    // Verifica status online
-    const checkOnline = () => {
-      setOnline(isOnline());
-    };
-
-    checkOnline();
-    const interval = setInterval(checkOnline, 5000);
-
-    // Inicia sincronização automática
-    syncService.startAutoSync(30000); // Sincroniza a cada 30 segundos
-    console.log("✅ Sincronização automática iniciada");
-
-    return () => {
-      clearInterval(interval);
-      syncService.stopAutoSync();
-    };
+    console.log(
+      "✅ RxDB Replication está ativo (configurado em src/db/rxdb.ts)"
+    );
   }, []);
 
-  // Componente invisível (não renderiza nada visível, apenas gerencia a sincronização)
+  // Componente invisível (não renderiza nada visível)
   return null;
 }

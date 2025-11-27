@@ -2,13 +2,12 @@
 
 import { useEffect } from "react";
 import { CheckCircle2, XCircle, X } from "lucide-react";
-import { useSyncNotifications } from "@/hooks/useSyncNotifications";
 import { Button } from "@/components/ui/button";
+import { useSyncNotifications } from "@/hooks/useSyncNotifications";
 
 export function SyncNotification() {
   const { notification, dismissNotification } = useSyncNotifications();
 
-  // Auto-dismiss após 5 segundos
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
