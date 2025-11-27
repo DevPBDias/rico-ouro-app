@@ -34,9 +34,9 @@ const createDatabase = async (): Promise<MyDatabase> => {
 
   // Use validated storage in development mode
   const storage =
-    process.env.NODE_ENV === "development"
-      ? wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
-      : getRxStorageDexie();
+    process.env.NODE_ENV === "production"
+      ? getRxStorageDexie()
+      : wrappedValidateAjvStorage({ storage: getRxStorageDexie() });
 
   try {
     const db = await createRxDatabase<MyDatabaseCollections>({
