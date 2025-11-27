@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useDatabase } from "@/hooks/useDatabase";
+import { useRxDatabase } from "@/providers/RxDBProvider";
 
 interface PendingChanges {
   total: number;
@@ -12,7 +12,7 @@ interface PendingChanges {
 }
 
 export function useOfflineStatus() {
-  const db = useDatabase();
+  const db = useRxDatabase();
   const [isOnline, setIsOnline] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
@@ -47,17 +47,17 @@ export function useOfflineStatus() {
         (await db.animals
           ?.find({
             selector: {
-              $or: [{ isDeleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
             },
           })
           .exec()
           .then((docs: unknown[]) => docs?.length || 0)) || 0;
 
       const vaccinesCount =
-        (await db.vaccinations
+        (await db.vaccines
           ?.find({
             selector: {
-              $or: [{ isDeleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
             },
           })
           .exec()
@@ -67,17 +67,17 @@ export function useOfflineStatus() {
         (await db.farms
           ?.find({
             selector: {
-              $or: [{ isDeleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
             },
           })
           .exec()
           .then((docs: unknown[]) => docs?.length || 0)) || 0;
 
       const matrizesCount =
-        (await db.matrices
+        (await db.matriz
           ?.find({
             selector: {
-              $or: [{ isDeleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
             },
           })
           .exec()

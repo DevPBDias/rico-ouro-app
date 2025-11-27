@@ -18,7 +18,7 @@ export function useAnimals(filters?: {
   search?: string;
 }) {
   const query = useMemo(() => {
-    const selector: any = {
+    const selector: Record<string, unknown> = {
       _deleted: { $eq: false },
     };
 

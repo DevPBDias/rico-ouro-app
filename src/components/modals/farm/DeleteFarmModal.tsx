@@ -99,7 +99,7 @@ export function DeleteFarmModal({
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((farm) => (
-                    <SelectItem key={farm.uuid} value={farm.uuid}>
+                    <SelectItem key={farm.uuid} value={farm.uuid || ""}>
                       {farm.farmName}
                     </SelectItem>
                   ))}

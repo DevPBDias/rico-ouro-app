@@ -42,7 +42,7 @@ export function useRxQuery<T>(
           setIsLoading(false);
           setError(null);
         },
-        error: (err: any) => {
+        error: (err: unknown) => {
           console.error(`Error in ${collectionName} query:`, err);
           setError(
             err instanceof Error ? err : new Error("Query subscription error")
@@ -92,7 +92,7 @@ export function useRxDocument<T>(
         setIsLoading(false);
         setError(null);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error(`Error fetching document ${documentId}:`, err);
         setError(
           err instanceof Error ? err : new Error("Document fetch error")
@@ -116,7 +116,7 @@ export function useAnimals(filters?: {
   search?: string;
 }) {
   const query = useMemo(() => {
-    const selector: any = {};
+    const selector: Record<string, unknown> = {};
 
     if (filters?.farmId) {
       selector["animal.farm"] = { $eq: filters.farmId };
@@ -273,7 +273,7 @@ export function useMatrizes(filters?: {
   search?: string;
 }) {
   const query = useMemo(() => {
-    const selector: any = {};
+    const selector: Record<string, unknown> = {};
 
     if (filters?.farmId) {
       selector.farm = { $eq: filters.farmId };

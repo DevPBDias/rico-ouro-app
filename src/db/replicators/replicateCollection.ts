@@ -51,17 +51,19 @@ export function replicateCollection<T extends BaseDocument>({
   batchSize = 50,
   supabaseUrl,
   supabaseKey,
-}: ReplicateOptions<T>): any {
+}: ReplicateOptions<T>): ReturnType<typeof replicateRxCollection<T, unknown>> {
   const endpoint = `${supabaseUrl}/rest/v1/${tableName}`;
 
   // ------------------------------------------------------------
   // 🔹 PULL — buscar alterações novas do Supabase
   // ------------------------------------------------------------
-  const pullHandler: ReplicationPullOptions<T, any>["handler"] = async (
+  const pullHandler: ReplicationPullOptions<T, unknown>["handler"] = async (
     checkpoint,
     batchSize
   ) => {
-    const lastUpdated = checkpoint?.updatedAt ?? "1970-01-01T00:00:00.000Z";
+    const lastUpdated =
+      (checkpoint as { updatedAt?: string })?.updatedAt ??
+      "1970-01-01T00:00:00.000Z";
 
     try {
       const url = `${endpoint}?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastUpdated}`;

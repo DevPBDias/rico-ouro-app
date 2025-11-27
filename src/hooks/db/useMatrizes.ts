@@ -14,7 +14,7 @@ export function useMatrizes(filters?: {
   search?: string;
 }) {
   const query = useMemo(() => {
-    const selector: any = {
+    const selector: Record<string, unknown> = {
       _deleted: { $eq: false },
     };
 
