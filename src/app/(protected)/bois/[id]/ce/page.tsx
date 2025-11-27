@@ -8,10 +8,10 @@ import Link from "next/link";
 
 const CircunfAnimalPage = () => {
   const params = useParams();
-  const id = Number(params.id);
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const id = typeof params.id === "string" ? params.id : null;
+  const { boi, isLoading, circunferenciaEscrotal } = useBoiDetail(id);
 
-  if (loading) return <p>Carregando...</p>;
+  if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
   return (
@@ -20,12 +20,9 @@ const CircunfAnimalPage = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 px-4">
         <div className="space-y-3">
-          <DetailsCircunfList
-            CEMedidos={boi.animal.circunferenciaEscrotal || []}
-          />
+          <DetailsCircunfList CEMedidos={circunferenciaEscrotal || []} />
 
-          {(!boi.animal.circunferenciaEscrotal ||
-            boi.animal.circunferenciaEscrotal.length === 0) && (
+          {(!circunferenciaEscrotal || circunferenciaEscrotal.length === 0) && (
             <div className="flex flex-col items-center justify-center gap-4">
               <p className="text-gray-500 text-sm">Nenhum valor registrado</p>
               <Link

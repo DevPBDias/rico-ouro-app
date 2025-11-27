@@ -10,13 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Vaccine } from "@/lib/db";
+import type { Vaccine } from "@/types/schemas.types";
 
 interface DeleteVaccineModalProps {
   open: boolean;
   vaccines: Vaccine[];
   onClose: () => void;
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (uuid: string) => Promise<void>;
 }
 
 export function DeleteVaccineModal({
@@ -25,13 +25,13 @@ export function DeleteVaccineModal({
   onClose,
   onDelete,
 }: DeleteVaccineModalProps) {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setSelectedId(null);
+      setSelectedUuid(null);
       setError(null);
       setIsDeleting(false);
     }
@@ -51,14 +51,14 @@ export function DeleteVaccineModal({
     event.preventDefault();
     setError(null);
 
-    if (selectedId == null) {
+    if (selectedUuid == null) {
       setError("Selecione uma vacina para excluir.");
       return;
     }
 
     try {
       setIsDeleting(true);
-      await onDelete(selectedId);
+      await onDelete(selectedUuid);
       onClose();
     } catch (err) {
       const message =
@@ -90,8 +90,8 @@ export function DeleteVaccineModal({
           ) : (
             <form onSubmit={handleDelete} className="flex flex-col gap-4">
               <Select
-                value={selectedId?.toString() ?? ""}
-                onValueChange={(value) => setSelectedId(Number(value))}
+                value={selectedUuid ?? ""}
+                onValueChange={(value) => setSelectedUuid(value)}
                 disabled={isDeleting}
               >
                 <SelectTrigger className="bg-muted w-full border-0 rounded-md px-4 py-3 text-sm">
@@ -99,7 +99,7 @@ export function DeleteVaccineModal({
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((vaccine) => (
-                    <SelectItem key={vaccine.id} value={String(vaccine.id)}>
+                    <SelectItem key={vaccine.uuid} value={vaccine.uuid!}>
                       {vaccine.vaccineName}
                     </SelectItem>
                   ))}
@@ -120,7 +120,7 @@ export function DeleteVaccineModal({
                 <Button
                   type="submit"
                   variant="destructive"
-                  disabled={isDeleting || selectedId == null}
+                  disabled={isDeleting || selectedUuid == null}
                 >
                   Excluir
                 </Button>

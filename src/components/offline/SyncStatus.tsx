@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useOfflineStatus } from '@/hooks/useOfflineStatus';
-import { RefreshCw, Wifi, WifiOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from "react";
+import {
+  RefreshCw,
+  Wifi,
+  WifiOff,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { useOfflineStatus } from "@/hooks/useOfflineStatus";
 
 export function SyncStatus() {
   const { isOnline, isSyncing, lastSync, syncNow, getPendingChanges } = useOfflineStatus();

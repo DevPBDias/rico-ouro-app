@@ -1,21 +1,20 @@
 "use client";
 
+import { use } from "react";
 import Header from "@/components/layout/Header";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
-import { useParams } from "next/navigation";
-import React from "react";
 
-const DetailsAnimalPage = () => {
-  const params = useParams();
-  const id = Number(params.id);
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
 
-  if (loading) return <p>Carregando...</p>;
+  const { boi, isLoading, error, vacinas } = useBoiDetail(id);
+
+  if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
   return (
     <main>
-      <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn}`} />
+      <Header title={`${boi.animal.serieRGD || ""} ${boi.animal.rgn}`} />
 
       <section className="p-4 mt-4">
         <div className="flex flex-row justify-between items-end gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
@@ -24,7 +23,7 @@ const DetailsAnimalPage = () => {
               fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {boi.animal.farm ?? "SEM DADO"}
+              {boi.animal.farm || "SEM DADO"}
             </p>
           </div>
         </div>
@@ -36,7 +35,7 @@ const DetailsAnimalPage = () => {
                 Sexo
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.animal?.sexo === "M" ? "Macho" : "Fêmea"}
+                {boi.animal.sexo === "M" ? "Macho" : "Fêmea"}
               </span>
             </div>
 
@@ -75,7 +74,7 @@ const DetailsAnimalPage = () => {
                 Pai
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.pai?.nome ?? "-"}
+                {boi.pai.nome ?? "-"}
               </span>
             </div>
             <div className="font-normal text-black flex flex-col gap-1">
@@ -83,7 +82,7 @@ const DetailsAnimalPage = () => {
                 Mãe
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {`${boi.mae?.serieRGD ?? "-"} ${boi.mae?.rgn ?? ""}`.trim()}
+                {`${boi.mae.serieRGD ?? "-"} ${boi.mae.rgn ?? ""}`.trim()}
               </span>
             </div>
           </div>
@@ -102,7 +101,7 @@ const DetailsAnimalPage = () => {
                 avô MATERNO
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.avoMaterno?.nome ?? "-"}
+                {boi.avoMaterno.nome ?? "-"}
               </span>
             </div>
           </div>
@@ -132,8 +131,8 @@ const DetailsAnimalPage = () => {
               Vacinas:
             </span>
             <ul className="list-disc list-inside mt-1">
-              {boi.animal.vacinas && boi.animal.vacinas.length > 0 ? (
-                boi.animal.vacinas.map((vacina, index) => (
+              {vacinas && vacinas.length > 0 ? (
+                vacinas.map((vacina, index) => (
                   <li
                     className="font-bold uppercase  text-[#1162AE]"
                     key={index}

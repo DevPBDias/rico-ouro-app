@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Download, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
+import { useAnimals } from "@/hooks/db";
 
 interface AnimalData {
   animal: {
@@ -46,7 +46,7 @@ export default function ExcelExport() {
   const [isExporting, setIsExporting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [exportedFileName, setExportedFileName] = useState("");
-  const { dados } = useAnimalDB();
+  const { animals: dados } = useAnimals();
   const router = useRouter();
 
   const handleExportFile = async () => {

@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import {
   ReportOption,
   ReportOptionsForm,
@@ -19,6 +18,7 @@ import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { SelectedReportFields } from "@/types";
+import { useAnimals } from "@/hooks/db";
 
 const REPORT_OPTIONS: ReportOption[] = [
   { key: "nomeAnimal", label: "Nome Animal" },
@@ -44,7 +44,7 @@ const REPORT_OPTIONS: ReportOption[] = [
 
 export default function RelatoriosPage() {
   const router = useRouter();
-  const { dados } = useAnimalDB();
+  const { animals: dados } = useAnimals();
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     title: string;

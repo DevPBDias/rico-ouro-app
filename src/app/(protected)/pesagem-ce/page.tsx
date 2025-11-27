@@ -2,31 +2,33 @@
 
 import Header from "@/components/layout/Header";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
+import { useAnimals } from "@/hooks/db";
 import { useMemo, useState, useEffect } from "react";
 import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import { WeightList } from "@/components/lists/WeightList";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
-import { AnimalData } from "@/lib/db";
+import { AnimalData } from "@/types/schemas.types";
 
 const PesagemPage = () => {
-  const { dados } = useAnimalDB();
+  const { animals: dados } = useAnimals();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalData | null>(null);
   const [type, setType] = useState<string>("");
   const {
     boi,
-    loading,
+    isLoading,
     editCirc,
     deleteCirc,
     saveCircComMes,
     savePesoComMes,
     editPeso,
     deletePeso,
-  } = useBoiDetail(selectedAnimal?.id ?? null);
+    pesosMedidos,
+    circunferenciaEscrotal,
+  } = useBoiDetail(selectedAnimal?.uuid ?? null);
 
   const rgnOptions = useMemo(() => {
     return dados
@@ -50,29 +52,25 @@ const PesagemPage = () => {
   }, [formData.rgn, dados]);
 
   const getPesosWithDefault = () => {
-    const source =
-      boi?.animal?.pesosMedidos ?? selectedAnimal?.animal?.pesosMedidos ?? [];
+    const source = pesosMedidos;
     if (!source || source.length === 0) {
       const nascimento =
         boi?.animal?.nasc ||
         selectedAnimal?.animal?.nasc ||
         new Date().toISOString();
-      return [{ mes: nascimento, valor: 0 }];
+      return [{ uuid: "default", mes: nascimento, valor: 0 }];
     }
     return source;
   };
 
   const getCircWithDefault = () => {
-    const source =
-      boi?.animal?.circunferenciaEscrotal ??
-      selectedAnimal?.animal?.circunferenciaEscrotal ??
-      [];
+    const source = circunferenciaEscrotal;
     if (!source || source.length === 0) {
       const nascimento =
         boi?.animal?.nasc ||
         selectedAnimal?.animal?.nasc ||
         new Date().toISOString();
-      return [{ mes: nascimento, valor: 0 }];
+      return [{ uuid: "default", mes: nascimento, valor: 0 }];
     }
     return source;
   };
@@ -131,7 +129,7 @@ const PesagemPage = () => {
         </div>
       </form>
 
-      {selectedAnimal && !loading && (
+      {selectedAnimal && !isLoading && (
         <div className="w-full px-6 mb-4 flex flex-col items-center gap-2">
           <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
             Tipo de Medição
@@ -171,11 +169,10 @@ const PesagemPage = () => {
             deletePeso={(index) => deletePeso(index)}
             editPeso={(index, valor) => editPeso(index, valor)}
             pesosMedidos={getPesosWithDefault()}
-            gainDaily={boi?.animal.ganhoDiario || []}
+            gainDaily={selectedAnimal?.animal?.ganhoDiario || []}
           />
         </section>
       )}
-
       {selectedAnimal && type === "circunferencia" && (
         <section className="w-full px-6">
           <div className="mb-4 flex items-center justify-between">
@@ -186,8 +183,8 @@ const PesagemPage = () => {
           </div>
 
           <CircunfList
-            deleteCE={deleteCirc}
-            editCE={editCirc}
+            deleteCE={(index) => deleteCirc(index)}
+            editCE={(index, valor) => editCirc(index, valor)}
             CEMedidos={getCircWithDefault()}
           />
         </section>

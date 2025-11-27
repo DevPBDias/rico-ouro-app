@@ -93,15 +93,6 @@ export default function BoisPage() {
                     iABCz
                   </th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pesos
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CE
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    vACINAS
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -109,7 +100,7 @@ export default function BoisPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedData.map((a) => (
                   <tr
-                    key={String(a.id)}
+                    key={a.uuid}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-2 text-sm font-medium text-gray-900">
@@ -125,7 +116,9 @@ export default function BoisPage() {
                       {a.animal.deca ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.mae.serieRGD + "-" + a.mae.rgn}
+                      {a.mae.serieRGD && a.mae.rgn
+                        ? `${a.mae.serieRGD}-${a.mae.rgn}`
+                        : "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
                       {a.pai.nome ?? "-"}
@@ -133,28 +126,9 @@ export default function BoisPage() {
                     <td className="px-4 py-2 text-sm text-gray-900">
                       {a.animal.iabcgz ?? "-"}
                     </td>
-                    <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.pesosMedidos
-                        ? a.animal.pesosMedidos
-                            .map((p) => `${p.valor}`)
-                            .join(", ")
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.circunferenciaEscrotal
-                        ? a.animal.circunferenciaEscrotal
-                            .map((p) => `${p.valor}`)
-                            .join(", ")
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.vacinas
-                        ? a.animal.vacinas.map((p) => `${p.nome}`).join(", ")
-                        : "-"}
-                    </td>
                     <td className="px-4 py-2 text-sm flex items-center gap-2">
                       <Link
-                        href={`/bois/${a.id}`}
+                        href={`/bois/${a.uuid}`}
                         prefetch
                         className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >
@@ -176,7 +150,7 @@ export default function BoisPage() {
                 {paginatedData.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-4 py-12 text-center text-gray-500"
                     >
                       Nenhum registro encontrado

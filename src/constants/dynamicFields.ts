@@ -1,9 +1,9 @@
-import { AnimalData } from "@/lib/db";
 import { SelectedReportFields } from "@/types";
+import { AnimalData } from "@/types/schemas.types";
 
 export const fieldMap: Record<
   keyof SelectedReportFields,
-  [string, keyof AnimalData["animal"] | string]
+  [string, keyof AnimalData | string]
 > = {
   nomeAnimal: ["Nome", "nomeAnimal"],
   rgn: ["RGN", "rgn"],

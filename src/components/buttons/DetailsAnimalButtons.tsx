@@ -4,15 +4,15 @@ import { useParams, useRouter } from "next/navigation";
 interface DetailsAnimalButtonsProps {
   data: Links[];
   className?: string;
+  animalId: string;
 }
 
 const DetailsAnimalButtons = ({
   data,
   className,
+  animalId,
 }: DetailsAnimalButtonsProps) => {
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params?.id);
 
   return (
     <section
@@ -21,7 +21,7 @@ const DetailsAnimalButtons = ({
       {data.map((link: Links) => (
         <button
           key={link.id}
-          onClick={() => router.push(link.href.replace(":id", id.toString()))}
+          onClick={() => router.push(link.href.replace(":id", animalId))}
           className={`bg-[#1162AE] text-white w-full pl-4 py-3 rounded-md flex flex-row justify-start items-center font-medium text-sm uppercase shadow-lg gap-2 text-left `}
         >
           {link.name}

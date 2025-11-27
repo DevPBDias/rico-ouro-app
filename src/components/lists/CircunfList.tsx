@@ -13,8 +13,9 @@ import {
 import { Pencil, Trash2 } from "lucide-react";
 
 interface CEMedido {
+  uuid: string;
   valor: number;
-  mes: string; // formato DD/MM/YYYY
+  mes: string; // format DD/MM/YYYY
 }
 
 interface CircunfListProps {
@@ -26,77 +27,111 @@ interface CircunfListProps {
 export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
-  const [indexEdit, setIndexEdit] = useState<number | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const handleOpen = (index: number, valor: number) => {
-    setIndexEdit(index);
+    setEditIndex(index);
     setValorEdit(String(valor));
     setOpen(true);
   };
 
   const handleSave = () => {
-    if (indexEdit !== null) {
-      editCE(indexEdit, valorEdit);
+    if (editIndex !== null) {
+      editCE(editIndex, valorEdit);
       setOpen(false);
+      setEditIndex(null);
     }
   };
 
   function diferencaEmDias(data1: string, data2: string): number {
     const [dia1, mes1, ano1] = data1.split("/").map(Number);
     const [dia2, mes2, ano2] = data2.split("/").map(Number);
-
     const d1 = new Date(ano1, mes1 - 1, dia1);
     const d2 = new Date(ano2, mes2 - 1, dia2);
-
     const diffEmMs = Math.abs(d2.getTime() - d1.getTime());
     return Math.floor(diffEmMs / (1000 * 60 * 60 * 24));
   }
+
+  const valueInteval = (i: number): string => {
+    if (i === 0) return "0";
+    const days = diferencaEmDias(CEMedidos[i].mes, CEMedidos[i - 1].mes);
+    return String(days);
+  };
+
+  const valueGrowth = (i: number): string => {
+    if (i === 0) return "0";
+    const current = CEMedidos[i];
+    const previous = CEMedidos[i - 1];
+
+    const diffDays = diferencaEmDias(current.mes, previous.mes);
+    if (diffDays === 0) return "0";
+
+    const diffValue = current.valor - previous.valor;
+    const growth = diffValue / diffDays;
+
+    return growth.toFixed(2);
+  };
 
   return (
     <div className="space-y-4 mt-6">
       {CEMedidos?.map((p, i) => (
         <div
-          key={i}
-          className="flex items-center justify-between border rounded-xl p-3 bg-white shadow-sm"
+          key={p.uuid}
+          className="flex items-center justify-between gap-3 border rounded-xl p-3 bg-white shadow-sm"
         >
-          <div className="flex flex-col items-start gap-3 uppercase">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400">
-                {`${i + 1}ª Medição`}
+          <div className="relative w-full flex flex-col items-start gap-3 border border-gray-400 px-1 py-2.5 rounded-lg">
+            <div className="flex flex-col items-start gap-[2px] pl-3">
+              <span className="absolute bg-white -top-2 left-2 px-2 text-xs font-semibold text-gray-400">
+                {i === 0 ? "Medição Inicial" : `${i}° Medição`}
               </span>
-              <span className="text-xs font-medium text-gray-400">{p.mes}</span>
+              <span className="text-xs font-semibold text-primary mt-1">
+                {p.mes}
+              </span>
             </div>
-            <div className="text-lg font-bold text-[#1162AE] flex flex-row items-center  gap-1">
+            <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
               {p.valor}
-              <span className="text-xs">cm</span>
+              <span className="text-xs font-medium text-gray-400 lowercase">
+                cm
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-center border border-[#1162AE] px-2 py-2 rounded-lg">
-              <span className="uppercase text-sm font-bold text-[#1162AE]">
-                {i === 0 ? 0 : diferencaEmDias(p.mes, CEMedidos[i - 1].mes)}{" "}
-                dias
-              </span>
-            </div>
-
-            <div className="flex gap-2">
+          <div className="flex flex-row-reverse gap-2">
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" size="icon" onClick={() => deleteCE(i)}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => handleOpen(i, p.valor)}
-                className="text-gray-500 border-gray-400"
               >
-                <Pencil className="w-4 h-4" color="blue" />
+                <Pencil className="w-4 h-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => deleteCE(i)}
-                className="text-gray-500 border-gray-400"
-              >
-                <Trash2 className="w-4 h-4" color="red" />
-              </Button>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
+                <h4 className="absolute bg-white -top-2 left-2 px-1 text-xs font-semibold text-gray-400">
+                  Intervalo
+                </h4>
+                <div className="flex flex-row gap-1 items-center justify-center">
+                  <span className="uppercase text-sm font-bold text-primary">
+                    {valueInteval(i)}
+                  </span>
+                  <span className="text-xs text-gray-400">dias</span>
+                </div>
+              </div>
+              <div className="relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
+                <h4 className="absolute bg-white -top-2 left-2 px-1 text-xs font-semibold text-gray-400">
+                  Cresc.
+                </h4>
+                <div className="flex flex-row gap-1 items-center justify-center">
+                  <span className="uppercase text-sm font-bold text-primary">
+                    {valueGrowth(i)}
+                  </span>
+                  <span className="text-xs text-gray-400">cm</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -109,7 +144,6 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
               Editar CE
             </DialogTitle>
           </DialogHeader>
-
           <div className="py-2">
             <Input
               type="number"
@@ -119,7 +153,6 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
               placeholder="Novo valor (cm)"
             />
           </div>
-
           <DialogFooter className="grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancelar

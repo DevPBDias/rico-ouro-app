@@ -1,8 +1,8 @@
 "use client";
 
+import { AnimalData } from "@/types/schemas.types";
 import { Eye } from "lucide-react";
 import Link from "next/link";
-import { AnimalData } from "@/lib/db";
 
 interface AnimalCardProps {
   animal: AnimalData;
@@ -11,7 +11,7 @@ interface AnimalCardProps {
 export function AnimalCard({ animal }: AnimalCardProps) {
   return (
     <Link
-      href={`/bois/${animal.id}`}
+      href={`/bois/${animal.uuid}`}
       className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200"
     >
       <div className="flex-1">

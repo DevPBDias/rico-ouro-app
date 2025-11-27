@@ -4,10 +4,15 @@ import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { FarmsCheckboxList } from "@/components/farms/FarmsCheckboxList";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { useFarms } from "@/hooks/useFarms";
+import {
+  useFarms,
+  useAnimals,
+  useCreateFarm,
+  useDeleteFarm,
+  useUpdateAnimal,
+} from "@/hooks/db";
 import { AddFarmModal } from "@/components/modals/farm/AddFarmModal";
 import { FarmSuccessModal } from "@/components/modals/farm/FarmSuccessModal";
 import { DeleteFarmModal } from "@/components/modals/farm/DeleteFarmModal";
@@ -15,8 +20,12 @@ import { Plus, Trash } from "lucide-react";
 
 const FarmsPage = () => {
   const router = useRouter();
-  const { atualizarFazenda, dados } = useAnimalDB();
-  const { farms, loading, error: farmsError, addFarm, removeFarm } = useFarms();
+  const { animals } = useAnimals();
+  const { updateAnimal } = useUpdateAnimal();
+  const { farms, isLoading: loading, error: farmsError } = useFarms();
+  const { createFarm } = useCreateFarm();
+  const { deleteFarm } = useDeleteFarm();
+
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -27,18 +36,18 @@ const FarmsPage = () => {
   });
 
   const rgnOptions = useMemo(() => {
-    return dados
+    return animals
       .map((animal) => ({
         label: animal.animal.rgn || "",
         value: animal.animal.rgn || "",
       }))
       .filter((option) => option.value);
-  }, [dados]);
+  }, [animals]);
 
   // Quando o RGN é selecionado, carrega a fazenda atual do animal
   useEffect(() => {
     if (formData.rgn) {
-      const animal = dados.find(
+      const animal = animals.find(
         (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
       if (animal) {
@@ -53,7 +62,7 @@ const FarmsPage = () => {
         farm: null,
       }));
     }
-  }, [formData.rgn, dados]);
+  }, [formData.rgn, animals]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,11 +74,26 @@ const FarmsPage = () => {
         return;
       }
 
-      await atualizarFazenda(formData.rgn, formData.farm);
+      const animalToUpdate = animals.find(
+        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+      );
+
+      if (!animalToUpdate || !animalToUpdate.uuid) {
+        setError("Animal não encontrado");
+        return;
+      }
+
+      await updateAnimal(animalToUpdate.uuid, {
+        animal: {
+          ...animalToUpdate.animal,
+          farm: formData.farm || undefined,
+        },
+      });
+
       setSuccessModalOpen(true);
     } catch (error) {
       console.error("❌ Erro ao atualizar fazenda:", error);
-      setError("Animal não encontrado ou erro ao atualizar fazenda");
+      setError("Erro ao atualizar fazenda");
     }
   };
 
@@ -82,25 +106,35 @@ const FarmsPage = () => {
   };
 
   const handleCreateFarm = async (name: string) => {
-    await addFarm(name);
-    setFormData((prev) => ({
-      ...prev,
-      farm: prev.farm || name,
-    }));
-  };
-
-  const handleDeleteFarm = async (id: number) => {
-    const farmToDelete = farms.find((farm) => farm.id === id);
-    await removeFarm(id);
-
-    if (
-      farmToDelete &&
-      formData.farm?.toLowerCase() === farmToDelete.farmName.toLowerCase()
-    ) {
+    try {
+      await createFarm({ farmName: name });
       setFormData((prev) => ({
         ...prev,
-        farm: null,
+        farm: prev.farm || name,
       }));
+    } catch (error) {
+      console.error("Erro ao criar fazenda:", error);
+      setError("Erro ao criar fazenda");
+    }
+  };
+
+  const handleDeleteFarm = async (uuid: string) => {
+    try {
+      const farmToDelete = farms.find((farm) => farm.uuid === uuid);
+      await deleteFarm(uuid);
+
+      if (
+        farmToDelete &&
+        formData.farm?.toLowerCase() === farmToDelete.farmName.toLowerCase()
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          farm: null,
+        }));
+      }
+    } catch (error) {
+      console.error("Erro ao deletar fazenda:", error);
+      setError("Erro ao deletar fazenda");
     }
   };
 
@@ -122,7 +156,7 @@ const FarmsPage = () => {
         )}
         {farmsError && (
           <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
-            {farmsError}
+            {farmsError.message}
           </div>
         )}
 

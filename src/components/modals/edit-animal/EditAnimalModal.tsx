@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AnimalData } from "@/lib/db";
+import { AnimalData } from "@/types/schemas.types";
 import {
   Dialog,
   DialogContent,

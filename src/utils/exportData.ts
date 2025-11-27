@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { AnimalData } from "@/lib/db";
+import { AnimalData } from "@/types/schemas.types";
 
 export function exportToExcel(
   dados: AnimalData[],

@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AnimalData } from "@/lib/db";
+import { AnimalData } from "@/types/schemas.types";
 
 interface Props {
   formData: AnimalData;

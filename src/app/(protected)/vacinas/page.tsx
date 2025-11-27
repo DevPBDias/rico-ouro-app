@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { FormatData } from "@/utils/formatDates";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { useVaccines } from "@/hooks/useVaccines";
+import {
+  useVaccines,
+  useAnimals,
+  useCreateVaccine,
+  useDeleteVaccine,
+  useUpdateAnimal,
+} from "@/hooks/db";
+
 import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
 import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
 import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
@@ -17,14 +23,11 @@ import { Plus, Trash } from "lucide-react";
 
 const VaccinesPage = () => {
   const router = useRouter();
-  const { adicionarVacina, dados } = useAnimalDB();
-  const {
-    vaccines,
-    loading,
-    error: vaccinesError,
-    addVaccine,
-    removeVaccine,
-  } = useVaccines();
+  const { animals } = useAnimals();
+  const { createVaccine } = useCreateVaccine();
+  const { deleteVaccine } = useDeleteVaccine();
+  const { updateAnimal } = useUpdateAnimal();
+  const { vaccines, isLoading, error: vaccinesError } = useVaccines();
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -36,13 +39,13 @@ const VaccinesPage = () => {
   });
 
   const rgnOptions = useMemo(() => {
-    return dados
+    return animals
       .map((animal) => ({
         label: animal.animal.rgn || "",
         value: animal.animal.rgn || "",
       }))
       .filter((option) => option.value);
-  }, [dados]);
+  }, [animals]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,19 +57,40 @@ const VaccinesPage = () => {
         return;
       }
 
+      // Find the animal by RGN
+      const animal = animals.find(
+        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+      );
+
+      if (!animal || !animal.uuid) {
+        setError("Animal não encontrado");
+        return;
+      }
+
       const dataFormatada = FormatData(formData.data);
 
-      for (const vacinaNome of formData.vacinas) {
-        await adicionarVacina(formData.rgn, {
-          nome: vacinaNome,
-          data: dataFormatada,
-        });
-      }
+      // Get current vaccines or initialize empty array
+      const currentVaccines = animal.animal.vacinas || [];
+
+      // Add new vaccines to the animal's vaccine history
+      const newVaccines = formData.vacinas.map((vacinaNome) => ({
+        nome: vacinaNome,
+        data: dataFormatada,
+      }));
+
+      // Update the animal with the new vaccines
+      await updateAnimal(animal.uuid, {
+        animal: {
+          ...animal.animal,
+          vacinas: [...currentVaccines, ...newVaccines],
+          updatedAt: new Date().toISOString(),
+        },
+      });
 
       setSuccessModalOpen(true);
     } catch (error) {
       console.error("❌ Erro ao registrar vacina:", error);
-      setError("Animal não encontrado ou erro ao registrar vacina");
+      setError("Erro ao registrar vacina");
     }
   };
 
@@ -80,26 +104,43 @@ const VaccinesPage = () => {
   };
 
   const handleCreateVaccine = async (name: string) => {
-    await addVaccine(name);
-    setFormData((prev) => ({
-      ...prev,
-      vacinas: prev.vacinas.includes(name)
-        ? prev.vacinas
-        : [...prev.vacinas, name],
-    }));
-  };
+    try {
+      // Create a new vaccine type in the vaccines collection
+      await createVaccine({
+        vaccineName: name,
+        updatedAt: new Date().toISOString(),
+      });
 
-  const handleDeleteVaccine = async (id: number) => {
-    const vaccineToDelete = vaccines.find((vaccine) => vaccine.id === id);
-    await removeVaccine(id);
-
-    if (vaccineToDelete) {
+      // Automatically select the newly created vaccine
       setFormData((prev) => ({
         ...prev,
-        vacinas: prev.vacinas.filter(
-          (v) => v.toLowerCase() !== vaccineToDelete.vaccineName.toLowerCase()
-        ),
+        vacinas: prev.vacinas.includes(name)
+          ? prev.vacinas
+          : [...prev.vacinas, name],
       }));
+    } catch (error) {
+      console.error("❌ Erro ao criar vacina:", error);
+      setError("Erro ao criar vacina");
+    }
+  };
+
+  const handleDeleteVaccine = async (uuid: string) => {
+    try {
+      const vaccineToDelete = vaccines.find((vaccine) => vaccine.uuid === uuid);
+      await deleteVaccine(uuid);
+
+      // Remove from selected vaccines if it was selected
+      if (vaccineToDelete) {
+        setFormData((prev) => ({
+          ...prev,
+          vacinas: prev.vacinas.filter(
+            (v) => v.toLowerCase() !== vaccineToDelete.vaccineName.toLowerCase()
+          ),
+        }));
+      }
+    } catch (error) {
+      console.error("❌ Erro ao deletar vacina:", error);
+      setError("Erro ao deletar vacina");
     }
   };
 
@@ -119,11 +160,6 @@ const VaccinesPage = () => {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
             {error}
-          </div>
-        )}
-        {vaccinesError && (
-          <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
-            {vaccinesError}
           </div>
         )}
         <div className="flex flex-col justify-start items-start w-full gap-2">
@@ -154,7 +190,7 @@ const VaccinesPage = () => {
           </div>
           <VaccinesMultiSelect
             vaccines={vaccines}
-            loading={loading}
+            loading={isLoading}
             selected={formData.vacinas}
             onToggle={toggleVaccine}
           />

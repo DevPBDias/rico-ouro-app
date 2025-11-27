@@ -1,43 +1,51 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { use } from "react";
+import { useRouter } from "next/navigation";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
+import { useDeleteAnimal } from "@/hooks/db";
 import Header from "@/components/layout/Header";
-import { excluirPorRgn } from "@/utils/helpersDB";
 import { Button } from "@/components/ui/button";
 import detailsAnimalLinks from "@/constants/detailsAnimalLinks";
 import DetailsAnimalButtons from "@/components/buttons/DetailsAnimalButtons";
 import Link from "next/link";
 
-export default function BoiDetalhePage() {
-  const params = useParams();
-  const id = Number(params.id);
+export default function AnimalDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const { boi, isLoading } = useBoiDetail(id);
+  const { deleteAnimal } = useDeleteAnimal();
 
-  if (loading) return <p>Carregando...</p>;
+  if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
-  function handleExcluir() {
-    if (!boi || !boi.animal.rgn) {
-      console.error("RGN do animal não disponível.");
+  async function handleExcluir() {
+    if (!boi || !boi.uuid) {
+      console.error("UUID do animal não disponível.");
       return;
     }
 
-    excluirPorRgn(boi.animal.rgn).then(() => {
-      console.log(`Dados do animal com RGN ${boi.animal.rgn} excluídos.`);
+    try {
+      await deleteAnimal(boi.uuid);
+      console.log(`Dados do animal com RGN ${boi.animal?.rgn} excluídos.`);
       router.push("/home");
-    });
+    } catch (error) {
+      console.error("Erro ao excluir animal:", error);
+    }
   }
 
   return (
     <main>
-      <Header title={`${boi.animal.serieRGD} ${boi.animal.rgn}`} />
-      {/* Prefetch das subrotas para funcionar offline */}
-      <Link href={`/bois/${id}/detalhes`} prefetch aria-hidden className="hidden" />
-      <Link href={`/bois/${id}/pesagem`} prefetch aria-hidden className="hidden" />
-      <Link href={`/bois/${id}/ce`} prefetch aria-hidden className="hidden" />
-      <DetailsAnimalButtons data={detailsAnimalLinks} className="grid-cols-1" />
+      <Header title={`${boi.animal?.serieRGD} ${boi.animal?.rgn}`} />
+      <DetailsAnimalButtons
+        data={detailsAnimalLinks}
+        className="grid-cols-1"
+        animalId={id}
+      />
       <Button
         variant="default"
         onClick={handleExcluir}

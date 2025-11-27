@@ -1,16 +1,17 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { MatrizCard } from "../cards/MatrizCard";
-import useMatrizDB, { MatrizItem } from "@/hooks/useMatrizDB";
+import { MatrizDocType } from "@/types/database.types";
 import Link from "next/link";
+import { useMatrizes } from "@/hooks/db";
 
 const SearchMatriz = () => {
-  const { dados } = useMatrizDB();
+  const { matrizes: dados } = useMatrizes();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<MatrizItem[]>([]);
+  const [searchResults, setSearchResults] = useState<MatrizDocType[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -27,8 +28,8 @@ const SearchMatriz = () => {
 
       const results = dados.filter((animal) => {
         const rgn =
-          animal.matriz.rgn?.toString().toLowerCase() ||
-          animal.matriz.serieRGD?.toLowerCase() ||
+          animal.rgn?.toString().toLowerCase() ||
+          animal.serieRGD?.toLowerCase() ||
           "";
         const queryLower = query.toLowerCase();
 
@@ -89,7 +90,7 @@ const SearchMatriz = () => {
                     Matriz encontrada:
                   </h2>
                   {searchResults.map((animal) => (
-                    <div key={animal.matriz.rgn} className="cursor-pointer">
+                    <div key={animal.uuid} className="cursor-pointer">
                       <MatrizCard data={animal} />
                     </div>
                   ))}

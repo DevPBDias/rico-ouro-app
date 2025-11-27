@@ -15,9 +15,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
-import { AnimalData } from "@/lib/db";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { FormatData } from "@/utils/formatDates";
+import { AnimalData } from "@/types/schemas.types";
+import { useCreateAnimal } from "@/hooks/db";
 
 export default function NascimentosPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function NascimentosPage() {
     sexo: "",
   });
 
-  const { adicionarAnimal } = useAnimalDB();
+  const { createAnimal } = useCreateAnimal();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +58,7 @@ export default function NascimentosPage() {
     };
 
     try {
-      await adicionarAnimal(newAnimal);
+      await createAnimal(newAnimal);
       setShowModal(true);
     } catch (error) {
       console.error("❌ Erro ao adicionar animal:", error);

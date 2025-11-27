@@ -3,14 +3,14 @@ import { ChartLineLabel } from "@/components/charts/BoiCharts";
 import Header from "@/components/layout/Header";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { useParams } from "next/navigation";
-import React from "react";
 
 const GraphicsAnimalPage = () => {
   const params = useParams();
-  const id = Number(params.id);
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const id = typeof params.id === "string" ? params.id : null;
+  const { boi, isLoading, pesosMedidos, circunferenciaEscrotal } =
+    useBoiDetail(id);
 
-  if (loading) return <p>Carregando...</p>;
+  if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
   return (

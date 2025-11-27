@@ -1,15 +1,15 @@
 "use client";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
-import { AnimalData } from "@/lib/db";
+import { useAnimalActions } from "@/hooks/useRxData";
 import { extractDataFromExcel } from "@/utils/extractData";
 import { useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { CheckCircle2, X } from "lucide-react";
 import Link from "next/link";
+import { AnimalData } from "@/types/schemas.types";
 
 const SearchCsvFile = () => {
-  const { salvarOuAtualizar } = useAnimalDB();
+  const { bulkUpsert, isReady } = useAnimalActions();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -34,7 +34,12 @@ const SearchCsvFile = () => {
         selectedFile
       );
 
-      await salvarOuAtualizar(extractedData);
+      const animalsToSave = extractedData.map((animal) => ({
+        ...animal,
+        uuid: animal.uuid || crypto.randomUUID(),
+      }));
+
+      await bulkUpsert(animalsToSave);
 
       setIsProcessing(false);
       setShowSuccessModal(true);
@@ -83,7 +88,7 @@ const SearchCsvFile = () => {
 
           <Button
             onClick={handleProcessFile}
-            disabled={!selectedFile || isProcessing}
+            disabled={!selectedFile || isProcessing || !isReady}
             className="w-full rounded-lg bg-[#1162AE] py-6 text-sm uppercase font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
           >
             {isProcessing ? "Processando..." : "Processar arquivo"}

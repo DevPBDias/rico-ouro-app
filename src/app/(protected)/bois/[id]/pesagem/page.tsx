@@ -8,10 +8,10 @@ import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 
 const WeightAnimalPage = () => {
   const params = useParams();
-  const id = Number(params.id);
-  const { boi, loading } = useBoiDetail(Number.isNaN(id) ? null : id);
+  const id = typeof params.id === "string" ? params.id : null;
+  const { boi, isLoading, pesosMedidos } = useBoiDetail(id);
 
-  if (loading) return <p>Carregando...</p>;
+  if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
 
   return (
@@ -20,13 +20,9 @@ const WeightAnimalPage = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 px-4">
         <div className="space-y-3">
-          <DetailsWeightList
-            pesosMedidos={boi.animal.pesosMedidos || []}
-            gainDaily={boi.animal.ganhoDiario || []}
-          />
+          <DetailsWeightList pesosMedidos={pesosMedidos || []} gainDaily={[]} />
 
-          {(!boi.animal.pesosMedidos ||
-            boi.animal.pesosMedidos.length === 0) && (
+          {(!pesosMedidos || pesosMedidos.length === 0) && (
             <div className="flex flex-col items-center justify-center gap-4">
               <p className="text-gray-500 text-sm">Nenhum peso registrado</p>
               <Link

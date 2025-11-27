@@ -15,7 +15,7 @@ export default function BoisPage() {
     currentPage,
     totalPages,
     handlePageChange,
-    limpar,
+    deleteAllAnimals,
     excluirPorRgn,
     query,
     setQuery,
@@ -35,7 +35,7 @@ export default function BoisPage() {
             <p className="text-gray-600">Gerencie seus animais</p>
           </div>
           <Button
-            onClick={limpar}
+            onClick={deleteAllAnimals}
             variant="outline"
             className="text-red-600 border-red-200 hover:bg-red-50"
           >
@@ -111,7 +111,7 @@ export default function BoisPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedData.map((a) => (
                   <tr
-                    key={String(a.id)}
+                    key={a.uuid}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
@@ -127,14 +127,16 @@ export default function BoisPage() {
                       {a.animal.deca ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.mae.serieRGD + "-" + a.mae.rgn}
+                      {a.mae.serieRGD
+                        ? `${a.mae.serieRGD}-${a.mae.rgn || ""}`
+                        : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {a.pai.nome ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm flex items-center gap-2">
                       <Link
-                        href={`/bois/${a.id}`}
+                        href={`/bois/${a.uuid}`}
                         prefetch
                         className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >

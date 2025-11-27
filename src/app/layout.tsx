@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description:
     "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   manifest: "/manifest.webmanifest",
-  themeColor: "#1162ae",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -37,6 +36,10 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1162ae",
 };
 
 export default function RootLayout({

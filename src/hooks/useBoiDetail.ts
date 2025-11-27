@@ -1,163 +1,192 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { db, AnimalData } from "@/lib/db";
-import { calcularGanhoDiario } from "@/utils/gainDaily";
+import { useCallback, useMemo } from "react";
+import { useAnimal } from "@/hooks/db/useAnimal";
+import { useUpdateAnimal } from "@/hooks/db/useUpdateAnimal";
 
-export function useBoiDetail(id: number | null) {
-  const [boi, setBoi] = useState<AnimalData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const load = useCallback(async () => {
-    if (id == null || Number.isNaN(id)) {
-      setBoi(null);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const found = await db.animals.get(id);
-    setBoi(found ?? null);
-    setLoading(false);
-  }, [id]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const salvar = useCallback(
-    async (partialAnimal: Partial<AnimalData["animal"]>) => {
-      if (!boi?.id) return;
-      const next: AnimalData & { id: number } = {
-        ...boi,
-        id: boi.id,
-        animal: {
-          ...(boi.animal ?? {}),
-          ...partialAnimal,
-          pesosMedidos:
-            partialAnimal.pesosMedidos !== undefined
-              ? partialAnimal.pesosMedidos
-              : boi.animal.pesosMedidos ?? [],
-          circunferenciaEscrotal:
-            partialAnimal.circunferenciaEscrotal !== undefined
-              ? partialAnimal.circunferenciaEscrotal
-              : boi.animal.circunferenciaEscrotal ?? [],
-          ganhoDiario:
-            partialAnimal.pesosMedidos !== undefined
-              ? calcularGanhoDiario(partialAnimal.pesosMedidos)
-              : boi.animal.ganhoDiario ?? [],
-          updatedAt: new Date().toISOString(),
-        },
-      };
-      await db.animals.put(next);
-      setBoi(next);
-    },
-    [boi]
-  );
+export function useBoiDetail(uuid: string | null) {
+  const { animal: boi, isLoading, error } = useAnimal(uuid);
+  const { updateAnimal } = useUpdateAnimal();
 
   // 🔹 Pesos
   const addPeso = useCallback(async () => {
-    if (!boi) return;
+    if (!uuid || !boi) return;
+
     const now = new Date();
-    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(now.getDate()).padStart(2, "0")}`;
-    const novo = [...(boi.animal.pesosMedidos ?? []), { mes, valor: 0 }];
-    await salvar({ pesosMedidos: novo });
-  }, [boi, salvar]);
+    const date = now.toISOString().split("T")[0];
+
+    const currentPesos = boi.animal?.pesosMedidos || [];
+    await updateAnimal(uuid, {
+      animal: {
+        ...boi.animal,
+        pesosMedidos: [...currentPesos, { mes: date, valor: 0 }],
+        updatedAt: now.toISOString(),
+      },
+    });
+  }, [boi, uuid, updateAnimal]);
 
   const savePesoComMes = useCallback(
-    async (mes: string, valor: string | number) => {
-      if (!boi) return;
-      const atual = boi.animal.pesosMedidos ?? [];
-      const novo = [...atual, { mes, valor: Number(valor) }];
-      await salvar({ pesosMedidos: novo });
+    async (date: string, value: string | number) => {
+      if (!uuid || !boi) return;
+
+      const currentPesos = boi.animal?.pesosMedidos || [];
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          pesosMedidos: [...currentPesos, { mes: date, valor: Number(value) }],
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
   const editPeso = useCallback(
     async (index: number, valor: string) => {
-      if (!boi) return;
-      const novo = [...(boi.animal.pesosMedidos ?? [])];
-      const current = novo[index] ?? { mes: "", valor: 0 };
-      novo[index] = { ...current, valor: Number(valor) };
-      await salvar({ pesosMedidos: novo });
+      if (!uuid || !boi) return;
+
+      const currentPesos = boi.animal?.pesosMedidos || [];
+      const updatedPesos = [...currentPesos];
+      if (updatedPesos[index]) {
+        updatedPesos[index] = { ...updatedPesos[index], valor: Number(valor) };
+      }
+
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          pesosMedidos: updatedPesos,
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
   const deletePeso = useCallback(
     async (index: number) => {
-      if (!boi) return;
-      const novo = (boi.animal.pesosMedidos ?? []).filter(
-        (_, i) => i !== index
-      );
-      await salvar({ pesosMedidos: novo });
+      if (!uuid || !boi) return;
+
+      const currentPesos = boi.animal?.pesosMedidos || [];
+      const updatedPesos = currentPesos.filter((_, i) => i !== index);
+
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          pesosMedidos: updatedPesos,
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
   // 🔹 Circunferência
   const addCirc = useCallback(async () => {
-    if (!boi) return;
+    if (!uuid || !boi) return;
+
     const now = new Date();
-    const mes = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(now.getDate()).padStart(2, "0")}`;
-    const novo = [
-      ...(boi.animal.circunferenciaEscrotal ?? []),
-      { mes, valor: 0 },
-    ];
-    await salvar({ circunferenciaEscrotal: novo });
-  }, [boi, salvar]);
+    const date = now.toISOString().split("T")[0];
+
+    const currentCirc = boi.animal?.circunferenciaEscrotal || [];
+    await updateAnimal(uuid, {
+      animal: {
+        ...boi.animal,
+        circunferenciaEscrotal: [...currentCirc, { mes: date, valor: 0 }],
+        updatedAt: now.toISOString(),
+      },
+    });
+  }, [boi, uuid, updateAnimal]);
 
   const saveCircComMes = useCallback(
-    async (mes: string, valor: string | number) => {
-      if (!boi) return;
-      const atual = boi.animal.circunferenciaEscrotal ?? [];
-      const novo = [...atual, { mes, valor: Number(valor) }];
-      await salvar({ circunferenciaEscrotal: novo });
+    async (date: string, value: string | number) => {
+      if (!uuid || !boi) return;
+
+      const currentCirc = boi.animal?.circunferenciaEscrotal || [];
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          circunferenciaEscrotal: [
+            ...currentCirc,
+            { mes: date, valor: Number(value) },
+          ],
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
   const editCirc = useCallback(
     async (index: number, valor: string) => {
-      if (!boi) return;
-      const novo = [...(boi.animal.circunferenciaEscrotal ?? [])];
-      const current = novo[index] ?? { mes: "", valor: 0 };
-      novo[index] = { ...current, valor: Number(valor) };
-      await salvar({ circunferenciaEscrotal: novo });
+      if (!uuid || !boi) return;
+
+      const currentCirc = boi.animal?.circunferenciaEscrotal || [];
+      const updatedCirc = [...currentCirc];
+      if (updatedCirc[index]) {
+        updatedCirc[index] = { ...updatedCirc[index], valor: Number(valor) };
+      }
+
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          circunferenciaEscrotal: updatedCirc,
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
   const deleteCirc = useCallback(
     async (index: number) => {
-      if (!boi) return;
-      const novo = (boi.animal.circunferenciaEscrotal ?? []).filter(
-        (_, i) => i !== index
-      );
-      await salvar({ circunferenciaEscrotal: novo });
+      if (!uuid || !boi) return;
+
+      const currentCirc = boi.animal?.circunferenciaEscrotal || [];
+      const updatedCirc = currentCirc.filter((_, i) => i !== index);
+
+      await updateAnimal(uuid, {
+        animal: {
+          ...boi.animal,
+          circunferenciaEscrotal: updatedCirc,
+          updatedAt: new Date().toISOString(),
+        },
+      });
     },
-    [boi, salvar]
+    [boi, uuid, updateAnimal]
   );
 
-  const pesosMedidos = useMemo(() => boi?.animal.pesosMedidos ?? [], [boi]);
-  const circunferenciaEscrotal = useMemo(
-    () => boi?.animal.circunferenciaEscrotal ?? [],
-    [boi]
-  );
+  // Mapeia para o formato esperado pela UI (compatibilidade)
+  const pesosMedidos = useMemo(() => {
+    return (boi?.animal?.pesosMedidos || []).map((w, index) => ({
+      uuid: `${uuid}-peso-${index}`, // Gera um ID único para compatibilidade
+      mes: w.mes,
+      valor: w.valor,
+    }));
+  }, [boi, uuid]);
+
+  const circunferenciaEscrotal = useMemo(() => {
+    return (boi?.animal?.circunferenciaEscrotal || []).map((s, index) => ({
+      uuid: `${uuid}-circ-${index}`,
+      mes: s.mes,
+      valor: s.valor,
+    }));
+  }, [boi, uuid]);
+
+  const vacinas = useMemo(() => {
+    return (boi?.animal?.vacinas || []).map((v, index) => ({
+      uuid: `${uuid}-vac-${index}`,
+      nome: v.nome,
+      data: v.data,
+    }));
+  }, [boi, uuid]);
 
   return {
     boi,
-    loading,
-    reload: load,
-    salvar,
+    isLoading,
+    error,
     pesosMedidos,
     circunferenciaEscrotal,
+    vacinas,
     addPeso,
     savePesoComMes,
     editPeso,

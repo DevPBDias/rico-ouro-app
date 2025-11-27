@@ -1,4 +1,4 @@
-import { AnimalData } from "@/lib/db";
+import { AnimalData } from "@/types/schemas.types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { saveBlobAsFile } from "./saveBlobFile";

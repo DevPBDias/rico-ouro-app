@@ -2,14 +2,14 @@
 
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { useAnimalDB } from "@/hooks/useAnimalDB";
 import { useCallback, useEffect, useState } from "react";
-import { AnimalData } from "@/lib/db";
 import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
+import { AnimalData } from "@/types/schemas.types";
+import { useAnimals } from "@/hooks/db";
 
 function SearchAnimal() {
-  const { dados } = useAnimalDB();
+  const { animals: dados } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AnimalData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -87,7 +87,7 @@ function SearchAnimal() {
                     Animal encontrado:
                   </h2>
                   {searchResults.map((animal) => (
-                    <div key={animal.id} className="cursor-pointer">
+                    <div key={animal.uuid} className="cursor-pointer">
                       <AnimalCard animal={animal} />
                     </div>
                   ))}

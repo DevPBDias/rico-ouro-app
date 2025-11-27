@@ -1,21 +1,21 @@
 import { Links } from "@/types";
 
-const detailsAnimalLinks: Links[] = [
+const detailsMatrizLinks: Links[] = [
   {
     id: 1,
     name: "Detalhes Matriz",
-    href: "/matrizes/:rgn/detalhes",
+    href: "/matrizes/:id/detalhes",
   },
   {
     id: 2,
     name: "Realizar Reprodução",
-    href: "/matrizes/:rgn/realizar-reprodução",
+    href: "/matrizes/:id/realizar-reprodução",
   },
   {
     id: 3,
     name: "Alterar Dados reprodução",
-    href: "/matrizes/:rgn/dados-reprodução",
+    href: "/matrizes/:id/dados-reprodução",
   },
 ];
 
-export default detailsAnimalLinks;
+export default detailsMatrizLinks;
