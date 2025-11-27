@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getDatabase } from "@/db/client";
 import { MyDatabase } from "@/db/collections";
 
 interface RxDBContextType {
@@ -47,14 +46,16 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
 
     let mounted = true;
 
-    const initDB = async () => {
-      try {
-        const database = await getDatabase();
+    // Importação dinâmica para garantir que o código do RxDB não seja incluído no bundle do servidor
+    import("@/db/client")
+      .then((mod) => mod.getDatabase())
+      .then((database) => {
         if (mounted) {
           setDb(database);
           setIsLoading(false);
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Failed to initialize RxDB:", err);
         if (mounted) {
           setError(
@@ -62,10 +63,7 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
           );
           setIsLoading(false);
         }
-      }
-    };
-
-    initDB();
+      });
 
     return () => {
       mounted = false;

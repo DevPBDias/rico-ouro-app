@@ -1,3 +1,8 @@
+console.log(
+  "[SCHEMA] loaded vaccine.schema (server?",
+  typeof window === "undefined",
+  ")"
+);
 import { Vaccine } from "@/types/schemas.types";
 import { RxJsonSchema } from "rxdb";
 

@@ -1,3 +1,8 @@
+console.log(
+  "[SCHEMA] loaded animal.schema (server?",
+  typeof window === "undefined",
+  ")"
+);
 import { AnimalData } from "@/types/schemas.types";
 import { RxJsonSchema } from "rxdb";
 

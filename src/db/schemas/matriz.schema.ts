@@ -1,3 +1,8 @@
+console.log(
+  "[SCHEMA] loaded matriz.schema (server?",
+  typeof window === "undefined",
+  ")"
+);
 import { Matriz } from "@/types/schemas.types";
 import { RxJsonSchema } from "rxdb";
 
