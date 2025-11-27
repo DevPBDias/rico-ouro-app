@@ -1,75 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Offline</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Você está offline - INDI Ouro</title>
     <style>
-        :root {
-            --blue: #2563eb;
-            --text: #ffffff;
-        }
-
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-            background: var(--blue);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh
-        }
-
-        .container {
-            max-width: 560px;
-            padding: 24px;
-            text-align: center;
-            background: rgba(0, 0, 0, .15);
-            border-radius: 12px
-        }
-
-        img {
-            width: 96px;
-            height: 96px;
-            margin-bottom: 12px
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin: 0 0 8px
-        }
-
-        p {
-            margin: 0 0 16px
-        }
-
-        button {
-            background: #1e40af;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer
-        }
-
-        button:disabled {
-            background: #1f2937
-        }
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f3f4f6;
+        color: #1f2937;
+        text-align: center;
+      }
+      h1 {
+        margin-bottom: 1rem;
+      }
+      p {
+        margin-bottom: 2rem;
+        color: #4b5563;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        background-color: #1162ae;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0e4f8e;
+      }
     </style>
-</head>
-
-<body>
-    <div class="container">
-        <img src="/logo.svg" alt="INDI Ouro">
-        <h1>Você está offline</h1>
-        <p>Algumas funções podem não estar disponíveis. Tente reconectar e recarregar.</p>
-        <button id="reload">Recarregar</button>
-    </div>
-    <script>
-        document.getElementById('reload').addEventListener('click', () => location.reload());
-    </script>
-</body>
-
+  </head>
+  <body>
+    <h1>Você está offline</h1>
+    <p>Verifique sua conexão com a internet e tente novamente.</p>
+    <button onclick="window.location.reload()">Tentar novamente</button>
+  </body>
 </html>

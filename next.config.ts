@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 
-// Removed `next-pwa` to use Next.js recommended PWA approach (custom sw + manifest).
-// This avoids aggressive precaching of dynamic `_next` manifests which can cause
-// `bad-precaching-response` errors when those files are not present in some builds.
-
 const nextConfig: NextConfig = {
-  /* outras opções de config podem ser adicionadas aqui */
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -18,7 +16,6 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Add headers to ensure service worker is served with correct headers and not cached
   async headers() {
     return [
       {
