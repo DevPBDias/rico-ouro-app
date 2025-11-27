@@ -4,22 +4,24 @@ export type {};
 declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = "rico-ouro-cache-v1";
-const OFFLINE_URL = "/offline.html";
 
-const ASSETS_TO_CACHE = [
-  "/",
-  "/manifest.json",
-  "/icon-192x192.png",
-  "/icon-512x512.png",
-  OFFLINE_URL,
-];
+const ASSETS_TO_CACHE = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event: any) => {
   console.log("Service Worker: Installing...");
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then(async (cache) => {
       console.log("Service Worker: Caching App Shell");
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Cache assets one by one to avoid failure if one doesn't exist
+      const cachePromises = ASSETS_TO_CACHE.map(async (url) => {
+        try {
+          await cache.add(url);
+          console.log(`Service Worker: Cached ${url}`);
+        } catch (error) {
+          console.warn(`Service Worker: Failed to cache ${url}`, error);
+        }
+      });
+      await Promise.all(cachePromises);
     })
   );
   self.skipWaiting();
@@ -77,9 +79,6 @@ self.addEventListener("fetch", (event: any) => {
         })
         .catch(() => {
           // Offline fallback
-          if (event.request.mode === "navigate") {
-            return caches.match(OFFLINE_URL) as Promise<Response>;
-          }
           return new Response("Offline", { status: 503 });
         });
     })

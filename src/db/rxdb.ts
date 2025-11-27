@@ -97,7 +97,6 @@ const createDatabase = async (): Promise<MyDatabase> => {
         "rico_ouro_db_v2",
         "rico_ouro_db_v3",
         "rico_ouro_db_v4",
-        DB_NAME,
       ];
       for (const dbName of oldDbNames) {
         try {
