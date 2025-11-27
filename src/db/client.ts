@@ -108,8 +108,9 @@ const createDatabase = async (): Promise<MyDatabase> => {
         "⚠️ Schema conflict detected. Removing old databases and retrying..."
       );
 
-      // Try to remove all possible old database versions
+      // Try to remove all possible old database versions AND the current one if it's conflicting
       const oldDbNames = [
+        DB_NAME, // Adiciona o banco atual para garantir limpeza em caso de conflito
         "indi_ouro_db",
         "indi_ouro_db_v2",
         "indi_ouro_db_v3",
