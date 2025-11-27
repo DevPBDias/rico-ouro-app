@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === "development") {
 let dbPromise: Promise<MyDatabase> | null = null;
 
 // Use v4 to avoid schema conflicts with previous versions
-const DB_NAME = "rico_ouro_db_v4";
+const DB_NAME = "indi_ouro_db";
 
 const createDatabase = async (): Promise<MyDatabase> => {
   console.log("� Initializing RxDB...");
@@ -83,16 +83,22 @@ const createDatabase = async (): Promise<MyDatabase> => {
     // Handle schema conflicts (DB9 error) or any database creation error
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorCode = (error as any)?.code || "";
-    
+
     console.error("Database initialization error:", error);
-    
+
     if (errorMessage.includes("DB9") || errorCode === "DB9") {
       console.warn(
         "⚠️ Schema conflict detected (DB9). Removing old databases and retrying..."
       );
 
       // Try to remove all possible old database versions
-      const oldDbNames = ["rico_ouro_db_v2", "rico_ouro_db", "rico_ouro_db_v3", DB_NAME];
+      const oldDbNames = [
+        "rico_ouro_db",
+        "rico_ouro_db_v2",
+        "rico_ouro_db_v3",
+        "rico_ouro_db_v4",
+        DB_NAME,
+      ];
       for (const dbName of oldDbNames) {
         try {
           await removeRxDatabase(dbName, storage);
