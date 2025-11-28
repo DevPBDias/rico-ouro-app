@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRxDatabase } from "@/providers/RxDBProvider";
+import { useRxDBContext } from "@/providers/RxDBProvider";
 import { createClient } from "@supabase/supabase-js";
 
 interface SyncProgress {
@@ -19,7 +19,7 @@ interface CollectionCounts {
 }
 
 export function useInitialSyncStatus() {
-  const db = useRxDatabase();
+  const { db, error: dbError, isReady } = useRxDBContext();
   const [syncProgress, setSyncProgress] = useState<SyncProgress>({
     animals: false,
     vaccines: false,
@@ -46,6 +46,15 @@ export function useInitialSyncStatus() {
     }
     return false;
   });
+
+  // Se houver erro no banco, marcamos como completo para não travar o usuário
+  // mas logamos o erro.
+  useEffect(() => {
+    if (dbError) {
+      console.error("⚠️ Database error detected in sync hook:", dbError);
+      setIsComplete(true);
+    }
+  }, [dbError]);
 
   // Fetch remote counts from Supabase
   useEffect(() => {
@@ -212,5 +221,6 @@ export function useInitialSyncStatus() {
     progressPercentage,
     hasShownNotification,
     markAsShown,
+    dbError, // Exportar o erro para a UI
   };
 }
