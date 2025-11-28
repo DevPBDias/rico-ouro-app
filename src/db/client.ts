@@ -17,7 +17,6 @@ import { replicateVaccines } from "./replicators/vaccine.replication";
 import { replicateFarms } from "./replicators/farm.replication";
 import { replicateMatriz } from "./replicators/matriz.replication";
 
-// Add plugins
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -93,7 +92,87 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
     console.log("✅ RxDB initialized!");
     return db;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode = (error as any)?.code || "";
+
     console.error("Database initialization error:", error);
+
+    if (
+      errorMessage.includes("DB9") ||
+      errorMessage.includes("DXE1") ||
+      errorCode === "DB9" ||
+      errorCode === "DXE1"
+    ) {
+      console.warn(
+        "⚠️ Schema conflict detected. Resetting database to recover..."
+      );
+
+      console.warn("Removing old databases and retrying...");
+
+      const oldDbNames = [
+        DB_NAME,
+        "indi_ouro_db",
+        "indi_ouro_db_v2",
+        "indi_ouro_db_v3",
+        "indi_ouro_db_v4",
+        "indi_ouro_db_v5",
+        "indi_ouro_db_v6",
+        "indi_ouro_db_v7",
+        "rico_ouro_db",
+        "rico_ouro_db_v2",
+        "rico_ouro_db_v3",
+        "rico_ouro_db_v4",
+      ];
+
+      for (const dbName of oldDbNames) {
+        try {
+          await removeRxDatabase(dbName, storage);
+          console.log(`🗑️ Removed old database: ${dbName}`);
+        } catch (removeError) {}
+      }
+
+      const db = await createRxDatabase<MyDatabaseCollections>({
+        name: DB_NAME,
+        storage,
+        multiInstance: true,
+        eventReduce: true,
+        ignoreDuplicate: true,
+      });
+
+      console.log("📦 Adding collections after cleanup...");
+      await db.addCollections({
+        animals: { schema: animalSchema },
+        vaccines: { schema: vaccineSchema },
+        farms: { schema: farmSchema },
+        matriz: { schema: matrizSchema },
+      });
+
+      if (
+        (await db) &&
+        navigator.onLine &&
+        process.env.NEXT_PUBLIC_SUPABASE_URL &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ) {
+        console.log("🔄 Starting replication...");
+        const [animals, vaccines, farms, matriz] = await Promise.all([
+          replicateAnimals(db.animals),
+          replicateVaccines(db.vaccines),
+          replicateFarms(db.farms),
+          replicateMatriz(db.matriz),
+        ]);
+
+        (db as any).replications = {
+          animals,
+          vaccines,
+          farms,
+          matriz,
+        };
+      }
+
+      console.log("✅ RxDB initialized after cleanup!");
+      return db;
+    }
+
     throw error;
   }
 };

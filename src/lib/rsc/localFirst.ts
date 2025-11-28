@@ -1,4 +1,4 @@
-import { getDatabase } from "@/db/rxdb";
+import { getDatabase } from "@/db/client";
 import {
   AnimalDocType,
   FarmDocType,
@@ -8,6 +8,7 @@ import {
 
 export async function getAnimalsRSC(): Promise<AnimalDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.animals
     .find({
       selector: {
@@ -24,12 +25,14 @@ export async function getAnimalRSC(
   uuid: string
 ): Promise<AnimalDocType | null> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const doc = await db.animals.findOne(uuid).exec();
   return doc ? (doc.toJSON() as AnimalDocType) : null;
 }
 
 export async function getFarmsRSC(): Promise<FarmDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.farms
     .find({
       selector: {
@@ -44,12 +47,14 @@ export async function getFarmsRSC(): Promise<FarmDocType[]> {
 
 export async function getFarmRSC(uuid: string): Promise<FarmDocType | null> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const doc = await db.farms.findOne(uuid).exec();
   return doc ? (doc.toJSON() as FarmDocType) : null;
 }
 
 export async function getMatricesRSC(): Promise<MatrizDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.matriz
     .find({
       selector: {
@@ -66,12 +71,14 @@ export async function getMatrizRSC(
   uuid: string
 ): Promise<MatrizDocType | null> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const doc = await db.matriz.findOne(uuid).exec();
   return doc ? (doc.toJSON() as MatrizDocType) : null;
 }
 
 export async function getVaccineTypesRSC(): Promise<VaccineTypeDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.vaccines
     .find({
       selector: {
@@ -88,6 +95,7 @@ export async function getAnimalsByFarmRSC(
   farmUuid: string
 ): Promise<AnimalDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.animals
     .find({
       selector: {
@@ -105,6 +113,7 @@ export async function getMatricesByFarmRSC(
   farmUuid: string
 ): Promise<MatrizDocType[]> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   const docs = await db.matriz
     .find({
       selector: {
@@ -120,6 +129,7 @@ export async function getMatricesByFarmRSC(
 
 export async function countAnimalsRSC(): Promise<number> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   return await db.animals
     .count({
       selector: {
@@ -131,6 +141,7 @@ export async function countAnimalsRSC(): Promise<number> {
 
 export async function countMatricesRSC(): Promise<number> {
   const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
   return await db.matriz
     .count({
       selector: {
