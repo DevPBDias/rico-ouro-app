@@ -83,7 +83,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
 
         farm: { type: "string" },
         status: { type: "string" },
-        updatedAt: { type: "string", maxLength: 100 },
       },
       required: [],
     },
@@ -113,11 +112,10 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       required: [],
     },
 
-    updatedAt: { type: "string", maxLength: 100 },
     _deleted: { type: "boolean", default: false },
-    lastModified: { type: "string", default: "" },
+    _modified: { type: ["string", "null"] },
   },
 
-  required: ["uuid", "updatedAt", "animal", "pai", "mae", "avoMaterno"],
-  indexes: ["updatedAt"],
+  required: ["uuid", "animal", "pai", "mae", "avoMaterno"],
+  indexes: ["_modified"],
 };

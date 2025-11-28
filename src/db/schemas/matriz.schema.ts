@@ -1,152 +1,69 @@
-import { Matriz } from "@/types/schemas.types";
 import { RxJsonSchema } from "rxdb";
+import { Matriz } from "@/types/schemas.types";
 
 export const matrizSchema: RxJsonSchema<Matriz> = {
-  title: "Matriz Schema",
-  version: 0,
+  title: "matriz",
+  version: 1,
   primaryKey: "uuid",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 200 },
-    id: { type: ["number", "null"] },
-    nome: { type: "string", maxLength: 200 },
-    serieRGD: { type: "string" },
-    rgn: { type: "string" },
-    sexo: { type: "string" },
-    nasc: { type: "string" },
-    iabcgz: { type: "string" },
-    deca: { type: "string" },
-    p: { type: "string" },
-    f: { type: "string" },
+    uuid: { type: "string" },
+    id: { type: ["integer", "null"] },
+    nome: { type: ["string", "null"] },
+    serieRGD: { type: ["string", "null"] },
+    rgn: { type: ["string", "null"] },
+    sexo: { type: ["string", "null"] },
+    nasc: { type: ["string", "null"] },
+    iabcgz: { type: ["string", "null"] },
+    deca: { type: ["string", "null"] },
+    p: { type: ["string", "null"] },
+    f: { type: ["string", "null"] },
+
     status: {
-      type: "object",
+      type: ["object", "null"],
       properties: {
-        label: { type: "string" },
-        value: { type: "string" },
+        label: { type: ["string", "null"] },
+        value: { type: ["string", "null"] },
       },
-      required: [],
+      additionalProperties: true,
     },
-    farm: { type: "string", maxLength: 200 },
+
+    farm: { type: ["string", "null"] },
+
     vacinas: {
       type: "array",
       items: {
         type: "object",
-        properties: {
-          nome: { type: "string" },
-          data: { type: "string" },
-        },
+        properties: { nome: { type: "string" }, data: { type: "string" } },
         required: ["nome", "data"],
+        additionalProperties: false,
       },
     },
+
     type: {
-      type: "string",
+      type: ["string", "null"],
       enum: ["Doadora", "Reprodutora", "Receptora FIV"],
     },
-    genotipagem: {
-      type: "string",
-      enum: ["Sim", "Não"],
-    },
-    condition: {
-      type: "string",
-      enum: ["Parida", "Solteira"],
-    },
+    genotipagem: { type: ["string", "null"], enum: ["Sim", "Não"] },
+    condition: { type: ["string", "null"], enum: ["Parida", "Solteira"] },
+
     parturitionFrom: {
-      type: "object",
+      type: ["object", "null"],
       properties: {
-        sexo: { type: "string", enum: ["M", "F"] },
-        rgn: { type: "string" },
+        sexo: { type: ["string", "null"], enum: ["M", "F"] },
+        rgn: { type: ["string", "null"] },
       },
-      required: [],
+      additionalProperties: true,
     },
+
     protocolosReproducao: {
-      type: "object",
-      properties: {
-        classification: { type: "string" },
-        iatf: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              data: { type: "string" },
-              touro: { type: "string" },
-              peso: { type: "string" },
-
-              diagnosticoGestacional2: {
-                type: "object",
-                properties: {
-                  data: { type: "string" },
-                  type: { type: "string", enum: ["Prenha", "Vazia"] },
-                },
-                required: [],
-              },
-
-              dataPrevistaParto: {
-                type: "object",
-                properties: {
-                  data270: { type: "string" },
-                  data305: { type: "string" },
-                },
-                required: [],
-              },
-            },
-            required: [],
-          },
-        },
-        montaNatural: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              data: { type: "string" },
-              touro: { type: "string" },
-              peso: { type: "string" },
-              rgn: { type: "string" },
-            },
-            required: ["data"],
-          },
-        },
-        fivTETF: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              data: { type: "string" },
-              doadora: { type: "string" },
-              touro: { type: "string" },
-              peso: { type: "string" },
-              rgn: { type: "string" },
-
-              diagnosticoGestacional: {
-                type: "object",
-                properties: {
-                  data: { type: "string" },
-                  type: { type: "string", enum: ["Prenha", "Vazia"] },
-                },
-                required: [],
-              },
-
-              sexo: { type: "string", enum: ["M", "F"] },
-
-              dataPrevistaParto: {
-                type: "object",
-                properties: {
-                  data270: { type: "string" },
-                  data305: { type: "string" },
-                },
-                required: [],
-              },
-            },
-            required: [],
-          },
-        },
-      },
-      required: [],
+      type: ["object", "null"],
+      additionalProperties: true,
     },
-
-    updatedAt: { type: "string", maxLength: 100 },
     _deleted: { type: "boolean", default: false },
-    lastModified: { type: "string", default: "" },
+    _modified: { type: ["string", "null"] },
   },
-  required: ["uuid", "nome", "updatedAt", "farm"],
-  indexes: ["nome", "updatedAt", "farm"],
+
+  required: ["uuid"],
+  indexes: ["nome", "_modified"],
 };

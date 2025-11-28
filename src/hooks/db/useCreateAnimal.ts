@@ -26,7 +26,7 @@ export function useCreateAnimal() {
     const animalData: Partial<AnimalDocType> = {
       ...data,
       uuid,
-      updatedAt: new Date().toISOString(),
+      _modified: new Date().toISOString(),
       _deleted: false,
     };
 

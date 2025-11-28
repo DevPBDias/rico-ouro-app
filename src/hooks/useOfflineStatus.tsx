@@ -47,7 +47,7 @@ export function useOfflineStatus() {
         (await db.animals
           ?.find({
             selector: {
-              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { _modified: { $exists: true } }],
             },
           })
           .exec()
@@ -57,7 +57,7 @@ export function useOfflineStatus() {
         (await db.vaccines
           ?.find({
             selector: {
-              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { _modified: { $exists: true } }],
             },
           })
           .exec()
@@ -67,7 +67,7 @@ export function useOfflineStatus() {
         (await db.farms
           ?.find({
             selector: {
-              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { _modified: { $exists: true } }],
             },
           })
           .exec()
@@ -77,7 +77,7 @@ export function useOfflineStatus() {
         (await db.matriz
           ?.find({
             selector: {
-              $or: [{ _deleted: true }, { updatedAt: { $exists: true } }],
+              $or: [{ _deleted: true }, { _modified: { $exists: true } }],
             },
           })
           .exec()

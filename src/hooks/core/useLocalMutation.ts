@@ -28,7 +28,7 @@ export function useLocalMutation<
         const documentData = {
           ...data,
           uuid,
-          updatedAt: new Date().toISOString(),
+          _modified: new Date().toISOString(),
           _deleted: false,
         };
 
@@ -69,7 +69,7 @@ export function useLocalMutation<
 
         const updateData = {
           ...data,
-          updatedAt: new Date().toISOString(),
+          _modified: new Date().toISOString(),
         };
 
         // Patch no RxDB - a replicação sincroniza automaticamente
@@ -147,7 +147,7 @@ export function useLocalMutation<
         const documentsWithMeta = documents.map((doc) => ({
           ...doc,
           uuid: doc.uuid || crypto.randomUUID(),
-          updatedAt: now,
+          _modified: now,
           _deleted: false,
         }));
 

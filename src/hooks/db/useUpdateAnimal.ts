@@ -26,7 +26,7 @@ export function useUpdateAnimal() {
   ): Promise<void> => {
     const updateData: Partial<AnimalDocType> = {
       ...data,
-      updatedAt: new Date().toISOString(),
+      _modified: new Date().toISOString(),
     };
 
     // A replicação automática do RxDB irá sincronizar com Supabase

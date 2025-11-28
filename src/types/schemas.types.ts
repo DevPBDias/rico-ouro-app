@@ -26,7 +26,6 @@ export interface AnimalData {
     farm?: string;
     circunferenciaEscrotal?: { mes: string; valor: number }[];
     vacinas?: { nome: string; data: string }[];
-    updatedAt?: string;
   };
   pai: {
     nome?: string;
@@ -38,27 +37,24 @@ export interface AnimalData {
   avoMaterno: {
     nome?: string;
   };
-  updatedAt?: string;
   _deleted?: boolean;
-  lastModified?: string;
+  _modified?: string;
 }
 
 export interface Vaccine {
   id?: number;
   uuid?: string;
   vaccineName: string;
-  updatedAt?: string;
   _deleted?: boolean;
-  lastModified?: string;
+  _modified?: string;
 }
 
 export interface Farm {
   id?: number;
   uuid?: string;
   farmName: string;
-  updatedAt?: string;
   _deleted?: boolean;
-  lastModified?: string;
+  _modified?: string;
 }
 
 export interface Matriz {
@@ -121,7 +117,6 @@ export interface Matriz {
   };
   id?: number;
   uuid?: string;
-  updatedAt?: string;
   _deleted?: boolean;
-  lastModified?: string;
+  _modified?: string;
 }

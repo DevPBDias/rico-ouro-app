@@ -40,7 +40,7 @@ export function useAnimals(filters?: {
 
     return {
       selector,
-      sort: [{ updatedAt: "desc" as "desc" | "asc" }],
+      sort: [{ _modified: "desc" as "desc" | "asc" }],
     };
   }, [filters?.farmId, filters?.sex, filters?.status, filters?.search]);
 

@@ -12,13 +12,13 @@ import { replicateRxCollection } from "rxdb/plugins/replication";
 
 export interface BaseDocument {
   uuid?: string;
-  updatedAt?: string;
+  _modified?: string;
   _deleted?: boolean;
 }
 
 export interface PullResult<T> {
   documents: T[];
-  checkpoint: { updatedAt: string | null };
+  checkpoint: { _modified: string | null };
 }
 
 export interface PushRow<T> {
@@ -66,10 +66,11 @@ export function replicateCollection<T extends BaseDocument>({
     batchSize
   ) => {
     const lastUpdated =
-      (checkpoint as { updatedAt?: string })?.updatedAt ??
+      (checkpoint as { _modified?: string })?._modified ??
       "1970-01-01T00:00:00.000Z";
 
     try {
+      // Assume server uses updatedAt for sorting/filtering
       const url = `${endpoint}?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastUpdated}`;
       console.log(`Fetching from Supabase: ${url}`);
       const response = await fetch(url, {
@@ -90,36 +91,44 @@ export function replicateCollection<T extends BaseDocument>({
         );
       }
 
-      const data: T[] = await response.json();
+      const data: any[] = await response.json();
       const docs = Array.isArray(data) ? data : [];
 
       console.log(`📥 Pulled ${docs.length} documents from ${tableName}`);
 
       // Ensure _deleted is boolean and apply transformation if needed
       const processedDocs = docs.map((doc) => {
+        // Map server updatedAt to _modified if needed
+        const modified =
+          doc._modified || doc.updatedAt || new Date().toISOString();
+
         const processed = {
           ...doc,
           _deleted: !!doc._deleted,
-          // Garantir que lastModified sempre exista
-          lastModified: (doc as any).lastModified || new Date().toISOString(),
+          _modified: modified,
         };
+
+        // Remove updatedAt if it exists to avoid schema errors
+        if ("updatedAt" in processed) {
+          delete processed.updatedAt;
+        }
 
         const transformed = transformPull
           ? transformPull(processed)
           : processed;
 
-        // Validar campos obrigatórios (uuid e updatedAt)
+        // Validar campos obrigatórios (uuid e _modified)
         if (!transformed.uuid) {
           console.error(`❌ Documento sem uuid:`, transformed);
           throw new Error(`Document missing required field: uuid`);
         }
 
-        if (!transformed.updatedAt) {
+        if (!transformed._modified) {
           console.warn(
-            `⚠️ Documento sem updatedAt, usando timestamp atual:`,
+            `⚠️ Documento sem _modified, usando timestamp atual:`,
             transformed.uuid
           );
-          transformed.updatedAt = new Date().toISOString();
+          transformed._modified = new Date().toISOString();
         }
 
         return transformed as WithDeleted<T>;
@@ -128,9 +137,9 @@ export function replicateCollection<T extends BaseDocument>({
       return {
         documents: processedDocs,
         checkpoint: {
-          updatedAt:
+          _modified:
             processedDocs.length > 0
-              ? processedDocs[processedDocs.length - 1].updatedAt
+              ? processedDocs[processedDocs.length - 1]._modified
               : lastUpdated,
         },
       };

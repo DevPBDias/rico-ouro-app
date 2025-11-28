@@ -27,9 +27,8 @@ export const replicateAnimals = (collection: AnimalCollection) => {
       const transformed = {
         uuid: doc.uuid,
         id: doc.id,
-        updatedAt: doc.updatedAt,
         _deleted: doc._deleted,
-        lastModified: doc.lastModified,
+        _modified: doc._modified,
         animal: {
           nome: doc.nome,
           serieRGD: doc.serieRGD,
