@@ -11,7 +11,16 @@ export const replicateAnimals = (collection: AnimalCollection) => {
     transformPull: (doc: any) => {
       // Se já tiver a estrutura aninhada, retorna como está (mas limpo)
       if (doc.animal && typeof doc.animal === "object" && !doc.nome) {
-        return cleanNulls(doc);
+        const cleaned = cleanNulls(doc);
+
+        // Garantir que objetos obrigatórios existam
+        return {
+          ...cleaned,
+          animal: cleaned.animal || {},
+          pai: cleaned.pai || {},
+          mae: cleaned.mae || {},
+          avoMaterno: cleaned.avoMaterno || {},
+        };
       }
 
       // Transforma dados planos (Supabase) para aninhados (RxDB)
@@ -34,11 +43,11 @@ export const replicateAnimals = (collection: AnimalCollection) => {
           corNascimento: doc.corNascimento,
           status: doc.status,
           farm: doc.farm,
-          // Mapear arrays se existirem
-          pesosMedidos: doc.pesosMedidos || [],
-          ganhoDiario: doc.ganhoDiario || [],
-          circunferenciaEscrotal: doc.circunferenciaEscrotal || [],
-          vacinas: doc.vacinas || [],
+          // Mapear arrays - usar undefined se não existir (não [])
+          pesosMedidos: doc.pesosMedidos || undefined,
+          ganhoDiario: doc.ganhoDiario || undefined,
+          circunferenciaEscrotal: doc.circunferenciaEscrotal || undefined,
+          vacinas: doc.vacinas || undefined,
         },
         pai: {
           nome: doc.pai_nome || doc.pai?.nome || doc.pai,

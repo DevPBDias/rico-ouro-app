@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === "development") {
 let dbPromise: Promise<MyDatabase | null> | null = null;
 
 // CRITICAL: Increment this version whenever schemas change
-const DB_NAME = "indi_ouro_db_v9";
+const DB_NAME = "indi_ouro_db_v10";
 
 startRxDBDebugLogs(DB_NAME);
 /**
@@ -68,29 +68,19 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
 
     console.log("📦 Adding collections...");
 
-    const rawDB = await indexedDB.open(DB_NAME);
-
-    rawDB.onerror = () => {
-      console.error(
-        "❌ IndexedDB open error BEFORE addCollections:",
-        rawDB.error
-      );
-    };
-
-    rawDB.onupgradeneeded = (e: any) => {
-      console.log(
-        "📐 IndexedDB Upgrade Needed: OLD → NEW Version",
-        e.oldVersion,
-        e.newVersion
-      );
-    };
-
     await db.addCollections({
       animals: { schema: animalSchema },
       vaccines: { schema: vaccineSchema },
       farms: { schema: farmSchema },
       matriz: { schema: matrizSchema },
     });
+
+    console.log("✅ Collections created successfully");
+
+    // Verificar se as collections foram criadas corretamente
+    if (!db.animals || !db.vaccines || !db.farms || !db.matriz) {
+      throw new Error("Collections were not created properly");
+    }
 
     // Check if Supabase is configured via the singleton client
     const supabase = getBrowserSupabase();
@@ -155,13 +145,26 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         "rico_ouro_db_v4",
       ];
 
-      console.log("🗑️ Removing old databases...");
+      console.log("🗑️ Removing old databases with robust cleanup...");
 
       // Use the robust resetIndexedDB utility for each database
       for (const dbName of oldDbNames) {
         try {
-          await resetIndexedDB(dbName);
-          console.log(`   ✓ Removed: ${dbName}`);
+          const result = await resetIndexedDB({
+            dbName,
+            clearLocalStorage: true,
+            clearSessionStorage: true,
+            invalidateSWCache: true,
+            timeout: 5000,
+          });
+
+          if (result.success) {
+            console.log(`   ✓ Removed: ${dbName}`);
+          } else {
+            console.warn(
+              `   ⚠️ Partial cleanup: ${dbName} - ${result.message}`
+            );
+          }
         } catch (removeError) {
           // Silently ignore errors for databases that don't exist
           console.debug(`   - Skipped: ${dbName} (doesn't exist)`);
@@ -169,8 +172,8 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
       }
 
       // CRITICAL: Wait for IndexedDB to fully release locks
-      console.log("⏳ Waiting for IndexedDB cleanup (2s)...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log("⏳ Waiting for IndexedDB cleanup (3s)...");
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Retry database creation with clean state
       console.log("🔄 Retrying database creation...");

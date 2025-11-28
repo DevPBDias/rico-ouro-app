@@ -8,7 +8,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
   type: "object",
   properties: {
     uuid: { type: "string", maxLength: 200 },
-    id: { type: "number" },
+    id: { type: ["number", "null"] },
 
     animal: {
       type: "object",
@@ -32,6 +32,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               mes: { type: "string" },
               valor: { type: "number" },
             },
+            required: ["mes", "valor"],
           },
         },
 
@@ -46,6 +47,13 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               totalGain: { type: "number" },
               dailyGain: { type: "number" },
             },
+            required: [
+              "initialDate",
+              "endDate",
+              "days",
+              "totalGain",
+              "dailyGain",
+            ],
           },
         },
 
@@ -57,6 +65,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               mes: { type: "string" },
               valor: { type: "number" },
             },
+            required: ["mes", "valor"],
           },
         },
 
@@ -68,6 +77,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               nome: { type: "string" },
               data: { type: "string" },
             },
+            required: ["nome", "data"],
           },
         },
 
@@ -75,6 +85,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
         status: { type: "string" },
         updatedAt: { type: "string" },
       },
+      required: [],
     },
 
     pai: {
@@ -82,6 +93,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       properties: {
         nome: { type: "string" },
       },
+      required: [],
     },
 
     mae: {
@@ -90,6 +102,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
         serieRGD: { type: "string" },
         rgn: { type: "string" },
       },
+      required: [],
     },
 
     avoMaterno: {
@@ -97,13 +110,14 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       properties: {
         nome: { type: "string" },
       },
+      required: [],
     },
 
-    updatedAt: { type: "string", maxLength: 100 },
+    updatedAt: { type: "string", maxLength: 100, format: "date-time" },
     _deleted: { type: "boolean", default: false },
-    lastModified: { type: "string" },
+    lastModified: { type: "string", format: "date-time", default: "" },
   },
 
-  required: ["uuid", "updatedAt"],
+  required: ["uuid", "updatedAt", "animal", "pai", "mae", "avoMaterno"],
   indexes: ["updatedAt"],
 };

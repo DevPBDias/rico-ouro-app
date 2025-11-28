@@ -3,7 +3,10 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const CACHE_NAME = "rico-ouro-cache-v1";
+// CRITICAL: Increment this version when DB schema changes
+// This ensures old cached JS with old schemas is invalidated
+const SCHEMA_VERSION = "v10"; // Must match DB_NAME version in client.ts
+const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 
 const ASSETS_TO_CACHE = ["/", "/manifest.webmanifest"];
 

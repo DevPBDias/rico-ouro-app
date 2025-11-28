@@ -100,10 +100,29 @@ export function replicateCollection<T extends BaseDocument>({
         const processed = {
           ...doc,
           _deleted: !!doc._deleted,
+          // Garantir que lastModified sempre exista
+          lastModified: (doc as any).lastModified || new Date().toISOString(),
         };
-        return (
-          transformPull ? transformPull(processed) : processed
-        ) as WithDeleted<T>;
+
+        const transformed = transformPull
+          ? transformPull(processed)
+          : processed;
+
+        // Validar campos obrigatórios (uuid e updatedAt)
+        if (!transformed.uuid) {
+          console.error(`❌ Documento sem uuid:`, transformed);
+          throw new Error(`Document missing required field: uuid`);
+        }
+
+        if (!transformed.updatedAt) {
+          console.warn(
+            `⚠️ Documento sem updatedAt, usando timestamp atual:`,
+            transformed.uuid
+          );
+          transformed.updatedAt = new Date().toISOString();
+        }
+
+        return transformed as WithDeleted<T>;
       });
 
       return {

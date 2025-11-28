@@ -8,7 +8,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
   type: "object",
   properties: {
     uuid: { type: "string", maxLength: 200 },
-    id: { type: "number" },
+    id: { type: ["number", "null"] },
     nome: { type: "string", maxLength: 200 },
     serieRGD: { type: "string" },
     rgn: { type: "string" },
@@ -24,6 +24,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
         label: { type: "string" },
         value: { type: "string" },
       },
+      required: [],
     },
     farm: { type: "string", maxLength: 200 },
     vacinas: {
@@ -34,6 +35,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
           nome: { type: "string" },
           data: { type: "string" },
         },
+        required: ["nome", "data"],
       },
     },
     type: {
@@ -54,6 +56,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
         sexo: { type: "string", enum: ["M", "F"] },
         rgn: { type: "string" },
       },
+      required: [],
     },
     protocolosReproducao: {
       type: "object",
@@ -74,6 +77,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
                   data: { type: "string" },
                   type: { type: "string", enum: ["Prenha", "Vazia"] },
                 },
+                required: [],
               },
 
               dataPrevistaParto: {
@@ -82,8 +86,10 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
                   data270: { type: "string" },
                   data305: { type: "string" },
                 },
+                required: [],
               },
             },
+            required: [],
           },
         },
         montaNatural: {
@@ -96,6 +102,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
               peso: { type: "string" },
               rgn: { type: "string" },
             },
+            required: ["data"],
           },
         },
         fivTETF: {
@@ -115,6 +122,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
                   data: { type: "string" },
                   type: { type: "string", enum: ["Prenha", "Vazia"] },
                 },
+                required: [],
               },
 
               sexo: { type: "string", enum: ["M", "F"] },
@@ -125,16 +133,19 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
                   data270: { type: "string" },
                   data305: { type: "string" },
                 },
+                required: [],
               },
             },
+            required: [],
           },
         },
       },
+      required: [],
     },
 
-    updatedAt: { type: "string", maxLength: 100 },
+    updatedAt: { type: "string", maxLength: 100, format: "date-time" },
     _deleted: { type: "boolean", default: false },
-    lastModified: { type: "string" },
+    lastModified: { type: "string", format: "date-time", default: "" },
   },
   required: ["uuid", "nome", "updatedAt", "farm"],
   indexes: ["nome", "updatedAt", "farm"],
