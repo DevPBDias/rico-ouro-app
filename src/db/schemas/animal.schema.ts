@@ -113,9 +113,9 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       required: [],
     },
 
-    updatedAt: { type: "string", maxLength: 100, format: "date-time" },
+    updatedAt: { type: "string", maxLength: 100 },
     _deleted: { type: "boolean", default: false },
-    lastModified: { type: "string", format: "date-time", default: "" },
+    lastModified: { type: "string", default: "" },
   },
 
   required: ["uuid", "updatedAt", "animal", "pai", "mae", "avoMaterno"],

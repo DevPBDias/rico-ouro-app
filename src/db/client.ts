@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === "development") {
 let dbPromise: Promise<MyDatabase | null> | null = null;
 
 // CRITICAL: Increment this version whenever schemas change
-const DB_NAME = "indi_ouro_db_v10";
+const DB_NAME = "indi_ouro_db_v11";
 
 startRxDBDebugLogs(DB_NAME);
 /**
@@ -138,7 +138,8 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         "indi_ouro_db_v6",
         "indi_ouro_db_v7",
         "indi_ouro_db_v8",
-        "indi_ouro_db_v9", // Include current version for cleanup
+        "indi_ouro_db_v9",
+        "indi_ouro_db_v10", // Include current version for cleanup
         "rico_ouro_db",
         "rico_ouro_db_v2",
         "rico_ouro_db_v3",
