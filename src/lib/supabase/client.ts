@@ -1,22 +1,31 @@
-"use client";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-import { createBrowserClient } from "@supabase/ssr";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-let supabase: ReturnType<typeof createBrowserClient> | null = null;
+// Singleton pattern for client-side
+let clientInstance: SupabaseClient | undefined;
 
-/**
- * Singleton Supabase Browser Client
- *
- * ✅ Garante apenas UMA instância do GoTrueClient no browser
- * ✅ Previne o warning "Multiple GoTrueClient instances detected"
- * ✅ Usa @supabase/ssr para compatibilidade com Next.js App Router
- */
 export function getBrowserSupabase() {
-  if (!supabase) {
-    supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+  if (typeof window === "undefined") {
+    // Server-side: always create a new instance to avoid sharing state between requests
+    return createClient(supabaseUrl, supabaseAnonKey);
   }
-  return supabase;
+
+  if (!clientInstance) {
+    clientInstance = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce",
+      },
+    });
+  }
+
+  return clientInstance;
 }
+
+// Export a default instance for backward compatibility if needed,
+// but prefer using getBrowserSupabase() to ensure singleton behavior.
+export const supabase = getBrowserSupabase();

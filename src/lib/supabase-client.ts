@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 import { AnimalData, Vaccine, Farm, Matriz } from "@/types/schemas.types";
 
 // Variáveis de ambiente
@@ -15,10 +15,8 @@ if (!isSupabaseConfigured()) {
   );
 }
 
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-key"
-);
+// Use the singleton instance
+export const supabase = getBrowserSupabase();
 
 // Tipos para Supabase
 export interface SupabaseAnimalData {

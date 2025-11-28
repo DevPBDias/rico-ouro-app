@@ -17,8 +17,13 @@ import { replicateMatriz } from "./replicators/matriz.replication";
 import { resetIndexedDB } from "./utils/reset-indexeddb";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { startRxDBDebugLogs } from "./utils/debug";
+import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
 
-// ✅ DevMode plugin para mensagens de erro mais claras em desenvolvimento
+addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBMigrationPlugin);
+
 if (process.env.NODE_ENV === "development") {
   import("rxdb/plugins/dev-mode").then((module) => {
     addRxPlugin(module.RxDBDevModePlugin);
@@ -26,14 +31,11 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
-addRxPlugin(RxDBUpdatePlugin);
-addRxPlugin(RxDBQueryBuilderPlugin);
-addRxPlugin(RxDBLeaderElectionPlugin);
-
-// ✅ Nome fixo do banco (SEM versão)
-// A versão deve estar apenas no schemaVersion, nunca no nome do DB
 const DB_NAME = "indi_ouro_db";
-let dbPromise: Promise<MyDatabase | null> | null = null;
+
+const globalForRxDB = globalThis as unknown as {
+  rxdbPromise: Promise<MyDatabase> | null;
+};
 
 startRxDBDebugLogs(DB_NAME);
 
@@ -44,29 +46,6 @@ const COLLECTION_SCHEMAS = {
   matriz: matrizSchema,
 } as const;
 
-const OLD_DATABASES = Array.from({ length: 15 }).flatMap((_, i) => [
-  `indi_ouro_db${i === 0 ? "" : `_v${i}`}`,
-  `rico_ouro_db${i === 0 ? "" : `_v${i}`}`,
-]);
-
-async function cleanupOldDatabases() {
-  console.log("🗑️ Cleaning old IndexedDB databases...");
-
-  for (const name of OLD_DATABASES) {
-    try {
-      await resetIndexedDB({
-        dbName: name,
-        clearLocalStorage: true,
-        clearSessionStorage: true,
-        invalidateSWCache: true,
-        timeout: 4000,
-      });
-    } catch {}
-  }
-
-  await new Promise((r) => setTimeout(r, 2000));
-}
-
 async function addCollectionsSafe(db: RxDatabase<MyDatabaseCollections>) {
   console.log("📦 Adding collections...");
 
@@ -74,7 +53,12 @@ async function addCollectionsSafe(db: RxDatabase<MyDatabaseCollections>) {
     Object.fromEntries(
       Object.entries(COLLECTION_SCHEMAS).map(([key, schema]) => [
         key,
-        { schema },
+        {
+          schema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+          },
+        },
       ])
     ) as any
   );
@@ -93,17 +77,22 @@ async function startReplications(db: MyDatabase) {
 
   console.log("🔄 Starting replications...");
 
-  const [animals, vaccines, farms, matriz] = await Promise.all([
-    replicateAnimals(db.animals),
-    replicateVaccines(db.vaccines),
-    replicateFarms(db.farms),
-    replicateMatriz(db.matriz),
-  ]);
+  try {
+    const [animals, vaccines, farms, matriz] = await Promise.all([
+      replicateAnimals(db.animals),
+      replicateVaccines(db.vaccines),
+      replicateFarms(db.farms),
+      replicateMatriz(db.matriz),
+    ]);
 
-  (db as any).replications = { animals, vaccines, farms, matriz };
+    (db as any).replications = { animals, vaccines, farms, matriz };
+  } catch (error) {
+    console.error("❌ Error starting replications:", error);
+  }
 }
 
-async function performDatabaseCreation(): Promise<MyDatabase | null> {
+async function createRxDB(): Promise<MyDatabase> {
+  console.log("🚀 Initializing RxDB...");
   const storage = getRxStorageDexie();
 
   const db = await createRxDatabase<MyDatabaseCollections>({
@@ -115,36 +104,53 @@ async function performDatabaseCreation(): Promise<MyDatabase | null> {
   });
 
   await addCollectionsSafe(db);
-  await startReplications(db);
 
-  console.log("✅ RxDB initialized");
+  startReplications(db).catch(console.error);
+
+  console.log("✅ RxDB initialized successfully");
   return db;
-}
-
-async function createDatabase(): Promise<MyDatabase | null> {
-  if (typeof window === "undefined") return null;
-  if (!("indexedDB" in window)) return null;
-
-  try {
-    return await performDatabaseCreation();
-  } catch (err: any) {
-    const msg = err?.message || "";
-    const code = err?.code || "";
-
-    console.error("❌ RxDB init error:", err);
-
-    if (msg.includes("DB9") || msg.includes("DXE1") || code === "DB9") {
-      console.warn("⚠️ Schema conflict detected. Resetting and retrying...");
-      await cleanupOldDatabases();
-      return await performDatabaseCreation();
-    }
-
-    throw err;
-  }
 }
 
 export async function getDatabase(): Promise<MyDatabase | null> {
   if (typeof window === "undefined") return null;
-  if (!dbPromise) dbPromise = createDatabase();
-  return dbPromise;
+
+  if (globalForRxDB.rxdbPromise) {
+    return globalForRxDB.rxdbPromise;
+  }
+  globalForRxDB.rxdbPromise = (async () => {
+    try {
+      return await createRxDB();
+    } catch (err: any) {
+      console.error("❌ RxDB Init Error:", err);
+
+      // Tratamento específico para conflito de schema (DB9)
+      if (
+        err?.message?.includes("DB9") ||
+        err?.code === "DB9" ||
+        err?.message?.includes("Schema conflict")
+      ) {
+        console.warn("⚠️ Schema conflict detected. Resetting database...");
+
+        globalForRxDB.rxdbPromise = null;
+
+        // Reseta o banco
+        await resetIndexedDB({
+          dbName: DB_NAME,
+          clearLocalStorage: true,
+          clearSessionStorage: true,
+          invalidateSWCache: true,
+        });
+
+        if (typeof window !== "undefined") {
+          console.log("🔄 Reloading page to apply clean state...");
+          window.location.reload();
+          return new Promise(() => {}) as Promise<MyDatabase>;
+        }
+      }
+
+      throw err;
+    }
+  })();
+
+  return globalForRxDB.rxdbPromise;
 }
