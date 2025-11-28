@@ -50,11 +50,11 @@ export default function NascimentosPage() {
         corNascimento: formData.cor,
         pesosMedidos: [{ mes: "", valor: Number(formData.peso) }],
         circunferenciaEscrotal: [],
-        updatedAt: FormatData(formData.data),
       },
       pai: { nome: "-" },
       mae: { serieRGD: "INDI", rgn: formData.mae },
       avoMaterno: { nome: "-" },
+      _modified: FormatData(formData.data),
     };
 
     try {

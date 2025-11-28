@@ -132,7 +132,7 @@ export async function syncAnimalDataToSupabase(
     );
     cleanAnimal = {
       rgn: animal.animal.rgn || "",
-      updatedAt: animal.animal.updatedAt || new Date().toISOString(),
+      _modified: animal._modified || new Date().toISOString(),
     };
   }
 
@@ -143,7 +143,7 @@ export async function syncAnimalDataToSupabase(
     pai_json: cleanPai,
     mae_json: cleanMae,
     avo_materno_json: cleanAvoMaterno,
-    updated_at: animal.animal.updatedAt || new Date().toISOString(),
+    _modified: animal._modified || new Date().toISOString(),
   };
 
   const { data, error } = await supabase

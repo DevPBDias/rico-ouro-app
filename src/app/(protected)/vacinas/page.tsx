@@ -83,8 +83,8 @@ const VaccinesPage = () => {
         animal: {
           ...animal.animal,
           vacinas: [...currentVaccines, ...newVaccines],
-          updatedAt: new Date().toISOString(),
         },
+        _modified: new Date().toISOString(),
       });
 
       setSuccessModalOpen(true);
@@ -108,7 +108,7 @@ const VaccinesPage = () => {
       // Create a new vaccine type in the vaccines collection
       await createVaccine({
         vaccineName: name,
-        updatedAt: new Date().toISOString(),
+        _modified: new Date().toISOString(),
       });
 
       // Automatically select the newly created vaccine

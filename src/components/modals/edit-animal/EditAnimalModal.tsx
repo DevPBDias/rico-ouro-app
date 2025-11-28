@@ -80,8 +80,8 @@ export function EditAnimalModal({
           pesosMedidos: data.animal.pesosMedidos ?? [],
           circunferenciaEscrotal: data.animal.circunferenciaEscrotal ?? [],
           ganhoDiario: data.animal.ganhoDiario ?? [],
-          updatedAt: new Date().toISOString(),
         },
+        _modified: new Date().toISOString(),
       };
 
       await onSave(updatedData);
