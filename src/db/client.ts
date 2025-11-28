@@ -23,13 +23,14 @@ addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-// Always add DevMode for debugging
-addRxPlugin(RxDBDevModePlugin);
+// if (process.env.NODE_ENV === "development") {
+//   addRxPlugin(RxDBDevModePlugin);
+// }
 
 let dbPromise: Promise<MyDatabase | null> | null = null;
 
 // CRITICAL: Increment this version whenever schemas change
-const DB_NAME = "indi_ouro_db_v13";
+const DB_NAME = "indi_ouro_db_v14";
 
 startRxDBDebugLogs(DB_NAME);
 /**
@@ -139,7 +140,8 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         "indi_ouro_db_v9",
         "indi_ouro_db_v10",
         "indi_ouro_db_v11",
-        "indi_ouro_db_v12", // Include current version for cleanup
+        "indi_ouro_db_v12",
+        "indi_ouro_db_v13", // Include previous version for cleanup
         "rico_ouro_db",
         "rico_ouro_db_v2",
         "rico_ouro_db_v3",

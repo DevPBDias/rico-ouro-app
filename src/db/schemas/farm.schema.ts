@@ -10,7 +10,7 @@ export const farmSchema: RxJsonSchema<Farm> = {
     uuid: { type: "string", maxLength: 200 },
     id: { type: ["number", "null"] },
     farmName: { type: "string", maxLength: 200 },
-    updatedAt: { type: "string" },
+    updatedAt: { type: "string", maxLength: 100 },
     _deleted: { type: "boolean", default: false },
     lastModified: { type: "string", default: "" },
   },

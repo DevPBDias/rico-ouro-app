@@ -83,7 +83,7 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
 
         farm: { type: "string" },
         status: { type: "string" },
-        updatedAt: { type: "string" },
+        updatedAt: { type: "string", maxLength: 100 },
       },
       required: [],
     },
