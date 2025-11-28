@@ -1,8 +1,3 @@
-console.log(
-  "[SCHEMA] loaded farm.schema (server?",
-  typeof window === "undefined",
-  ")"
-);
 import { Farm } from "@/types/schemas.types";
 import { RxJsonSchema } from "rxdb";
 

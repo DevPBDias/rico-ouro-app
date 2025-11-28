@@ -1,8 +1,7 @@
 "use client";
 
-import { createRxDatabase, addRxPlugin, removeRxDatabase } from "rxdb";
+import { createRxDatabase, addRxPlugin } from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
-import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
@@ -16,20 +15,31 @@ import { replicateAnimals } from "./replicators/animal.replication";
 import { replicateVaccines } from "./replicators/vaccine.replication";
 import { replicateFarms } from "./replicators/farm.replication";
 import { replicateMatriz } from "./replicators/matriz.replication";
+import { resetIndexedDB } from "./utils/reset-indexeddb";
+import { getBrowserSupabase } from "@/lib/supabase/client";
+import { startRxDBDebugLogs } from "./utils/debug";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 
+// Only add DevMode in development
 if (process.env.NODE_ENV === "development") {
   addRxPlugin(RxDBDevModePlugin);
 }
 
 let dbPromise: Promise<MyDatabase | null> | null = null;
 
-const DB_NAME = "indi_ouro_db_v7";
+// CRITICAL: Increment this version whenever schemas change
+const DB_NAME = "indi_ouro_db_v9";
 
+startRxDBDebugLogs(DB_NAME);
+/**
+ * Cria e retorna a instância do banco de dados RxDB
+ * IMPORTANTE: Esta função só deve ser chamada no cliente (browser)
+ */
 const createDatabase = async (): Promise<MyDatabase | null> => {
+  // Verificação de segurança: só executar no cliente
   if (typeof window === "undefined") {
     throw new Error(
       "RxDB cannot be initialized on the server. This function should only run in the browser."
@@ -37,16 +47,15 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
   }
 
   if (!("indexedDB" in window)) {
-    console.warn("IndexedDB not available. Skipping RxDB initialization.");
+    console.warn("⚠️ IndexedDB not available. Skipping RxDB initialization.");
     return null;
   }
 
   console.log("🚀 Initializing RxDB...");
 
-  const storage =
-    process.env.NODE_ENV === "production"
-      ? getRxStorageDexie()
-      : wrappedValidateAjvStorage({ storage: getRxStorageDexie() });
+  // CRITICAL: ALWAYS use getRxStorageDexie() directly
+  // NEVER use wrappedValidateAjvStorage in production - it causes DB9 errors
+  const storage = getRxStorageDexie();
 
   try {
     const db = await createRxDatabase<MyDatabaseCollections>({
@@ -58,6 +67,24 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
     });
 
     console.log("📦 Adding collections...");
+
+    const rawDB = await indexedDB.open(DB_NAME);
+
+    rawDB.onerror = () => {
+      console.error(
+        "❌ IndexedDB open error BEFORE addCollections:",
+        rawDB.error
+      );
+    };
+
+    rawDB.onupgradeneeded = (e: any) => {
+      console.log(
+        "📐 IndexedDB Upgrade Needed: OLD → NEW Version",
+        e.oldVersion,
+        e.newVersion
+      );
+    };
+
     await db.addCollections({
       animals: { schema: animalSchema },
       vaccines: { schema: vaccineSchema },
@@ -65,12 +92,9 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
       matriz: { schema: matrizSchema },
     });
 
-    if (
-      (await db) &&
-      navigator.onLine &&
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
+    // Check if Supabase is configured via the singleton client
+    const supabase = getBrowserSupabase();
+    if (supabase && navigator.onLine) {
       console.log("🔄 Starting replication...");
       const [animals, vaccines, farms, matriz] = await Promise.all([
         replicateAnimals(db.animals),
@@ -86,31 +110,36 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         matriz,
       };
     } else {
-      console.warn("Replication not started: offline or missing env");
+      console.warn(
+        "⚠️ Replication not started: offline or missing Supabase config"
+      );
     }
 
-    console.log("✅ RxDB initialized!");
+    console.log("✅ RxDB initialized successfully!");
     return db;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorCode = (error as any)?.code || "";
 
-    console.error("Database initialization error:", error);
+    console.error("❌ Database initialization error:", error);
+    console.groupCollapsed("🔥 RxDB INIT FAILURE");
+    console.error("Full Error Object:", error);
+    console.error("Error Code:", (error as any)?.code);
+    console.error("Error Message:", (error as any)?.message);
+    console.trace();
+    console.groupEnd();
 
+    // Handle schema conflicts (DB9 or DXE1 errors)
     if (
       errorMessage.includes("DB9") ||
       errorMessage.includes("DXE1") ||
       errorCode === "DB9" ||
       errorCode === "DXE1"
     ) {
-      console.warn(
-        "⚠️ Schema conflict detected. Resetting database to recover..."
-      );
+      console.warn("⚠️ Schema conflict detected (DB9). Resetting database...");
 
-      console.warn("Removing old databases and retrying...");
-
+      // List of all possible old database versions to clean up
       const oldDbNames = [
-        DB_NAME,
         "indi_ouro_db",
         "indi_ouro_db_v2",
         "indi_ouro_db_v3",
@@ -118,19 +147,33 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         "indi_ouro_db_v5",
         "indi_ouro_db_v6",
         "indi_ouro_db_v7",
+        "indi_ouro_db_v8",
+        "indi_ouro_db_v9", // Include current version for cleanup
         "rico_ouro_db",
         "rico_ouro_db_v2",
         "rico_ouro_db_v3",
         "rico_ouro_db_v4",
       ];
 
+      console.log("🗑️ Removing old databases...");
+
+      // Use the robust resetIndexedDB utility for each database
       for (const dbName of oldDbNames) {
         try {
-          await removeRxDatabase(dbName, storage);
-          console.log(`🗑️ Removed old database: ${dbName}`);
-        } catch (removeError) {}
+          await resetIndexedDB(dbName);
+          console.log(`   ✓ Removed: ${dbName}`);
+        } catch (removeError) {
+          // Silently ignore errors for databases that don't exist
+          console.debug(`   - Skipped: ${dbName} (doesn't exist)`);
+        }
       }
 
+      // CRITICAL: Wait for IndexedDB to fully release locks
+      console.log("⏳ Waiting for IndexedDB cleanup (2s)...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Retry database creation with clean state
+      console.log("🔄 Retrying database creation...");
       const db = await createRxDatabase<MyDatabaseCollections>({
         name: DB_NAME,
         storage,
@@ -147,13 +190,10 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         matriz: { schema: matrizSchema },
       });
 
-      if (
-        (await db) &&
-        navigator.onLine &&
-        process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      ) {
-        console.log("🔄 Starting replication...");
+      // Restart replication if available
+      const supabase = getBrowserSupabase();
+      if (supabase && navigator.onLine) {
+        console.log("🔄 Starting replication after recovery...");
         const [animals, vaccines, farms, matriz] = await Promise.all([
           replicateAnimals(db.animals),
           replicateVaccines(db.vaccines),
@@ -169,19 +209,28 @@ const createDatabase = async (): Promise<MyDatabase | null> => {
         };
       }
 
-      console.log("✅ RxDB initialized after cleanup!");
+      console.log("✅ RxDB initialized successfully after recovery!");
       return db;
     }
 
+    // Re-throw other errors
     throw error;
   }
 };
 
+/**
+ * Retorna a instância do banco de dados (singleton)
+ * IMPORTANTE: Só usar em Client Components!
+ */
 export const getDatabase = async (): Promise<MyDatabase | null> => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    console.warn("⚠️ getDatabase() called on server - returning null");
+    return null;
+  }
 
   if (!dbPromise) {
     dbPromise = createDatabase();
   }
+
   return dbPromise;
 };
