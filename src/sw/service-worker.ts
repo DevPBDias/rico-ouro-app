@@ -5,7 +5,8 @@ declare const self: ServiceWorkerGlobalScope;
 
 // CRITICAL: Increment this version when DB schema changes
 // This ensures old cached JS with old schemas is invalidated
-const SCHEMA_VERSION = "v14"; // Must match DB_NAME version in client.ts
+// Note: DB name is now "indi_ouro_db" (without version suffix)
+const SCHEMA_VERSION = "v15"; // Incremented to invalidate old caches
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 
 const ASSETS_TO_CACHE = ["/", "/manifest.webmanifest"];

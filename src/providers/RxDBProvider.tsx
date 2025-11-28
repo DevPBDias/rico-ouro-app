@@ -57,11 +57,11 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
     initializingRef.current = true;
     let mounted = true;
 
-    console.log("🚀 RxDBProvider: Iniciando importação dinâmica do DB...");
+    console.log("🚀 RxDBProvider: Iniciando getDB()...");
 
-    // Importação dinâmica para garantir que o código do RxDB não seja incluído no bundle do servidor
-    import("@/db/client")
-      .then((mod) => mod.getDatabase())
+    // Usa o singleton getDB() que garante apenas UMA instância
+    import("@/db/get-db")
+      .then((mod) => mod.getDB())
       .then((database) => {
         if (mounted) {
           setDb(database);

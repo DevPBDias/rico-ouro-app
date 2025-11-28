@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase-client";
+import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js";
+import { getBrowserSupabase } from "@/lib/supabase/client";
+
+const supabase = getBrowserSupabase();
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -15,10 +17,12 @@ export function useAuth() {
       setLoading(false);
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data: sub } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
     return () => {
       mounted = false;

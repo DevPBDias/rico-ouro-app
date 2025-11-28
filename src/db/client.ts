@@ -1,6 +1,6 @@
 "use client";
 
-import { createRxDatabase, addRxPlugin, RxDatabase, RxCollection } from "rxdb";
+import { createRxDatabase, addRxPlugin, RxDatabase } from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
@@ -18,11 +18,21 @@ import { resetIndexedDB } from "./utils/reset-indexeddb";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { startRxDBDebugLogs } from "./utils/debug";
 
+// ✅ DevMode plugin para mensagens de erro mais claras em desenvolvimento
+if (process.env.NODE_ENV === "development") {
+  import("rxdb/plugins/dev-mode").then((module) => {
+    addRxPlugin(module.RxDBDevModePlugin);
+    console.log("🔧 RxDB DevMode ativado");
+  });
+}
+
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-const DB_NAME = "indi_ouro_db_v14";
+// ✅ Nome fixo do banco (SEM versão)
+// A versão deve estar apenas no schemaVersion, nunca no nome do DB
+const DB_NAME = "indi_ouro_db";
 let dbPromise: Promise<MyDatabase | null> | null = null;
 
 startRxDBDebugLogs(DB_NAME);

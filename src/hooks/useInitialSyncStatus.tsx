@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRxDBContext } from "@/providers/RxDBProvider";
-import { createClient } from "@supabase/supabase-js";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 
 interface SyncProgress {
   animals: boolean;
@@ -70,7 +70,8 @@ export function useInitialSyncStatus() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      // ✅ Usa o singleton ao invés de criar nova instância
+      const supabase = getBrowserSupabase();
 
       try {
         const [animals, vaccines, farms, matriz] = await Promise.all([
