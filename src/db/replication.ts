@@ -58,44 +58,31 @@ async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
  * Setup replication for all collections
  */
 export async function setupReplication(db: MyDatabase) {
-  // Check if online
-  if (!navigator.onLine) {
-    console.log("📴 Offline - skipping replication setup");
-    return;
-  }
-
   console.log("🔄 Setting up replication...");
 
   // Validate Supabase configuration
   const config = getSupabaseConfig();
-  
+
   if (!config) {
     console.warn(
       "⚠️ Supabase not configured properly. Replication disabled.\n" +
-      "   This is normal in development if you haven't set up Supabase yet.\n" +
-      "   The app will work in offline-only mode.\n" +
-      "   To enable sync, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        "   This is normal in development if you haven't set up Supabase yet.\n" +
+        "   The app will work in offline-only mode.\n" +
+        "   To enable sync, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
     );
     return;
   }
 
   const { url: SUPABASE_URL, key: SUPABASE_KEY } = config;
 
-  // Health check before starting replication
-  const isHealthy = await checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY);
-  
-  if (!isHealthy) {
-    console.error(
-      "❌ Supabase is not accessible. Replication disabled.\n" +
-      "   The app will work in offline-only mode.\n" +
-      "   Please check:\n" +
-      "   1. Your internet connection\n" +
-      "   2. Supabase URL is correct\n" +
-      "   3. Supabase API key is valid\n" +
-      "   4. Supabase project is running"
-    );
-    return;
-  }
+  // Initial health check (non-blocking)
+  checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY).then((isHealthy) => {
+    if (!isHealthy) {
+      console.warn(
+        "⚠️ Supabase unreachable initially. Replication will retry automatically when online."
+      );
+    }
+  });
 
   try {
     // Replicate animals
@@ -434,21 +421,35 @@ export async function setupReplication(db: MyDatabase) {
       matriz: matrizReplication.isStopped(),
     });
 
+    // Setup auto-reconnect listeners
+    if (typeof window !== "undefined") {
+      window.addEventListener("online", () => {
+        console.log("🌐 Online detected - forcing replication retry");
+        animalsReplication.reSync();
+        vaccinesReplication.reSync();
+        farmsReplication.reSync();
+        matrizReplication.reSync();
+      });
+    }
+
     // Subscribe to replication events for debugging
     let animalsErrorCount = 0;
-    let vaccinesErrorCount = 0;
-    let farmsErrorCount = 0;
-    let matrizErrorCount = 0;
-    const MAX_ERRORS = 3;
+    const MAX_ERRORS = 5; // Increased tolerance
 
     animalsReplication.error$.subscribe((error) => {
       if (error) {
         animalsErrorCount++;
-        console.error(`❌ [Animals] Replication error (${animalsErrorCount}/${MAX_ERRORS}):`, error);
-        
+        console.error(
+          `❌ [Animals] Replication error (${animalsErrorCount}/${MAX_ERRORS}):`,
+          error
+        );
+
+        // Only stop if errors persist excessively
         if (animalsErrorCount >= MAX_ERRORS) {
-          console.error("🛑 [Animals] Too many errors, stopping replication");
-          animalsReplication.cancel();
+          console.warn(
+            "⚠️ [Animals] High error rate, but keeping replication alive for retry."
+          );
+          // animalsReplication.cancel(); // Don't cancel, let it retry
         }
       }
     });
@@ -460,14 +461,20 @@ export async function setupReplication(db: MyDatabase) {
       }
     });
 
+    // Vaccines error handling
+    let vaccinesErrorCount = 0;
     vaccinesReplication.error$.subscribe((error) => {
       if (error) {
         vaccinesErrorCount++;
-        console.error(`❌ [Vaccines] Replication error (${vaccinesErrorCount}/${MAX_ERRORS}):`, error);
-        
+        console.error(
+          `❌ [Vaccines] Replication error (${vaccinesErrorCount}/${MAX_ERRORS}):`,
+          error
+        );
+
         if (vaccinesErrorCount >= MAX_ERRORS) {
-          console.error("🛑 [Vaccines] Too many errors, stopping replication");
-          vaccinesReplication.cancel();
+          console.warn(
+            "⚠️ [Vaccines] High error rate, but keeping replication alive for retry."
+          );
         }
       }
     });
@@ -478,14 +485,20 @@ export async function setupReplication(db: MyDatabase) {
       }
     });
 
+    // Farms error handling
+    let farmsErrorCount = 0;
     farmsReplication.error$.subscribe((error) => {
       if (error) {
         farmsErrorCount++;
-        console.error(`❌ [Farms] Replication error (${farmsErrorCount}/${MAX_ERRORS}):`, error);
-        
+        console.error(
+          `❌ [Farms] Replication error (${farmsErrorCount}/${MAX_ERRORS}):`,
+          error
+        );
+
         if (farmsErrorCount >= MAX_ERRORS) {
-          console.error("🛑 [Farms] Too many errors, stopping replication");
-          farmsReplication.cancel();
+          console.warn(
+            "⚠️ [Farms] High error rate, but keeping replication alive for retry."
+          );
         }
       }
     });
@@ -496,14 +509,20 @@ export async function setupReplication(db: MyDatabase) {
       }
     });
 
+    // Matriz error handling
+    let matrizErrorCount = 0;
     matrizReplication.error$.subscribe((error) => {
       if (error) {
         matrizErrorCount++;
-        console.error(`❌ [Matriz] Replication error (${matrizErrorCount}/${MAX_ERRORS}):`, error);
-        
+        console.error(
+          `❌ [Matriz] Replication error (${matrizErrorCount}/${MAX_ERRORS}):`,
+          error
+        );
+
         if (matrizErrorCount >= MAX_ERRORS) {
-          console.error("🛑 [Matriz] Too many errors, stopping replication");
-          matrizReplication.cancel();
+          console.warn(
+            "⚠️ [Matriz] High error rate, but keeping replication alive for retry."
+          );
         }
       }
     });
@@ -515,7 +534,6 @@ export async function setupReplication(db: MyDatabase) {
     });
   } catch (error) {
     console.error("❌ Replication setup error:", error);
-    // Don't throw - allow app to continue in offline mode
     console.warn("⚠️ App will continue in offline-only mode");
   }
 }
