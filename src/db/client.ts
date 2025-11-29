@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  createRxDatabase,
-  addRxPlugin,
-  removeRxDatabase,
-  RxStorage,
-} from "rxdb";
+import { createRxDatabase, addRxPlugin, RxStorage } from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election";
 import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import { animalSchema } from "./schemas/animal.schema";
 import { vaccineSchema } from "./schemas/vaccine.schema";
 import { farmSchema } from "./schemas/farm.schema";
@@ -22,23 +18,17 @@ import { setupReplication } from "./replication";
 // Add plugins
 if (process.env.NODE_ENV === "development") {
   addRxPlugin(RxDBDevModePlugin);
-} // Always enable for now to debug DB9
+}
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBMigrationPlugin);
 
-const DB_NAME = "indi_ouro_db_v6"; // Increment version to force fresh start
-const STORAGE_KEY_RESET_COUNT = "rxdb_reset_count_v6"; // New key for new version
-const MAX_RESETS = 5; // Increase max resets
+const DB_NAME = "indi_ouro_db_v7"; // NEW VERSION - force fresh start
 
 // Global singleton
 let dbInstance: MyDatabase | null = null;
 let dbPromise: Promise<MyDatabase> | null = null;
-
-import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
-
-// ... imports ...
 
 /**
  * Create the RxDB database with all collections
@@ -48,7 +38,7 @@ async function createDatabase(): Promise<MyDatabase> {
 
   let storage: RxStorage<any, any> = getRxStorageDexie();
 
-  // Wrap storage with validator in development to fix DVM1
+  // Wrap storage with validator in development
   if (process.env.NODE_ENV === "development") {
     storage = wrappedValidateAjvStorage({
       storage: storage,
@@ -106,11 +96,6 @@ async function createDatabase(): Promise<MyDatabase> {
       console.error("⚠️ Replication setup failed:", err);
     });
 
-    // Reset reset count on success
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem(STORAGE_KEY_RESET_COUNT);
-    }
-
     return db;
   } catch (err) {
     console.error("❌ Error creating database:", err);
@@ -119,7 +104,7 @@ async function createDatabase(): Promise<MyDatabase> {
 }
 
 /**
- * Handle database errors and potential resets
+ * Handle database errors - NO AUTO-RELOAD
  */
 async function handleDatabaseError(error: any) {
   console.error("❌ RxDB initialization failed:", error);
@@ -128,83 +113,64 @@ async function handleDatabaseError(error: any) {
   dbInstance = null;
   dbPromise = null;
 
-  // Check if it's a DB9 error or similar schema issue
+  // Check if it's a DB9 error
   const isDB9 = error?.code === "DB9" || error?.message?.includes("DB9");
 
   if (isDB9 && typeof window !== "undefined") {
-    const resetCount = parseInt(
-      sessionStorage.getItem(STORAGE_KEY_RESET_COUNT) || "0",
-      10
-    );
+    console.error("🛑 DB9 Schema Conflict - Manual cleanup required");
 
-    if (resetCount < MAX_RESETS) {
-      console.warn(
-        `🔄 DB9 detected. Attempting reset ${resetCount + 1}/${MAX_RESETS}...`
-      );
-
-      // Increment reset count
-      sessionStorage.setItem(
-        STORAGE_KEY_RESET_COUNT,
-        (resetCount + 1).toString()
-      );
-
-      try {
-        // Try to remove the database properly
-        await removeRxDatabase(DB_NAME, getRxStorageDexie());
-        console.log("✅ Database removed via removeRxDatabase");
-      } catch (removeErr) {
-        console.warn(
-          "⚠️ removeRxDatabase failed, trying indexedDB.deleteDatabase",
-          removeErr
-        );
-        // Fallback to raw IndexedDB delete
-        try {
-          indexedDB.deleteDatabase(DB_NAME);
-        } catch (e) {
-          console.error("❌ Failed to delete database", e);
-        }
-      }
-
-      // Reload page
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-
-      // Return a never-resolving promise to halt execution while reloading
-      return new Promise<never>(() => {});
-    } else {
-      console.error("🛑 Max resets reached. Manual cleanup required.");
-
-      // Show user-friendly instructions
-      const instructions = `
+    const instructions = `
 ╔════════════════════════════════════════════════════════════╗
-║  ERRO CRÍTICO NO BANCO DE DADOS LOCAL                      ║
+║  ERRO DB9 - CONFLITO DE SCHEMA                             ║
 ╚════════════════════════════════════════════════════════════╝
 
-O banco de dados local (RxDB) está com conflito de schema.
+⚠️ O banco de dados local precisa ser limpo manualmente.
 
-📋 SOLUÇÃO RÁPIDA:
-1. Abra o DevTools (F12)
-2. Vá em "Application" → "Storage"
+📋 SOLUÇÃO (escolha uma):
+
+OPÇÃO 1 - Via DevTools (RECOMENDADO):
+1. Pressione F12
+2. Vá em "Application" → "Storage"  
 3. Clique em "Clear site data"
-4. Recarregue a página (F5)
+4. FECHE esta aba completamente
+5. Abra o app novamente
 
-OU use o console:
-> indexedDB.deleteDatabase("${DB_NAME}")
-> sessionStorage.clear()
-> location.reload()
+OPÇÃO 2 - Via Console:
+1. Pressione F12 → Console
+2. Cole e execute:
+   indexedDB.deleteDatabase('indi_ouro_db_v5')
+   indexedDB.deleteDatabase('indi_ouro_db_v6')
+   indexedDB.deleteDatabase('indi_ouro_db_v7')
+   sessionStorage.clear()
+   localStorage.clear()
+3. FECHE a aba
+4. Abra o app novamente
 
-Seus dados no Supabase estão seguros e serão sincronizados novamente.
-      `.trim();
+OPÇÃO 3 - Modo Anônimo (TESTE):
+1. Abra uma janela anônima/privada
+2. Acesse o app
+3. Se funcionar, limpe o storage na janela normal
 
-      console.log(instructions);
+⚠️ IMPORTANTE: Seus dados estão seguros no Supabase!
+    `.trim();
 
-      alert(
-        "Erro crítico no banco de dados.\n\n" +
-          "Por favor, abra o Console (F12) para ver as instruções de correção.\n\n" +
-          "Resumo: Application → Storage → Clear site data → Reload"
-      );
-    }
+    console.log(instructions);
+
+    // Show alert but DON'T reload
+    alert(
+      "❌ ERRO DB9 - Banco de Dados Corrompido\n\n" +
+        "O app não pode continuar com o banco atual.\n\n" +
+        "SOLUÇÃO RÁPIDA:\n" +
+        "1. Pressione F12\n" +
+        "2. Application → Storage → Clear site data\n" +
+        "3. FECHE esta aba completamente\n" +
+        "4. Abra o app novamente\n\n" +
+        "Veja o Console (F12) para mais opções.\n\n" +
+        "Seus dados no Supabase estão seguros!"
+    );
+
+    // Return rejected promise to stop execution
+    return Promise.reject(error);
   }
 
   throw error;

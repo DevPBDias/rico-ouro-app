@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Banco RxDB</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+        button {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+        button.secondary {
+            background: #1976d2;
+        }
+        button.secondary:hover {
+            background: #1565c0;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #2e7d32;
+        }
+        .error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpar Banco RxDB</h1>
+        <p>Esta página vai limpar todos os bancos de dados RxDB corrompidos.</p>
+        
+        <button onclick="cleanAll()">🗑️ LIMPAR TUDO AGORA</button>
+        <button class="secondary" onclick="listDatabases()">📦 Listar Bancos</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = message;
+            log.appendChild(p);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function listDatabases() {
+            log.innerHTML = '';
+            addLog('📦 Listando bancos de dados...');
+            
+            try {
+                const databases = await indexedDB.databases();
+                addLog(`✅ Encontrados ${databases.length} bancos:`, 'success');
+                
+                databases.forEach((db, index) => {
+                    addLog(`  ${index + 1}. ${db.name} (v${db.version})`);
+                });
+            } catch (error) {
+                addLog(`❌ Erro ao listar: ${error.message}`, 'error');
+            }
+        }
+
+        async function cleanAll() {
+            log.innerHTML = '';
+            addLog('🧹 Iniciando limpeza completa...');
+            
+            try {
+                // Limpar session storage
+                sessionStorage.clear();
+                addLog('✅ Session storage limpo', 'success');
+                
+                // Limpar local storage
+                localStorage.clear();
+                addLog('✅ Local storage limpo', 'success');
+                
+                // Listar e deletar bancos
+                const databases = await indexedDB.databases();
+                addLog(`📦 Encontrados ${databases.length} bancos`);
+                
+                // Deletar bancos RxDB
+                const rxdbDatabases = databases.filter(db => 
+                    db.name && db.name.startsWith('indi_ouro_db')
+                );
+                
+                addLog(`🗑️ Deletando ${rxdbDatabases.length} bancos RxDB...`);
+                
+                for (const db of rxdbDatabases) {
+                    addLog(`  Deletando: ${db.name}`);
+                    indexedDB.deleteDatabase(db.name);
+                }
+                
+                // Deletar versões específicas (garantia)
+                ['indi_ouro_db_v5', 'indi_ouro_db_v6', 'indi_ouro_db_v7'].forEach(name => {
+                    addLog(`  Deletando: ${name}`);
+                    indexedDB.deleteDatabase(name);
+                });
+                
+                addLog('✅ LIMPEZA CONCLUÍDA!', 'success');
+                addLog('');
+                addLog('🔄 FECHE ESTA ABA e abra o app novamente', 'success');
+                addLog('');
+                addLog('⚠️ NÃO recarregue esta página!', 'error');
+                
+            } catch (error) {
+                addLog(`❌ Erro durante limpeza: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-list on load
+        window.addEventListener('load', listDatabases);
+    </script>
+</body>
+</html>
