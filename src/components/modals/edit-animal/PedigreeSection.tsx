@@ -54,6 +54,17 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
             disabled={isSaving}
           />
         </div>
+        <div className="col-span-2">
+          <Label className="text-xs uppercase font-semibold text-gray-600 flex items-center gap-1 mb-1">
+            Avo materno
+          </Label>
+          <Input
+            name="avoMaterno.nome"
+            value={formData.avoMaterno?.nome ?? ""}
+            onChange={handleChange}
+            disabled={isSaving}
+          />
+        </div>
       </div>
     </div>
   );

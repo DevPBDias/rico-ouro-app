@@ -78,18 +78,6 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
             disabled={isSaving}
           />
         </div>
-
-        <div>
-          <Label className="text-xs uppercase font-semibold text-gray-600 flex items-center gap-1 mb-1">
-            Status
-          </Label>
-          <Input
-            name="animal.status"
-            value={formData.animal.status?.value ?? ""}
-            onChange={handleChange}
-            disabled={isSaving}
-          />
-        </div>
       </div>
     </div>
   );

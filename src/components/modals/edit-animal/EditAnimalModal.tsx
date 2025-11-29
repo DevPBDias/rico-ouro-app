@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AnimalData } from "@/types/schemas.types";
 import {
   Dialog,
@@ -12,10 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Info } from "lucide-react";
-import DadosBasicosSection from "./BasicSection";
 import DadosGeneticosSection from "./GeneticSection";
 import GenealogiaSection from "./PedigreeSection";
-import VacinasSection from "./VaccineSection";
 
 interface EditAnimalModalProps {
   open: boolean;
@@ -113,14 +111,6 @@ export function EditAnimalModal({
             )}
 
             <div className="space-y-6 pb-8">
-              <DadosBasicosSection
-                formData={formData}
-                handleChange={(e) =>
-                  handleChange(e.target.name, e.target.value)
-                }
-                isSaving={isSaving}
-              />
-
               <DadosGeneticosSection
                 formData={formData}
                 handleChange={(e) =>
@@ -134,12 +124,6 @@ export function EditAnimalModal({
                 handleChange={(e) =>
                   handleChange(e.target.name, e.target.value)
                 }
-                isSaving={isSaving}
-              />
-
-              <VacinasSection
-                formData={formData}
-                setFormData={setFormData}
                 isSaving={isSaving}
               />
             </div>
