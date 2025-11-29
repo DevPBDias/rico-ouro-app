@@ -3,7 +3,7 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const SCHEMA_VERSION = "v16"; // Incremented to invalidate old caches
+const SCHEMA_VERSION = "v17"; // Incremented to invalidate old caches
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 
 const ASSETS_TO_CACHE = ["/", "/manifest.webmanifest"];
@@ -52,6 +52,37 @@ self.addEventListener("fetch", (event: any) => {
   // Ignore chrome-extension schemes
   if (event.request.url.startsWith("chrome-extension")) return;
 
+  const url = new URL(event.request.url);
+
+  // NETWORK-FIRST strategy for JavaScript files to ensure fresh code
+  if (event.request.url.includes("/_next/") || url.pathname.endsWith(".js")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Cache the fresh response
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type === "basic"
+          ) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || new Response("Offline", { status: 503 });
+          });
+        })
+    );
+    return;
+  }
+
+  // CACHE-FIRST strategy for other assets (images, fonts, etc.)
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
