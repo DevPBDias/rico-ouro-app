@@ -6,7 +6,6 @@ import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election";
 import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
-import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import { animalSchema } from "./schemas/animal.schema";
 import { vaccineSchema } from "./schemas/vaccine.schema";
@@ -15,14 +14,33 @@ import { matrizSchema } from "./schemas/matriz.schema";
 import { MyDatabase, MyDatabaseCollections } from "./collections";
 import { setupReplication } from "./replication";
 
-// Add plugins
-if (process.env.NODE_ENV === "development") {
-  addRxPlugin(RxDBDevModePlugin);
-}
+// Add core plugins (always loaded)
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBMigrationPlugin);
+
+// Dev-mode plugin - track if loaded
+let devModeLoaded = false;
+
+/**
+ * Load dev-mode plugin in development
+ * Adds readable error messages, mutation protection, and validation checks
+ */
+async function loadDevModePlugin(): Promise<void> {
+  if (devModeLoaded || process.env.NODE_ENV === "production") {
+    return;
+  }
+
+  try {
+    const { RxDBDevModePlugin } = await import("rxdb/plugins/dev-mode");
+    addRxPlugin(RxDBDevModePlugin);
+    devModeLoaded = true;
+    console.log("🔧 RxDB Dev-Mode plugin loaded");
+  } catch (err) {
+    console.warn("⚠️ Failed to load RxDB dev-mode plugin:", err);
+  }
+}
 
 const DB_NAME = "indi_ouro_db_v7"; // NEW VERSION - force fresh start
 
@@ -35,6 +53,9 @@ let dbPromise: Promise<MyDatabase> | null = null;
  */
 async function createDatabase(): Promise<MyDatabase> {
   console.log(`📦 Creating RxDB database (${DB_NAME})...`);
+
+  // Load dev-mode plugin first (development only)
+  await loadDevModePlugin();
 
   let storage: RxStorage<any, any> = getRxStorageDexie();
 

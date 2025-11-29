@@ -14,7 +14,7 @@ export function ServiceWorkerRegister() {
       // Register service worker
       window.addEventListener("load", () => {
         navigator.serviceWorker
-          .register("/sw-offline.js")
+          .register("/sw.js")
           .then((reg) => {
             console.log("ServiceWorker registration successful");
             setRegistration(reg);

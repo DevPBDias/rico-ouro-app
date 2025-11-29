@@ -9,20 +9,25 @@ export default function RegisterSW() {
     if (process.env.NODE_ENV !== "production" && !enableInDev) return; // Only register in production by default
     if (!("serviceWorker" in navigator)) return;
 
-    // Check for existing registration to avoid duplicates
+    // Check for legacy service workers and unregister them
     navigator.serviceWorker.getRegistrations().then((regs) => {
-      const hasSw = regs.some((r) => (r.scope || "").includes(location.origin));
-      if (hasSw) return;
+      for (const reg of regs) {
+        // If the user has the old sw-offline.js, unregister it
+        if (reg.active?.scriptURL.includes("sw-offline.js")) {
+          console.log("🗑️ Removendo Service Worker legado (sw-offline.js)...");
+          reg.unregister();
+        }
+      }
 
-      // Register the custom service worker with conservative options.
-      // updateViaCache: 'none' helps the worker see immediate updates in dev/CI.
+      // Always register the correct service worker
+      // The browser handles deduplication if the URL is the same
       navigator.serviceWorker
         .register("/sw.js", { scope: "/", updateViaCache: "none" })
         .then((reg) => {
-          console.log("Service Worker registrado em /sw.js", reg);
+          console.log("✅ Service Worker registrado em /sw.js", reg);
         })
         .catch((err) => {
-          console.warn("Falha ao registrar Service Worker:", err);
+          console.warn("❌ Falha ao registrar Service Worker:", err);
         });
     });
   }, []);
