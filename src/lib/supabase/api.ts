@@ -192,7 +192,6 @@ export async function syncAnimalDataToSupabase(
       .from("animal_data")
       .upsert(payload, {
         onConflict: "uuid",
-        ignoreDuplicates: false,
       })
       .select()
       .single();
@@ -336,7 +335,6 @@ export async function syncVaccineToSupabase(
       },
       {
         onConflict: "uuid",
-        ignoreDuplicates: false,
       }
     )
     .select()
@@ -408,7 +406,6 @@ export async function syncFarmToSupabase(
       },
       {
         onConflict: "uuid",
-        ignoreDuplicates: false,
       }
     )
     .select()
@@ -509,7 +506,7 @@ export async function syncMatrizToSupabase(
 
   const { data, error } = await supabase
     .from("matrizes")
-    .upsert(payload, { onConflict: "uuid", ignoreDuplicates: false })
+    .upsert(payload, { onConflict: "uuid" })
     .select()
     .single();
 

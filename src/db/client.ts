@@ -51,7 +51,6 @@ async function createDatabase(): Promise<MyDatabase> {
       storage: storage as any,
       multiInstance: true,
       eventReduce: true,
-      ignoreDuplicate: true,
     });
 
     console.log("📚 Adding collections...");
