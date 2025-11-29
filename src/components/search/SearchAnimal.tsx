@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import { Input } from "../ui/input";
 import { useAnimals } from "@/hooks/db";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ function SearchAnimal() {
   const { animals, isLoading } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AnimalData[]>([]);
+  const [selectedAnimal, setSelectedAnimal] = useState<AnimalData | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -19,12 +20,14 @@ function SearchAnimal() {
     async (query: string) => {
       if (!query.trim()) {
         setSearchResults([]);
+        setSelectedAnimal(null);
         setHasSearched(false);
         return;
       }
 
       setIsSearching(true);
       setHasSearched(false);
+      setSelectedAnimal(null); // Reset selection on new search
 
       const results = animals.filter((animal) => {
         const rgn = animal.animal?.rgn?.toString().toLowerCase() || "";
@@ -34,6 +37,12 @@ function SearchAnimal() {
       });
 
       setSearchResults(results);
+
+      // Auto-select if only one result
+      if (results.length === 1) {
+        setSelectedAnimal(results[0]);
+      }
+
       setIsSearching(false);
       setHasSearched(true);
     },
@@ -47,6 +56,14 @@ function SearchAnimal() {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
+
+  const handleSelectAnimal = (animal: AnimalData) => {
+    setSelectedAnimal(animal);
+  };
+
+  const handleBackToResults = () => {
+    setSelectedAnimal(null);
+  };
 
   return (
     <section className="p-4">
@@ -65,32 +82,66 @@ function SearchAnimal() {
             className="pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Digite o RGN do animal..."
           />
         </div>
       </div>
+
       {isSearching ? (
         <div className="space-y-3 my-12">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-            Resultados da busca:
+            Buscando...
           </h2>
           {Array.from({ length: 3 }).map((_, index) => (
             <SkeletonSearchAnimal key={index} />
           ))}
         </div>
       ) : (
-        <div className="my-12">
+        <div className="my-6">
           {searchQuery.trim() && hasSearched && (
             <>
-              {searchResults.length > 0 ? (
+              {selectedAnimal ? (
+                <div className="space-y-4">
+                  {searchResults.length > 1 && (
+                    <button
+                      onClick={handleBackToResults}
+                      className="flex items-center text-[#1162AE] font-medium hover:underline"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-1" />
+                      Voltar para resultados ({searchResults.length})
+                    </button>
+                  )}
+                  <AnimalCard animal={selectedAnimal} />
+                </div>
+              ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
                   <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-                    Animal encontrado:
+                    Resultados encontrados ({searchResults.length}):
                   </h2>
-                  {searchResults.map((animal) => (
-                    <div key={animal.animal?.rgn} className="cursor-pointer">
-                      <AnimalCard animal={animal} />
-                    </div>
-                  ))}
+                  <div className="grid gap-3">
+                    {searchResults.map((animal) => (
+                      <div
+                        key={animal.uuid}
+                        onClick={() => handleSelectAnimal(animal)}
+                        className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:border-[#1162AE] transition-colors flex justify-between items-center"
+                      >
+                        <div>
+                          <div className="font-bold text-lg text-[#1162AE]">
+                            {animal.animal?.serieRGD}{" "}
+                            {animal.animal?.rgn || "N/A"}
+                          </div>
+                          <div className="text-xs uppercase text-gray-500">
+                            {animal.animal?.sexo === "M" ? "M" : "F"} •{" "}
+                            {animal.animal?.farm || "Sem fazenda"} •{" "}
+                            {animal.animal?.status?.value || "Sem status"}
+                          </div>
+                        </div>
+                        <div className="text-[#1162AE] text-sm font-medium">
+                          Ver detalhes
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">

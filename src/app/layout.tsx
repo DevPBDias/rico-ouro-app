@@ -6,8 +6,6 @@ import SyncManager from "@/components/sync/SyncManager";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 import { LocalFirstProvider } from "@/providers";
-import { SyncDebugPanel } from "@/components/debug/SyncDebugPanel";
-import { DatabaseCleanupButton } from "@/components/debug/DatabaseCleanupButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -116,7 +114,6 @@ export default function RootLayout({
           {children}
           <ServiceWorkerUpdater />
           <SyncManager />
-          <DatabaseCleanupButton />
         </LocalFirstProvider>
       </body>
     </html>
