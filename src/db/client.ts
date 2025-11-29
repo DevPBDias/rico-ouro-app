@@ -42,7 +42,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_NAME = "indi_ouro_db_v7"; // NEW VERSION - force fresh start
+const DB_NAME = "indi_ouro_db_v8"; // NEW VERSION - force fresh start
 
 // Global singleton
 let dbInstance: MyDatabase | null = null;
