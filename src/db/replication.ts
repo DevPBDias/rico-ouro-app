@@ -157,7 +157,15 @@ export async function setupReplication(db: MyDatabase) {
       },
       push: {
         async handler(rows) {
+          console.log(`🔼 [Animals] PUSH triggered with ${rows.length} rows`);
           const documents = rows.map((row) => row.newDocumentState);
+
+          console.log(`🔼 [Animals] Sending to Supabase:`, {
+            count: documents.length,
+            sample: documents[0]
+              ? { uuid: documents[0].uuid, rgn: documents[0].animal?.rgn }
+              : null,
+          });
 
           const response = await fetch(`${SUPABASE_URL}/rest/v1/animals`, {
             method: "POST",
@@ -165,14 +173,25 @@ export async function setupReplication(db: MyDatabase) {
               "Content-Type": "application/json",
               apikey: SUPABASE_KEY,
               Authorization: `Bearer ${SUPABASE_KEY}`,
+              // CRITICAL: Use merge-duplicates to enable UPSERT behavior
               Prefer: "resolution=merge-duplicates",
             },
             body: JSON.stringify(documents),
           });
 
           if (!response.ok) {
-            throw new Error(`Push failed: ${response.status}`);
+            const errorText = await response.text();
+            console.error(`❌ [Animals] Push failed:`, {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorText,
+            });
+            throw new Error(`Push failed: ${response.status} - ${errorText}`);
           }
+
+          console.log(
+            `✅ [Animals] Successfully pushed ${documents.length} documents`
+          );
 
           return [];
         },
