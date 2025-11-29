@@ -1,8 +1,9 @@
 import { MyDatabase } from "./collections";
 import { replicateRxCollection } from "rxdb/plugins/replication";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
 
 /**
  * Setup replication for all collections
@@ -15,6 +16,13 @@ export async function setupReplication(db: MyDatabase) {
   }
 
   console.log("🔄 Setting up replication...");
+
+  if (SUPABASE_KEY === "placeholder") {
+    console.warn(
+      "⚠️ Supabase not configured (missing env vars). Replication disabled."
+    );
+    return;
+  }
 
   try {
     // Replicate animals

@@ -18,7 +18,16 @@ export function getSupabase(): SupabaseClient {
 
   // Client-side: use singleton
   if (!instance) {
-    instance = createClient(supabaseUrl, supabaseAnonKey, {
+    const url = supabaseUrl || "https://placeholder.supabase.co";
+    const key = supabaseAnonKey || "placeholder-key";
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error(
+        "❌ Supabase environment variables are missing! Check your Vercel project settings."
+      );
+    }
+
+    instance = createClient(url, key, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -30,6 +39,7 @@ export function getSupabase(): SupabaseClient {
 
   return instance;
 }
+
 
 // For backward compatibility - but prefer getSupabase()
 export const supabase = getSupabase();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { isOnline, onOnlineStatusChange } from "@/lib/supabase-client";
+import { isOnline, onOnlineStatusChange } from "@/lib/supabase/api";
 
 export type SyncStatus =
   | "synced"
