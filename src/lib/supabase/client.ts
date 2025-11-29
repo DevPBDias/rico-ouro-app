@@ -3,17 +3,22 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Singleton pattern for client-side
-let clientInstance: SupabaseClient | undefined;
+// Global singleton instance
+let instance: SupabaseClient | null = null;
 
-export function getBrowserSupabase() {
+/**
+ * Get or create the Supabase client singleton
+ * IMPORTANT: Only call this on the client-side
+ */
+export function getSupabase(): SupabaseClient {
+  // Server-side: create temporary instance
   if (typeof window === "undefined") {
-    // Server-side: always create a new instance to avoid sharing state between requests
     return createClient(supabaseUrl, supabaseAnonKey);
   }
 
-  if (!clientInstance) {
-    clientInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  // Client-side: use singleton
+  if (!instance) {
+    instance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -23,9 +28,8 @@ export function getBrowserSupabase() {
     });
   }
 
-  return clientInstance;
+  return instance;
 }
 
-// Export a default instance for backward compatibility if needed,
-// but prefer using getBrowserSupabase() to ensure singleton behavior.
-export const supabase = getBrowserSupabase();
+// For backward compatibility - but prefer getSupabase()
+export const supabase = getSupabase();

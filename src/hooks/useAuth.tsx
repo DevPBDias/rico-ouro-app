@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js";
-import { getBrowserSupabase } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase/client";
 
-const supabase = getBrowserSupabase();
+const supabase = getSupabase();
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);

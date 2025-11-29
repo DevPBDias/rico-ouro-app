@@ -136,7 +136,7 @@ export function useAnimals(filters?: {
 
     return {
       selector,
-      sort: [{ _modified: "desc" as const }],
+      sort: [{ updatedAt: "desc" as const }],
     };
   }, [filters?.farmId, filters?.sex, filters?.status, filters?.search]);
 
@@ -174,7 +174,7 @@ export function useAnimalActions() {
       if (!db) throw new Error("Database not initialized");
       return await db.animals.insert({
         ...data,
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         _deleted: false,
       } as any);
     },
@@ -189,7 +189,7 @@ export function useAnimalActions() {
 
       return await doc.patch({
         ...data,
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [db]
@@ -215,7 +215,7 @@ export function useAnimalActions() {
           (a) =>
             ({
               ...a,
-              _modified: now,
+              updatedAt: now,
               _deleted: false,
             } as any)
         )
@@ -230,7 +230,7 @@ export function useAnimalActions() {
       const now = new Date().toISOString();
       return await db.animals.upsert({
         ...data,
-        _modified: now,
+        updatedAt: now,
         _deleted: false,
       } as any);
     },
@@ -246,7 +246,7 @@ export function useAnimalActions() {
           (a) =>
             ({
               ...a,
-              _modified: now,
+              updatedAt: now,
               _deleted: false,
             } as any)
         )
@@ -293,7 +293,7 @@ export function useMatrizes(filters?: {
 
     return {
       selector,
-      sort: [{ _modified: "desc" as const }],
+      sort: [{ updatedAt: "desc" as const }],
     };
   }, [filters?.farmId, filters?.type, filters?.condition, filters?.search]);
 

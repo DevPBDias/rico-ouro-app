@@ -1,16 +1,26 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Header from "@/components/layout/Header";
 import { useBoiDetail } from "@/hooks/useBoiDetail";
+import { Edit } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { EditAnimalModal } from "@/components/modals/edit-animal/EditAnimalModal";
+import { AnimalData } from "@/types/schemas.types";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
+  const { user } = useAuth();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { boi, isLoading, error, vacinas } = useBoiDetail(id);
+  const { boi, isLoading, error, vacinas, updateFullAnimal } = useBoiDetail(id);
 
   if (isLoading) return <p>Carregando...</p>;
   if (!boi) return <p>Boi não encontrado</p>;
+
+  const handleUpdateAnimal = async (updatedData: AnimalData) => {
+    await updateFullAnimal(updatedData);
+  };
 
   return (
     <main>
@@ -26,6 +36,14 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
               {boi.animal.farm || "SEM DADO"}
             </p>
           </div>
+          {user?.role === "authenticated" && (
+            <button
+              className="bg-white py-2 px-4 rounded-lg"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Edit size={18} color="blue" />
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
@@ -121,7 +139,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 Status
               </span>
               <span className="font-bold uppercase  text-[#1162AE]">
-                {boi.animal.status ?? "-"}
+                {boi.animal.status?.value ?? "-"}
               </span>
             </div>
           </div>
@@ -149,6 +167,13 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       </section>
+
+      <EditAnimalModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        data={boi}
+        onSave={handleUpdateAnimal}
+      />
     </main>
   );
 };

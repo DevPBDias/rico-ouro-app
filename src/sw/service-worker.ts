@@ -3,9 +3,6 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-// CRITICAL: Increment this version when DB schema changes
-// This ensures old cached JS with old schemas is invalidated
-// Note: DB name is now "indi_ouro_db" (without version suffix)
 const SCHEMA_VERSION = "v16"; // Incremented to invalidate old caches
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 

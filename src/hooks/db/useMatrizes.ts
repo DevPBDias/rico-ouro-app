@@ -36,7 +36,7 @@ export function useMatrizes(filters?: {
 
     return {
       selector,
-      sort: [{ _modified: "desc" as "desc" | "asc" }],
+      sort: [{ updatedAt: "desc" as "desc" | "asc" }],
     };
   }, [filters?.farmId, filters?.type, filters?.condition, filters?.search]);
 

@@ -1,8 +1,8 @@
 "use client";
 
+import { useRxDatabase } from "@/providers";
 import { useState, useCallback } from "react";
-import { useRxDatabase } from "@/providers/RxDBProvider";
-import type { RxCollection, RxDocument } from "rxdb";
+import type { RxCollection } from "rxdb";
 
 export function useLocalMutation<
   T extends { uuid?: string; _deleted?: boolean }
@@ -28,7 +28,7 @@ export function useLocalMutation<
         const documentData = {
           ...data,
           uuid,
-          _modified: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           _deleted: false,
         };
 
@@ -69,11 +69,18 @@ export function useLocalMutation<
 
         const updateData = {
           ...data,
-          _modified: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
-        // Patch no RxDB - a replicação sincroniza automaticamente
-        await doc.patch(updateData);
+        if (typeof (doc as any).update === "function") {
+          const updateOp: any = {
+            $set: updateData,
+          };
+
+          await (doc as any).update(updateOp);
+        } else {
+          await doc.patch(updateData);
+        }
 
         setIsLoading(false);
       } catch (err) {
@@ -147,7 +154,7 @@ export function useLocalMutation<
         const documentsWithMeta = documents.map((doc) => ({
           ...doc,
           uuid: doc.uuid || crypto.randomUUID(),
-          _modified: now,
+          updatedAt: now,
           _deleted: false,
         }));
 

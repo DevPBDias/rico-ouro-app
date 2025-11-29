@@ -2,14 +2,14 @@
 
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
+import { useAnimals } from "@/hooks/db";
 import { useCallback, useEffect, useState } from "react";
+import { AnimalData } from "@/types/schemas.types";
 import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
-import { AnimalData } from "@/types/schemas.types";
-import { useAnimals } from "@/hooks/db";
 
 function SearchAnimal() {
-  const { animals: dados } = useAnimals();
+  const { animals, isLoading } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AnimalData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -26,8 +26,8 @@ function SearchAnimal() {
       setIsSearching(true);
       setHasSearched(false);
 
-      const results = dados.filter((animal) => {
-        const rgn = animal.animal.rgn?.toString().toLowerCase() || "";
+      const results = animals.filter((animal) => {
+        const rgn = animal.animal?.rgn?.toString().toLowerCase() || "";
         const queryLower = query.toLowerCase();
 
         return rgn.includes(queryLower);
@@ -37,7 +37,7 @@ function SearchAnimal() {
       setIsSearching(false);
       setHasSearched(true);
     },
-    [dados]
+    [animals]
   );
 
   useEffect(() => {
@@ -46,7 +46,7 @@ function SearchAnimal() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, dados, handleSearch]);
+  }, [searchQuery, handleSearch]);
 
   return (
     <section className="p-4">
@@ -87,7 +87,7 @@ function SearchAnimal() {
                     Animal encontrado:
                   </h2>
                   {searchResults.map((animal) => (
-                    <div key={animal.uuid} className="cursor-pointer">
+                    <div key={animal.animal?.rgn} className="cursor-pointer">
                       <AnimalCard animal={animal} />
                     </div>
                   ))}

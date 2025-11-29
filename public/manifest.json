@@ -1,21 +1,30 @@
 {
   "name": "INDI Ouro",
   "short_name": "INDI Ouro",
-  "description": "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "scope": "/",
+  "background_color": "#1162ae",
   "theme_color": "#1162ae",
+  "description": "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }

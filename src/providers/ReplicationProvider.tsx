@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRxDBContext } from "./RxDBProvider";
+import { useRxDB } from "./RxDBProvider";
 import { RxReplicationState } from "rxdb/plugins/replication";
 import { combineLatest, map } from "rxjs";
 
@@ -21,8 +21,12 @@ const ReplicationContext = createContext<ReplicationContextType>({
 
 export const useReplication = () => useContext(ReplicationContext);
 
-export function ReplicationProvider({ children }: { children: React.ReactNode }) {
-  const { db, isReady } = useRxDBContext();
+export function ReplicationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { db, isLoading } = useRxDB();
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [online, setOnline] = useState(true);
@@ -48,44 +52,47 @@ export function ReplicationProvider({ children }: { children: React.ReactNode })
 
   // Monitor Replication States
   useEffect(() => {
-    if (!isReady || !db || !db.replications) return;
+    if (!isLoading && db && db.replications) {
+      const replications = Object.values(db.replications) as RxReplicationState<
+        any,
+        any
+      >[];
+      if (replications.length === 0) return;
 
-    const replications = Object.values(db.replications) as RxReplicationState<any, any>[];
-    if (replications.length === 0) return;
+      // Combine active states to determine if any is syncing
+      const activeSubscription = combineLatest(
+        replications.map((rep) => rep.active$)
+      ).subscribe((actives) => {
+        setIsSyncing(actives.some((isActive) => isActive));
+        if (actives.every((isActive) => !isActive)) {
+          setLastSyncedAt(new Date());
+        }
+      });
 
-    // Combine active states to determine if any is syncing
-    const activeSubscription = combineLatest(
-      replications.map((rep) => rep.active$)
-    ).subscribe((actives) => {
-      setIsSyncing(actives.some((isActive) => isActive));
-      if (actives.every((isActive) => !isActive)) {
-        setLastSyncedAt(new Date());
-      }
-    });
+      // Combine error states
+      const errorSubscription = combineLatest(
+        replications.map((rep) => rep.error$)
+      ).subscribe((errors) => {
+        const activeErrors = errors.filter((err) => err !== null) as Error[];
+        setReplicationErrors(activeErrors);
+      });
 
-    // Combine error states
-    const errorSubscription = combineLatest(
-      replications.map((rep) => rep.error$)
-    ).subscribe((errors) => {
-      const activeErrors = errors.filter((err) => err !== null) as Error[];
-      setReplicationErrors(activeErrors);
-    });
-
-    return () => {
-      activeSubscription.unsubscribe();
-      errorSubscription.unsubscribe();
-    };
-  }, [isReady, db]);
+      return () => {
+        activeSubscription.unsubscribe();
+        errorSubscription.unsubscribe();
+      };
+    }
+  }, [isLoading, db]);
 
   // Force re-sync when coming back online
   useEffect(() => {
-    if (online && isReady && db && db.replications) {
+    if (online && !isLoading && db && db.replications) {
       Object.values(db.replications).forEach((rep) => {
         // RxDB automatically retries, but we can force a check if needed
         // rep.reSync(); // Not always available on all versions, but auto-retry handles it
       });
     }
-  }, [online, isReady, db]);
+  }, [online, isLoading, db]);
 
   return (
     <ReplicationContext.Provider

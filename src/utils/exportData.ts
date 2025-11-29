@@ -27,7 +27,7 @@ export function exportToExcel(
       item.animal.circunferenciaEscrotal
         ?.map((c) => `${c.mes}: ${c.valor}cm`)
         .join("; ") || "",
-    "Última Atualização": item._modified || "",
+    "Última Atualização": item.updatedAt || "",
   }));
 
   // Cria a planilha

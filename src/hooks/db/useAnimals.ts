@@ -1,58 +1,98 @@
 "use client";
 
-import { useLocalQuery } from "@/hooks/core";
-import { AnimalDocType } from "@/types/database.types";
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useRxDB } from "@/providers/RxDBProvider";
+import { AnimalData } from "@/types/schemas.types";
+import { v4 as uuidv4 } from "uuid";
 
-/**
- * Hook para buscar todos os animais com filtros opcionais
- *
- * @example
- * const { animals, isLoading, error } = useAnimals();
- * const { animals } = useAnimals({ farmId: "123", sex: "M" });
- */
-export function useAnimals(filters?: {
-  farmId?: string;
-  sex?: "M" | "F";
-  status?: string;
-  search?: string;
-}) {
-  const query = useMemo(() => {
-    const selector: Record<string, unknown> = {
-      _deleted: { $eq: false },
-    };
+export function useAnimals() {
+  const { db, isLoading: dbLoading } = useRxDB();
+  const [animals, setAnimals] = useState<AnimalData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-    if (filters?.farmId) {
-      selector["animal.farm"] = { $eq: filters.farmId };
+  // Subscribe to animals collection
+  useEffect(() => {
+    if (!db) {
+      setIsLoading(dbLoading);
+      return;
     }
 
-    if (filters?.sex) {
-      selector["animal.sexo"] = { $eq: filters.sex };
-    }
+    setIsLoading(true);
 
-    if (filters?.status) {
-      selector["animal.status"] = { $eq: filters.status };
-    }
+    const subscription = db.animals
+      .find({
+        selector: {
+          _deleted: { $eq: false },
+        },
+        sort: [{ updatedAt: "desc" }],
+      })
+      .$.subscribe({
+        next: (docs) => {
+          const data = docs.map((doc) => doc.toJSON() as AnimalData);
+          setAnimals(data);
+          setIsLoading(false);
+        },
+        error: (err) => {
+          setError(err);
+          setIsLoading(false);
+        },
+      });
 
-    if (filters?.search) {
-      selector["animal.nome"] = { $regex: new RegExp(filters.search, "i") };
-    }
+    return () => subscription.unsubscribe();
+  }, [db, dbLoading]);
 
-    return {
-      selector,
-      sort: [{ _modified: "desc" as "desc" | "asc" }],
-    };
-  }, [filters?.farmId, filters?.sex, filters?.status, filters?.search]);
+  // Create animal
+  const createAnimal = async (data: Partial<AnimalData>) => {
+    if (!db) throw new Error("Database not ready");
 
-  const { data, isLoading, error, refetch } = useLocalQuery<AnimalDocType>(
-    "animals",
-    query
-  );
+    const newAnimal: AnimalData = {
+      uuid: uuidv4(),
+      updatedAt: new Date().toISOString(),
+      _deleted: false,
+      ...data,
+    } as AnimalData;
+
+    await db.animals.insert(newAnimal);
+    return newAnimal;
+  };
+
+  // Update animal
+  const updateAnimal = async (uuid: string, data: Partial<AnimalData>) => {
+    if (!db) throw new Error("Database not ready");
+
+    const doc = await db.animals.findOne(uuid).exec();
+    if (!doc) throw new Error("Animal not found");
+
+    await doc.update({
+      $set: {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  };
+
+  // Delete animal (soft delete)
+  const deleteAnimal = async (uuid: string) => {
+    if (!db) throw new Error("Database not ready");
+
+    const doc = await db.animals.findOne(uuid).exec();
+    if (!doc) throw new Error("Animal not found");
+
+    await doc.update({
+      $set: {
+        _deleted: true,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  };
 
   return {
-    animals: data,
+    animals,
     isLoading,
     error,
-    refetch,
+    createAnimal,
+    updateAnimal,
+    deleteAnimal,
   };
 }

@@ -5,6 +5,11 @@
  */
 
 // Providers
-export { RxDBProvider, useRxDatabase, useRxDBContext } from "./RxDBProvider";
+export {
+  RxDBProvider,
+  useRxDB,
+  useRxDatabase,
+  useRxDBContext,
+} from "./RxDBProvider";
 export { ReplicationProvider, useReplication } from "./ReplicationProvider";
 export { LocalFirstProvider } from "./LocalFirstProvider";

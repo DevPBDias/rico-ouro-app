@@ -1,23 +1,9 @@
 "use client";
 
+import { useRxDatabase } from "@/providers";
 import { useEffect, useState, useCallback } from "react";
-import { useRxDatabase } from "@/providers/RxDBProvider";
 import type { RxDocument, RxCollection } from "rxdb";
 
-/**
- * Hook reativo para um documento único no RxDB
- * 
- * @template T - Tipo do documento
- * @param collectionName - Nome da collection no RxDB
- * @param id - ID do documento (primary key)
- * @returns {data, isLoading, error, refetch}
- * 
- * @example
- * const { data: animal, isLoading } = useLocalDocument<AnimalDocType>(
- *   "animals",
- *   animalId
- * );
- */
 export function useLocalDocument<T>(
   collectionName: string,
   id: string | null | undefined

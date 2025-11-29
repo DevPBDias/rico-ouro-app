@@ -54,7 +54,7 @@ export default function NascimentosPage() {
       pai: { nome: "-" },
       mae: { serieRGD: "INDI", rgn: formData.mae },
       avoMaterno: { nome: "-" },
-      _modified: FormatData(formData.data),
+      updatedAt: FormatData(formData.data),
     };
 
     try {

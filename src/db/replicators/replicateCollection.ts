@@ -12,13 +12,13 @@ import { replicateRxCollection } from "rxdb/plugins/replication";
 
 export interface BaseDocument {
   uuid?: string;
-  _modified?: string;
+  updatedAt?: string;
   _deleted?: boolean;
 }
 
 export interface PullResult<T> {
   documents: T[];
-  checkpoint: { _modified: string | null };
+  checkpoint: { updatedAt: string | null };
 }
 
 export interface PushRow<T> {
@@ -66,13 +66,13 @@ export function replicateCollection<T extends BaseDocument>({
     batchSize
   ) => {
     const lastUpdated =
-      (checkpoint as { _modified?: string })?._modified ??
+      (checkpoint as { updatedAt?: string })?.updatedAt ??
       "1970-01-01T00:00:00.000Z";
 
     try {
       // Assume server uses updatedAt for sorting/filtering
       const url = `${endpoint}?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastUpdated}`;
-      console.log(`Fetching from Supabase: ${url}`);
+
       const response = await fetch(url, {
         headers: {
           apiKey: supabaseKey,
@@ -97,50 +97,48 @@ export function replicateCollection<T extends BaseDocument>({
       console.log(`📥 Pulled ${docs.length} documents from ${tableName}`);
 
       // Ensure _deleted is boolean and apply transformation if needed
-      const processedDocs = docs.map((doc) => {
-        // Map server updatedAt to _modified if needed
-        const modified =
-          doc._modified || doc.updatedAt || new Date().toISOString();
+      const processedDocs = docs
+        .map((doc) => {
+          // Use updatedAt from Supabase
+          const modified = doc.updatedAt;
 
-        const processed = {
-          ...doc,
-          _deleted: !!doc._deleted,
-          _modified: modified,
-        };
+          if (!modified) {
+            console.warn(
+              `⚠️ Document ${doc.uuid} missing updatedAt. Skipping.`
+            );
+            return null;
+          }
 
-        // Remove updatedAt if it exists to avoid schema errors
-        if ("updatedAt" in processed) {
-          delete processed.updatedAt;
-        }
+          const processed = {
+            ...doc,
+            _deleted: !!doc._deleted,
+            updatedAt: modified,
+          };
 
-        const transformed = transformPull
-          ? transformPull(processed)
-          : processed;
+          const transformed = transformPull
+            ? transformPull(processed)
+            : processed;
 
-        // Validar campos obrigatórios (uuid e _modified)
-        if (!transformed.uuid) {
-          console.error(`❌ Documento sem uuid:`, transformed);
-          throw new Error(`Document missing required field: uuid`);
-        }
+          // Validar campos obrigatórios (uuid e _modified)
+          if (!transformed.uuid) {
+            console.error(`❌ Documento sem uuid:`, transformed);
+            return null;
+          }
 
-        if (!transformed._modified) {
-          console.warn(
-            `⚠️ Documento sem _modified, usando timestamp atual:`,
-            transformed.uuid
-          );
-          transformed._modified = new Date().toISOString();
-        }
+          return transformed as WithDeleted<T>;
+        })
+        .filter((doc) => doc !== null) as WithDeleted<T>[];
 
-        return transformed as WithDeleted<T>;
-      });
+      // Calculate the new checkpoint
+      const newCheckpoint =
+        processedDocs.length > 0
+          ? processedDocs[processedDocs.length - 1].updatedAt
+          : lastUpdated;
 
       return {
         documents: processedDocs,
         checkpoint: {
-          _modified:
-            processedDocs.length > 0
-              ? processedDocs[processedDocs.length - 1]._modified
-              : lastUpdated,
+          updatedAt: newCheckpoint,
         },
       };
     } catch (error) {

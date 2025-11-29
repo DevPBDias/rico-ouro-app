@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRxDBContext } from "@/providers/RxDBProvider";
-import { getBrowserSupabase } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase/client";
+import { useRxDBContext } from "@/providers";
 
 interface SyncProgress {
   animals: boolean;
@@ -19,7 +19,7 @@ interface CollectionCounts {
 }
 
 export function useInitialSyncStatus() {
-  const { db, error: dbError, isReady } = useRxDBContext();
+  const { db, error: dbError } = useRxDBContext();
   const [syncProgress, setSyncProgress] = useState<SyncProgress>({
     animals: false,
     vaccines: false,
@@ -71,7 +71,7 @@ export function useInitialSyncStatus() {
       }
 
       // ✅ Usa o singleton ao invés de criar nova instância
-      const supabase = getBrowserSupabase();
+      const supabase = getSupabase();
 
       try {
         const [animals, vaccines, farms, matriz] = await Promise.all([

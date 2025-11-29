@@ -48,9 +48,22 @@ const StatusPage = () => {
         (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
       if (animal) {
+        const currentStatus = animal.animal.status;
+        let statusValue: IStatus | null = null;
+
+        if (typeof currentStatus === "string") {
+          statusValue = currentStatus as IStatus;
+        } else if (
+          currentStatus &&
+          typeof currentStatus === "object" &&
+          "value" in currentStatus
+        ) {
+          statusValue = (currentStatus as any).value as IStatus;
+        }
+
         setFormData((prev) => ({
           ...prev,
-          status: (animal.animal.status as IStatus) || null,
+          status: statusValue,
         }));
       }
     } else {
@@ -83,7 +96,9 @@ const StatusPage = () => {
       await updateAnimal(animalToUpdate.uuid, {
         animal: {
           ...animalToUpdate.animal,
-          status: formData.status || undefined,
+          status: formData.status
+            ? { label: formData.status, value: formData.status }
+            : undefined,
         },
       });
 

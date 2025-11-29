@@ -5,34 +5,15 @@ import { useRxDBContext } from "@/providers/RxDBProvider";
 import { useReplication } from "@/providers/ReplicationProvider";
 import { MyDatabaseCollections } from "@/db/collections";
 
-/**
- * Hook principal para acesso à infraestrutura local-first
- *
- * Fornece acesso a:
- * - Database instance
- * - Collections
- * - Estado de sincronização
- * - Status online/offline
- * - Queue de documentos não sincronizados
- *
- * @returns Estado completo do sistema local-first
- *
- * @example
- * const { db, collections, ready, syncing, online, queueSize } = useLocalFirst();
- *
- * if (!ready) return <Loading />;
- *
- * const animals = await collections.animals.find().exec();
- */
 export function useLocalFirst() {
-  const { db, isReady, isLoading, error } = useRxDBContext();
+  const { db, isLoading, error } = useRxDBContext();
   const { isSyncing, lastSyncedAt, online, replicationErrors } =
     useReplication();
   const [queueSize, setQueueSize] = useState(0);
 
   // Calculate queue size (unsynced documents)
   useEffect(() => {
-    if (!db || !isReady) return;
+    if (!db) return;
 
     const collections = Object.values(db.collections);
     const queries = collections.map(
@@ -51,7 +32,7 @@ export function useLocalFirst() {
     return () => {
       subscription.then((sub) => sub.unsubscribe());
     };
-  }, [db, isReady]);
+  }, [db]);
 
   // Typed collections
   const collections = useMemo(() => {
@@ -61,7 +42,7 @@ export function useLocalFirst() {
 
   // Helper: Force sync all collections
   const forceSync = useCallback(async () => {
-    if (!db || !isReady) {
+    if (!db) {
       console.warn("Database not ready for sync");
       return;
     }
@@ -76,7 +57,7 @@ export function useLocalFirst() {
     } catch (err) {
       console.error("Error forcing sync:", err);
     }
-  }, [db, isReady]);
+  }, [db]);
 
   // Helper: Clear local database (careful!)
   const clearLocalDatabase = useCallback(async () => {
@@ -125,23 +106,15 @@ export function useLocalFirst() {
   );
 
   return {
-    // Database
     db,
     collections,
-
-    // Status
-    ready: isReady,
     loading: isLoading,
     error,
-
-    // Sync Status
     syncing: isSyncing,
     online,
     lastSyncedAt,
     queueSize,
     replicationErrors,
-
-    // Helpers
     forceSync,
     clearLocalDatabase,
     getSyncStats,
@@ -149,31 +122,11 @@ export function useLocalFirst() {
   };
 }
 
-/**
- * Hook para verificar se o sistema está pronto para uso
- *
- * @returns true se o banco está pronto
- */
-export function useIsLocalFirstReady() {
-  const { ready } = useLocalFirst();
-  return ready;
-}
-
-/**
- * Hook para obter apenas as collections
- *
- * @returns Collections tipadas
- */
 export function useCollections() {
   const { collections } = useLocalFirst();
   return collections;
 }
 
-/**
- * Hook para obter status de sincronização
- *
- * @returns Status de sync
- */
 export function useSyncStatus() {
   const { syncing, online, queueSize, lastSyncedAt, replicationErrors } =
     useLocalFirst();

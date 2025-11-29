@@ -7,12 +7,12 @@ export const farmSchema: RxJsonSchema<Farm> = {
   primaryKey: "uuid",
   type: "object",
   properties: {
-    uuid: { type: "string" },
+    uuid: { type: "string", maxLength: 36 },
     id: { type: ["integer", "null"] },
-    farmName: { type: "string" },
+    farmName: { type: "string", maxLength: 200 },
     _deleted: { type: "boolean", default: false },
-    _modified: { type: ["string", "null"] },
+    updatedAt: { type: "string", maxLength: 40 },
   },
-  required: ["uuid", "farmName"],
-  indexes: ["farmName", "_modified"],
+  required: ["uuid", "farmName", "updatedAt"],
+  indexes: ["farmName", "updatedAt"],
 };

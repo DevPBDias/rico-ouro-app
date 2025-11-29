@@ -1,9 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 
 export function SyncStatusIndicator() {
+  const [isMounted, setIsMounted] = useState(false);
   const { status } = useSyncStatus();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const getStatusColor = () => {
     switch (status) {
@@ -34,6 +40,11 @@ export function SyncStatusIndicator() {
         return "Status desconhecido";
     }
   };
+
+  // Don't render on server-side to avoid hydration mismatch
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-row items-center gap-2">

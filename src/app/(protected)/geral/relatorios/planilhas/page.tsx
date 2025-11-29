@@ -7,40 +7,7 @@ import * as XLSX from "xlsx";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import { useAnimals } from "@/hooks/db";
-
-interface AnimalData {
-  animal: {
-    rgn?: string;
-    nome?: string;
-    sexo?: string;
-    nasc?: string;
-    serieRGD?: string;
-    corNascimento?: string;
-    iabcgz?: string | number;
-    deca?: string | number;
-    p?: string | number;
-    f?: string | number;
-    pesosMedidos?: { valor: number; mes: string }[];
-    ganhoDiario?: {
-      initialDate: string;
-      endDate: string;
-      days: number;
-      totalGain: number;
-      dailyGain: number;
-    }[];
-    vacinas?: { nome: string; data: string }[];
-    circunferenciaEscrotal?: { valor: number; mes: string }[];
-    status?: string;
-    farm?: string;
-  };
-  pai?: {
-    nome?: string;
-  };
-  mae?: {
-    rgn?: string;
-    serieRGD?: string;
-  };
-}
+import { AnimalData } from "@/types/schemas.types";
 
 export default function ExcelExport() {
   const [isExporting, setIsExporting] = useState(false);
@@ -85,7 +52,7 @@ export default function ExcelExport() {
         item.animal?.circunferenciaEscrotal
           ?.map((c) => `${c.valor}cm (${c.mes})`)
           .join("; ") || "-",
-      Status: item.animal?.status || "-",
+      Status: item.animal?.status?.value || "-",
       Fazenda: item.animal?.farm || "-",
       GMD:
         item.animal?.ganhoDiario

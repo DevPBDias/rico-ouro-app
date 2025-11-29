@@ -1,156 +1,224 @@
 "use client";
 
-import { createRxDatabase, addRxPlugin, RxDatabase } from "rxdb";
+import {
+  createRxDatabase,
+  addRxPlugin,
+  removeRxDatabase,
+  RxStorage,
+} from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election";
+import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
+import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode";
 import { animalSchema } from "./schemas/animal.schema";
 import { vaccineSchema } from "./schemas/vaccine.schema";
 import { farmSchema } from "./schemas/farm.schema";
 import { matrizSchema } from "./schemas/matriz.schema";
 import { MyDatabase, MyDatabaseCollections } from "./collections";
-import { replicateAnimals } from "./replicators/animal.replication";
-import { replicateVaccines } from "./replicators/vaccine.replication";
-import { replicateFarms } from "./replicators/farm.replication";
-import { replicateMatriz } from "./replicators/matriz.replication";
-import { resetIndexedDB } from "./utils/reset-indexeddb";
-import { getBrowserSupabase } from "@/lib/supabase/client";
-import { startRxDBDebugLogs } from "./utils/debug";
-import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema";
+import { setupReplication } from "./replication";
 
+// Add plugins
+if (process.env.NODE_ENV === "development") {
+  addRxPlugin(RxDBDevModePlugin);
+} // Always enable for now to debug DB9
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBMigrationPlugin);
 
-if (process.env.NODE_ENV === "development") {
-  import("rxdb/plugins/dev-mode").then((module) => {
-    addRxPlugin(module.RxDBDevModePlugin);
-    console.log("🔧 RxDB DevMode ativado");
-  });
-}
+const DB_NAME = "indi_ouro_db_v5"; // Increment version again
+const STORAGE_KEY_RESET_COUNT = "rxdb_reset_count";
+const MAX_RESETS = 3;
 
-const DB_NAME = "indi_ouro_db";
+// Global singleton
+let dbInstance: MyDatabase | null = null;
+let dbPromise: Promise<MyDatabase> | null = null;
 
-const globalForRxDB = globalThis as unknown as {
-  rxdbPromise: Promise<MyDatabase> | null;
-};
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 
-startRxDBDebugLogs(DB_NAME);
+// ... imports ...
 
-const COLLECTION_SCHEMAS = {
-  animals: animalSchema,
-  vaccines: vaccineSchema,
-  farms: farmSchema,
-  matriz: matrizSchema,
-} as const;
+/**
+ * Create the RxDB database with all collections
+ */
+async function createDatabase(): Promise<MyDatabase> {
+  console.log(`📦 Creating RxDB database (${DB_NAME})...`);
 
-async function addCollectionsSafe(db: RxDatabase<MyDatabaseCollections>) {
-  console.log("📦 Adding collections...");
+  let storage: RxStorage<any, any> = getRxStorageDexie();
 
-  await db.addCollections(
-    Object.fromEntries(
-      Object.entries(COLLECTION_SCHEMAS).map(([key, schema]) => [
-        key,
-        {
-          schema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-          },
-        },
-      ])
-    ) as any
-  );
-
-  if (!db.animals || !db.vaccines || !db.farms || !db.matriz) {
-    throw new Error("Collections failed to initialize");
+  // Wrap storage with validator in development to fix DVM1
+  if (process.env.NODE_ENV === "development") {
+    storage = wrappedValidateAjvStorage({
+      storage: storage,
+    });
   }
-}
-
-async function startReplications(db: MyDatabase) {
-  const supabase = getBrowserSupabase();
-  if (!supabase || !navigator.onLine) {
-    console.warn("⚠️ Replication skipped (offline or no Supabase)");
-    return;
-  }
-
-  console.log("🔄 Starting replications...");
 
   try {
-    const [animals, vaccines, farms, matriz] = await Promise.all([
-      replicateAnimals(db.animals),
-      replicateVaccines(db.vaccines),
-      replicateFarms(db.farms),
-      replicateMatriz(db.matriz),
-    ]);
+    const db = await createRxDatabase<MyDatabaseCollections>({
+      name: DB_NAME,
+      storage: storage as any,
+      multiInstance: true,
+      eventReduce: true,
+      ignoreDuplicate: true,
+    });
 
-    (db as any).replications = { animals, vaccines, farms, matriz };
-  } catch (error) {
-    console.error("❌ Error starting replications:", error);
+    console.log("📚 Adding collections...");
+
+    await db.addCollections({
+      animals: {
+        schema: animalSchema,
+        migrationStrategies: {
+          1: (doc: any) => doc,
+          2: (doc: any) => {
+            if (doc._modified) {
+              delete doc._modified;
+            }
+            return doc;
+          },
+        },
+      },
+      vaccines: {
+        schema: vaccineSchema,
+        migrationStrategies: {
+          1: (doc: any) => doc,
+        },
+      },
+      farms: {
+        schema: farmSchema,
+        migrationStrategies: {
+          1: (doc: any) => doc,
+        },
+      },
+      matriz: {
+        schema: matrizSchema,
+        migrationStrategies: {
+          1: (doc: any) => doc,
+        },
+      },
+    });
+
+    console.log("✅ Collections created");
+
+    // Setup replication (non-blocking)
+    setupReplication(db).catch((err: Error) => {
+      console.error("⚠️ Replication setup failed:", err);
+    });
+
+    // Reset reset count on success
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(STORAGE_KEY_RESET_COUNT);
+    }
+
+    return db;
+  } catch (err) {
+    console.error("❌ Error creating database:", err);
+    throw err;
   }
 }
 
-async function createRxDB(): Promise<MyDatabase> {
-  console.log("🚀 Initializing RxDB...");
-  const storage = getRxStorageDexie();
+/**
+ * Handle database errors and potential resets
+ */
+async function handleDatabaseError(error: any) {
+  console.error("❌ RxDB initialization failed:", error);
 
-  const db = await createRxDatabase<MyDatabaseCollections>({
-    name: DB_NAME,
-    storage,
-    multiInstance: true,
-    eventReduce: true,
-    ignoreDuplicate: true,
-  });
+  // Reset state
+  dbInstance = null;
+  dbPromise = null;
 
-  await addCollectionsSafe(db);
+  // Check if it's a DB9 error or similar schema issue
+  const isDB9 = error?.code === "DB9" || error?.message?.includes("DB9");
 
-  startReplications(db).catch(console.error);
+  if (isDB9 && typeof window !== "undefined") {
+    const resetCount = parseInt(
+      sessionStorage.getItem(STORAGE_KEY_RESET_COUNT) || "0",
+      10
+    );
 
-  console.log("✅ RxDB initialized successfully");
-  return db;
-}
+    if (resetCount < MAX_RESETS) {
+      console.warn(
+        `🔄 DB9 detected. Attempting reset ${resetCount + 1}/${MAX_RESETS}...`
+      );
 
-export async function getDatabase(): Promise<MyDatabase | null> {
-  if (typeof window === "undefined") return null;
+      // Increment reset count
+      sessionStorage.setItem(
+        STORAGE_KEY_RESET_COUNT,
+        (resetCount + 1).toString()
+      );
 
-  if (globalForRxDB.rxdbPromise) {
-    return globalForRxDB.rxdbPromise;
-  }
-  globalForRxDB.rxdbPromise = (async () => {
-    try {
-      return await createRxDB();
-    } catch (err: any) {
-      console.error("❌ RxDB Init Error:", err);
-
-      // Tratamento específico para conflito de schema (DB9)
-      if (
-        err?.message?.includes("DB9") ||
-        err?.code === "DB9" ||
-        err?.message?.includes("Schema conflict")
-      ) {
-        console.warn("⚠️ Schema conflict detected. Resetting database...");
-
-        globalForRxDB.rxdbPromise = null;
-
-        // Reseta o banco
-        await resetIndexedDB({
-          dbName: DB_NAME,
-          clearLocalStorage: true,
-          clearSessionStorage: true,
-          invalidateSWCache: true,
-        });
-
-        if (typeof window !== "undefined") {
-          console.log("🔄 Reloading page to apply clean state...");
-          window.location.reload();
-          return new Promise(() => {}) as Promise<MyDatabase>;
+      try {
+        // Try to remove the database properly
+        await removeRxDatabase(DB_NAME, getRxStorageDexie());
+        console.log("✅ Database removed via removeRxDatabase");
+      } catch (removeErr) {
+        console.warn(
+          "⚠️ removeRxDatabase failed, trying indexedDB.deleteDatabase",
+          removeErr
+        );
+        // Fallback to raw IndexedDB delete
+        try {
+          indexedDB.deleteDatabase(DB_NAME);
+        } catch (e) {
+          console.error("❌ Failed to delete database", e);
         }
       }
 
-      throw err;
-    }
-  })();
+      // Reload page
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
 
-  return globalForRxDB.rxdbPromise;
+      // Return a never-resolving promise to halt execution while reloading
+      return new Promise<never>(() => {});
+    } else {
+      console.error(
+        "🛑 Max resets reached. Please clear your browser data manually."
+      );
+      alert(
+        "Erro crítico no banco de dados. Por favor, limpe os dados do navegador e recarregue a página."
+      );
+    }
+  }
+
+  throw error;
+}
+
+/**
+ * Get or create the RxDB database singleton
+ */
+export async function getDatabase(): Promise<MyDatabase> {
+  // Server-side: return null
+  if (typeof window === "undefined") {
+    return null as any;
+  }
+
+  // Return existing instance
+  if (dbInstance) {
+    return dbInstance;
+  }
+
+  // Return existing promise
+  if (dbPromise) {
+    return dbPromise;
+  }
+
+  // Create new instance
+  dbPromise = createDatabase()
+    .then((db) => {
+      dbInstance = db;
+      console.log("✅ RxDB ready");
+      return db;
+    })
+    .catch((error) => handleDatabaseError(error));
+
+  return dbPromise as Promise<MyDatabase>;
+}
+
+/**
+ * Check if database is ready
+ */
+export function isDatabaseReady(): boolean {
+  return dbInstance !== null;
 }

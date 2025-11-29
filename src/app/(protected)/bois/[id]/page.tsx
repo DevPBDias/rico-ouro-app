@@ -2,13 +2,12 @@
 
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { useDeleteAnimal } from "@/hooks/db";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import detailsAnimalLinks from "@/constants/detailsAnimalLinks";
 import DetailsAnimalButtons from "@/components/buttons/DetailsAnimalButtons";
-import Link from "next/link";
+import { useBoiDetail } from "@/hooks/useBoiDetail";
 
 export default function AnimalDetailsPage({
   params,

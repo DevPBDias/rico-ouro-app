@@ -3,13 +3,14 @@ import { RxJsonSchema } from "rxdb";
 
 export const animalSchema: RxJsonSchema<AnimalData> = {
   title: "animals",
-  version: 1,
+  version: 2,
   primaryKey: "uuid",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 200 },
+    uuid: { type: "string", maxLength: 36 },
     id: { type: ["number", "null"] },
 
+    // Nested objects
     animal: {
       type: "object",
       properties: {
@@ -23,7 +24,17 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
         p: { type: "string" },
         f: { type: "string" },
         corNascimento: { type: "string" },
+        farm: { type: "string" },
+        status: {
+          type: "object",
+          properties: {
+            label: { type: "string" },
+            value: { type: "string" },
+          },
+          additionalProperties: true,
+        },
 
+        // Arrays
         pesosMedidos: {
           type: "array",
           items: {
@@ -32,10 +43,8 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               mes: { type: "string" },
               valor: { type: "number" },
             },
-            required: ["mes", "valor"],
           },
         },
-
         ganhoDiario: {
           type: "array",
           items: {
@@ -47,16 +56,8 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               totalGain: { type: "number" },
               dailyGain: { type: "number" },
             },
-            required: [
-              "initialDate",
-              "endDate",
-              "days",
-              "totalGain",
-              "dailyGain",
-            ],
           },
         },
-
         circunferenciaEscrotal: {
           type: "array",
           items: {
@@ -65,10 +66,8 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               mes: { type: "string" },
               valor: { type: "number" },
             },
-            required: ["mes", "valor"],
           },
         },
-
         vacinas: {
           type: "array",
           items: {
@@ -77,14 +76,9 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
               nome: { type: "string" },
               data: { type: "string" },
             },
-            required: ["nome", "data"],
           },
         },
-
-        farm: { type: "string" },
-        status: { type: "string" },
       },
-      required: [],
     },
 
     pai: {
@@ -92,7 +86,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       properties: {
         nome: { type: "string" },
       },
-      required: [],
     },
 
     mae: {
@@ -101,7 +94,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
         serieRGD: { type: "string" },
         rgn: { type: "string" },
       },
-      required: [],
     },
 
     avoMaterno: {
@@ -109,13 +101,12 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
       properties: {
         nome: { type: "string" },
       },
-      required: [],
     },
 
-    _deleted: { type: "boolean", default: false },
-    _modified: { type: ["string", "null"] },
+    _deleted: { type: "boolean" },
+    updatedAt: { type: "string", maxLength: 40 },
   },
 
-  required: ["uuid", "animal", "pai", "mae", "avoMaterno"],
-  indexes: ["_modified"],
+  required: ["uuid", "updatedAt", "_deleted"],
+  indexes: [["_deleted", "updatedAt", "uuid"]],
 };

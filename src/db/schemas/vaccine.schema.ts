@@ -7,12 +7,12 @@ export const vaccineSchema: RxJsonSchema<Vaccine> = {
   primaryKey: "uuid",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 200 },
+    uuid: { type: "string", maxLength: 36 },
     id: { type: ["number", "null"] },
     vaccineName: { type: "string", maxLength: 200 },
     _deleted: { type: "boolean", default: false },
-    _modified: { type: ["string", "null"] },
+    updatedAt: { type: "string", maxLength: 40 },
   },
-  required: ["uuid", "vaccineName"],
-  indexes: ["vaccineName"],
+  required: ["uuid", "vaccineName", "updatedAt"],
+  indexes: ["vaccineName", "updatedAt"],
 };

@@ -101,7 +101,7 @@ export async function generateAnimalReportPDF(
         animal.animal.circunferenciaEscrotal
           ?.map((c) => `${c.valor}cm (${c.mes})`)
           .join(", ") || "-",
-      status: animal.animal.status || "-",
+      status: animal.animal.status?.value || "-",
       farm: animal.animal.farm || "-",
       ganhoDiario:
         animal.animal.ganhoDiario

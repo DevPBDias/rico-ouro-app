@@ -1,11 +1,12 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import SyncManager from "@/components/sync/SyncManager";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
-import { Providers } from "./providers";
+import { LocalFirstProvider } from "@/providers";
+import { SyncDebugPanel } from "@/components/debug/SyncDebugPanel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
   description:
     "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   manifest: "/manifest.webmanifest",
+  themeColor: "#1162ae",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -39,17 +41,13 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#1162ae",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
@@ -111,13 +109,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
+        <LocalFirstProvider>
           <RegisterSW />
           <SyncStatusIndicator />
           {children}
           <ServiceWorkerUpdater />
           <SyncManager />
-        </Providers>
+        </LocalFirstProvider>
       </body>
     </html>
   );

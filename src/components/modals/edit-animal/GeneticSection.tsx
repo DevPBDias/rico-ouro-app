@@ -85,7 +85,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.status"
-            value={formData.animal.status ?? ""}
+            value={formData.animal.status?.value ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />

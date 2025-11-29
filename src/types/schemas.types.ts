@@ -22,7 +22,7 @@ export interface AnimalData {
       totalGain: number;
       dailyGain: number;
     }[];
-    status?: IStatus;
+    status?: { label: string; value: string };
     farm?: string;
     circunferenciaEscrotal?: { mes: string; valor: number }[];
     vacinas?: { nome: string; data: string }[];
@@ -38,7 +38,7 @@ export interface AnimalData {
     nome?: string;
   };
   _deleted?: boolean;
-  _modified?: string;
+  updatedAt?: string;
 }
 
 export interface Vaccine {
@@ -46,7 +46,7 @@ export interface Vaccine {
   uuid?: string;
   vaccineName: string;
   _deleted?: boolean;
-  _modified?: string;
+  updatedAt?: string;
 }
 
 export interface Farm {
@@ -54,7 +54,7 @@ export interface Farm {
   uuid?: string;
   farmName: string;
   _deleted?: boolean;
-  _modified?: string;
+  updatedAt?: string;
 }
 
 export interface Matriz {
@@ -118,5 +118,5 @@ export interface Matriz {
   id?: number;
   uuid?: string;
   _deleted?: boolean;
-  _modified?: string;
+  updatedAt?: string;
 }

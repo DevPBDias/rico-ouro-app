@@ -7,6 +7,7 @@ import homePage from "@/assets/images/home-page.png";
 import { motion } from "framer-motion";
 import LogoutButton from "@/components/auth/LogoutBtn";
 import ProtectedClient from "@/components/auth/WrapperAuth";
+import { StatsFooter } from "@/components/home/StatsFooter";
 
 const HomePage = () => {
   return (
@@ -34,6 +35,7 @@ const HomePage = () => {
           fill
         />
         <HomeButtons data={homeLinks} />
+        <StatsFooter />
       </motion.main>
     </ProtectedClient>
   );

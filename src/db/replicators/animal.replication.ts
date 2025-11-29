@@ -9,26 +9,28 @@ export const replicateAnimals = (collection: AnimalCollection) => {
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     transformPull: (doc: any) => {
-      // Se já tiver a estrutura aninhada, retorna como está (mas limpo)
-      if (doc.animal && typeof doc.animal === "object" && !doc.nome) {
-        const cleaned = cleanNulls(doc);
-
-        // Garantir que objetos obrigatórios existam
-        return {
-          ...cleaned,
-          animal: cleaned.animal || {},
-          pai: cleaned.pai || {},
-          mae: cleaned.mae || {},
-          avoMaterno: cleaned.avoMaterno || {},
-        };
-      }
-
-      // Transforma dados planos (Supabase) para aninhados (RxDB)
-      const transformed = {
+      // 1. Prepare base fields
+      const base = {
         uuid: doc.uuid,
         id: doc.id,
         _deleted: doc._deleted,
-        _modified: doc._modified,
+        updatedAt: doc.updatedAt,
+      };
+
+      // 2. Check if data is already nested (RxDB format)
+      if (doc.animal && typeof doc.animal === "object" && !doc.nome) {
+        return cleanNulls({
+          ...base,
+          animal: doc.animal || {},
+          pai: doc.pai || {},
+          mae: doc.mae || {},
+          avoMaterno: doc.avoMaterno || {},
+        });
+      }
+
+      // 3. Transform flat data (Supabase legacy format) to nested
+      const transformed = {
+        ...base,
         animal: {
           nome: doc.nome,
           serieRGD: doc.serieRGD,
@@ -42,21 +44,29 @@ export const replicateAnimals = (collection: AnimalCollection) => {
           corNascimento: doc.corNascimento,
           status: doc.status,
           farm: doc.farm,
-          // Mapear arrays - usar undefined se não existir (não [])
-          pesosMedidos: doc.pesosMedidos || undefined,
-          ganhoDiario: doc.ganhoDiario || undefined,
-          circunferenciaEscrotal: doc.circunferenciaEscrotal || undefined,
-          vacinas: doc.vacinas || undefined,
+          pesosMedidos: doc.pesosMedidos,
+          ganhoDiario: doc.ganhoDiario,
+          circunferenciaEscrotal: doc.circunferenciaEscrotal,
+          vacinas: doc.vacinas,
         },
         pai: {
-          nome: doc.pai_nome || doc.pai?.nome || doc.pai,
+          nome:
+            doc.pai_nome ||
+            doc.pai?.nome ||
+            (typeof doc.pai === "string" ? doc.pai : undefined),
         },
         mae: {
-          rgn: doc.mae_rgn || doc.mae?.rgn || doc.mae,
+          rgn:
+            doc.mae_rgn ||
+            doc.mae?.rgn ||
+            (typeof doc.mae === "string" ? doc.mae : undefined),
           serieRGD: doc.mae_serieRGD,
         },
         avoMaterno: {
-          nome: doc.avoMaterno_nome || doc.avoMaterno?.nome || doc.avoMaterno,
+          nome:
+            doc.avoMaterno_nome ||
+            doc.avoMaterno?.nome ||
+            (typeof doc.avoMaterno === "string" ? doc.avoMaterno : undefined),
         },
       };
 

@@ -21,7 +21,7 @@ export function useBoiDetail(uuid: string | null) {
         ...boi.animal,
         pesosMedidos: [...currentPesos, { mes: date, valor: 0 }],
       },
-      _modified: now.toISOString(),
+      updatedAt: now.toISOString(),
     });
   }, [boi, uuid, updateAnimal]);
 
@@ -35,7 +35,7 @@ export function useBoiDetail(uuid: string | null) {
           ...boi.animal,
           pesosMedidos: [...currentPesos, { mes: date, valor: Number(value) }],
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -56,7 +56,7 @@ export function useBoiDetail(uuid: string | null) {
           ...boi.animal,
           pesosMedidos: updatedPesos,
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -74,7 +74,7 @@ export function useBoiDetail(uuid: string | null) {
           ...boi.animal,
           pesosMedidos: updatedPesos,
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -93,7 +93,7 @@ export function useBoiDetail(uuid: string | null) {
         ...boi.animal,
         circunferenciaEscrotal: [...currentCirc, { mes: date, valor: 0 }],
       },
-      _modified: now.toISOString(),
+      updatedAt: now.toISOString(),
     });
   }, [boi, uuid, updateAnimal]);
 
@@ -110,7 +110,7 @@ export function useBoiDetail(uuid: string | null) {
             { mes: date, valor: Number(value) },
           ],
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -131,7 +131,7 @@ export function useBoiDetail(uuid: string | null) {
           ...boi.animal,
           circunferenciaEscrotal: updatedCirc,
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -149,7 +149,7 @@ export function useBoiDetail(uuid: string | null) {
           ...boi.animal,
           circunferenciaEscrotal: updatedCirc,
         },
-        _modified: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     },
     [boi, uuid, updateAnimal]
@@ -195,5 +195,14 @@ export function useBoiDetail(uuid: string | null) {
     saveCircComMes,
     editCirc,
     deleteCirc,
+    updateFullAnimal: useCallback(
+      async (
+        updatedData: Partial<import("@/types/schemas.types").AnimalData>
+      ) => {
+        if (!uuid) return;
+        await updateAnimal(uuid, updatedData);
+      },
+      [uuid, updateAnimal]
+    ),
   };
 }

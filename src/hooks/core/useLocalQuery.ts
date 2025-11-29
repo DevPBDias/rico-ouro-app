@@ -1,7 +1,7 @@
 "use client";
 
+import { useRxDatabase } from "@/providers";
 import { useEffect, useState, useCallback } from "react";
-import { useRxDatabase } from "@/providers/RxDBProvider";
 import type { RxDocument, MangoQuery, RxCollection } from "rxdb";
 
 /**

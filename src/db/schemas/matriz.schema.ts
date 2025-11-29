@@ -7,9 +7,9 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
   primaryKey: "uuid",
   type: "object",
   properties: {
-    uuid: { type: "string" },
+    uuid: { type: "string", maxLength: 36 },
     id: { type: ["integer", "null"] },
-    nome: { type: ["string", "null"] },
+    nome: { type: ["string", "null"], maxLength: 200 },
     serieRGD: { type: ["string", "null"] },
     rgn: { type: ["string", "null"] },
     sexo: { type: ["string", "null"] },
@@ -61,9 +61,9 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
       additionalProperties: true,
     },
     _deleted: { type: "boolean", default: false },
-    _modified: { type: ["string", "null"] },
+    updatedAt: { type: "string", maxLength: 40 },
   },
 
-  required: ["uuid"],
-  indexes: ["nome", "_modified"],
+  required: ["uuid", "updatedAt"],
+  indexes: ["updatedAt"],
 };

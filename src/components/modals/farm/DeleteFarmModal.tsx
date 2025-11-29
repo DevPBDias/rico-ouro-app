@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FarmDocType as Farm } from "@/types/database.types";
+import { Farm } from "@/types/schemas.types";
 
 interface DeleteFarmModalProps {
   open: boolean;
