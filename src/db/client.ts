@@ -28,9 +28,9 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBMigrationPlugin);
 
-const DB_NAME = "indi_ouro_db_v5"; // Increment version again
-const STORAGE_KEY_RESET_COUNT = "rxdb_reset_count";
-const MAX_RESETS = 3;
+const DB_NAME = "indi_ouro_db_v6"; // Increment version to force fresh start
+const STORAGE_KEY_RESET_COUNT = "rxdb_reset_count_v6"; // New key for new version
+const MAX_RESETS = 5; // Increase max resets
 
 // Global singleton
 let dbInstance: MyDatabase | null = null;
@@ -173,11 +173,36 @@ async function handleDatabaseError(error: any) {
       // Return a never-resolving promise to halt execution while reloading
       return new Promise<never>(() => {});
     } else {
-      console.error(
-        "🛑 Max resets reached. Please clear your browser data manually."
-      );
+      console.error("🛑 Max resets reached. Manual cleanup required.");
+
+      // Show user-friendly instructions
+      const instructions = `
+╔════════════════════════════════════════════════════════════╗
+║  ERRO CRÍTICO NO BANCO DE DADOS LOCAL                      ║
+╚════════════════════════════════════════════════════════════╝
+
+O banco de dados local (RxDB) está com conflito de schema.
+
+📋 SOLUÇÃO RÁPIDA:
+1. Abra o DevTools (F12)
+2. Vá em "Application" → "Storage"
+3. Clique em "Clear site data"
+4. Recarregue a página (F5)
+
+OU use o console:
+> indexedDB.deleteDatabase("${DB_NAME}")
+> sessionStorage.clear()
+> location.reload()
+
+Seus dados no Supabase estão seguros e serão sincronizados novamente.
+      `.trim();
+
+      console.log(instructions);
+
       alert(
-        "Erro crítico no banco de dados. Por favor, limpe os dados do navegador e recarregue a página."
+        "Erro crítico no banco de dados.\n\n" +
+          "Por favor, abra o Console (F12) para ver as instruções de correção.\n\n" +
+          "Resumo: Application → Storage → Clear site data → Reload"
       );
     }
   }
