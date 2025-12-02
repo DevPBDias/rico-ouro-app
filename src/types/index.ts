@@ -1,3 +1,5 @@
+import { StaticImageData } from "next/image";
+
 export type Screen = "splash" | "login" | "home" | "animal" | "settings";
 
 export interface Animal {
@@ -25,6 +27,7 @@ export interface Links {
   name: string;
   href: string;
   icon?: React.ComponentType<{ className?: string }> | string;
+  iconSrc?: string | StaticImageData;
 }
 
 export interface SelectedReportFields {

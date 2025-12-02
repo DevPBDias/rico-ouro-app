@@ -5,10 +5,11 @@ import {
   CornerRightDown,
   Database,
   Search,
-  Settings,
-  Star,
   Syringe,
 } from "lucide-react";
+import bovine_corral from "@/assets/icons/bovine_corral.png";
+import baby_cow from "@/assets/icons/baby_cow.png";
+import cow_head from "@/assets/icons/cow_head.png";
 
 export const homeLinks: Links[] = [
   {
@@ -21,13 +22,13 @@ export const homeLinks: Links[] = [
     id: 2,
     name: "Matrizes reprodutivas",
     href: "/matrizes",
-    icon: Star,
+    iconSrc: cow_head,
   },
   {
     id: 3,
     name: "Nascimentos",
     href: "/nascimentos",
-    icon: Baby,
+    iconSrc: baby_cow,
   },
   {
     id: 4,
@@ -38,9 +39,9 @@ export const homeLinks: Links[] = [
 
   {
     id: 5,
-    name: "Gerenciar rebanhos",
+    name: "Rebanhos Fazendas",
     href: "/gerenciar",
-    icon: Settings,
+    iconSrc: bovine_corral,
   },
   {
     id: 6,

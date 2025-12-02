@@ -1,4 +1,5 @@
 import { Links } from "@/types";
+import Image from "next/image";
 import Link from "next/link";
 
 interface RedirectButtonsProps {
@@ -7,17 +8,26 @@ interface RedirectButtonsProps {
 
 const HomeButtons = ({ data }: RedirectButtonsProps) => {
   return (
-    <section className="rounded-xl absolute bottom-0 left-0 z-20 grid-cols-2 gap-4 pb-24 w-full bg-transparent px-8 grid">
+    <section className="grid w-full grid-cols-4 gap-1.5 px-2.5 mt-8">
       {data.map((link: Links) => (
         <Link
           key={link.id}
           href={link.href}
-          className="bg-white text-[#1162AE] w-full px-6 rounded-xl h-22 flex flex-col justify-center items-center font-medium text-lg shadow-lg gap-2"
+          className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-lg border border-primary bg-white p-2 text-center shadow-sm"
         >
-          {link.icon && <link.icon className="w-5 h-5" />}
-          <p className="font-medium w-full text-center text-xs uppercase px-2">
+          {link.icon && <link.icon className="h-8 w-8 text-primary" />}
+          {link.iconSrc && (
+            <Image
+              src={link.iconSrc}
+              alt={link.name}
+              width={32}
+              height={32}
+              className="h-8 w-8 object-cover"
+            />
+          )}
+          <span className="text-[9px] font-bold uppercase leading-tight text-primary">
             {link.name}
-          </p>
+          </span>
         </Link>
       ))}
     </section>
