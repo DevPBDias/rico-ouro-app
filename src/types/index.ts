@@ -28,6 +28,7 @@ export interface Links {
   href: string;
   icon?: React.ComponentType<{ className?: string }> | string;
   iconSrc?: string | StaticImageData;
+  className?: string;
 }
 
 export interface SelectedReportFields {

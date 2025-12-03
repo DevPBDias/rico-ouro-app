@@ -15,17 +15,16 @@ const HomeButtons = ({ data }: RedirectButtonsProps) => {
           href={link.href}
           className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-lg border border-primary bg-white p-2 text-center shadow-sm"
         >
-          {link.icon && <link.icon className="h-8 w-8 text-primary" />}
           {link.iconSrc && (
             <Image
               src={link.iconSrc}
               alt={link.name}
               width={32}
               height={32}
-              className="h-8 w-8 object-cover"
+              className={link.className}
             />
           )}
-          <span className="text-[9px] font-bold uppercase leading-tight text-primary">
+          <span className="text-[10px] font-bold uppercase leading-tight text-primary">
             {link.name}
           </span>
         </Link>
