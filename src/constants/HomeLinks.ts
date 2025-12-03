@@ -13,7 +13,7 @@ export const homeLinks: Links[] = [
   {
     id: 1,
     name: "Informação animal",
-    href: "/consult2a",
+    href: "/consulta",
     iconSrc: consult2,
     className: "h-12 w-12 object-cover",
   },

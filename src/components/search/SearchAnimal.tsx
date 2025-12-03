@@ -1,12 +1,13 @@
 "use client";
 
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
 import { useAnimals } from "@/hooks/db";
 import { useCallback, useEffect, useState } from "react";
 import { AnimalData } from "@/types/schemas.types";
 import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
+import Link from "next/link";
 
 function SearchAnimal() {
   const { animals, isLoading } = useAnimals();
@@ -27,7 +28,7 @@ function SearchAnimal() {
 
       setIsSearching(true);
       setHasSearched(false);
-      setSelectedAnimal(null); // Reset selection on new search
+      setSelectedAnimal(null);
 
       const results = animals.filter((animal) => {
         const rgn = animal.animal?.rgn?.toString().toLowerCase() || "";
@@ -78,7 +79,7 @@ function SearchAnimal() {
           <Input
             id="search-animal"
             type="text"
-            className="pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
+            className="placeholder:text-sm placeholder:text-gray-400 pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Digite o RGN do animal..."
@@ -143,11 +144,18 @@ function SearchAnimal() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-base font-semibold text-red-500">
+                <div className="flex flex-col items-center justify-center gap-4 py-8">
+                  <p className="text-base text-center font-medium text-red-500">
                     Animal não encontrado... <br />
-                    Verifique o RGN e tente novamente.
+                    Verifique o RGN ou cadastre o animal.
                   </p>
+                  <Link
+                    href="/cadastro"
+                    className="w-full flex flex-row justify-center items-center gap-1 font-medium bg-primary text-white py-2.5 px-4 rounded-lg"
+                  >
+                    <Plus size={16} color="white" />
+                    Cadastrar
+                  </Link>
                 </div>
               )}
             </>
