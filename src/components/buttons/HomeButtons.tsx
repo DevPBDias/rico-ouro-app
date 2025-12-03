@@ -8,7 +8,7 @@ interface RedirectButtonsProps {
 
 const HomeButtons = ({ data }: RedirectButtonsProps) => {
   return (
-    <section className="grid w-full grid-cols-4 gap-1.5 px-2.5 mt-8">
+    <section className="grid w-full grid-cols-4 gap-1.5 px-2.5">
       {data.map((link: Links) => (
         <Link
           key={link.id}
