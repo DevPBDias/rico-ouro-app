@@ -13,13 +13,11 @@ export function useLocalDocument<T>(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Refetch function
   const refetch = useCallback(() => {
     if (!db || !id) return;
 
     const collection = (db as any)[collectionName] as RxCollection<T>;
     if (!collection) {
-      console.error(`Collection ${collectionName} not found`);
       return;
     }
 
@@ -30,7 +28,6 @@ export function useLocalDocument<T>(
         setData(doc ? (doc.toJSON() as T) : null);
       })
       .catch((err: any) => {
-        console.error(`Error refetching document ${id}:`, err);
       });
   }, [db, collectionName, id]);
 
@@ -51,7 +48,6 @@ export function useLocalDocument<T>(
     try {
       setIsLoading(true);
 
-      // Subscribe to reactive document
       const subscription = collection.findOne(id).$.subscribe({
         next: (doc: RxDocument<T> | null) => {
           setData(doc ? (doc.toJSON() as T) : null);
@@ -59,7 +55,6 @@ export function useLocalDocument<T>(
           setError(null);
         },
         error: (err: any) => {
-          console.error(`Error fetching document ${id}:`, err);
           setError(
             err instanceof Error ? err : new Error("Document fetch error")
           );

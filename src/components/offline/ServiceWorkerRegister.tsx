@@ -9,22 +9,17 @@ export function ServiceWorkerRegister() {
     useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    // Check if service workers are supported
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
-      // Register service worker
       window.addEventListener("load", () => {
         navigator.serviceWorker
           .register("/sw.js")
           .then((reg) => {
-            console.log("ServiceWorker registration successful");
             setRegistration(reg);
 
-            // Check for updates
             if (reg.waiting) {
               setIsUpdateAvailable(true);
             }
 
-            // Listen for updates
             reg.addEventListener("updatefound", () => {
               const newWorker = reg.installing;
               if (newWorker) {
@@ -40,12 +35,10 @@ export function ServiceWorkerRegister() {
             });
           })
           .catch((error) => {
-            console.error("ServiceWorker registration failed:", error);
           });
       });
     }
 
-    // Handle online/offline status
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -53,7 +46,6 @@ export function ServiceWorkerRegister() {
     window.addEventListener("offline", handleOffline);
     setIsOnline(navigator.onLine);
 
-    // Cleanup
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -62,16 +54,13 @@ export function ServiceWorkerRegister() {
 
   const handleUpdate = () => {
     if (registration && registration.waiting) {
-      // Send message to service worker to skip waiting
       registration.waiting.postMessage({ type: "SKIP_WAITING" });
 
-      // Reload the page when the new service worker takes control
       const refresh = () => window.location.reload();
       navigator.serviceWorker.addEventListener("controllerchange", refresh, {
         once: true,
       });
 
-      // If no controller change after 5s, reload anyway
       setTimeout(refresh, 5000);
     }
   };

@@ -21,26 +21,19 @@ export async function resetIndexedDB(options: ResetOptions): Promise<void> {
     clearSessionStorage = true,
     invalidateSWCache = true,
   } = options;
-
-  console.log(`🗑️ Iniciando reset do IndexedDB: ${dbName}`);
-
   try {
-    // 0️⃣ Desregistrar Service Workers
     if ("serviceWorker" in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const registration of registrations) {
-        console.log("🛑 Desregistrando Service Worker:", registration.scope);
         await registration.unregister();
       }
     }
 
-    // 1️⃣ Fechar conexões (tentativa)
     const req = indexedDB.open(dbName);
     req.onsuccess = () => {
       req.result.close();
     };
 
-    // 2️⃣ Deletar banco
     await new Promise<void>((resolve, reject) => {
       const request = indexedDB.deleteDatabase(dbName);
 
@@ -50,7 +43,6 @@ export async function resetIndexedDB(options: ResetOptions): Promise<void> {
 
       request.onsuccess = () => {
         clearTimeout(timer);
-        console.log(`✅ Banco ${dbName} deletado`);
         resolve();
       };
 
@@ -60,11 +52,9 @@ export async function resetIndexedDB(options: ResetOptions): Promise<void> {
       };
 
       request.onblocked = () => {
-        console.warn(`⛔ Deleção bloqueada por outra aba/conexão`);
       };
     });
 
-    // 3️⃣ Limpar Storage
     if (clearLocalStorage) {
       Object.keys(localStorage).forEach((key) => {
         if (key.includes(dbName)) localStorage.removeItem(key);
@@ -77,14 +67,11 @@ export async function resetIndexedDB(options: ResetOptions): Promise<void> {
       });
     }
 
-    // 4️⃣ Invalidar Cache SW
     if (invalidateSWCache && "caches" in window) {
       const keys = await caches.keys();
       await Promise.all(keys.map((key) => caches.delete(key)));
     }
   } catch (error) {
-    console.error("❌ Erro no reset:", error);
-    // Fallback: limpar storage mesmo se o DB falhar
     if (clearLocalStorage) localStorage.clear();
   }
 }

@@ -24,7 +24,6 @@ export const useRxDB = () => {
   return context;
 };
 
-// Export aliases for backward compatibility
 export const useRxDatabase = () => {
   const { db } = useRxDB();
   return db;

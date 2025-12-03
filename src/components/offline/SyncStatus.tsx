@@ -20,7 +20,6 @@ export function SyncStatus() {
     matrizes: number;
   }>({ total: 0, animals: 0, vaccines: 0, farms: 0, matrizes: 0 });
 
-  // Update pending changes count periodically
   useEffect(() => {
     const updateCount = async () => {
       const changes = await getPendingChanges();
@@ -33,7 +32,6 @@ export function SyncStatus() {
     return () => clearInterval(interval);
   }, [getPendingChanges]);
 
-  // Format last sync time
   const formatLastSync = (date: Date | null) => {
     if (!date) return 'Nunca';
     

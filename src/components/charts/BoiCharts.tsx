@@ -84,7 +84,6 @@ export function ChartLineLabel({
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
 
-              {/* 🔹 Eixo X formatado como MM/YY */}
               <XAxis
                 dataKey="month"
                 tick={{ fontSize: 12, fill: "#555" }}
@@ -93,13 +92,11 @@ export function ChartLineLabel({
                 interval="preserveStartEnd"
               />
 
-              {/* 🔹 Tooltip simples */}
               <Tooltip
                 formatter={(value: number) => `${value}${unit}`}
                 labelFormatter={(label) => `Data: ${label}`}
               />
 
-              {/* 🔹 Linha principal */}
               <Line
                 dataKey="value"
                 type="monotone"

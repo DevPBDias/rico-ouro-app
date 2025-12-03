@@ -80,7 +80,6 @@ const PesagemPage = () => {
     try {
       await savePesoComMes(date, valor);
     } catch (err) {
-      console.error("Erro ao adicionar peso:", err);
       setError("Erro ao adicionar peso");
     }
   };
@@ -90,7 +89,6 @@ const PesagemPage = () => {
     try {
       await saveCircComMes(date, valor);
     } catch (err) {
-      console.error("Erro ao adicionar CE:", err);
       setError("Erro ao adicionar CE");
     }
   };

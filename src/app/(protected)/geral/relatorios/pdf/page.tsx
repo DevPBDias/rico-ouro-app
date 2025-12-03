@@ -118,7 +118,6 @@ export default function RelatoriosPage() {
         type: "success",
       });
     } catch (error) {
-      console.error("Erro ao gerar relatório:", error);
       setModalState({
         isOpen: true,
         title: "Erro",

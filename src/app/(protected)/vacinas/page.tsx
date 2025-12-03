@@ -57,7 +57,6 @@ const VaccinesPage = () => {
         return;
       }
 
-      // Find the animal by RGN
       const animal = animals.find(
         (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
@@ -69,16 +68,13 @@ const VaccinesPage = () => {
 
       const dataFormatada = FormatData(formData.data);
 
-      // Get current vaccines or initialize empty array
       const currentVaccines = animal.animal.vacinas || [];
 
-      // Add new vaccines to the animal's vaccine history
       const newVaccines = formData.vacinas.map((vacinaNome) => ({
         nome: vacinaNome,
         data: dataFormatada,
       }));
 
-      // Update the animal with the new vaccines
       await updateAnimal(animal.uuid, {
         animal: {
           ...animal.animal,
@@ -89,7 +85,6 @@ const VaccinesPage = () => {
 
       setSuccessModalOpen(true);
     } catch (error) {
-      console.error("❌ Erro ao registrar vacina:", error);
       setError("Erro ao registrar vacina");
     }
   };
@@ -105,13 +100,11 @@ const VaccinesPage = () => {
 
   const handleCreateVaccine = async (name: string) => {
     try {
-      // Create a new vaccine type in the vaccines collection
       await createVaccine({
         vaccineName: name,
         updatedAt: new Date().toISOString(),
       });
 
-      // Automatically select the newly created vaccine
       setFormData((prev) => ({
         ...prev,
         vacinas: prev.vacinas.includes(name)
@@ -119,7 +112,6 @@ const VaccinesPage = () => {
           : [...prev.vacinas, name],
       }));
     } catch (error) {
-      console.error("❌ Erro ao criar vacina:", error);
       setError("Erro ao criar vacina");
     }
   };
@@ -129,7 +121,6 @@ const VaccinesPage = () => {
       const vaccineToDelete = vaccines.find((vaccine) => vaccine.uuid === uuid);
       await deleteVaccine(uuid);
 
-      // Remove from selected vaccines if it was selected
       if (vaccineToDelete) {
         setFormData((prev) => ({
           ...prev,
@@ -139,7 +130,6 @@ const VaccinesPage = () => {
         }));
       }
     } catch (error) {
-      console.error("❌ Erro ao deletar vacina:", error);
       setError("Erro ao deletar vacina");
     }
   };

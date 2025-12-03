@@ -43,7 +43,6 @@ export function useRxQuery<T>(
           setError(null);
         },
         error: (err: unknown) => {
-          console.error(`Error in ${collectionName} query:`, err);
           setError(
             err instanceof Error ? err : new Error("Query subscription error")
           );
@@ -93,7 +92,6 @@ export function useRxDocument<T>(
         setError(null);
       },
       error: (err: unknown) => {
-        console.error(`Error fetching document ${documentId}:`, err);
         setError(
           err instanceof Error ? err : new Error("Document fetch error")
         );

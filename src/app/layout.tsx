@@ -61,7 +61,7 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-        {/* Splash screens for iOS */}
+
         <link
           rel="apple-touch-startup-image"
           media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
@@ -102,7 +102,7 @@ export default function RootLayout({
           media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
           href="/splash.png"
         />
-        {/* Android splash screen */}
+
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body

@@ -11,7 +11,6 @@ export function useLocalFirst() {
     useReplication();
   const [queueSize, setQueueSize] = useState(0);
 
-  // Calculate queue size (unsynced documents)
   useEffect(() => {
     if (!db) return;
 
@@ -20,7 +19,6 @@ export function useLocalFirst() {
       (col: any) => col.count({ selector: { isSynced: { $eq: false } } }).$
     );
 
-    // Subscribe to all count queries
     const subscription = import("rxjs").then(({ combineLatest }) => {
       const sub = combineLatest(queries).subscribe((counts: any[]) => {
         const total = counts.reduce((acc, count) => acc + count, 0);
@@ -34,35 +32,23 @@ export function useLocalFirst() {
     };
   }, [db]);
 
-  // Typed collections
   const collections = useMemo(() => {
     if (!db) return null;
     return db.collections as MyDatabaseCollections;
   }, [db]);
 
-  // Helper: Force sync all collections
   const forceSync = useCallback(async () => {
     if (!db) {
-      console.warn("Database not ready for sync");
       return;
     }
 
     try {
-      // Trigger replication manually if needed
-      // Most cases RxDB handles this automatically
-      console.log("Manual sync triggered");
-
-      // You can add custom logic here if needed
-      // For example, calling specific replication methods
     } catch (err) {
-      console.error("Error forcing sync:", err);
     }
   }, [db]);
 
-  // Helper: Clear local database (careful!)
   const clearLocalDatabase = useCallback(async () => {
     if (!db) {
-      console.warn("Database not initialized");
       return;
     }
 
@@ -74,15 +60,11 @@ export function useLocalFirst() {
         const ids = docs.map((doc: any) => doc.primary);
         await (collection as any).bulkRemove(ids);
       }
-
-      console.log("Local database cleared");
     } catch (err) {
-      console.error("Error clearing database:", err);
       throw err;
     }
   }, [db]);
 
-  // Helper: Get sync statistics
   const getSyncStats = useCallback(() => {
     return {
       queueSize,
@@ -94,7 +76,6 @@ export function useLocalFirst() {
     };
   }, [queueSize, isSyncing, lastSyncedAt, online, replicationErrors]);
 
-  // Helper: Check if a specific collection is syncing
   const isCollectionSyncing = useCallback(
     (collectionName: string) => {
       if (!db || !db.replications) return false;

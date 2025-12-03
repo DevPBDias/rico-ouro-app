@@ -61,7 +61,6 @@ export default function NascimentosPage() {
       await createAnimal(newAnimal);
       setShowModal(true);
     } catch (error) {
-      console.error("❌ Erro ao adicionar animal:", error);
     }
   };
 

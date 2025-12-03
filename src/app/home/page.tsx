@@ -21,7 +21,6 @@ const HomePage = () => {
         transition={{ duration: 0.8, ease: "easeInOut" }}
         className="relative flex h-dvh w-full flex-col items-center justify-between overflow-hidden bg-primary pb-4"
       >
-        {/* Top Section with Background Image */}
         <div className="relative flex w-full bg-transparent shrink-0 flex-col items-center gap-4 overflow-hidden rounded-b-[2.5rem] pb-12 pt-4 shadow-2xl">
           <Image
             src={cowModel}
@@ -33,7 +32,6 @@ const HomePage = () => {
           />
           <div className="absolute inset-0 bg-primary/65 z-20" />
 
-          {/* Header */}
           <div className="relative z-20 flex w-full flex-col items-center justify-center px-6">
             <Image
               src={logoIndiouro}
@@ -50,12 +48,10 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Content Container */}
         <div className="relative z-20 flex w-full flex-1 flex-col gap-6 pt-6">
           <HomeButtons data={homeLinks} />
         </div>
 
-        {/* Footer Partners */}
         <div className="relative z-10 mt-4 flex flex-col items-center gap-2">
           <div className="flex items-center gap-4">
             <Image

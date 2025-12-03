@@ -10,7 +10,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
     uuid: { type: "string", maxLength: 36 },
     id: { type: ["number", "null"] },
 
-    // Nested objects
     animal: {
       type: "object",
       properties: {
@@ -34,7 +33,6 @@ export const animalSchema: RxJsonSchema<AnimalData> = {
           additionalProperties: true,
         },
 
-        // Arrays
         pesosMedidos: {
           type: "array",
           items: {

@@ -1,10 +1,3 @@
-/**
- * 📦 PROVIDERS INDEX
- *
- * Exporta todos os providers e hooks relacionados à arquitetura local-first
- */
-
-// Providers
 export {
   RxDBProvider,
   useRxDB,

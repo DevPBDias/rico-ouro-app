@@ -8,7 +8,6 @@ export function useBoiDetail(uuid: string | null) {
   const { animal: boi, isLoading, error } = useAnimal(uuid);
   const { updateAnimal } = useUpdateAnimal();
 
-  // 🔹 Pesos
   const addPeso = useCallback(async () => {
     if (!uuid || !boi) return;
 
@@ -80,7 +79,6 @@ export function useBoiDetail(uuid: string | null) {
     [boi, uuid, updateAnimal]
   );
 
-  // 🔹 Circunferência
   const addCirc = useCallback(async () => {
     if (!uuid || !boi) return;
 
@@ -155,7 +153,6 @@ export function useBoiDetail(uuid: string | null) {
     [boi, uuid, updateAnimal]
   );
 
-  // Mapeia para o formato esperado pela UI (compatibilidade)
   const pesosMedidos = useMemo(() => {
     return (boi?.animal?.pesosMedidos || []).map((w, index) => ({
       uuid: `${uuid}-peso-${index}`, // Gera um ID único para compatibilidade

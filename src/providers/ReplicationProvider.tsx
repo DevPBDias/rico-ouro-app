@@ -32,7 +32,6 @@ export function ReplicationProvider({
   const [online, setOnline] = useState(true);
   const [replicationErrors, setReplicationErrors] = useState<Error[]>([]);
 
-  // Monitor Online/Offline status
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -50,7 +49,6 @@ export function ReplicationProvider({
     };
   }, []);
 
-  // Monitor Replication States
   useEffect(() => {
     if (!isLoading && db && db.replications) {
       const replications = Object.values(db.replications) as RxReplicationState<
@@ -59,7 +57,6 @@ export function ReplicationProvider({
       >[];
       if (replications.length === 0) return;
 
-      // Combine active states to determine if any is syncing
       const activeSubscription = combineLatest(
         replications.map((rep) => rep.active$)
       ).subscribe((actives) => {
@@ -69,7 +66,6 @@ export function ReplicationProvider({
         }
       });
 
-      // Combine error states
       const errorSubscription = combineLatest(
         replications.map((rep) => rep.error$)
       ).subscribe((errors) => {
@@ -84,12 +80,9 @@ export function ReplicationProvider({
     }
   }, [isLoading, db]);
 
-  // Force re-sync when coming back online
   useEffect(() => {
     if (online && !isLoading && db && db.replications) {
       Object.values(db.replications).forEach((rep) => {
-        // RxDB automatically retries, but we can force a check if needed
-        // rep.reSync(); // Not always available on all versions, but auto-retry handles it
       });
     }
   }, [online, isLoading, db]);

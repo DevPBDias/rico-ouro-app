@@ -19,16 +19,13 @@ export default function MatrizDetalhePage() {
 
   async function handleExcluir() {
     if (!matriz || !matriz.uuid) {
-      console.error("UUID da matriz não disponível.");
       return;
     }
 
     try {
       await deleteMatriz(matriz.uuid);
-      console.log(`Dados da matriz com RGN ${matriz.rgn} excluídos.`);
       router.push("/matrizes");
     } catch (error) {
-      console.error("Erro ao excluir matriz:", error);
     }
   }
 

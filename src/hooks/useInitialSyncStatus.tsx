@@ -47,30 +47,22 @@ export function useInitialSyncStatus() {
     return false;
   });
 
-  // Se houver erro no banco, marcamos como completo para não travar o usuário
-  // mas logamos o erro.
   useEffect(() => {
     if (dbError) {
-      console.error("⚠️ Database error detected in sync hook:", dbError);
       setIsComplete(true);
     }
   }, [dbError]);
 
-  // Fetch remote counts from Supabase
   useEffect(() => {
     const fetchRemoteCounts = async () => {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
       if (!supabaseUrl || !supabaseKey) {
-        console.warn(
-          "Supabase credentials missing, skipping remote count check."
-        );
         setIsLoadingRemote(false);
         return;
       }
 
-      // ✅ Usa o singleton ao invés de criar nova instância
       const supabase = getSupabase();
 
       try {
@@ -88,7 +80,6 @@ export function useInitialSyncStatus() {
           matriz: matriz.count || 0,
         });
       } catch (error) {
-        console.error("Error fetching remote counts:", error);
       } finally {
         setIsLoadingRemote(false);
       }
@@ -116,7 +107,6 @@ export function useInitialSyncStatus() {
         matriz: matrizCount,
       });
 
-      // Se tiver dados, marca como sincronizado (fallback)
       if (animalsCount > 0)
         setSyncProgress((prev) => ({ ...prev, animals: true }));
       if (vaccinesCount > 0)
@@ -125,7 +115,6 @@ export function useInitialSyncStatus() {
       if (matrizCount > 0)
         setSyncProgress((prev) => ({ ...prev, matriz: true }));
     } catch (error) {
-      console.error("Error counting documents:", error);
     }
   }, [db]);
 
@@ -143,7 +132,6 @@ export function useInitialSyncStatus() {
     return () => clearInterval(interval);
   }, [db, updateCounts, isComplete]);
 
-  // Monitor replication state
   useEffect(() => {
     if (!db) return;
 
@@ -174,13 +162,11 @@ export function useInitialSyncStatus() {
     };
   }, [db]);
 
-  // Check completion based on counts matching remote
   useEffect(() => {
     if (isLoadingRemote) return;
 
     const allSynced = Object.values(syncProgress).every((synced) => synced);
 
-    // Verifica se temos pelo menos a quantidade de dados remotos
     const dataFullyLoaded =
       counts.animals >= totalRemoteCounts.animals &&
       counts.vaccines >= totalRemoteCounts.vaccines &&
@@ -190,7 +176,6 @@ export function useInitialSyncStatus() {
     if ((allSynced && counts.animals > 0) || dataFullyLoaded) {
       if (!isComplete) {
         setIsComplete(true);
-        console.log("✅ Initial sync complete!");
       }
     }
   }, [syncProgress, counts, totalRemoteCounts, isLoadingRemote, isComplete]);
@@ -202,7 +187,6 @@ export function useInitialSyncStatus() {
     }
   }, []);
 
-  // Calcula porcentagem total
   const totalLocal = Object.values(counts).reduce((a, b) => a + b, 0);
   const totalRemote = Object.values(totalRemoteCounts).reduce(
     (a, b) => a + b,

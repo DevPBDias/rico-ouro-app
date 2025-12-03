@@ -17,7 +17,6 @@ export function useUpdateAnimal() {
       updatedAt: new Date().toISOString(),
     };
 
-    // A replicação automática do RxDB irá sincronizar com Supabase
     await update(uuid, updateData);
   };
 

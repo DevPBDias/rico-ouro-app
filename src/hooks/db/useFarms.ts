@@ -11,7 +11,6 @@ export function useFarms() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Subscribe to farms collection
   useEffect(() => {
     if (!db) {
       setIsLoading(dbLoading);
@@ -42,7 +41,6 @@ export function useFarms() {
     return () => subscription.unsubscribe();
   }, [db, dbLoading]);
 
-  // Create farm
   const createFarm = async (farmName: string) => {
     if (!db) throw new Error("Database not ready");
 
@@ -57,7 +55,6 @@ export function useFarms() {
     return newFarm;
   };
 
-  // Update farm
   const updateFarm = async (uuid: string, farmName: string) => {
     if (!db) throw new Error("Database not ready");
 
@@ -72,7 +69,6 @@ export function useFarms() {
     });
   };
 
-  // Delete farm (soft delete)
   const deleteFarm = async (uuid: string) => {
     if (!db) throw new Error("Database not ready");
 

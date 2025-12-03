@@ -41,7 +41,6 @@ export function SyncStatusIndicator() {
     }
   };
 
-  // Don't render on server-side to avoid hydration mismatch
   if (!isMounted) {
     return null;
   }

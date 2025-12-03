@@ -1,4 +1,3 @@
-// 🔹 Função auxiliar para converter string em Date
 export function parseData(dataStr: string): Date {
   const s = (dataStr || "").trim();
   if (!s) throw new Error("Formato de data inválido: " + dataStr);
@@ -12,7 +11,6 @@ export function parseData(dataStr: string): Date {
   throw new Error("Formato de data inválido: " + dataStr);
 }
 
-// 🔹 Diferença em dias
 export function diferencaEmDias(data1: string, data2: string): number {
   const d1 = parseData(data1);
   const d2 = parseData(data2);
@@ -20,7 +18,6 @@ export function diferencaEmDias(data1: string, data2: string): number {
   return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
 
-// 🔹 Função principal: calcula o ganho diário com base nas pesagens
 export function calcularGanhoDiario(
   pesosMedidos?: { mes: string; valor: number }[]
 ): {
@@ -32,7 +29,6 @@ export function calcularGanhoDiario(
 }[] {
   if (!pesosMedidos || pesosMedidos.length < 2) return [];
 
-  // Filter out invalid entries (missing mes or non-numeric valor)
   const valid = pesosMedidos
     .map((p) => ({ mes: p?.mes ?? "", valor: Number(p?.valor ?? NaN) }))
     .filter((p) => p.mes && !Number.isNaN(p.valor));

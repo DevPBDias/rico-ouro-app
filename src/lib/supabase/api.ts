@@ -110,24 +110,18 @@ export async function syncAnimalDataToSupabase(
     normalized.avoMaterno
   ) as Record<string, unknown>;
 
-  // Garante que animal_json sempre tenha pelo menos um campo (obrigatório)
-  // Se animal_json estiver vazio, adiciona um campo mínimo
   if (
     !cleanAnimal ||
     typeof cleanAnimal !== "object" ||
     Array.isArray(cleanAnimal) ||
     Object.keys(cleanAnimal).length === 0
   ) {
-    console.warn(
-      "⚠️ animal_json está vazio ou inválido, criando objeto mínimo"
-    );
     cleanAnimal = {
       rgn: normalized.animal.rgn || "",
       updatedAt: normalized.updatedAt || new Date().toISOString(),
     };
   }
 
-  // Prepara o payload - garante que todos os campos JSONB sejam objetos válidos (não arrays, não null)
   const payload: {
     uuid: string;
     animal_json: Record<string, unknown>;
@@ -167,7 +161,6 @@ export async function syncAnimalDataToSupabase(
     updated_at: normalized.updatedAt || new Date().toISOString(),
   };
 
-  // Validação antes de enviar
   if (
     !payload.animal_json ||
     typeof payload.animal_json !== "object" ||
@@ -178,7 +171,6 @@ export async function syncAnimalDataToSupabase(
     );
   }
 
-  // Log do payload para debug (apenas em desenvolvimento)
   if (process.env.NODE_ENV === "development") {
     console.log("📤 Payload para Supabase:", {
       uuid: payload.uuid,
@@ -197,7 +189,6 @@ export async function syncAnimalDataToSupabase(
       .single();
 
     if (error) {
-      // Log detalhado do erro
       console.error("Erro ao sincronizar animal no Supabase:", {
         error,
         message: error.message,
@@ -208,7 +199,6 @@ export async function syncAnimalDataToSupabase(
         payload: JSON.stringify(payload, null, 2),
       });
 
-      // Tenta fornecer uma mensagem mais útil
       const errorMessage = error.message || "Erro desconhecido ao sincronizar";
       const errorDetails = error.details ? ` Detalhes: ${error.details}` : "";
       const errorHint = error.hint ? ` Dica: ${error.hint}` : "";
@@ -224,18 +214,15 @@ export async function syncAnimalDataToSupabase(
 
     return data.id;
   } catch (error) {
-    // Se já é um Error, apenas relança
     if (error instanceof Error) {
       throw error;
     }
 
-    // Caso contrário, cria um novo Error
     console.error("Erro inesperado ao sincronizar animal:", error);
     throw new Error(`Erro inesperado: ${JSON.stringify(error)}`);
   }
 }
 
-// Função auxiliar para remover valores undefined/null de objetos
 function removeUndefinedValues(obj: unknown): Record<string, unknown> {
   if (obj === null || obj === undefined) {
     return {};
@@ -245,19 +232,15 @@ function removeUndefinedValues(obj: unknown): Record<string, unknown> {
     return {};
   }
 
-  // Se for array, retorna objeto vazio (não queremos arrays aqui)
   if (Array.isArray(obj)) {
     return {};
   }
 
-  // Se for objeto, limpa recursivamente
   const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined && value !== null) {
       if (typeof value === "object" && !Array.isArray(value)) {
-        // Recursivamente limpa objetos aninhados
         const cleanedNested = removeUndefinedValues(value);
-        // Só adiciona se o objeto limpo tiver propriedades
         if (Object.keys(cleanedNested).length > 0) {
           cleaned[key] = cleanedNested;
         }
@@ -313,7 +296,6 @@ export async function fetchAnimalDataFromSupabase(): Promise<
   return data || [];
 }
 
-// Operações Vaccines no Supabase
 export async function syncVaccineToSupabase(
   vaccine: Vaccine,
   uuid: string
@@ -384,7 +366,6 @@ export async function fetchVaccinesFromSupabase(): Promise<SupabaseVaccine[]> {
   return data || [];
 }
 
-// Operações Farms no Supabase
 export async function syncFarmToSupabase(
   farm: Farm,
   uuid: string
@@ -449,7 +430,6 @@ export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
       .order("farm_name", { ascending: true });
 
     if (error) {
-      // Log detalhado do erro
       console.error("Erro ao buscar fazendas do Supabase:", {
         message: error.message,
         details: error.details,
@@ -458,7 +438,6 @@ export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
         error: JSON.stringify(error, null, 2),
       });
 
-      // Se a tabela não existe (código 42P01) ou problema de permissão (código 42501), retorna array vazio
       if (error.code === "42P01" || error.code === "42501") {
         console.warn(
           `Tabela 'farms' não existe ou sem permissão (código: ${error.code}). Retornando array vazio. Verifique se a tabela foi criada no Supabase.`
@@ -471,12 +450,10 @@ export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
 
     return data || [];
   } catch (error) {
-    // Se já é um Error, apenas relança
     if (error instanceof Error) {
       throw error;
     }
 
-    // Caso contrário, cria um novo Error com mais informações
     console.error("Erro inesperado ao buscar fazendas do Supabase:", error);
     const errorMessage =
       error && typeof error === "object" && "message" in error
@@ -486,7 +463,6 @@ export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
   }
 }
 
-// Operações Matrizes no Supabase
 export async function syncMatrizToSupabase(
   matriz: Matriz,
   uuid: string
@@ -554,12 +530,10 @@ export async function fetchMatrizesFromSupabase(): Promise<SupabaseMatriz[]> {
   return data || [];
 }
 
-// Verifica se está online
 export function isOnline(): boolean {
   return typeof navigator !== "undefined" && navigator.onLine;
 }
 
-// Listener de conectividade
 export function onOnlineStatusChange(
   callback: (online: boolean) => void
 ): () => void {

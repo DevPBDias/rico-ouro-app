@@ -44,7 +44,6 @@ const SearchCsvFile = () => {
       setIsProcessing(false);
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Erro ao processar arquivo:", error);
       setIsProcessing(false);
       alert("Erro ao processar o arquivo. Tente novamente.");
     }

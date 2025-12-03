@@ -49,7 +49,6 @@ export function StatsFooter() {
 
   return (
     <div className="flex w-full flex-col gap-3 px-4">
-      {/* Total Count - Compact */}
       <div className="flex w-full items-center justify-between rounded-xl border border-white bg-transparent px-4 py-2 shadow-sm backdrop-blur-md">
         <span className="text-sm font-medium text-white">Total Animais</span>
         <span className="text-4xl font-black text-[#FFC107]">
@@ -58,7 +57,6 @@ export function StatsFooter() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {/* Males Column */}
         <div className="flex flex-col gap-1">
           <div className="mb-1 flex items-center justify-between border-b border-white/30 pb-1">
             <span className="text-xs font-bold text-white">Machos</span>
@@ -74,7 +72,6 @@ export function StatsFooter() {
           </div>
         </div>
 
-        {/* Females Column */}
         <div className="flex flex-col gap-1">
           <div className="mb-1 flex items-center justify-between border-b border-white/30 pb-1">
             <span className="text-xs font-bold text-white">Fêmeas</span>

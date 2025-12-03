@@ -44,7 +44,6 @@ const FarmsPage = () => {
       .filter((option) => option.value);
   }, [animals]);
 
-  // Quando o RGN é selecionado, carrega a fazenda atual do animal
   useEffect(() => {
     if (formData.rgn) {
       const animal = animals.find(
@@ -92,7 +91,6 @@ const FarmsPage = () => {
 
       setSuccessModalOpen(true);
     } catch (error) {
-      console.error("❌ Erro ao atualizar fazenda:", error);
       setError("Erro ao atualizar fazenda");
     }
   };
@@ -113,7 +111,6 @@ const FarmsPage = () => {
         farm: prev.farm || name,
       }));
     } catch (error) {
-      console.error("Erro ao criar fazenda:", error);
       setError("Erro ao criar fazenda");
     }
   };
@@ -133,7 +130,6 @@ const FarmsPage = () => {
         }));
       }
     } catch (error) {
-      console.error("Erro ao deletar fazenda:", error);
       setError("Erro ao deletar fazenda");
     }
   };

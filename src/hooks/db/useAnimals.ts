@@ -11,7 +11,6 @@ export function useAnimals() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Subscribe to animals collection
   useEffect(() => {
     if (!db) {
       setIsLoading(dbLoading);
@@ -42,7 +41,6 @@ export function useAnimals() {
     return () => subscription.unsubscribe();
   }, [db, dbLoading]);
 
-  // Create animal
   const createAnimal = async (data: Partial<AnimalData>) => {
     if (!db) throw new Error("Database not ready");
 
@@ -57,7 +55,6 @@ export function useAnimals() {
     return newAnimal;
   };
 
-  // Update animal
   const updateAnimal = async (uuid: string, data: Partial<AnimalData>) => {
     if (!db) throw new Error("Database not ready");
 
@@ -72,7 +69,6 @@ export function useAnimals() {
     });
   };
 
-  // Delete animal (soft delete)
   const deleteAnimal = async (uuid: string) => {
     if (!db) throw new Error("Database not ready");
 

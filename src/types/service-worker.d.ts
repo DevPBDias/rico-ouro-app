@@ -1,4 +1,3 @@
-// Extend the ServiceWorkerRegistration interface to include the sync property
 declare interface ServiceWorkerRegistration {
   sync?: {
     register: (tag: string) => Promise<void>;
@@ -6,7 +5,6 @@ declare interface ServiceWorkerRegistration {
   };
 }
 
-// Extend the ServiceWorkerGlobalScope for the service worker context
 declare interface SyncManager {
   register: (tag: string) => Promise<void>;
   getTags: () => Promise<string[]>;

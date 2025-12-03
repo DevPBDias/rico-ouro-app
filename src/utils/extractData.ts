@@ -67,7 +67,6 @@ export async function extractDataFromExcel(file: File): Promise<AnimalData[]> {
 
         resolve(result);
       } catch (error) {
-        console.error("Erro ao processar Excel:", error);
         reject(error);
       }
     };

@@ -38,7 +38,6 @@ function SearchAnimal() {
 
       setSearchResults(results);
 
-      // Auto-select if only one result
       if (results.length === 1) {
         setSelectedAnimal(results[0]);
       }

@@ -24,16 +24,13 @@ export default function AnimalDetailsPage({
 
   async function handleExcluir() {
     if (!boi || !boi.uuid) {
-      console.error("UUID do animal não disponível.");
       return;
     }
 
     try {
       await deleteAnimal(boi.uuid);
-      console.log(`Dados do animal com RGN ${boi.animal?.rgn} excluídos.`);
       router.push("/home");
     } catch (error) {
-      console.error("Erro ao excluir animal:", error);
     }
   }
 

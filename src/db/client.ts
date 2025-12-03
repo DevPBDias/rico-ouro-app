@@ -14,13 +14,11 @@ import { matrizSchema } from "./schemas/matriz.schema";
 import { MyDatabase, MyDatabaseCollections } from "./collections";
 import { setupReplication } from "./replication";
 
-// Add core plugins (always loaded)
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBMigrationPlugin);
 
-// Dev-mode plugin - track if loaded
 let devModeLoaded = false;
 
 /**
@@ -36,15 +34,12 @@ async function loadDevModePlugin(): Promise<void> {
     const { RxDBDevModePlugin } = await import("rxdb/plugins/dev-mode");
     addRxPlugin(RxDBDevModePlugin);
     devModeLoaded = true;
-    console.log("🔧 RxDB Dev-Mode plugin loaded");
   } catch (err) {
-    console.warn("⚠️ Failed to load RxDB dev-mode plugin:", err);
   }
 }
 
 const DB_NAME = "indi_ouro_db_v8"; // NEW VERSION - force fresh start
 
-// Global singleton
 let dbInstance: MyDatabase | null = null;
 let dbPromise: Promise<MyDatabase> | null = null;
 
@@ -52,14 +47,11 @@ let dbPromise: Promise<MyDatabase> | null = null;
  * Create the RxDB database with all collections
  */
 async function createDatabase(): Promise<MyDatabase> {
-  console.log(`📦 Creating RxDB database (${DB_NAME})...`);
 
-  // Load dev-mode plugin first (development only)
   await loadDevModePlugin();
 
   let storage: RxStorage<any, any> = getRxStorageDexie();
 
-  // Wrap storage with validator in development
   if (process.env.NODE_ENV === "development") {
     storage = wrappedValidateAjvStorage({
       storage: storage,
@@ -73,9 +65,6 @@ async function createDatabase(): Promise<MyDatabase> {
       multiInstance: true,
       eventReduce: true,
     });
-
-    console.log("📚 Adding collections...");
-
     await db.addCollections({
       animals: {
         schema: animalSchema,
@@ -108,17 +97,11 @@ async function createDatabase(): Promise<MyDatabase> {
         },
       },
     });
-
-    console.log("✅ Collections created");
-
-    // Setup replication (non-blocking)
     setupReplication(db).catch((err: Error) => {
-      console.error("⚠️ Replication setup failed:", err);
     });
 
     return db;
   } catch (err) {
-    console.error("❌ Error creating database:", err);
     throw err;
   }
 }
@@ -127,18 +110,12 @@ async function createDatabase(): Promise<MyDatabase> {
  * Handle database errors - NO AUTO-RELOAD
  */
 async function handleDatabaseError(error: any) {
-  console.error("❌ RxDB initialization failed:", error);
-
-  // Reset state
   dbInstance = null;
   dbPromise = null;
 
-  // Check if it's a DB9 error
   const isDB9 = error?.code === "DB9" || error?.message?.includes("DB9");
 
   if (isDB9 && typeof window !== "undefined") {
-    console.error("🛑 DB9 Schema Conflict - Manual cleanup required");
-
     const instructions = `
 ╔════════════════════════════════════════════════════════════╗
 ║  ERRO DB9 - CONFLITO DE SCHEMA                             ║
@@ -173,10 +150,6 @@ OPÇÃO 3 - Modo Anônimo (TESTE):
 
 ⚠️ IMPORTANTE: Seus dados estão seguros no Supabase!
     `.trim();
-
-    console.log(instructions);
-
-    // Show alert but DON'T reload
     alert(
       "❌ ERRO DB9 - Banco de Dados Corrompido\n\n" +
         "O app não pode continuar com o banco atual.\n\n" +
@@ -189,7 +162,6 @@ OPÇÃO 3 - Modo Anônimo (TESTE):
         "Seus dados no Supabase estão seguros!"
     );
 
-    // Return rejected promise to stop execution
     return Promise.reject(error);
   }
 
@@ -200,26 +172,21 @@ OPÇÃO 3 - Modo Anônimo (TESTE):
  * Get or create the RxDB database singleton
  */
 export async function getDatabase(): Promise<MyDatabase> {
-  // Server-side: return null
   if (typeof window === "undefined") {
     return null as any;
   }
 
-  // Return existing instance
   if (dbInstance) {
     return dbInstance;
   }
 
-  // Return existing promise
   if (dbPromise) {
     return dbPromise;
   }
 
-  // Create new instance
   dbPromise = createDatabase()
     .then((db) => {
       dbInstance = db;
-      console.log("✅ RxDB ready");
       return db;
     })
     .catch((error) => handleDatabaseError(error));

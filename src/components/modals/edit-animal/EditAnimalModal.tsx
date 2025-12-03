@@ -85,7 +85,6 @@ export function EditAnimalModal({
       await onSave(updatedData);
       onClose();
     } catch (err) {
-      console.error("Erro ao salvar:", err);
       setError("Erro ao salvar as alterações. Tente novamente.");
     } finally {
       setIsSaving(false);

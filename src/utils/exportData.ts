@@ -5,7 +5,6 @@ export function exportToExcel(
   dados: AnimalData[],
   filename: string = "animais.xlsx"
 ) {
-  // Prepara os dados para exportação
   const exportData = dados.map((item, index) => ({
     ID: index + 1,
     RGN: item.animal.rgn || "",
@@ -30,10 +29,8 @@ export function exportToExcel(
     "Última Atualização": item.updatedAt || "",
   }));
 
-  // Cria a planilha
   const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-  // Ajusta a largura das colunas
   const columnWidths = [
     { wch: 5 }, // ID
     { wch: 15 }, // RGN
@@ -54,14 +51,8 @@ export function exportToExcel(
 
   worksheet["!cols"] = columnWidths;
 
-  // Cria o workbook
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Animais");
 
-  // Faz o download
   XLSX.writeFile(workbook, filename);
-
-  console.log(
-    `📊 Planilha exportada: ${filename} com ${dados.length} registros`
-  );
 }

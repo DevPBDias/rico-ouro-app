@@ -28,7 +28,6 @@ export default function ServiceWorkerUpdater() {
     });
 
     const onControllerChange = () => {
-      // reload quando o novo SW assume o controle
       window.location.reload();
     };
     navigator.serviceWorker.addEventListener(

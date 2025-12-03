@@ -9,28 +9,18 @@ interface UseBoisListOptions {
   itemsPerPage?: number;
 }
 
-/**
- * Hook para gerenciar lista de animais com paginação e filtros
- *
- * @param options - Opções de configuração (itemsPerPage)
- * @returns Estado da lista com paginação e funções de manipulação
- */
 export function useBoisList(options: UseBoisListOptions = {}) {
   const { itemsPerPage = 10 } = options;
 
-  // Estados de filtro
   const [query, setQuery] = useState("");
   const [sexo, setSexo] = useState("");
   const [parentQuery, setParentQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Buscar todos os animais
   const { animals, isLoading } = useAnimals();
 
-  // Mutation hooks para operações de delete
   const { bulkRemove, remove } = useLocalMutation<AnimalDocType>("animals");
 
-  // Filtrar dados localmente
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const pq = parentQuery.trim().toLowerCase();
@@ -58,7 +48,6 @@ export function useBoisList(options: UseBoisListOptions = {}) {
     });
   }, [animals, query, sexo, parentQuery]);
 
-  // Paginação
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -75,12 +64,10 @@ export function useBoisList(options: UseBoisListOptions = {}) {
     setCurrentPage(1);
   }, []);
 
-  // Reset paginação quando filtros mudam
   useEffect(() => {
     resetPagination();
   }, [query, sexo, parentQuery, resetPagination]);
 
-  // Deletar todos os animais
   const deleteAllAnimals = useCallback(async () => {
     const uuids = animals
       .map((a) => a.uuid)
@@ -91,7 +78,6 @@ export function useBoisList(options: UseBoisListOptions = {}) {
     }
   }, [animals, bulkRemove]);
 
-  // Excluir por RGN
   const excluirPorRgn = useCallback(
     async (rgn: string) => {
       const animal = animals.find((a) => a.animal?.rgn === rgn);
@@ -103,23 +89,19 @@ export function useBoisList(options: UseBoisListOptions = {}) {
   );
 
   return {
-    // Dados
     animals,
     filtered,
     paginatedData,
     isLoading,
 
-    // Paginação
     currentPage,
     totalPages,
     itemsPerPage,
     handlePageChange,
 
-    // Operações
     deleteAllAnimals,
     excluirPorRgn,
 
-    // Filtros
     query,
     setQuery,
     sexo,

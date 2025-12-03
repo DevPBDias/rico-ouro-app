@@ -55,10 +55,6 @@ export async function addToSyncQueue(
     req.onsuccess = () => resolve();
     req.onerror = () => reject(new Error("Failed to add request to queue."));
   });
-
-  console.log("Request added to sync queue:", queuedRequest);
-
-  // Register sync tag
   await registerBackgroundSync("sync-data");
 }
 
@@ -87,8 +83,6 @@ export async function removeFromSyncQueue(id: string): Promise<void> {
     request.onerror = () =>
       reject(new Error(`Failed to remove request ${id} from queue.`));
   });
-
-  console.log("Request removed from sync queue:", id);
 }
 
 export async function registerBackgroundSync(tag: string) {
@@ -96,11 +90,8 @@ export async function registerBackgroundSync(tag: string) {
     const registration = await navigator.serviceWorker.ready;
     try {
       await (registration as any).sync.register(tag);
-      console.log(`Background Sync registered: ${tag}`);
     } catch (err) {
-      console.error("Background Sync registration failed:", err);
     }
   } else {
-    console.log("Background Sync not supported");
   }
 }

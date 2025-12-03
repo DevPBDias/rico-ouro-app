@@ -11,7 +11,6 @@ export function useVaccines() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Subscribe to vaccines collection
   useEffect(() => {
     if (!db) {
       setIsLoading(dbLoading);
@@ -42,7 +41,6 @@ export function useVaccines() {
     return () => subscription.unsubscribe();
   }, [db, dbLoading]);
 
-  // Create vaccine
   const createVaccine = async (vaccineName: string) => {
     if (!db) throw new Error("Database not ready");
 
@@ -57,7 +55,6 @@ export function useVaccines() {
     return newVaccine;
   };
 
-  // Update vaccine
   const updateVaccine = async (uuid: string, vaccineName: string) => {
     if (!db) throw new Error("Database not ready");
 
@@ -72,7 +69,6 @@ export function useVaccines() {
     });
   };
 
-  // Delete vaccine (soft delete)
   const deleteVaccine = async (uuid: string) => {
     if (!db) throw new Error("Database not ready");
 

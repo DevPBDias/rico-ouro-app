@@ -20,7 +20,6 @@ interface FileSystemWritableFileStream {
 export async function saveBlobAsFile(blob: Blob, fileName: string) {
   const blobUrl = URL.createObjectURL(blob);
 
-  // Tenta usar File System Access API
   const windowWithFS = window as WindowWithFileSystemAccess;
   if (windowWithFS.showSaveFilePicker) {
     try {
@@ -36,7 +35,6 @@ export async function saveBlobAsFile(blob: Blob, fileName: string) {
       URL.revokeObjectURL(blobUrl);
       return;
     } catch (err) {
-      console.warn("Erro ao salvar arquivo:", err);
     }
   }
 

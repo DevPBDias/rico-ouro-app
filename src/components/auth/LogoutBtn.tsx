@@ -16,7 +16,6 @@ export default function LogoutButton() {
       await signOut();
       router.push("/login");
     } catch (err) {
-      console.error("Erro ao sair:", err);
     } finally {
       setLoading(false);
     }

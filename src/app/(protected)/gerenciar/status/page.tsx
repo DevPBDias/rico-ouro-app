@@ -21,7 +21,6 @@ const StatusPage = () => {
     status: null as IStatus | null,
   });
 
-  // Lista de todos os status disponíveis
   const availableStatuses: IStatus[] = [
     "Descarte",
     "RGD",
@@ -41,7 +40,6 @@ const StatusPage = () => {
       .filter((option) => option.value);
   }, [animals]);
 
-  // Quando o RGN é selecionado, carrega o status atual do animal
   useEffect(() => {
     if (formData.rgn) {
       const animal = animals.find(
@@ -104,7 +102,6 @@ const StatusPage = () => {
 
       setSuccessModalOpen(true);
     } catch (error) {
-      console.error("❌ Erro ao atualizar status:", error);
       setError("Erro ao atualizar status");
     }
   };

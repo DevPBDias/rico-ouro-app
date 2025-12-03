@@ -1,8 +1,3 @@
-/**
- * Remove recursivamente propriedades com valor null ou undefined de um objeto.
- * Isso é útil para limpar dados vindos do Supabase antes de salvar no RxDB,
- * pois o RxDB/JSONSchema pode rejeitar null para campos tipados como string/number.
- */
 export function cleanNulls(obj: any): any {
   if (obj === null || obj === undefined) {
     return undefined;
@@ -22,8 +17,6 @@ export function cleanNulls(obj: any): any {
         newObj[key] = value;
       }
     });
-    // Se o objeto ficou vazio, mas não era vazio antes, talvez devêssemos mantê-lo?
-    // Depende do caso. Para RxDB, um objeto vazio {} pode ser válido se propriedades forem opcionais.
     return newObj;
   }
 

@@ -9,7 +9,6 @@ interface Notification {
   message: string;
 }
 
-// Simple event bus implementation for global notifications
 type Listener = (notification: Notification | null) => void;
 let listeners: Listener[] = [];
 let currentNotification: Notification | null = null;

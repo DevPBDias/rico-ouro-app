@@ -32,13 +32,11 @@ export function useLocalMutation<
           _deleted: false,
         };
 
-        // Insert no RxDB - a replicação sincroniza automaticamente
         await collection.insert(documentData as unknown as T);
 
         setIsLoading(false);
         return uuid;
       } catch (err) {
-        console.error(`Error creating document in ${collectionName}:`, err);
         const errorObj =
           err instanceof Error ? err : new Error("Failed to create document");
         setError(errorObj);
@@ -84,7 +82,6 @@ export function useLocalMutation<
 
         setIsLoading(false);
       } catch (err) {
-        console.error(`Error updating document ${id}:`, err);
         const errorObj =
           err instanceof Error ? err : new Error("Failed to update document");
         setError(errorObj);
@@ -117,12 +114,10 @@ export function useLocalMutation<
           throw new Error(`Document ${id} not found in ${collectionName}`);
         }
 
-        // Remove no RxDB - a replicação sincroniza automaticamente
         await doc.remove();
 
         setIsLoading(false);
       } catch (err) {
-        console.error(`Error removing document ${id}:`, err);
         const errorObj =
           err instanceof Error ? err : new Error("Failed to remove document");
         setError(errorObj);
@@ -158,12 +153,10 @@ export function useLocalMutation<
           _deleted: false,
         }));
 
-        // Bulk insert no RxDB - a replicação sincroniza automaticamente
         await collection.bulkInsert(documentsWithMeta as unknown as T[]);
 
         setIsLoading(false);
       } catch (err) {
-        console.error(`Error bulk inserting documents:`, err);
         const errorObj =
           err instanceof Error
             ? err
@@ -193,12 +186,10 @@ export function useLocalMutation<
           throw new Error(`Collection ${collectionName} not found`);
         }
 
-        // Bulk remove no RxDB - a replicação sincroniza automaticamente
         await collection.bulkRemove(ids);
 
         setIsLoading(false);
       } catch (err) {
-        console.error(`Error bulk removing documents:`, err);
         const errorObj =
           err instanceof Error
             ? err

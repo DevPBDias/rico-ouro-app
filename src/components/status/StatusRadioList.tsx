@@ -42,8 +42,6 @@ export function StatusRadioList({
                     checked={isSelected}
                     className="border-primary"
                     onCheckedChange={(val) => {
-                      // Comportamento de radio: sempre seleciona o novo status
-                      // Se clicar no mesmo, desmarca
                       if (val && isSelected) {
                         onSelect(null);
                       } else {

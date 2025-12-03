@@ -15,7 +15,6 @@ export function useSyncStatus() {
   const [online, setOnline] = useState<boolean>(true);
 
   useEffect(() => {
-    // Only run on client side
     if (typeof window === "undefined") return;
 
     const initialOnlineStatus = isOnline();

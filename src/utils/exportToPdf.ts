@@ -16,7 +16,6 @@ export async function generateAnimalReportPDF(
 
   const doc = new jsPDF({ orientation: "landscape" });
 
-  // Cabeçalho
   const headerColor: [number, number, number] = [25, 98, 174];
   doc.setFillColor(...headerColor);
   doc.rect(0, 0, doc.internal.pageSize.width, 25, "F");
@@ -37,14 +36,12 @@ export async function generateAnimalReportPDF(
     .filter(([key]) => selectedFields[key as keyof SelectedReportFields])
     .map(([, [header, key]]) => ({ header, key }));
 
-  // Ordena por RGN (descendente)
   const sortedData = [...data].sort((a, b) => {
     const rgnA = parseInt(a.animal?.rgn || "0", 10);
     const rgnB = parseInt(b.animal?.rgn || "0", 10);
     return rgnB - rgnA;
   });
 
-  // Monta corpo da tabela
   type ReportRow = {
     nomeAnimal: string;
     rgn: string;
@@ -110,7 +107,6 @@ export async function generateAnimalReportPDF(
     };
   });
 
-  // Tabela
   autoTable(doc, {
     startY: 35,
     head: [columns.map((col) => col.header)],
@@ -134,7 +130,6 @@ export async function generateAnimalReportPDF(
     margin: { top: 35, left: 10, right: 10 },
   });
 
-  // Rodapé
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -148,7 +143,6 @@ export async function generateAnimalReportPDF(
     );
   }
 
-  // Total de registros
   doc.setFontSize(10);
   doc.setTextColor(50);
   doc.text(
@@ -157,7 +151,6 @@ export async function generateAnimalReportPDF(
     doc.internal.pageSize.height - 10
   );
 
-  // Download
   const pdfBlob = doc.output("blob");
   const fileName = `relatorio_animais_${Date.now()}.pdf`;
   await saveBlobAsFile(pdfBlob, fileName);
