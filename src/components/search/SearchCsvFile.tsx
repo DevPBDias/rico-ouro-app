@@ -1,46 +1,32 @@
 "use client";
-import { useAnimalActions, useMatrizActions } from "@/hooks/useRxData";
-import { extractDataFromExcel } from "@/utils/extractData";
 import { useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { CheckCircle2, X, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 import { checkDuplicateRGNs } from "@/lib/supabase/api";
 import { useRxDatabase } from "@/providers/RxDBProvider";
-import { separateAnimalsAndMatrizes } from "@/utils/animalToMatriz";
+import { extractDataFromExcel } from "@/utils/extractData";
+import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
 
 interface DuplicateInfo {
   rgn: string;
-  uuid: string;
-  nome: string;
+  id: string;
+  name: string;
   source: "local" | "global";
 }
 
-interface ProcessingStats {
-  totalAnimals: number;
-  normalAnimals: number;
-  matrizes: number;
-}
-
 const SearchCsvFile = () => {
-  const { bulkUpsert, isReady } = useAnimalActions();
-  const { bulkInsert: bulkInsertMatriz, isReady: isMatrizReady } =
-    useMatrizActions();
+  const { saveAnimal } = useCreateAnimal();
   const db = useRxDatabase();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicates, setDuplicates] = useState<DuplicateInfo[]>([]);
-  const [pendingAnimals, setPendingAnimals] = useState<AnimalData[]>([]);
-  const [processingStats, setProcessingStats] = useState<ProcessingStats>({
-    totalAnimals: 0,
-    normalAnimals: 0,
-    matrizes: 0,
-  });
-  const [forceMatrizImport, setForceMatrizImport] = useState(false);
+  const [pendingAnimals, setPendingAnimals] = useState<Animal[]>([]);
+  const [totalImported, setTotalImported] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,41 +39,20 @@ const SearchCsvFile = () => {
     fileInputRef.current?.click();
   };
 
-  const processAnimals = async (animals: AnimalData[]) => {
-    console.log("🔄 Separando animais e matrizes...");
+  const processAnimals = async (animals: Animal[]) => {
+    console.log(`💾 Salvando ${animals.length} animais...`);
 
-    // Separar animais normais de matrizes
-    const { animals: normalAnimals, matrizes } = separateAnimalsAndMatrizes(
-      animals,
-      forceMatrizImport
-    );
-
-    console.log(`📊 Estatísticas:
-      - Total de animais processados: ${animals.length}
-      - Animais normais: ${normalAnimals.length}
-      - Matrizes (fêmeas com >24 meses ou forçadas): ${matrizes.length}`);
-
-    // Salvar animais normais
-    if (normalAnimals.length > 0) {
-      console.log(`💾 Salvando ${normalAnimals.length} animais...`);
-      await bulkUpsert(normalAnimals);
-      console.log("✅ Animais salvos com sucesso!");
+    // Salvar animais usando o hook
+    for (const animal of animals) {
+      try {
+        await saveAnimal(animal);
+      } catch (error) {
+        console.error(`Erro ao salvar animal ${animal.rgn}:`, error);
+      }
     }
 
-    // Salvar matrizes
-    if (matrizes.length > 0) {
-      console.log(`💾 Salvando ${matrizes.length} matrizes...`);
-      await bulkInsertMatriz(matrizes);
-      console.log("✅ Matrizes salvas com sucesso!");
-    }
-
-    // Atualizar estatísticas
-    setProcessingStats({
-      totalAnimals: animals.length,
-      normalAnimals: normalAnimals.length,
-      matrizes: matrizes.length,
-    });
-
+    console.log("✅ Animais salvos com sucesso!");
+    setTotalImported(animals.length);
     setIsProcessing(false);
     setShowSuccessModal(true);
     setPendingAnimals([]);
@@ -103,23 +68,31 @@ const SearchCsvFile = () => {
     if (validRgns.length === 0) return [];
 
     try {
-      // Buscar todos os animais locais
-      const localAnimals = await db.animals.find().exec();
+      // Otimização: Buscar apenas os animais que estão na lista de RGNs
+      // Usando $in para evitar carregar todos os animais em memória
+      const localAnimals = await db.animals
+        .find({
+          selector: {
+            rgn: {
+              $in: validRgns,
+            },
+          },
+        })
+        .exec();
 
       const duplicates: DuplicateInfo[] = [];
 
       localAnimals.forEach((doc: any) => {
         const animal = doc.toJSON();
-        if (animal.animal?.rgn) {
-          const rgn = String(animal.animal.rgn).trim();
-          if (validRgns.includes(rgn)) {
-            duplicates.push({
-              rgn: rgn,
-              uuid: animal.uuid || "UUID desconhecido",
-              nome: animal.animal.nome || "Sem nome",
-              source: "local",
-            });
-          }
+        // Se o animal existe e não está deletado, é uma duplicata
+        // Se estiver deletado, tecnicamente podemos recriar/sobrescrever, mas vamos alertar por segurança
+        if (animal.rgn) {
+          duplicates.push({
+            rgn: animal.rgn,
+            id: animal.rgn,
+            name: animal.name || "Sem nome",
+            source: "local",
+          });
         }
       });
 
@@ -135,22 +108,15 @@ const SearchCsvFile = () => {
 
     setIsProcessing(true);
     try {
-      const extractedData: AnimalData[] = await extractDataFromExcel(
-        selectedFile
-      );
-
-      const animalsToSave = extractedData.map((animal) => ({
-        ...animal,
-        uuid: animal.uuid || crypto.randomUUID(),
-      }));
+      const extractedData: Animal[] = await extractDataFromExcel(selectedFile);
 
       // Extrair todos os RGNs dos animais para verificação
-      const rgnsToCheck = animalsToSave
-        .map((animal) => animal.animal?.rgn)
+      const rgnsToCheck = extractedData
+        .map((animal) => animal.rgn)
         .filter((rgn): rgn is string => !!rgn && rgn.trim() !== "");
 
       console.log(
-        `📋 Planilha processada: ${animalsToSave.length} animais encontrados`
+        `📋 Planilha processada: ${extractedData.length} animais encontrados`
       );
 
       let allDuplicates: DuplicateInfo[] = [];
@@ -185,7 +151,12 @@ const SearchCsvFile = () => {
             const localRgns = new Set(localDuplicates.map((d) => d.rgn));
             const uniqueGlobalDuplicates = globalDuplicates
               .filter((d) => !localRgns.has(d.rgn))
-              .map((d) => ({ ...d, source: "global" as const }));
+              .map((d) => ({
+                rgn: d.rgn,
+                id: d.id,
+                name: d.name,
+                source: "global" as const,
+              }));
 
             allDuplicates = [...allDuplicates, ...uniqueGlobalDuplicates];
           }
@@ -203,7 +174,7 @@ const SearchCsvFile = () => {
             `⚠️ Total: ${allDuplicates.length} duplicatas encontradas - aguardando decisão do usuário`
           );
           setDuplicates(allDuplicates);
-          setPendingAnimals(animalsToSave);
+          setPendingAnimals(extractedData);
           setShowDuplicateModal(true);
           setIsProcessing(false);
           return;
@@ -212,7 +183,7 @@ const SearchCsvFile = () => {
 
       // Não há duplicatas - processar normalmente
       console.log("✅ Nenhuma duplicata encontrada - processando animais...");
-      await processAnimals(animalsToSave);
+      await processAnimals(extractedData);
     } catch (error) {
       setIsProcessing(false);
       console.error("❌ Erro ao processar o arquivo:", error);
@@ -285,7 +256,7 @@ const SearchCsvFile = () => {
 
           <Button
             onClick={handleProcessFile}
-            disabled={!selectedFile || isProcessing || !isReady}
+            disabled={!selectedFile || isProcessing}
             className="w-full rounded-lg bg-[#1162AE] py-6 text-sm uppercase font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
           >
             {isProcessing ? "Processando..." : "Processar arquivo"}
@@ -321,7 +292,7 @@ const SearchCsvFile = () => {
               </p>
 
               {/* Estatísticas */}
-              {processingStats.totalAnimals > 0 && (
+              {totalImported > 0 && (
                 <div className="w-full bg-muted rounded-lg p-4 space-y-2">
                   <p className="text-sm font-semibold text-foreground">
                     📊 Estatísticas da Importação:
@@ -329,32 +300,12 @@ const SearchCsvFile = () => {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
-                        Total processado:
+                        Total importado:
                       </span>
-                      <span className="font-medium">
-                        {processingStats.totalAnimals}
+                      <span className="font-medium text-blue-600">
+                        {totalImported} animais
                       </span>
                     </div>
-                    {processingStats.normalAnimals > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          🐄 Animais:
-                        </span>
-                        <span className="font-medium text-blue-600">
-                          {processingStats.normalAnimals}
-                        </span>
-                      </div>
-                    )}
-                    {processingStats.matrizes > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          👑 Matrizes (fêmeas &gt;24m):
-                        </span>
-                        <span className="font-medium text-purple-600">
-                          {processingStats.matrizes}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
@@ -416,10 +367,7 @@ const SearchCsvFile = () => {
                           : "🌐 Banco Global"}
                       </span>
                     </div>
-                    <p className="text-muted-foreground">Nome: {dup.nome}</p>
-                    <p className="text-xs text-muted-foreground">
-                      UUID: {dup.uuid}
-                    </p>
+                    <p className="text-muted-foreground">Nome: {dup.name}</p>
                   </div>
                 ))}
               </div>

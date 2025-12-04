@@ -1,7 +1,5 @@
-interface PesoMedido {
-  valor: number;
-  mes: string;
-}
+import { AnimalMetric } from "@/types/animal_metrics.type";
+import { formatDate } from "@/utils/formatDates";
 
 interface GainDaily {
   dailyGain: number;
@@ -12,7 +10,7 @@ interface GainDaily {
 }
 
 interface WeightListProps {
-  pesosMedidos: PesoMedido[];
+  pesosMedidos: Partial<AnimalMetric>[];
   gainDaily: GainDaily[];
 }
 
@@ -34,14 +32,19 @@ export function DetailsWeightList({
   const valueInteval = (i: number): string => {
     if (i === 0) return "0";
 
-    const days = diferencaEmDias(pesosMedidos[i].mes, pesosMedidos[i - 1].mes);
+    const currentDate = pesosMedidos[i].date;
+    const previousDate = pesosMedidos[i - 1].date;
+
+    if (!currentDate || !previousDate) return "0";
+
+    const days = diferencaEmDias(currentDate, previousDate);
     return String(days);
   };
 
   const valueGmd = (i: number): string => {
     if (i === 0) return "0";
 
-    const entry = gainDaily.find((g) => g.endDate === pesosMedidos[i].mes);
+    const entry = gainDaily.find((g) => g.endDate === pesosMedidos[i].date);
     if (!entry) return "0";
     return String(entry.dailyGain);
   };
@@ -58,10 +61,12 @@ export function DetailsWeightList({
               <span className="text-sm font-semibold text-gray-400">
                 {i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
               </span>
-              <span className="text-xs font-medium text-primary">{p.mes}</span>
+              <span className="text-xs font-medium text-primary">
+                {formatDate(p.date)}
+              </span>
             </div>
             <div className="text-xl mt-4 font-bold text-[#1162AE] flex flex-row items-center  gap-1">
-              {p.valor}
+              {p.value}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 kg
               </span>

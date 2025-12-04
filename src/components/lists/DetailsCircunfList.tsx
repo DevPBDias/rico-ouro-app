@@ -1,12 +1,9 @@
 "use client";
 
-interface CEMedido {
-  valor: number;
-  mes: string;
-}
+import { AnimalMetric } from "@/types/animal_metrics.type";
 
 interface DetailsCircunfListProps {
-  CEMedidos: CEMedido[];
+  CEMedidos: AnimalMetric[];
 }
 
 export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
@@ -23,7 +20,7 @@ export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
 
   const valueInterval = (i: number): string => {
     if (i === 0) return "0";
-    const days = diferencaEmDias(CEMedidos[i].mes, CEMedidos[i - 1].mes);
+    const days = diferencaEmDias(CEMedidos[i].date, CEMedidos[i - 1].date);
     return String(days);
   };
 
@@ -31,9 +28,9 @@ export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
     if (i === 0) return "0";
     const current = CEMedidos[i];
     const previous = CEMedidos[i - 1];
-    const days = diferencaEmDias(current.mes, previous.mes);
+    const days = diferencaEmDias(current.date, previous.date);
     if (days <= 0) return "0";
-    const totalGain = current.valor - previous.valor;
+    const totalGain = current.value - previous.value;
     const daily = totalGain / days;
     return daily.toFixed(3);
   };
@@ -50,10 +47,10 @@ export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
               <span className="text-sm font-semibold text-gray-400">
                 {i === 0 ? "Medição Nascimento" : `${i}ª Medição`}
               </span>
-              <span className="text-xs font-medium text-primary">{p.mes}</span>
+              <span className="text-xs font-medium text-primary">{p.date}</span>
             </div>
             <div className="text-xl mt-4 font-bold text-[#1162AE] flex flex-row items-center  gap-1">
-              {p.valor}
+              {p.value}
               <span className="text-xs">cm</span>
             </div>
           </div>

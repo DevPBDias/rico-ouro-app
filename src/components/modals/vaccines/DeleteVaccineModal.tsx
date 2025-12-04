@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Vaccine } from "@/types/schemas.types";
+import type { Vaccine } from "@/types/vaccine.type";
 
 interface DeleteVaccineModalProps {
   open: boolean;
@@ -39,7 +39,7 @@ export function DeleteVaccineModal({
 
   const options = useMemo(() => {
     return [...vaccines].sort((a, b) =>
-      a.vaccineName.localeCompare(b.vaccineName, "pt-BR", {
+      a.vaccine_name.localeCompare(b.vaccine_name, "pt-BR", {
         sensitivity: "base",
       })
     );
@@ -99,8 +99,8 @@ export function DeleteVaccineModal({
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((vaccine) => (
-                    <SelectItem key={vaccine.uuid} value={vaccine.uuid!}>
-                      {vaccine.vaccineName}
+                    <SelectItem key={vaccine.id} value={vaccine.id!}>
+                      {vaccine.vaccine_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

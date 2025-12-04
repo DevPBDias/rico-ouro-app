@@ -17,9 +17,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
-import { FormatData } from "@/utils/formatDates";
+import { formatDate } from "@/utils/formatDates";
 
-type SerieItem = { mes: string; valor: number };
+type SerieItem = { date: string; value: number };
 
 type Props = {
   title: string;
@@ -35,8 +35,8 @@ export function ChartLineLabel({
   colorVar = "--chart-1",
 }: Props) {
   const sortedData = [...data].sort((a, b) => {
-    if (a.mes.includes("-") && b.mes.includes("-")) {
-      return a.mes.localeCompare(b.mes);
+    if (a.date.includes("-") && b.date.includes("-")) {
+      return a.date.localeCompare(b.date);
     }
     return 0;
   });
@@ -53,9 +53,9 @@ export function ChartLineLabel({
   };
 
   const chartData = sortedData.map((d) => ({
-    month: formatToMonthYear(d.mes),
-    label: FormatData(d.mes),
-    value: d.valor,
+    month: formatToMonthYear(d.date),
+    label: formatDate(d.date),
+    value: d.value,
   }));
 
   const chartConfig = {

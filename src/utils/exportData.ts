@@ -1,32 +1,33 @@
 import * as XLSX from "xlsx";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 
 export function exportToExcel(
-  dados: AnimalData[],
+  dados: Animal[],
   filename: string = "animais.xlsx"
 ) {
   const exportData = dados.map((item, index) => ({
     ID: index + 1,
-    RGN: item.animal.rgn || "",
-    "Série/RGD": item.animal.serieRGD || "",
-    Sexo: item.animal.sexo || "",
-    Nascimento: item.animal.nasc || "",
-    iABCZg: item.animal.iabcgz || "",
-    DECA: item.animal.deca || "",
-    "P %": item.animal.p || "",
-    "F %": item.animal.f || "",
-    "Nome do Pai": item.pai?.nome || "",
-    "Série/RGD da Mãe": item.mae?.serieRGD || "",
-    "RGN da Mãe": item.mae?.rgn || "",
-    "Pesos Medidos":
-      item.animal.pesosMedidos
-        ?.map((p) => `${p.mes}: ${p.valor}kg`)
-        .join("; ") || "",
-    "Circunferência Escrotal":
-      item.animal.circunferenciaEscrotal
-        ?.map((c) => `${c.mes}: ${c.valor}cm`)
-        .join("; ") || "",
-    "Última Atualização": item.updatedAt || "",
+    RGN: item.rgn || "",
+    "Série/RGD": item.serie_rgd || "",
+    Nome: item.name || "",
+    Sexo: item.sex || "",
+    Nascimento: item.born_date || "",
+    "Cor Nascimento": item.born_color || "",
+    iABCZg: item.iabcgz || "",
+    DECA: item.deca || "",
+    "P %": item.p || "",
+    "F %": item.f || "",
+    "Nome do Pai": item.father_name || "",
+    "Série/RGD da Mãe": item.mother_serie_rgd || "",
+    "RGN da Mãe": item.mother_rgn || "",
+    "Avô Materno": item.maternal_grandfather_name || "",
+    Status: item.status || "",
+    "Farm ID": item.farm_id || "",
+    Classe: item.class_matriz || "",
+    Tipo: item.type || "",
+    Genotipagem: item.genotyping || "",
+    Condição: item.condition || "",
+    "Última Atualização": item.updated_at || "",
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -35,8 +36,10 @@ export function exportToExcel(
     { wch: 5 }, // ID
     { wch: 15 }, // RGN
     { wch: 15 }, // Série/RGD
+    { wch: 20 }, // Nome
     { wch: 8 }, // Sexo
     { wch: 12 }, // Nascimento
+    { wch: 12 }, // Cor Nascimento
     { wch: 10 }, // iABCZg
     { wch: 10 }, // DECA
     { wch: 8 }, // P %
@@ -44,8 +47,13 @@ export function exportToExcel(
     { wch: 20 }, // Nome do Pai
     { wch: 15 }, // Série/RGD da Mãe
     { wch: 15 }, // RGN da Mãe
-    { wch: 30 }, // Pesos Medidos
-    { wch: 30 }, // Circunferência Escrotal
+    { wch: 20 }, // Avô Materno
+    { wch: 12 }, // Status
+    { wch: 10 }, // Farm ID
+    { wch: 10 }, // Classe
+    { wch: 15 }, // Tipo
+    { wch: 12 }, // Genotipagem
+    { wch: 12 }, // Condição
     { wch: 20 }, // Última Atualização
   ];
 

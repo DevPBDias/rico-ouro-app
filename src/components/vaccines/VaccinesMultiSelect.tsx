@@ -1,11 +1,10 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-
-type VaccineItem = { id?: number; vaccineName: string };
+import { Vaccine } from "@/types/vaccine.type";
 
 interface VaccinesMultiSelectProps {
-  vaccines: VaccineItem[];
+  vaccines: Vaccine[];
   loading: boolean;
   selected: string[];
   onToggle: (name: string, checked: boolean) => void;
@@ -33,7 +32,7 @@ export function VaccinesMultiSelect({
         {!loading && vaccines.length > 0 && (
           <div className="grid grid-cols-2 gap-3">
             {vaccines.map((vaccine) => {
-              const name = vaccine.vaccineName;
+              const name = vaccine.vaccine_name;
               const checked = selected.includes(name);
               return (
                 <label

@@ -2,10 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 
 interface Props {
-  formData: AnimalData;
+  formData: Animal;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isSaving: boolean;
 }
@@ -24,8 +24,8 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
             Mãe (Série RGD)
           </Label>
           <Input
-            name="mae.serieRGD"
-            value={formData.mae?.serieRGD ?? ""}
+            name="mother_serie_rgd"
+            value={formData.mother_serie_rgd ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -36,8 +36,8 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
             Mãe (RGN)
           </Label>
           <Input
-            name="mae.rgn"
-            value={formData.mae?.rgn ?? ""}
+            name="mother_rgn"
+            value={formData.mother_rgn ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -48,8 +48,8 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
             Pai
           </Label>
           <Input
-            name="pai.nome"
-            value={formData.pai?.nome ?? ""}
+            name="father_name"
+            value={formData.father_name ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -59,8 +59,8 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
             Avo materno
           </Label>
           <Input
-            name="avoMaterno.nome"
-            value={formData.avoMaterno?.nome ?? ""}
+            name="maternal_grandfather_name"
+            value={formData.maternal_grandfather_name ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />

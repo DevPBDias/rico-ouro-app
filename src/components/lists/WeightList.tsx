@@ -11,12 +11,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";
-
-interface PesoMedido {
-  uuid: string;
-  valor: number;
-  mes: string;
-}
+import { AnimalMetric } from "@/types/animal_metrics.type";
+import { formatDate } from "@/utils/formatDates";
 
 interface GainDaily {
   dailyGain: number;
@@ -27,9 +23,9 @@ interface GainDaily {
 }
 
 interface WeightListProps {
-  pesosMedidos: PesoMedido[];
-  editPeso: (index: number, valor: string) => void;
-  deletePeso: (index: number) => void;
+  pesosMedidos: AnimalMetric[];
+  editPeso: (id: string, valor: number) => void;
+  deletePeso: (id: string) => void;
   gainDaily: GainDaily[];
 }
 
@@ -41,34 +37,50 @@ export function WeightList({
 }: WeightListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  const handleOpen = (index: number, valor: number) => {
-    setEditIndex(index);
+  const handleOpen = (id: string, valor: number) => {
+    setEditId(id);
     setValorEdit(String(valor));
     setOpen(true);
   };
 
   const handleSave = () => {
-    if (editIndex !== null) {
-      editPeso(editIndex, valorEdit);
+    if (editId !== null) {
+      editPeso(editId, Number(valorEdit));
       setOpen(false);
-      setEditIndex(null);
+      setEditId(null);
     }
   };
 
   function diferencaEmDias(data1: string, data2: string): number {
-    const [dia1, mes1, ano1] = data1.split("/").map(Number);
-    const [dia2, mes2, ano2] = data2.split("/").map(Number);
-    const d1 = new Date(ano1, mes1 - 1, dia1);
-    const d2 = new Date(ano2, mes2 - 1, dia2);
+    // Handle both DD/MM/YYYY and ISO date formats
+    let d1: Date, d2: Date;
+
+    if (data1.includes("/")) {
+      const [dia1, mes1, ano1] = data1.split("/").map(Number);
+      d1 = new Date(ano1, mes1 - 1, dia1);
+    } else {
+      d1 = new Date(data1);
+    }
+
+    if (data2.includes("/")) {
+      const [dia2, mes2, ano2] = data2.split("/").map(Number);
+      d2 = new Date(ano2, mes2 - 1, dia2);
+    } else {
+      d2 = new Date(data2);
+    }
+
     const diffEmMs = Math.abs(d2.getTime() - d1.getTime());
     return Math.floor(diffEmMs / (1000 * 60 * 60 * 24));
   }
 
   const valueInteval = (i: number): string => {
     if (i === 0) return "0";
-    const days = diferencaEmDias(pesosMedidos[i].mes, pesosMedidos[i - 1].mes);
+    const days = diferencaEmDias(
+      pesosMedidos[i].date,
+      pesosMedidos[i - 1].date
+    );
     return String(days);
   };
 
@@ -77,10 +89,10 @@ export function WeightList({
     const current = pesosMedidos[i];
     const previous = pesosMedidos[i - 1];
 
-    const diffDays = diferencaEmDias(current.mes, previous.mes);
+    const diffDays = diferencaEmDias(current.date, previous.date);
     if (diffDays === 0) return "0";
 
-    const diffWeight = current.valor - previous.valor;
+    const diffWeight = current.value - previous.value;
     const gmd = diffWeight / diffDays;
 
     return gmd.toFixed(2);
@@ -90,7 +102,7 @@ export function WeightList({
     <div className="space-y-4 mt-6">
       {pesosMedidos?.map((p, i) => (
         <div
-          key={p.uuid}
+          key={p.id}
           className="flex items-center justify-between gap-3 border rounded-xl p-3 bg-white shadow-sm"
         >
           <div className="relative w-full flex flex-col items-start gap-3 border border-gray-400 px-1 py-2.5 rounded-lg">
@@ -99,11 +111,11 @@ export function WeightList({
                 {i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
               </span>
               <span className="text-xs font-semibold text-primary mt-1">
-                {p.mes}
+                {formatDate(p.date)}
               </span>
             </div>
             <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
-              {p.valor}
+              {p.value}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 kg
               </span>
@@ -115,14 +127,14 @@ export function WeightList({
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => handleOpen(i, p.valor)}
+                onClick={() => handleOpen(p.id, p.value)}
               >
                 <Pencil className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => deletePeso(i)}
+                onClick={() => deletePeso(p.id)}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

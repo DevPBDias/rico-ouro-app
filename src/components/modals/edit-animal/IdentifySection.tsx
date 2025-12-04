@@ -1,18 +1,18 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 
 interface Props {
-  formData: AnimalData;
+  formData: Animal;
   handleChange: (path: string, value: string) => void;
   isSaving: boolean;
 }
 
 const IdentificacaoSection = ({ formData, handleChange, isSaving }: Props) => {
   const fields = [
-    { label: "Série RGD", key: "animal.serieRGD" },
-    { label: "RGN", key: "animal.rgn", required: true },
-    { label: "Nome", key: "animal.nome", colSpan: 2 },
+    { label: "Série RGD", key: "serie_rgd" },
+    { label: "RGN", key: "rgn", required: true },
+    { label: "Nome", key: "name", colSpan: 2 },
   ];
 
   const getNestedValue = (obj: unknown, path: string): string => {

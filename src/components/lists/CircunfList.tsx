@@ -11,50 +11,59 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";
-
-interface CEMedido {
-  uuid: string;
-  valor: number;
-  mes: string; // format DD/MM/YYYY
-}
+import { AnimalMetric } from "@/types/animal_metrics.type";
+import { formatDate } from "@/utils/formatDates";
 
 interface CircunfListProps {
-  CEMedidos: CEMedido[];
-  editCE: (index: number, valor: string) => void;
-  deleteCE: (index: number) => void;
+  CEMedidos: AnimalMetric[];
+  editCE: (id: string, valor: number) => void;
+  deleteCE: (id: string) => void;
 }
 
 export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
-  const handleOpen = (index: number, valor: number) => {
-    setEditIndex(index);
+  const handleOpen = (id: string, valor: number) => {
+    setEditId(id);
     setValorEdit(String(valor));
     setOpen(true);
   };
 
   const handleSave = () => {
-    if (editIndex !== null) {
-      editCE(editIndex, valorEdit);
+    if (editId !== null) {
+      editCE(editId, Number(valorEdit));
       setOpen(false);
-      setEditIndex(null);
+      setEditId(null);
     }
   };
 
   function diferencaEmDias(data1: string, data2: string): number {
-    const [dia1, mes1, ano1] = data1.split("/").map(Number);
-    const [dia2, mes2, ano2] = data2.split("/").map(Number);
-    const d1 = new Date(ano1, mes1 - 1, dia1);
-    const d2 = new Date(ano2, mes2 - 1, dia2);
+    // Handle both DD/MM/YYYY and ISO date formats
+    let d1: Date, d2: Date;
+
+    if (data1.includes("/")) {
+      const [dia1, mes1, ano1] = data1.split("/").map(Number);
+      d1 = new Date(ano1, mes1 - 1, dia1);
+    } else {
+      d1 = new Date(data1);
+    }
+
+    if (data2.includes("/")) {
+      const [dia2, mes2, ano2] = data2.split("/").map(Number);
+      d2 = new Date(ano2, mes2 - 1, dia2);
+    } else {
+      d2 = new Date(data2);
+    }
+
     const diffEmMs = Math.abs(d2.getTime() - d1.getTime());
     return Math.floor(diffEmMs / (1000 * 60 * 60 * 24));
   }
 
   const valueInteval = (i: number): string => {
     if (i === 0) return "0";
-    const days = diferencaEmDias(CEMedidos[i].mes, CEMedidos[i - 1].mes);
+    const days = diferencaEmDias(CEMedidos[i].date, CEMedidos[i - 1].date);
     return String(days);
   };
 
@@ -63,10 +72,10 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
     const current = CEMedidos[i];
     const previous = CEMedidos[i - 1];
 
-    const diffDays = diferencaEmDias(current.mes, previous.mes);
+    const diffDays = diferencaEmDias(current.date, previous.date);
     if (diffDays === 0) return "0";
 
-    const diffValue = current.valor - previous.valor;
+    const diffValue = current.value - previous.value;
     const growth = diffValue / diffDays;
 
     return growth.toFixed(2);
@@ -76,7 +85,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
     <div className="space-y-4 mt-6">
       {CEMedidos?.map((p, i) => (
         <div
-          key={p.uuid}
+          key={p.id}
           className="flex items-center justify-between gap-3 border rounded-xl p-3 bg-white shadow-sm"
         >
           <div className="relative w-full flex flex-col items-start gap-3 border border-gray-400 px-1 py-2.5 rounded-lg">
@@ -85,11 +94,11 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
                 {i === 0 ? "Medição Inicial" : `${i}° Medição`}
               </span>
               <span className="text-xs font-semibold text-primary mt-1">
-                {p.mes}
+                {formatDate(p.date)}
               </span>
             </div>
             <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
-              {p.valor}
+              {p.value}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 cm
               </span>
@@ -98,13 +107,17 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
 
           <div className="flex flex-row-reverse gap-2">
             <div className="flex flex-col gap-2">
-              <Button variant="outline" size="icon" onClick={() => deleteCE(i)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => deleteCE(p.id)}
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => handleOpen(i, p.valor)}
+                onClick={() => handleOpen(p.id, p.value)}
               >
                 <Pencil className="w-4 h-4" />
               </Button>

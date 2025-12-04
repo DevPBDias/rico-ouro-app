@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -10,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Farm } from "@/types/schemas.types";
+import { Farm } from "@/types/farm.type";
 
 interface DeleteFarmModalProps {
   open: boolean;
@@ -39,7 +38,7 @@ export function DeleteFarmModal({
 
   const options = useMemo(() => {
     return [...farms].sort((a, b) =>
-      a.farmName.localeCompare(b.farmName, "pt-BR", {
+      a.farm_name.localeCompare(b.farm_name, "pt-BR", {
         sensitivity: "base",
       })
     );
@@ -99,8 +98,8 @@ export function DeleteFarmModal({
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((farm) => (
-                    <SelectItem key={farm.uuid} value={farm.uuid || ""}>
-                      {farm.farmName}
+                    <SelectItem key={farm.id} value={farm.id || ""}>
+                      {farm.farm_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -132,4 +131,3 @@ export function DeleteFarmModal({
     </>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,8 @@ import GenealogiaSection from "./PedigreeSection";
 interface EditAnimalModalProps {
   open: boolean;
   onClose: () => void;
-  data: AnimalData;
-  onSave: (updated: AnimalData) => Promise<void>;
+  data: Animal;
+  onSave: (updated: Animal) => Promise<void>;
 }
 
 export function EditAnimalModal({
@@ -28,7 +28,7 @@ export function EditAnimalModal({
   data,
   onSave,
 }: EditAnimalModalProps) {
-  const [formData, setFormData] = useState<AnimalData>(data);
+  const [formData, setFormData] = useState<Animal>(data);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +61,7 @@ export function EditAnimalModal({
   };
 
   const handleSave = async () => {
-    if (!formData.animal.rgn?.trim()) {
+    if (!formData.rgn?.trim()) {
       setError("RGN é obrigatório");
       return;
     }
@@ -70,16 +70,9 @@ export function EditAnimalModal({
     setError(null);
 
     try {
-      const updatedData: AnimalData = {
+      const updatedData: Animal = {
         ...formData,
-        id: data.id,
-        animal: {
-          ...formData.animal,
-          pesosMedidos: data.animal.pesosMedidos ?? [],
-          circunferenciaEscrotal: data.animal.circunferenciaEscrotal ?? [],
-          ganhoDiario: data.animal.ganhoDiario ?? [],
-        },
-        updatedAt: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       await onSave(updatedData);

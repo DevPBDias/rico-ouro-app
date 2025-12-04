@@ -1,12 +1,12 @@
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { saveBlobAsFile } from "./saveBlobFile";
-import { SelectedReportFields } from "@/types";
+import { SelectedReportFields } from "@/types/report_field.type";
 import { fieldMap } from "@/constants/dynamicFields";
 
 export async function generateAnimalReportPDF(
-  data: AnimalData[],
+  data: Animal[],
   selectedFields: SelectedReportFields
 ): Promise<void> {
   if (!data || data.length === 0) {
@@ -37,8 +37,8 @@ export async function generateAnimalReportPDF(
     .map(([, [header, key]]) => ({ header, key }));
 
   const sortedData = [...data].sort((a, b) => {
-    const rgnA = parseInt(a.animal?.rgn || "0", 10);
-    const rgnB = parseInt(b.animal?.rgn || "0", 10);
+    const rgnA = parseInt(a.rgn || "0", 10);
+    const rgnB = parseInt(b.rgn || "0", 10);
     return rgnB - rgnA;
   });
 
@@ -66,44 +66,32 @@ export async function generateAnimalReportPDF(
 
   const body: ReportRow[] = sortedData.map((animal) => {
     const nome =
-      animal.animal.nome?.trim() ||
-      `${animal.animal.serieRGD || ""} ${animal.animal.rgn || ""}`.trim();
+      animal.name?.trim() ||
+      `${animal.serie_rgd || ""} ${animal.rgn || ""}`.trim();
 
     const formatDate = (d?: string) =>
       d ? new Date(d).toLocaleDateString("pt-BR") : "-";
 
     return {
       nomeAnimal: nome || "-",
-      rgn: animal.animal.rgn || "-",
-      serieRGD: animal.animal.serieRGD || "-",
-      sexo: animal.animal.sexo || "-",
-      nasc: formatDate(animal.animal.nasc),
-      corNascimento: animal.animal.corNascimento || "-",
-      iabcgz: animal.animal.iabcgz || "-",
-      deca: animal.animal.deca || "-",
-      p: animal.animal.p || "-",
-      f: animal.animal.f || "-",
-      paiNome: animal.pai?.nome || "-",
-      maeSerieRGD: animal.mae?.serieRGD || "-",
-      maeRGN: animal.mae?.rgn || "-",
-      pesosMedidos:
-        animal.animal.pesosMedidos
-          ?.map((p) => `${p.valor}kg (${p.mes})`)
-          .join(", ") || "-",
-      vacinas:
-        animal.animal.vacinas
-          ?.map((v) => `${v.nome} (${formatDate(v.data)})`)
-          .join(", ") || "-",
-      circunferenciaEscrotal:
-        animal.animal.circunferenciaEscrotal
-          ?.map((c) => `${c.valor}cm (${c.mes})`)
-          .join(", ") || "-",
-      status: animal.animal.status?.value || "-",
-      farm: animal.animal.farm || "-",
-      ganhoDiario:
-        animal.animal.ganhoDiario
-          ?.map((v, index) => `${index + 1} ${v.dailyGain} (${v.days})`)
-          .join("; ") || "-",
+      rgn: animal.rgn || "-",
+      serieRGD: animal.serie_rgd || "-",
+      sexo: animal.sex || "-",
+      nasc: formatDate(animal.born_date),
+      corNascimento: animal.born_color || "-",
+      iabcgz: animal.iabcgz || "-",
+      deca: animal.deca || "-",
+      p: animal.p || "-",
+      f: animal.f || "-",
+      paiNome: animal.father_name || "-",
+      maeSerieRGD: animal.mother_serie_rgd || "-",
+      maeRGN: animal.mother_rgn || "-",
+      pesosMedidos: "-", // Dados agora vêm de animal_metrics_weight
+      vacinas: "-", // Dados agora vêm de animal_vaccines
+      circunferenciaEscrotal: "-", // Dados agora vêm de animal_metrics_ce
+      status: animal.status || "-",
+      farm: animal.farm_id?.toString() || "-",
+      ganhoDiario: "-", // Pode ser calculado a partir dos pesos
     };
   });
 

@@ -1,27 +1,30 @@
-import { AnimalData } from "@/types/schemas.types";
-import { FormatData } from "@/utils/formatDates";
-import {
-  calculateAnimalStage,
-  calculateAgeInMonths,
-} from "@/utils/animalUtils";
 import { Eye } from "lucide-react";
 import Link from "next/link";
+import { Animal } from "@/types/animal.type";
+import {
+  calculateAgeInMonths as getAgeMonths,
+  getAgeRange,
+} from "@/hooks/utils/useAnimalsByAgeAndSex";
+import { formatDate } from "@/utils/formatDates";
 
 interface AnimalCardProps {
-  animal: AnimalData;
+  animal: Animal;
+  type: "bois" | "matrizes";
 }
 
-export function AnimalCard({ animal }: AnimalCardProps) {
+export function AnimalCard({ animal, type }: AnimalCardProps) {
+  const getMonths = getAgeMonths(animal.born_date);
+
   return (
     <div className="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 w-full">
       <section className="px-4 py-2 mt-2">
         <div className="flex flex-row justify-between items-center">
           <h4 className="font-bold text-lg text-[#1162AE]">
-            {animal.animal.serieRGD} {animal.animal.rgn}
+            {animal.serie_rgd} {animal.rgn}
           </h4>
           <Link
             className="flex flex-row items-center gap-1 text-white bg-[#1162AE] text-xs font-medium uppercase px-2 py-1 rounded-md px-4 py-2"
-            href={`/bois/${animal.uuid}`}
+            href={`/${type}/${animal.rgn}`}
           >
             <Eye size={18} color="white" />
             Detalhes
@@ -33,19 +36,17 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE] text-sm">
-              {animal.animal.farm || "SEM DADO"}
+              {animal.farm_id || "SEM DADO"}
             </p>
           </div>
           <div className="flex flex-row gap-1 items-center">
             <span className="text-gray-400 text-xs font-medium uppercase">
               Categoria
             </span>
-            <span className="font-bold uppercase text-[#1162AE] text-sm">
-              {calculateAnimalStage(
-                FormatData(animal.animal.nasc),
-                animal.animal.sexo
-              )}
-            </span>
+            <p className="font-bold uppercase text-[#1162AE] text-sm">
+              {getAgeRange(getMonths)}
+              <span className="text-xs text-gray-500 ml-1">({getMonths}m)</span>
+            </p>
           </div>
         </div>
 
@@ -56,7 +57,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 status
               </span>
               <p className="font-bold uppercase text-lg text-[#1162AE] text-sm">
-                {animal.animal.status?.value || "-"}
+                {animal.status || "-"}
               </p>
             </div>
             <div className="flex flex-col gap-1">
@@ -64,7 +65,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 Sexo
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.sexo === "M" ? "Macho" : "Fêmea"}
+                {animal.sex === "M" ? "Macho" : "Fêmea"}
               </span>
             </div>
 
@@ -73,10 +74,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 Nascimento
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.nasc ?? "-"}
-                <span className="text-xs text-gray-500 ml-1">
-                  ({calculateAgeInMonths(FormatData(animal.animal.nasc))}m)
-                </span>
+                {formatDate(animal.born_date) ?? "-"}
               </span>
             </div>
           </div>
@@ -84,18 +82,18 @@ export function AnimalCard({ animal }: AnimalCardProps) {
           <div className="flex flex-row items-start justify-between mb-2 gap-4">
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-xs font-medium uppercase">
-                iABCZg
+                Nome
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.iabcgz ?? "-"}
+                {animal.name ?? "-"}
               </span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-xs font-medium uppercase">
-                Status
+                iABCZg
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.status?.value ?? "-"}
+                {animal.iabcgz ?? "-"}
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -103,15 +101,18 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 DECA
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.deca ?? "-"}
+                {animal.deca ?? "-"}
               </span>
             </div>
+          </div>
+
+          <div className="flex flex-row items-start justify-between mb-2 gap-4">
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-xs font-medium uppercase">
                 F%
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.f ?? "-"}
+                {animal.f ?? "-"}
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -119,7 +120,15 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 P%
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.animal.p ?? "-"}
+                {animal.p ?? "-"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-gray-400 text-xs font-medium uppercase">
+                Cor
+              </span>
+              <span className="font-bold uppercase text-[#1162AE] text-sm">
+                {animal.born_color ?? "-"}
               </span>
             </div>
           </div>
@@ -130,7 +139,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 Pai
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.pai.nome ?? "-"}
+                {animal.father_name ?? "-"}
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -138,7 +147,9 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 Mãe
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {`${animal.mae.serieRGD ?? "-"} ${animal.mae.rgn ?? ""}`.trim()}
+                {`${animal.mother_serie_rgd ?? "-"} ${
+                  animal.mother_rgn ?? ""
+                }`.trim()}
               </span>
             </div>
             <div className="flex flex-col gap-1">
@@ -146,32 +157,58 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 avô MATERNO
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {animal.avoMaterno.nome ?? "-"}
+                {animal.maternal_grandfather_name ?? "-"}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col items-start justify-start">
-            <span className="text-gray-400 text-xs font-medium uppercase">
-              Vacinas:
-            </span>
-            <ul className="list-disc list-inside mt-1">
-              {animal.animal?.vacinas && animal.animal.vacinas.length > 0 ? (
-                animal.animal.vacinas.map((vacina, index) => (
-                  <li
-                    className="font-bold uppercase text-[#1162AE] text-sm"
-                    key={index}
-                  >
-                    {vacina.nome} - {vacina.data}
-                  </li>
-                ))
-              ) : (
-                <span className="font-bold uppercase text-[#1162AE] text-sm">
-                  Sem vacinas anotadas
-                </span>
+          {(animal.class_matriz ||
+            animal.type ||
+            animal.genotyping ||
+            animal.condition) && (
+            <div className="flex flex-row items-start justify-between mb-2 gap-4">
+              {animal.class_matriz && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-400 text-xs font-medium uppercase">
+                    Classe
+                  </span>
+                  <span className="font-bold uppercase text-[#1162AE] text-sm">
+                    {animal.class_matriz}
+                  </span>
+                </div>
               )}
-            </ul>
-          </div>
+              {animal.type && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-400 text-xs font-medium uppercase">
+                    Tipo
+                  </span>
+                  <span className="font-bold uppercase text-[#1162AE] text-sm">
+                    {animal.type}
+                  </span>
+                </div>
+              )}
+              {animal.genotyping && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-400 text-xs font-medium uppercase">
+                    Genotipagem
+                  </span>
+                  <span className="font-bold uppercase text-[#1162AE] text-sm">
+                    {animal.genotyping}
+                  </span>
+                </div>
+              )}
+              {animal.condition && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-400 text-xs font-medium uppercase">
+                    Condição
+                  </span>
+                  <span className="font-bold uppercase text-[#1162AE] text-sm">
+                    {animal.condition}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
     </div>

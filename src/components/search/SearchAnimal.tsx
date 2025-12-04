@@ -2,18 +2,18 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useAnimals } from "@/hooks/db";
 import { useCallback, useEffect, useState } from "react";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
 
 function SearchAnimal() {
-  const { animals, isLoading } = useAnimals();
+  const { animals } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<AnimalData[]>([]);
-  const [selectedAnimal, setSelectedAnimal] = useState<AnimalData | null>(null);
+  const [searchResults, setSearchResults] = useState<Animal[]>([]);
+  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -31,10 +31,16 @@ function SearchAnimal() {
       setSelectedAnimal(null);
 
       const results = animals.filter((animal) => {
-        const rgn = animal.animal?.rgn?.toString().toLowerCase() || "";
+        const rgn = animal.rgn?.toString().toLowerCase() || "";
+        const name = animal.name?.toLowerCase() || "";
+        const serieRgd = animal.serie_rgd?.toLowerCase() || "";
         const queryLower = query.toLowerCase();
 
-        return rgn.includes(queryLower);
+        return (
+          rgn.includes(queryLower) ||
+          name.includes(queryLower) ||
+          serieRgd.includes(queryLower)
+        );
       });
 
       setSearchResults(results);
@@ -57,7 +63,7 @@ function SearchAnimal() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
 
-  const handleSelectAnimal = (animal: AnimalData) => {
+  const handleSelectAnimal = (animal: Animal) => {
     setSelectedAnimal(animal);
   };
 
@@ -72,7 +78,7 @@ function SearchAnimal() {
           htmlFor="search-animal"
           className="text-xl font-bold text-[#1162AE]"
         >
-          RGN:
+          Buscar Animal:
         </label>
         <div className="relative mt-3">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -82,7 +88,7 @@ function SearchAnimal() {
             className="placeholder:text-sm placeholder:text-gray-400 pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Digite o RGN do animal..."
+            placeholder="Digite o RGN, nome ou série do animal..."
           />
         </div>
       </div>
@@ -111,7 +117,7 @@ function SearchAnimal() {
                       Voltar para resultados ({searchResults.length})
                     </button>
                   )}
-                  <AnimalCard animal={selectedAnimal} />
+                  <AnimalCard type="bois" animal={selectedAnimal} />
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -121,19 +127,23 @@ function SearchAnimal() {
                   <div className="grid gap-3">
                     {searchResults.map((animal) => (
                       <div
-                        key={animal.uuid}
+                        key={animal.rgn}
                         onClick={() => handleSelectAnimal(animal)}
                         className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:border-[#1162AE] transition-colors flex justify-between items-center"
                       >
                         <div>
                           <div className="font-bold text-lg text-[#1162AE]">
-                            {animal.animal?.serieRGD}{" "}
-                            {animal.animal?.rgn || "N/A"}
+                            {animal.serie_rgd} {animal.rgn || "N/A"}
                           </div>
-                          <div className="text-xs uppercase text-gray-500">
-                            {animal.animal?.sexo === "M" ? "M" : "F"} •{" "}
-                            {animal.animal?.farm || "Sem fazenda"} •{" "}
-                            {animal.animal?.status?.value || "Sem status"}
+                          <div className="text-sm text-gray-600 mt-1">
+                            {animal.name || "Sem nome"}
+                          </div>
+                          <div className="text-xs uppercase text-gray-500 mt-1">
+                            {animal.sex === "M" ? "Macho" : "Fêmea"} •{" "}
+                            {animal.farm_id
+                              ? `Fazenda ${animal.farm_id}`
+                              : "Sem fazenda"}{" "}
+                            • {animal.status || "Sem status"}
                           </div>
                         </div>
                         <div className="text-[#1162AE] text-sm font-medium">

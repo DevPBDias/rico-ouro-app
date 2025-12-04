@@ -2,10 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 
 interface Props {
-  formData: AnimalData;
+  formData: Animal;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isSaving: boolean;
 }
@@ -25,7 +25,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.iabcgz"
-            value={formData.animal.iabcgz ?? ""}
+            value={formData.iabcgz ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -37,7 +37,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.deca"
-            value={formData.animal.deca ?? ""}
+            value={formData.deca ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -49,7 +49,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.p"
-            value={formData.animal.p ?? ""}
+            value={formData.p ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -61,7 +61,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.f"
-            value={formData.animal.f ?? ""}
+            value={formData.f ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
@@ -73,7 +73,7 @@ const DadosGeneticosSection = ({ formData, handleChange, isSaving }: Props) => {
           </Label>
           <Input
             name="animal.corNascimento"
-            value={formData.animal.corNascimento ?? ""}
+            value={formData.born_color ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />
