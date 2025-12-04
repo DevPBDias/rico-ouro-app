@@ -1,20 +1,19 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
+
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { MatrizCard } from "../cards/MatrizCard";
-import { MatrizDocType } from "@/types/database.types";
+import { useCallback, useEffect, useState } from "react";
+import { Animal } from "@/types/animal.type";
+import { AnimalCard } from "../cards/AnimalCard";
+import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
-import { useMatrizes } from "@/hooks/db";
+import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
 
-const SearchMatriz = () => {
-  const { matrizes: dados } = useMatrizes();
+function SearchMatriz() {
+  const { matrizes } = useMatrizes();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<MatrizDocType[]>([]);
-  const [selectedMatriz, setSelectedMatriz] = useState<MatrizDocType | null>(
-    null
-  );
+  const [searchResults, setSearchResults] = useState<Animal[]>([]);
+  const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -31,14 +30,17 @@ const SearchMatriz = () => {
       setHasSearched(false);
       setSelectedMatriz(null);
 
-      const results = dados.filter((animal) => {
-        const rgn =
-          animal.rgn?.toString().toLowerCase() ||
-          animal.serieRGD?.toLowerCase() ||
-          "";
+      const results = matrizes.filter((matriz) => {
+        const rgn = matriz.rgn?.toString().toLowerCase() || "";
+        const name = matriz.name?.toLowerCase() || "";
+        const serieRgd = matriz.serie_rgd?.toLowerCase() || "";
         const queryLower = query.toLowerCase();
 
-        return rgn.includes(queryLower);
+        return (
+          rgn.includes(queryLower) ||
+          name.includes(queryLower) ||
+          serieRgd.includes(queryLower)
+        );
       });
 
       setSearchResults(results);
@@ -50,7 +52,7 @@ const SearchMatriz = () => {
       setIsSearching(false);
       setHasSearched(true);
     },
-    [dados]
+    [matrizes]
   );
 
   useEffect(() => {
@@ -59,9 +61,9 @@ const SearchMatriz = () => {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, dados, handleSearch]);
+  }, [searchQuery, handleSearch]);
 
-  const handleSelectMatriz = (matriz: MatrizDocType) => {
+  const handleSelectMatriz = (matriz: Animal) => {
     setSelectedMatriz(matriz);
   };
 
@@ -76,7 +78,7 @@ const SearchMatriz = () => {
           htmlFor="search-matriz"
           className="text-xl font-bold text-[#1162AE]"
         >
-          RGN:
+          Buscar Matriz:
         </label>
         <div className="relative mt-3">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -86,7 +88,7 @@ const SearchMatriz = () => {
             className="placeholder:text-sm placeholder:text-gray-400 pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Digite o RGN da matriz..."
+            placeholder="Digite o RGN, nome ou série da matriz..."
           />
         </div>
       </div>
@@ -115,7 +117,7 @@ const SearchMatriz = () => {
                       Voltar para resultados ({searchResults.length})
                     </button>
                   )}
-                  <MatrizCard data={selectedMatriz} />
+                  <AnimalCard type="matrizes" animal={selectedMatriz} />
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -125,21 +127,23 @@ const SearchMatriz = () => {
                   <div className="grid gap-3">
                     {searchResults.map((matriz) => (
                       <div
-                        key={matriz.uuid}
+                        key={matriz.rgn}
                         onClick={() => handleSelectMatriz(matriz)}
                         className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:border-[#1162AE] transition-colors flex justify-between items-center"
                       >
                         <div>
                           <div className="font-bold text-lg text-[#1162AE]">
-                            {matriz.serieRGD} {matriz.rgn || "N/A"}
+                            {matriz.serie_rgd} {matriz.rgn || "N/A"}
                           </div>
-                          <div className="text-xs uppercase text-gray-500">
-                            {matriz.sexo === "M" ? "M" : "F"} •{" "}
-                            {matriz.farm || "Sem fazenda"} •{" "}
-                            {(matriz.status as any)?.value ||
-                              (typeof matriz.status === "string"
-                                ? matriz.status
-                                : "Sem status")}
+                          <div className="text-sm text-gray-600 mt-1">
+                            {matriz.name || "Sem nome"}
+                          </div>
+                          <div className="text-xs uppercase text-gray-500 mt-1">
+                            {matriz.sex === "M" ? "Macho" : "Fêmea"} •{" "}
+                            {matriz.farm_id
+                              ? `Fazenda ${matriz.farm_id}`
+                              : "Sem fazenda"}{" "}
+                            • {matriz.status || "Sem status"}
                           </div>
                         </div>
                         <div className="text-[#1162AE] text-sm font-medium">
@@ -170,6 +174,6 @@ const SearchMatriz = () => {
       )}
     </section>
   );
-};
+}
 
 export default SearchMatriz;
