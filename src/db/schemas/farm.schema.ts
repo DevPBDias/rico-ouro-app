@@ -1,18 +1,16 @@
+import { Farm } from "@/types/farm.type";
 import { RxJsonSchema } from "rxdb";
-import { Farm } from "@/types/schemas.types";
 
 export const farmSchema: RxJsonSchema<Farm> = {
-  title: "farms",
+  title: "farm schema",
   version: 1,
-  primaryKey: "uuid",
+  primaryKey: "id",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 36 },
-    id: { type: ["integer", "null"] },
-    farmName: { type: "string", maxLength: 200 },
-    _deleted: { type: "boolean", default: false },
-    updatedAt: { type: "string", maxLength: 40 },
+    id: { type: "string", maxLength: 10 },
+    farm_name: { type: "string" },
+    updated_at: { type: "string" },
+    _deleted: { type: "boolean" },
   },
-  required: ["uuid", "farmName", "updatedAt"],
-  indexes: ["farmName", "updatedAt"],
+  required: ["id", "farm_name"],
 };
