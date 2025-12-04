@@ -1,17 +1,13 @@
 import { getDatabase } from "@/db/client";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 
-/**
- * RSC functions for Animal Metrics CE collection
- */
-
 export async function getAnimalMetricsCERSC(): Promise<AnimalMetric[]> {
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
   const docs = await db.animal_metrics_ce
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
       sort: [{ date: "desc" as const }],
     })
@@ -37,7 +33,7 @@ export async function getAnimalMetricsCEByRgnRSC(
   const docs = await db.animal_metrics_ce
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         rgn: { $eq: rgn },
       },
       sort: [{ date: "desc" as const }],
@@ -53,7 +49,7 @@ export async function countAnimalMetricsCERSC(): Promise<number> {
   return await db.animal_metrics_ce
     .count({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
     })
     .exec();

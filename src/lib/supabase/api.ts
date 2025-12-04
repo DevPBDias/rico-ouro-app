@@ -1,7 +1,5 @@
-import { AnimalData, Vaccine, Farm, Matriz } from "@/types/schemas.types";
 import { getSupabase } from "./client";
 
-// Variáveis de ambiente
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
@@ -9,298 +7,9 @@ export const isSupabaseConfigured = (): boolean => {
   return !!(supabaseUrl && supabaseAnonKey);
 };
 
-// Helper function to normalize animal data
-function normalizeAnimalData(animal: AnimalData): AnimalData {
-  return {
-    uuid: animal.uuid,
-    id: animal.id,
-    animal: animal.animal || {
-      nome: "",
-      serieRGD: "",
-      rgn: "",
-      sexo: "",
-      nasc: "",
-      iabcgz: "",
-      deca: "",
-      p: "",
-      f: "",
-      corNascimento: "",
-      farm: "",
-      status: { label: "", value: "" },
-      pesosMedidos: [],
-      ganhoDiario: [],
-      circunferenciaEscrotal: [],
-      vacinas: [],
-    },
-    pai: animal.pai || { nome: "" },
-    mae: animal.mae || { serieRGD: "", rgn: "" },
-    avoMaterno: animal.avoMaterno || { nome: "" },
-    _deleted: animal._deleted || false,
-    updatedAt: animal.updatedAt || new Date().toISOString(),
-  };
-}
-
-// Tipos para Supabase
-export interface SupabaseAnimalData {
-  id: string;
-  uuid: string;
-  animal_json: AnimalData["animal"];
-  pai_json: AnimalData["pai"];
-  mae_json: AnimalData["mae"];
-  avo_materno_json: AnimalData["avoMaterno"];
-  created_at: string;
-  updatedAt: string;
-}
-
-export interface SupabaseVaccine {
-  id: string;
-  uuid: string;
-  vaccine_name: string;
-  created_at: string;
-  updatedAt: string;
-}
-
-export interface SupabaseFarm {
-  id: string;
-  uuid: string;
-  farm_name: string;
-  created_at: string;
-  updatedAt: string;
-}
-
-export interface SupabaseMatriz {
-  id: string;
-  uuid: string;
-  matriz_json: Matriz;
-  created_at: string;
-  updatedAt: string;
-}
-
-// Operações AnimalData no Supabase
-export async function syncAnimalDataToSupabase(
-  animal: AnimalData,
-  uuid: string
-): Promise<string> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  if (!uuid || uuid.trim() === "") {
-    throw new Error("UUID é obrigatório para sincronização");
-  }
-
-  const supabase = getSupabase();
-
-  // Normaliza os dados para garantir estrutura correta
-  const normalized = normalizeAnimalData(animal);
-
-  // Remove valores undefined/null que podem causar problemas no Supabase
-  let cleanAnimal: Record<string, unknown> = removeUndefinedValues(
-    normalized.animal
-  ) as Record<string, unknown>;
-  const cleanPai: Record<string, unknown> = removeUndefinedValues(
-    normalized.pai
-  ) as Record<string, unknown>;
-  const cleanMae: Record<string, unknown> = removeUndefinedValues(
-    normalized.mae
-  ) as Record<string, unknown>;
-  const cleanAvoMaterno: Record<string, unknown> = removeUndefinedValues(
-    normalized.avoMaterno
-  ) as Record<string, unknown>;
-
-  if (
-    !cleanAnimal ||
-    typeof cleanAnimal !== "object" ||
-    Array.isArray(cleanAnimal) ||
-    Object.keys(cleanAnimal).length === 0
-  ) {
-    cleanAnimal = {
-      rgn: normalized.animal.rgn || "",
-      updatedAt: normalized.updatedAt || new Date().toISOString(),
-    };
-  }
-
-  const payload: {
-    uuid: string;
-    animal_json: Record<string, unknown>;
-    pai_json: Record<string, unknown>;
-    mae_json: Record<string, unknown>;
-    avo_materno_json: Record<string, unknown>;
-    updated_at: string;
-  } = {
-    uuid: uuid.trim(),
-    animal_json:
-      cleanAnimal &&
-      typeof cleanAnimal === "object" &&
-      !Array.isArray(cleanAnimal)
-        ? cleanAnimal
-        : {},
-    pai_json:
-      cleanPai &&
-      typeof cleanPai === "object" &&
-      !Array.isArray(cleanPai) &&
-      Object.keys(cleanPai).length > 0
-        ? cleanPai
-        : {},
-    mae_json:
-      cleanMae &&
-      typeof cleanMae === "object" &&
-      !Array.isArray(cleanMae) &&
-      Object.keys(cleanMae).length > 0
-        ? cleanMae
-        : {},
-    avo_materno_json:
-      cleanAvoMaterno &&
-      typeof cleanAvoMaterno === "object" &&
-      !Array.isArray(cleanAvoMaterno) &&
-      Object.keys(cleanAvoMaterno).length > 0
-        ? cleanAvoMaterno
-        : {},
-    updated_at: normalized.updatedAt || new Date().toISOString(),
-  };
-
-  if (
-    !payload.animal_json ||
-    typeof payload.animal_json !== "object" ||
-    Array.isArray(payload.animal_json)
-  ) {
-    throw new Error(
-      `animal_json deve ser um objeto válido. Recebido: ${typeof payload.animal_json}`
-    );
-  }
-
-  if (process.env.NODE_ENV === "development") {
-    console.log("📤 Payload para Supabase:", {
-      uuid: payload.uuid,
-      animal_json_keys: Object.keys(payload.animal_json),
-      animal_json_sample: JSON.stringify(payload.animal_json).substring(0, 200),
-    });
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from("animals")
-      .upsert(payload, {
-        onConflict: "uuid",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Erro ao sincronizar animal no Supabase:", {
-        error,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-        uuid,
-        payload: JSON.stringify(payload, null, 2),
-      });
-
-      const errorMessage = error.message || "Erro desconhecido ao sincronizar";
-      const errorDetails = error.details ? ` Detalhes: ${error.details}` : "";
-      const errorHint = error.hint ? ` Dica: ${error.hint}` : "";
-
-      throw new Error(
-        `Erro ao sincronizar animal: ${errorMessage}${errorDetails}${errorHint}`
-      );
-    }
-
-    if (!data) {
-      throw new Error("Nenhum dado retornado do Supabase após upsert");
-    }
-
-    return data.id;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-
-    console.error("Erro inesperado ao sincronizar animal:", error);
-    throw new Error(`Erro inesperado: ${JSON.stringify(error)}`);
-  }
-}
-
-function removeUndefinedValues(obj: unknown): Record<string, unknown> {
-  if (obj === null || obj === undefined) {
-    return {};
-  }
-
-  if (typeof obj !== "object") {
-    return {};
-  }
-
-  if (Array.isArray(obj)) {
-    return {};
-  }
-
-  const cleaned: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined && value !== null) {
-      if (typeof value === "object" && !Array.isArray(value)) {
-        const cleanedNested = removeUndefinedValues(value);
-        if (Object.keys(cleanedNested).length > 0) {
-          cleaned[key] = cleanedNested;
-        }
-      } else {
-        // Mantém strings, números, etc.
-        cleaned[key] = value;
-      }
-    }
-  }
-  return cleaned;
-}
-
-export async function deleteAnimalDataFromSupabase(
-  uuid: string
-): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { error } = await supabase.from("animals").delete().eq("uuid", uuid);
-
-  if (error) {
-    console.error("Erro ao deletar animal no Supabase:", error);
-    throw error;
-  }
-}
-
-export async function fetchAnimalDataFromSupabase(): Promise<
-  SupabaseAnimalData[]
-> {
-  if (!isSupabaseConfigured()) {
-    console.warn("Supabase não configurado, retornando array vazio");
-    return [];
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("animals")
-    .select("*")
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    console.error("Erro ao buscar animais do Supabase:", error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-/**
- * Verifica se existem RGNs duplicados no banco de dados Supabase
- * @param rgns - Array de RGNs para verificar
- * @returns Array de RGNs que já existem no banco de dados
- */
 export async function checkDuplicateRGNs(
   rgns: string[]
-): Promise<{ rgn: string; uuid: string; nome: string }[]> {
+): Promise<{ rgn: string; id: string; name: string }[]> {
   // Verificar se Supabase está configurado
   if (!isSupabaseConfigured()) {
     console.warn(
@@ -336,13 +45,13 @@ export async function checkDuplicateRGNs(
       return [];
     }
 
-    // Consulta todos os animais do banco
+    // Buscar animais com RGNs específicos
     const { data, error } = await supabase
       .from("animals")
-      .select("uuid, animal");
+      .select("rgn, name")
+      .in("rgn", validRgns);
 
     if (error) {
-      // Extrair propriedades do erro manualmente (o objeto não serializa bem)
       const errorInfo = {
         message: error?.message || "Erro sem mensagem",
         details: error?.details || "Sem detalhes",
@@ -350,26 +59,10 @@ export async function checkDuplicateRGNs(
         code: error?.code || "Sem código",
       };
 
-      // Tentar serializar o erro completo
-      let errorString = "Não foi possível serializar";
-      try {
-        errorString = JSON.stringify(error, null, 2);
-      } catch {
-        try {
-          errorString = String(error);
-        } catch {
-          errorString = "Erro ao tentar converter para string";
-        }
-      }
-
-      console.error("❌ Erro ao buscar animais para verificação de RGN:", {
-        ...errorInfo,
-        errorType: typeof error,
-        errorKeys: error ? Object.keys(error) : [],
-        errorString: errorString.substring(0, 500), // Limitar tamanho
-        isNull: error === null,
-        isUndefined: error === undefined,
-      });
+      console.error(
+        "❌ Erro ao buscar animais para verificação de RGN:",
+        errorInfo
+      );
 
       // Se for erro de permissão ou tabela não existe, retornar array vazio
       if (
@@ -384,7 +77,6 @@ export async function checkDuplicateRGNs(
         return [];
       }
 
-      // Para outros erros (incluindo erro vazio), também retornar array vazio mas continuar
       console.warn(
         "⚠️ Não foi possível verificar duplicatas no banco global. A importação continuará com verificação apenas local."
       );
@@ -392,48 +84,19 @@ export async function checkDuplicateRGNs(
     }
 
     if (!data || data.length === 0) {
-      console.log("✅ Nenhum animal encontrado no banco - sem duplicatas");
+      console.log("✅ Nenhum animal duplicado encontrado");
       return [];
     }
 
-    console.log(`📊 Verificando contra ${data.length} animais no banco...`);
+    console.log(`⚠️ Encontrados ${data.length} RGNs duplicados`);
 
-    // Extrair RGNs existentes e mapear com informações do animal
-    const existingRGNs: { rgn: string; uuid: string; nome: string }[] = [];
-
-    data.forEach((animal: any) => {
-      try {
-        // O campo agora é 'animal' (que contém o JSON), não 'animal_json'
-        const animalData = animal.animal;
-        if (animalData && animalData.rgn) {
-          const rgn = String(animalData.rgn).trim();
-          // Verificar se este RGN está na lista de RGNs para verificar
-          if (validRgns.includes(rgn)) {
-            existingRGNs.push({
-              rgn: rgn,
-              uuid: animal.uuid || "UUID desconhecido",
-              nome: animalData.nome || "Sem nome",
-            });
-          }
-        }
-      } catch (parseError) {
-        // Se houver erro ao processar um animal específico, apenas log e continua
-        console.warn("⚠️ Erro ao processar animal:", parseError);
-      }
-    });
-
-    if (existingRGNs.length > 0) {
-      console.log(
-        `⚠️ Encontrados ${existingRGNs.length} RGNs duplicados:`,
-        existingRGNs.map((d) => d.rgn).join(", ")
-      );
-    } else {
-      console.log("✅ Nenhuma duplicata encontrada");
-    }
-
-    return existingRGNs;
+    // Mapear para o formato esperado
+    return data.map((animal: any) => ({
+      rgn: animal.rgn || "",
+      id: animal.rgn || "",
+      name: animal.name || "Sem nome",
+    }));
   } catch (error) {
-    // Tratamento de erros inesperados
     const errorMessage =
       error instanceof Error ? error.message : "Erro desconhecido";
     const errorStack = error instanceof Error ? error.stack : undefined;
@@ -444,246 +107,11 @@ export async function checkDuplicateRGNs(
       errorType: typeof error,
     });
 
-    // Em vez de lançar erro, retornar array vazio para não bloquear a importação
     console.warn(
       "⚠️ Verificação de duplicatas falhou. A importação continuará sem verificação."
     );
     return [];
   }
-}
-
-export async function syncVaccineToSupabase(
-  vaccine: Vaccine,
-  uuid: string
-): Promise<string> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("vaccines")
-    .upsert(
-      {
-        uuid,
-        vaccine_name: vaccine.vaccineName,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "uuid",
-      }
-    )
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Erro ao sincronizar vacina no Supabase:", error);
-    throw error;
-  }
-
-  return data.id;
-}
-
-export async function deleteVaccineFromSupabase(uuid: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { error } = await supabase.from("vaccines").delete().eq("uuid", uuid);
-
-  if (error) {
-    console.error("Erro ao deletar vacina no Supabase:", error);
-    throw error;
-  }
-}
-
-export async function fetchVaccinesFromSupabase(): Promise<SupabaseVaccine[]> {
-  if (!isSupabaseConfigured()) {
-    console.warn("Supabase não configurado, retornando array vazio");
-    return [];
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("vaccines")
-    .select("*")
-    .order("vaccine_name", { ascending: true });
-
-  if (error) {
-    console.error("Erro ao buscar vacinas do Supabase:", error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-export async function syncFarmToSupabase(
-  farm: Farm,
-  uuid: string
-): Promise<string> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("farms")
-    .upsert(
-      {
-        uuid,
-        farm_name: farm.farmName,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "uuid",
-      }
-    )
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Erro ao sincronizar fazenda no Supabase:", error);
-    throw error;
-  }
-
-  return data.id;
-}
-
-export async function deleteFarmFromSupabase(uuid: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { error } = await supabase.from("farms").delete().eq("uuid", uuid);
-
-  if (error) {
-    console.error("Erro ao deletar fazenda no Supabase:", error);
-    throw error;
-  }
-}
-
-export async function fetchFarmsFromSupabase(): Promise<SupabaseFarm[]> {
-  if (!isSupabaseConfigured()) {
-    console.warn("Supabase não configurado, retornando array vazio");
-    return [];
-  }
-
-  const supabase = getSupabase();
-  try {
-    const { data, error } = await supabase
-      .from("farms")
-      .select("*")
-      .order("farm_name", { ascending: true });
-
-    if (error) {
-      console.error("Erro ao buscar fazendas do Supabase:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-        error: JSON.stringify(error, null, 2),
-      });
-
-      if (error.code === "42P01" || error.code === "42501") {
-        console.warn(
-          `Tabela 'farms' não existe ou sem permissão (código: ${error.code}). Retornando array vazio. Verifique se a tabela foi criada no Supabase.`
-        );
-        return [];
-      }
-
-      throw error;
-    }
-
-    return data || [];
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-
-    console.error("Erro inesperado ao buscar fazendas do Supabase:", error);
-    const errorMessage =
-      error && typeof error === "object" && "message" in error
-        ? String(error.message)
-        : "Erro desconhecido ao buscar fazendas";
-    throw new Error(`Erro ao buscar fazendas: ${errorMessage}`);
-  }
-}
-
-export async function syncMatrizToSupabase(
-  matriz: Matriz,
-  uuid: string
-): Promise<string> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const payload = {
-    uuid: uuid.trim(),
-    matriz_json: matriz,
-    updated_at: new Date().toISOString(),
-  };
-
-  const { data, error } = await supabase
-    .from("matrizes")
-    .upsert(payload, { onConflict: "uuid" })
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Erro ao sincronizar matriz no Supabase:", error);
-    throw error;
-  }
-
-  return data.id;
-}
-
-export async function deleteMatrizFromSupabase(uuid: string): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase não está configurado. Verifique as variáveis de ambiente."
-    );
-  }
-
-  const supabase = getSupabase();
-  const { error } = await supabase.from("matrizes").delete().eq("uuid", uuid);
-
-  if (error) {
-    console.error("Erro ao deletar matriz no Supabase:", error);
-    throw error;
-  }
-}
-
-export async function fetchMatrizesFromSupabase(): Promise<SupabaseMatriz[]> {
-  if (!isSupabaseConfigured()) {
-    console.warn("Supabase não configurado, retornando array vazio");
-    return [];
-  }
-
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("matrizes")
-    .select("*")
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    console.error("Erro ao buscar matrizes do Supabase:", error);
-    throw error;
-  }
-
-  return data || [];
 }
 
 export function isOnline(): boolean {

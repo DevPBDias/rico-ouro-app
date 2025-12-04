@@ -1,17 +1,13 @@
 import { getDatabase } from "@/db/client";
 import { Animal } from "@/types/animal.type";
 
-/**
- * RSC functions for Animals collection
- */
-
 export async function getAnimalsRSC(): Promise<Animal[]> {
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
   const docs = await db.animals
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
       sort: [{ updated_at: "desc" as const }],
     })
@@ -33,7 +29,7 @@ export async function getAnimalsByFarmRSC(farmId: number): Promise<Animal[]> {
   const docs = await db.animals
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         farm_id: { $eq: farmId },
       },
       sort: [{ updated_at: "desc" as const }],
@@ -49,7 +45,7 @@ export async function getAnimalsBySexRSC(sex: "M" | "F"): Promise<Animal[]> {
   const docs = await db.animals
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         sex: { $eq: sex },
       },
       sort: [{ updated_at: "desc" as const }],
@@ -65,7 +61,7 @@ export async function countAnimalsRSC(): Promise<number> {
   return await db.animals
     .count({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
     })
     .exec();

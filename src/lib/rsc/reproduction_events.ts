@@ -1,9 +1,6 @@
 import { getDatabase } from "@/db/client";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 
-/**
- * RSC functions for Reproduction Events collection
- */
 
 export async function getReproductionEventsRSC(): Promise<ReproductionEvent[]> {
   const db = await getDatabase();
@@ -11,7 +8,7 @@ export async function getReproductionEventsRSC(): Promise<ReproductionEvent[]> {
   const docs = await db.reproduction_events
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
       sort: [{ date: "desc" as const }],
     })
@@ -37,7 +34,7 @@ export async function getReproductionEventsByRgnRSC(
   const docs = await db.reproduction_events
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         rgn: { $eq: rgn },
       },
       sort: [{ date: "desc" as const }],
@@ -55,7 +52,7 @@ export async function getReproductionEventsByTypeRSC(
   const docs = await db.reproduction_events
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         type: { $eq: type },
       },
       sort: [{ date: "desc" as const }],
@@ -71,7 +68,7 @@ export async function countReproductionEventsRSC(): Promise<number> {
   return await db.reproduction_events
     .count({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
     })
     .exec();

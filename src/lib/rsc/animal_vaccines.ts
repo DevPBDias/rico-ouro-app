@@ -1,17 +1,13 @@
 import { getDatabase } from "@/db/client";
 import { AnimalVaccine } from "@/types/vaccine.type";
 
-/**
- * RSC functions for Animal Vaccines collection
- */
-
 export async function getAnimalVaccinesRSC(): Promise<AnimalVaccine[]> {
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
   const docs = await db.animal_vaccines
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
       sort: [{ date: "desc" as const }],
     })
@@ -37,7 +33,7 @@ export async function getAnimalVaccinesByRgnRSC(
   const docs = await db.animal_vaccines
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         rgn: { $eq: rgn },
       },
       sort: [{ date: "desc" as const }],
@@ -55,7 +51,7 @@ export async function getAnimalVaccinesByVaccineIdRSC(
   const docs = await db.animal_vaccines
     .find({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
         vaccine_id: { $eq: vaccineId },
       },
       sort: [{ date: "desc" as const }],
@@ -71,7 +67,7 @@ export async function countAnimalVaccinesRSC(): Promise<number> {
   return await db.animal_vaccines
     .count({
       selector: {
-        deleted: { $eq: false },
+        _deleted: { $eq: false },
       },
     })
     .exec();
