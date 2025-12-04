@@ -70,7 +70,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
                 Nascimento
               </span>
               <span className="font-bold uppercase text-[#1162AE] text-sm">
-                {FormatData(animal.animal.nasc) ?? "-"}
+                {animal.animal.nasc ?? "-"}
                 <span className="text-xs text-gray-500 ml-1">
                   ({calculateAgeInMonths(animal.animal.nasc)}m)
                 </span>
