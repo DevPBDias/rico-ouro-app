@@ -3,11 +3,11 @@ import { RxJsonSchema } from "rxdb";
 
 export const farmSchema: RxJsonSchema<Farm> = {
   title: "farm schema",
-  version: 1,
+  version: 2,
   primaryKey: "id",
   type: "object",
   properties: {
-    id: { type: "string", maxLength: 10 },
+    id: { type: "string", maxLength: 36 },
     farm_name: { type: "string" },
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },

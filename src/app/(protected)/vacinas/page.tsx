@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { formatDate } from "@/utils/formatDates";
+
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCreateAnimalVaccine } from "@/hooks/db/animal_vaccines/useCreateAnimalVaccine";
@@ -63,8 +63,6 @@ const VaccinesPage = () => {
         return;
       }
 
-      const dataFormatada = formatDate(formData.data);
-
       // Para cada vacina selecionada, criar um registro em animal_vaccines
       for (const vacinaNome of formData.vacinas) {
         // Encontrar o ID da vacina
@@ -76,7 +74,7 @@ const VaccinesPage = () => {
           await createAnimalVaccine({
             rgn: animal.rgn,
             vaccine_id: vaccine.id,
-            date: dataFormatada,
+            date: formData.data,
           });
         }
       }

@@ -3,11 +3,11 @@ import { RxJsonSchema } from "rxdb";
 
 export const animalMetricCESchema: RxJsonSchema<AnimalMetric> = {
   title: "animal_ce",
-  version: 1,
+  version: 2,
   primaryKey: "id",
   type: "object",
   properties: {
-    id: { type: "string", maxLength: 10 },
+    id: { type: "string", maxLength: 36 },
     rgn: { type: "string", maxLength: 10 },
     born_metric: { type: "boolean" },
     date: { type: "string" },

@@ -3,11 +3,21 @@
 import { useLocalMutation } from "@/hooks/core";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 
-export function useCreateAnimalWeight() {
-  const { create, isLoading, error } = useLocalMutation<AnimalMetric>("animal_metrics_weight");
+import { v4 as uuidv4 } from "uuid";
 
-  const createWeight = async (data: Partial<AnimalMetric>): Promise<AnimalMetric> => {
-    return await create(data);
+export function useCreateAnimalWeight() {
+  const { create, isLoading, error } = useLocalMutation<AnimalMetric>(
+    "animal_metrics_weight"
+  );
+
+  const createWeight = async (
+    data: Partial<AnimalMetric>
+  ): Promise<AnimalMetric> => {
+    const weightData = {
+      ...data,
+      id: data.id || uuidv4(),
+    };
+    return await create(weightData);
   };
 
   return {

@@ -70,36 +70,42 @@ async function createDatabase(): Promise<MyDatabase> {
         schema: vaccineSchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
       farms: {
         schema: farmSchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
       animal_metrics_ce: {
         schema: animalMetricCESchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
       animal_metrics_weight: {
         schema: animalMetricWeightSchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
       animal_vaccines: {
         schema: animalVaccineSchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
       reproduction_events: {
         schema: reproductionEventSchema,
         migrationStrategies: {
           1: (doc: any) => doc,
+          2: (doc: any) => doc,
         },
       },
     });

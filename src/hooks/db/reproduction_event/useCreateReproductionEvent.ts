@@ -3,11 +3,21 @@
 import { useLocalMutation } from "@/hooks/core";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 
-export function useCreateReproductionEvent() {
-  const { create, isLoading, error } = useLocalMutation<ReproductionEvent>("reproduction_events");
+import { v4 as uuidv4 } from "uuid";
 
-  const createEvent = async (data: Partial<ReproductionEvent>): Promise<ReproductionEvent> => {
-    return await create(data);
+export function useCreateReproductionEvent() {
+  const { create, isLoading, error } = useLocalMutation<ReproductionEvent>(
+    "reproduction_events"
+  );
+
+  const createEvent = async (
+    data: Partial<ReproductionEvent>
+  ): Promise<ReproductionEvent> => {
+    const eventData = {
+      ...data,
+      id: data.id || uuidv4(),
+    };
+    return await create(eventData);
   };
 
   return {
