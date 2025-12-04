@@ -56,7 +56,7 @@ export function useOfflineStatus() {
         (await db.animals
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -66,7 +66,7 @@ export function useOfflineStatus() {
         (await db.vaccines
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -76,7 +76,7 @@ export function useOfflineStatus() {
         (await db.farms
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -86,7 +86,7 @@ export function useOfflineStatus() {
         (await db.animal_vaccines
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -96,7 +96,7 @@ export function useOfflineStatus() {
         (await db.animal_metrics_weight
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -106,7 +106,7 @@ export function useOfflineStatus() {
         (await db.animal_metrics_ce
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()
@@ -116,7 +116,7 @@ export function useOfflineStatus() {
         (await db.reproduction_events
           ?.find({
             selector: {
-              $or: [{ deleted: true }, { updated_at: { $exists: true } }],
+              $or: [{ _deleted: true }, { updated_at: { $exists: true } }],
             },
           })
           .exec()

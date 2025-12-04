@@ -1,4 +1,4 @@
-import { Links } from "@/types/report_field.type";
+import { Links } from "@/types/links.type";
 
 const campaignLinks: Links[] = [
   {

@@ -1,3 +1,4 @@
+"use client";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { useFarms } from "@/hooks/db/farms/useFarms";
@@ -31,7 +32,7 @@ const AdminFarmPage = () => {
             {farms && farms.length > 0 && (
               <ul>
                 {farms.map((farm) => (
-                  <li key={farm._id}>{farm.name}</li>
+                  <li key={farm.id}>{farm.farm_name}</li>
                 ))}
               </ul>
             )}
