@@ -31,7 +31,7 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
     farm: { type: ["string", "null"] },
 
     vacinas: {
-      type: "array",
+      type: ["array", "null"],
       items: {
         type: "object",
         properties: { nome: { type: "string" }, data: { type: "string" } },
@@ -42,15 +42,15 @@ export const matrizSchema: RxJsonSchema<Matriz> = {
 
     type: {
       type: ["string", "null"],
-      enum: ["Doadora", "Reprodutora", "Receptora FIV"],
+      enum: ["Doadora", "Reprodutora", "Receptora FIV", null],
     },
-    genotipagem: { type: ["string", "null"], enum: ["Sim", "Não"] },
-    condition: { type: ["string", "null"], enum: ["Parida", "Solteira"] },
+    genotipagem: { type: ["string", "null"], enum: ["Sim", "Não", null] },
+    condition: { type: ["string", "null"], enum: ["Parida", "Solteira", null] },
 
     parturitionFrom: {
       type: ["object", "null"],
       properties: {
-        sexo: { type: ["string", "null"], enum: ["M", "F"] },
+        sexo: { type: ["string", "null"], enum: ["M", "F", null] },
         rgn: { type: ["string", "null"] },
       },
       additionalProperties: true,

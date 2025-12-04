@@ -181,7 +181,7 @@ export async function syncAnimalDataToSupabase(
 
   try {
     const { data, error } = await supabase
-      .from("animal_data")
+      .from("animals")
       .upsert(payload, {
         onConflict: "uuid",
       })
@@ -263,10 +263,7 @@ export async function deleteAnimalDataFromSupabase(
   }
 
   const supabase = getSupabase();
-  const { error } = await supabase
-    .from("animal_data")
-    .delete()
-    .eq("uuid", uuid);
+  const { error } = await supabase.from("animals").delete().eq("uuid", uuid);
 
   if (error) {
     console.error("Erro ao deletar animal no Supabase:", error);
@@ -284,7 +281,7 @@ export async function fetchAnimalDataFromSupabase(): Promise<
 
   const supabase = getSupabase();
   const { data, error } = await supabase
-    .from("animal_data")
+    .from("animals")
     .select("*")
     .order("updated_at", { ascending: false });
 
@@ -294,6 +291,165 @@ export async function fetchAnimalDataFromSupabase(): Promise<
   }
 
   return data || [];
+}
+
+/**
+ * Verifica se existem RGNs duplicados no banco de dados Supabase
+ * @param rgns - Array de RGNs para verificar
+ * @returns Array de RGNs que já existem no banco de dados
+ */
+export async function checkDuplicateRGNs(
+  rgns: string[]
+): Promise<{ rgn: string; uuid: string; nome: string }[]> {
+  // Verificar se Supabase está configurado
+  if (!isSupabaseConfigured()) {
+    console.warn(
+      "⚠️ Supabase não configurado - verificação de duplicatas desabilitada"
+    );
+    return [];
+  }
+
+  // Filtrar RGNs vazios ou inválidos
+  const validRgns = rgns
+    .filter((rgn) => rgn && rgn.trim() !== "" && rgn.trim().length > 0)
+    .map((rgn) => rgn.trim());
+
+  if (validRgns.length === 0) {
+    console.log("Nenhum RGN válido para verificar");
+    return [];
+  }
+
+  console.log(`🔍 Verificando ${validRgns.length} RGNs no banco global...`);
+
+  const supabase = getSupabase();
+
+  try {
+    // Verificar se o usuário está autenticado
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      console.warn(
+        "⚠️ Usuário não autenticado - verificação de duplicatas desabilitada"
+      );
+      return [];
+    }
+
+    // Consulta todos os animais do banco
+    const { data, error } = await supabase
+      .from("animals")
+      .select("uuid, animal");
+
+    if (error) {
+      // Extrair propriedades do erro manualmente (o objeto não serializa bem)
+      const errorInfo = {
+        message: error?.message || "Erro sem mensagem",
+        details: error?.details || "Sem detalhes",
+        hint: error?.hint || "Sem dica",
+        code: error?.code || "Sem código",
+      };
+
+      // Tentar serializar o erro completo
+      let errorString = "Não foi possível serializar";
+      try {
+        errorString = JSON.stringify(error, null, 2);
+      } catch {
+        try {
+          errorString = String(error);
+        } catch {
+          errorString = "Erro ao tentar converter para string";
+        }
+      }
+
+      console.error("❌ Erro ao buscar animais para verificação de RGN:", {
+        ...errorInfo,
+        errorType: typeof error,
+        errorKeys: error ? Object.keys(error) : [],
+        errorString: errorString.substring(0, 500), // Limitar tamanho
+        isNull: error === null,
+        isUndefined: error === undefined,
+      });
+
+      // Se for erro de permissão ou tabela não existe, retornar array vazio
+      if (
+        errorInfo.code === "42P01" || // Tabela não existe
+        errorInfo.code === "42501" || // Sem permissão
+        errorInfo.code === "PGRST116" || // JWT inválido ou expirado
+        errorInfo.code === "PGRST301" // RLS policy violation
+      ) {
+        console.warn(
+          `⚠️ Verificação de duplicatas global desabilitada (código: ${errorInfo.code}). A importação continuará com verificação apenas local.`
+        );
+        return [];
+      }
+
+      // Para outros erros (incluindo erro vazio), também retornar array vazio mas continuar
+      console.warn(
+        "⚠️ Não foi possível verificar duplicatas no banco global. A importação continuará com verificação apenas local."
+      );
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      console.log("✅ Nenhum animal encontrado no banco - sem duplicatas");
+      return [];
+    }
+
+    console.log(`📊 Verificando contra ${data.length} animais no banco...`);
+
+    // Extrair RGNs existentes e mapear com informações do animal
+    const existingRGNs: { rgn: string; uuid: string; nome: string }[] = [];
+
+    data.forEach((animal: any) => {
+      try {
+        // O campo agora é 'animal' (que contém o JSON), não 'animal_json'
+        const animalData = animal.animal;
+        if (animalData && animalData.rgn) {
+          const rgn = String(animalData.rgn).trim();
+          // Verificar se este RGN está na lista de RGNs para verificar
+          if (validRgns.includes(rgn)) {
+            existingRGNs.push({
+              rgn: rgn,
+              uuid: animal.uuid || "UUID desconhecido",
+              nome: animalData.nome || "Sem nome",
+            });
+          }
+        }
+      } catch (parseError) {
+        // Se houver erro ao processar um animal específico, apenas log e continua
+        console.warn("⚠️ Erro ao processar animal:", parseError);
+      }
+    });
+
+    if (existingRGNs.length > 0) {
+      console.log(
+        `⚠️ Encontrados ${existingRGNs.length} RGNs duplicados:`,
+        existingRGNs.map((d) => d.rgn).join(", ")
+      );
+    } else {
+      console.log("✅ Nenhuma duplicata encontrada");
+    }
+
+    return existingRGNs;
+  } catch (error) {
+    // Tratamento de erros inesperados
+    const errorMessage =
+      error instanceof Error ? error.message : "Erro desconhecido";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    console.error("❌ Erro inesperado ao verificar RGNs duplicados:", {
+      message: errorMessage,
+      stack: errorStack,
+      errorType: typeof error,
+    });
+
+    // Em vez de lançar erro, retornar array vazio para não bloquear a importação
+    console.warn(
+      "⚠️ Verificação de duplicatas falhou. A importação continuará sem verificação."
+    );
+    return [];
+  }
 }
 
 export async function syncVaccineToSupabase(

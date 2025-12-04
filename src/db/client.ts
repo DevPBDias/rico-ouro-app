@@ -38,7 +38,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_NAME = "indi_ouro_db_v8"; // NEW VERSION - force fresh start
+const DB_NAME = "indi_ouro_db_v9"; // NEW VERSION - force fresh start
 
 let dbInstance: MyDatabase | null = null;
 let dbPromise: Promise<MyDatabase> | null = null;

@@ -1,19 +1,22 @@
 "use client";
 
 import { useAnimals } from "@/hooks/db/useAnimals";
+import { useMatrizes } from "@/hooks/db/useMatrizes";
 import { calculateAgeInMonths } from "@/utils/animalUtils";
 import { useMemo } from "react";
 
 export function StatsFooter() {
   const { animals } = useAnimals();
+  const { matrizes } = useMatrizes();
 
   const stats = useMemo(() => {
     const counts = {
-      total: animals?.length || 0,
+      total: 0,
       male: { range1: 0, range2: 0, range3: 0, range4: 0, total: 0 },
       female: { range1: 0, range2: 0, range3: 0, range4: 0, total: 0 },
     };
 
+    // Processar animais (Machos e Fêmeas jovens)
     animals?.forEach((animal) => {
       const months = calculateAgeInMonths(animal.animal.nasc);
       const sex = animal.animal.sexo?.toUpperCase();
@@ -25,6 +28,7 @@ export function StatsFooter() {
         else if (months <= 36) counts.male.range3++;
         else counts.male.range4++;
       } else if (sex === "F") {
+        // Fêmeas na tabela animals são geralmente < 24 meses, mas contamos tudo que estiver lá
         counts.female.total++;
         if (months <= 12) counts.female.range1++;
         else if (months <= 24) counts.female.range2++;
@@ -33,8 +37,22 @@ export function StatsFooter() {
       }
     });
 
+    // Processar matrizes (Fêmeas adultas > 24 meses)
+    matrizes?.forEach((matriz) => {
+      const months = calculateAgeInMonths(matriz.nasc);
+
+      // Matrizes são sempre fêmeas
+      counts.female.total++;
+      if (months <= 12) counts.female.range1++;
+      else if (months <= 24) counts.female.range2++;
+      else if (months <= 36) counts.female.range3++;
+      else counts.female.range4++;
+    });
+
+    counts.total = counts.male.total + counts.female.total;
+
     return counts;
-  }, [animals]);
+  }, [animals, matrizes]);
 
   const StatCard = ({ value, label }: { value: number; label: string }) => (
     <div className="flex flex-col items-center justify-center gap-1 rounded-lg border border-white/50 bg-transparent py-2 px-1 shadow-sm">

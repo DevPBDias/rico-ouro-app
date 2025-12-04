@@ -86,6 +86,9 @@ export async function setupReplication(db: MyDatabase) {
 
   try {
     // Replicate animals
+    const animalsCount = await db.animals.count().exec();
+    console.log(`📊 [Animals] Local count before sync: ${animalsCount}`);
+
     const animalsReplication = replicateRxCollection({
       collection: db.animals,
       replicationIdentifier: "animals-replication",
@@ -94,13 +97,17 @@ export async function setupReplication(db: MyDatabase) {
           const lastModified =
             (checkpoint as any)?.updatedAt || "1970-01-01T00:00:00Z";
 
-          console.log(`🔽 [Animals] Pulling from Supabase...`, {
+          console.log(`🔽 [Animals] Pulling from Supabase (animals)...`, {
             lastModified,
             batchSize,
+            localCount: await db.animals.count().exec(),
           });
 
+          // Se não tiver checkpoint (primeira vez) ou coleção vazia, garantir pull completo
+          const isFirstSync = lastModified === "1970-01-01T00:00:00Z";
+
           const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/animals?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastModified}`,
+            `${SUPABASE_URL}/rest/v1/animals?select=*&order=%22updatedAt%22.asc&limit=${batchSize}&%22updatedAt%22=gt.${lastModified}`,
             {
               headers: {
                 apikey: SUPABASE_KEY,
@@ -119,9 +126,15 @@ export async function setupReplication(db: MyDatabase) {
 
           console.log(`✅ [Animals] Received ${documents.length} documents`);
 
-          // Transform documents
+          // Transform Supabase format to RxDB format
+          // Supabase já usa campos JSONB (animal, pai, mae, avoMaterno)
           const transformed = documents.map((doc) => ({
-            ...doc,
+            uuid: doc.uuid,
+            id: doc.id,
+            animal: doc.animal || {},
+            pai: doc.pai || {},
+            mae: doc.mae || {},
+            avoMaterno: doc.avoMaterno || {},
             updatedAt: doc.updatedAt || new Date().toISOString(),
             _deleted: !!doc._deleted,
           }));
@@ -154,6 +167,7 @@ export async function setupReplication(db: MyDatabase) {
               : null,
           });
 
+          // Supabase usa os mesmos nomes de campos que RxDB
           const response = await fetch(`${SUPABASE_URL}/rest/v1/animals`, {
             method: "POST",
             headers: {
@@ -199,7 +213,7 @@ export async function setupReplication(db: MyDatabase) {
             (checkpoint as any)?.updatedAt || "1970-01-01T00:00:00Z";
 
           const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/vaccines?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastModified}`,
+            `${SUPABASE_URL}/rest/v1/vaccines?select=*&order=%22updatedAt%22.asc&limit=${batchSize}&%22updatedAt%22=gt.${lastModified}`,
             {
               headers: {
                 apikey: SUPABASE_KEY,
@@ -271,7 +285,7 @@ export async function setupReplication(db: MyDatabase) {
             (checkpoint as any)?.updatedAt || "1970-01-01T00:00:00Z";
 
           const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/farms?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastModified}`,
+            `${SUPABASE_URL}/rest/v1/farms?select=*&order=%22updatedAt%22.asc&limit=${batchSize}&%22updatedAt%22=gt.${lastModified}`,
             {
               headers: {
                 apikey: SUPABASE_KEY,
@@ -334,6 +348,9 @@ export async function setupReplication(db: MyDatabase) {
     });
 
     // Replicate matriz
+    const matrizCount = await db.matriz.count().exec();
+    console.log(`📊 [Matriz] Local count before sync: ${matrizCount}`);
+
     const matrizReplication = replicateRxCollection({
       collection: db.matriz,
       replicationIdentifier: "matriz-replication",
@@ -342,8 +359,14 @@ export async function setupReplication(db: MyDatabase) {
           const lastModified =
             (checkpoint as any)?.updatedAt || "1970-01-01T00:00:00Z";
 
+          console.log(`🔽 [Matriz] Pulling from Supabase (matriz)...`, {
+            lastModified,
+            batchSize,
+            localCount: await db.matriz.count().exec(),
+          });
+
           const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/matriz?select=*&order=updatedAt.asc&limit=${batchSize}&updatedAt=gt.${lastModified}`,
+            `${SUPABASE_URL}/rest/v1/matriz?select=*&order=%22updatedAt%22.asc&limit=${batchSize}&%22updatedAt%22=gt.${lastModified}`,
             {
               headers: {
                 apikey: SUPABASE_KEY,
@@ -353,14 +376,20 @@ export async function setupReplication(db: MyDatabase) {
           );
 
           if (!response.ok) {
+            console.error(`❌ [Matriz] Pull failed: ${response.status}`);
             throw new Error(`Pull failed: ${response.status}`);
           }
 
           const data = await response.json();
           const documents = Array.isArray(data) ? data : [];
 
+          console.log(`✅ [Matriz] Received ${documents.length} documents`);
+
+          // Supabase usa estrutura flat (campos diretos)
+          // Não precisa transformação, já está no formato correto
           const transformed = documents.map((doc) => ({
             ...doc,
+            vacinas: doc.vacinas || [], // Garante que vacinas seja sempre um array
             updatedAt: doc.updatedAt || new Date().toISOString(),
             _deleted: !!doc._deleted,
           }));
@@ -379,8 +408,17 @@ export async function setupReplication(db: MyDatabase) {
       },
       push: {
         async handler(rows) {
+          console.log(`🔼 [Matriz] PUSH triggered with ${rows.length} rows`);
           const documents = rows.map((row) => row.newDocumentState);
 
+          console.log(`🔼 [Matriz] Sending to Supabase:`, {
+            count: documents.length,
+            sample: documents[0]
+              ? { uuid: documents[0].uuid, nome: documents[0].nome }
+              : null,
+          });
+
+          // Supabase usa estrutura flat (mesmos campos que RxDB)
           const response = await fetch(`${SUPABASE_URL}/rest/v1/matriz`, {
             method: "POST",
             headers: {
@@ -393,8 +431,18 @@ export async function setupReplication(db: MyDatabase) {
           });
 
           if (!response.ok) {
-            throw new Error(`Push failed: ${response.status}`);
+            const errorText = await response.text();
+            console.error(`❌ [Matriz] Push failed:`, {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorText,
+            });
+            throw new Error(`Push failed: ${response.status} - ${errorText}`);
           }
+
+          console.log(
+            `✅ [Matriz] Successfully pushed ${documents.length} documents`
+          );
 
           return [];
         },

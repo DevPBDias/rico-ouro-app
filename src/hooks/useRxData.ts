@@ -359,7 +359,25 @@ export function useMatrizActions() {
     [db]
   );
 
-  return { insert, update, remove, isReady: !!db };
+  const bulkInsert = useCallback(
+    async (matrizes: Partial<MatrizDocType>[]) => {
+      if (!db) throw new Error("Database not initialized");
+      const now = new Date().toISOString();
+      return await db.matriz.bulkInsert(
+        matrizes.map(
+          (m) =>
+            ({
+              ...m,
+              updatedAt: now,
+              _deleted: false,
+            } as any)
+        )
+      );
+    },
+    [db]
+  );
+
+  return { insert, update, remove, bulkInsert, isReady: !!db };
 }
 
 export function useFarms() {
