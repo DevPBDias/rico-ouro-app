@@ -5,28 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { FormatData } from "@/utils/formatDates";
+import { formatDate } from "@/utils/formatDates";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import {
-  useVaccines,
-  useAnimals,
-  useCreateVaccine,
-  useDeleteVaccine,
-  useUpdateAnimal,
-} from "@/hooks/db";
-
+import { useCreateAnimalVaccine } from "@/hooks/db/animal_vaccines/useCreateAnimalVaccine";
 import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
 import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
 import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
 import { Plus, Trash } from "lucide-react";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useCreateVaccine } from "@/hooks/db/vaccines/useCreateVaccine";
+import { useDeleteVaccine } from "@/hooks/db/vaccines/useDeleteVaccine";
+import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 
 const VaccinesPage = () => {
   const router = useRouter();
   const { animals } = useAnimals();
   const { createVaccine } = useCreateVaccine();
   const { deleteVaccine } = useDeleteVaccine();
-  const { updateAnimal } = useUpdateAnimal();
+  const { createAnimalVaccine } = useCreateAnimalVaccine();
   const { vaccines, isLoading, error: vaccinesError } = useVaccines();
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -41,8 +38,8 @@ const VaccinesPage = () => {
   const rgnOptions = useMemo(() => {
     return animals
       .map((animal) => ({
-        label: animal.animal.rgn || "",
-        value: animal.animal.rgn || "",
+        label: animal.rgn || "",
+        value: animal.rgn || "",
       }))
       .filter((option) => option.value);
   }, [animals]);
@@ -58,33 +55,35 @@ const VaccinesPage = () => {
       }
 
       const animal = animals.find(
-        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
 
-      if (!animal || !animal.uuid) {
+      if (!animal) {
         setError("Animal não encontrado");
         return;
       }
 
-      const dataFormatada = FormatData(formData.data);
+      const dataFormatada = formatDate(formData.data);
 
-      const currentVaccines = animal.animal.vacinas || [];
+      // Para cada vacina selecionada, criar um registro em animal_vaccines
+      for (const vacinaNome of formData.vacinas) {
+        // Encontrar o ID da vacina
+        const vaccine = vaccines.find(
+          (v) => v.vaccine_name.toLowerCase() === vacinaNome.toLowerCase()
+        );
 
-      const newVaccines = formData.vacinas.map((vacinaNome) => ({
-        nome: vacinaNome,
-        data: dataFormatada,
-      }));
-
-      await updateAnimal(animal.uuid, {
-        animal: {
-          ...animal.animal,
-          vacinas: [...currentVaccines, ...newVaccines],
-        },
-        updatedAt: new Date().toISOString(),
-      });
+        if (vaccine) {
+          await createAnimalVaccine({
+            rgn: animal.rgn,
+            vaccine_id: vaccine.id,
+            date: dataFormatada,
+          });
+        }
+      }
 
       setSuccessModalOpen(true);
     } catch (error) {
+      console.error("Erro ao registrar vacina:", error);
       setError("Erro ao registrar vacina");
     }
   };
@@ -101,8 +100,7 @@ const VaccinesPage = () => {
   const handleCreateVaccine = async (name: string) => {
     try {
       await createVaccine({
-        vaccineName: name,
-        updatedAt: new Date().toISOString(),
+        vaccine_name: name,
       });
 
       setFormData((prev) => ({
@@ -112,24 +110,27 @@ const VaccinesPage = () => {
           : [...prev.vacinas, name],
       }));
     } catch (error) {
+      console.error("Erro ao criar vacina:", error);
       setError("Erro ao criar vacina");
     }
   };
 
-  const handleDeleteVaccine = async (uuid: string) => {
+  const handleDeleteVaccine = async (id: string) => {
     try {
-      const vaccineToDelete = vaccines.find((vaccine) => vaccine.uuid === uuid);
-      await deleteVaccine(uuid);
+      const vaccineToDelete = vaccines.find((vaccine) => vaccine.id === id);
+      await deleteVaccine(id);
 
       if (vaccineToDelete) {
         setFormData((prev) => ({
           ...prev,
           vacinas: prev.vacinas.filter(
-            (v) => v.toLowerCase() !== vaccineToDelete.vaccineName.toLowerCase()
+            (v) =>
+              v.toLowerCase() !== vaccineToDelete.vaccine_name.toLowerCase()
           ),
         }));
       }
     } catch (error) {
+      console.error("Erro ao deletar vacina:", error);
       setError("Erro ao deletar vacina");
     }
   };

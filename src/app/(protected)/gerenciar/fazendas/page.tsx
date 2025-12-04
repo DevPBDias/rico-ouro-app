@@ -2,21 +2,18 @@
 
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { FarmsCheckboxList } from "@/components/farms/FarmsCheckboxList";
-import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
+import { AnimalSelector } from "@/components/farms/AnimalSelector";
+import { FarmSelector } from "@/components/farms/FarmSelector";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import {
-  useFarms,
-  useAnimals,
-  useCreateFarm,
-  useDeleteFarm,
-  useUpdateAnimal,
-} from "@/hooks/db";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
+import { useFarms } from "@/hooks/db/farms/useFarms";
+import { useCreateFarm } from "@/hooks/db/farms/useCreateFarm";
+import { useDeleteFarm } from "@/hooks/db/farms/useDeleteFarm";
 import { AddFarmModal } from "@/components/modals/farm/AddFarmModal";
 import { FarmSuccessModal } from "@/components/modals/farm/FarmSuccessModal";
 import { DeleteFarmModal } from "@/components/modals/farm/DeleteFarmModal";
-import { Plus, Trash } from "lucide-react";
 
 const FarmsPage = () => {
   const router = useRouter();
@@ -38,8 +35,8 @@ const FarmsPage = () => {
   const rgnOptions = useMemo(() => {
     return animals
       .map((animal) => ({
-        label: animal.animal.rgn || "",
-        value: animal.animal.rgn || "",
+        label: animal.rgn || "",
+        value: animal.rgn || "",
       }))
       .filter((option) => option.value);
   }, [animals]);
@@ -47,12 +44,12 @@ const FarmsPage = () => {
   useEffect(() => {
     if (formData.rgn) {
       const animal = animals.find(
-        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
       if (animal) {
         setFormData((prev) => ({
           ...prev,
-          farm: animal.animal.farm || null,
+          farm: animal.farm_id || null,
         }));
       }
     } else {
@@ -74,23 +71,21 @@ const FarmsPage = () => {
       }
 
       const animalToUpdate = animals.find(
-        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
 
-      if (!animalToUpdate || !animalToUpdate.uuid) {
+      if (!animalToUpdate) {
         setError("Animal não encontrado");
         return;
       }
 
-      await updateAnimal(animalToUpdate.uuid, {
-        animal: {
-          ...animalToUpdate.animal,
-          farm: formData.farm || undefined,
-        },
+      await updateAnimal(animalToUpdate.rgn, {
+        farm_id: formData.farm || undefined,
       });
 
       setSuccessModalOpen(true);
     } catch (error) {
+      console.error("Erro ao atualizar fazenda:", error);
       setError("Erro ao atualizar fazenda");
     }
   };
@@ -105,39 +100,33 @@ const FarmsPage = () => {
 
   const handleCreateFarm = async (name: string) => {
     try {
-      await createFarm({ farmName: name });
-      setFormData((prev) => ({
-        ...prev,
-        farm: prev.farm || name,
-      }));
+      await createFarm({ farm_name: name });
     } catch (error) {
+      console.error("Erro ao criar fazenda:", error);
       setError("Erro ao criar fazenda");
     }
   };
 
-  const handleDeleteFarm = async (uuid: string) => {
+  const handleDeleteFarm = async (id: string) => {
     try {
-      const farmToDelete = farms.find((farm) => farm.uuid === uuid);
-      await deleteFarm(uuid);
+      await deleteFarm(id);
 
-      if (
-        farmToDelete &&
-        formData.farm?.toLowerCase() === farmToDelete.farmName.toLowerCase()
-      ) {
+      if (formData.farm === id) {
         setFormData((prev) => ({
           ...prev,
           farm: null,
         }));
       }
     } catch (error) {
+      console.error("Erro ao deletar fazenda:", error);
       setError("Erro ao deletar fazenda");
     }
   };
 
-  const toggleFarm = (name: string | null) => {
+  const toggleFarm = (farmId: string | null) => {
     setFormData((prev) => ({
       ...prev,
-      farm: name,
+      farm: farmId,
     }));
   };
 
@@ -156,59 +145,26 @@ const FarmsPage = () => {
           </div>
         )}
 
-        <div className="flex flex-col justify-start items-start w-full gap-2 relative">
-          <label
-            htmlFor="rgn"
-            className="text-primary font-bold text-sm uppercase w-full text-left"
-          >
-            Animal (RGN):
-          </label>
-          <RgnAutocomplete
-            options={rgnOptions}
-            value={formData.rgn}
-            onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
-          />
-        </div>
+        <AnimalSelector
+          rgnOptions={rgnOptions}
+          selectedRgn={formData.rgn}
+          onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
+        />
 
         {formData.rgn && (
           <>
-            <div className="flex flex-col justify-start items-start w-full gap-2">
-              <div className="flex flex-row justify-between items-center w-full gap-2">
-                <label
-                  htmlFor="fazendas"
-                  className="text-primary font-bold text-sm uppercase w-full text-left"
-                >
-                  Fazendas:
-                </label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setAddModalOpen(true)}
-                  >
-                    <Plus color="blue" size={16} />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDeleteModalOpen(true)}
-                    disabled={farms.length === 0}
-                  >
-                    <Trash color="red" size={16} />
-                  </Button>
-                </div>
-              </div>
-              <FarmsCheckboxList
-                farms={farms}
-                loading={loading}
-                selected={formData.farm}
-                onToggle={toggleFarm}
-              />
-            </div>
+            <FarmSelector
+              farms={farms}
+              loading={loading}
+              selectedFarmId={formData.farm}
+              onToggle={toggleFarm}
+              onAddClick={() => setAddModalOpen(true)}
+              onDeleteClick={() => setDeleteModalOpen(true)}
+            />
             <Button
               variant="default"
               type="submit"
-              className="w-full text-sm font-semibold py-5 rounded-lg mt-8 uppercase "
+              className="w-full text-sm font-semibold py-5 rounded-lg mt-8 uppercase"
             >
               Atualizar fazenda
             </Button>

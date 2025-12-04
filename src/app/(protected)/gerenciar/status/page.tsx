@@ -7,8 +7,9 @@ import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { StatusSuccessModal } from "@/components/modals/status/StatusSuccessModal";
-import type { IStatus } from "@/types/status-type";
-import { useAnimals, useUpdateAnimal } from "@/hooks/db";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
+import type { IStatus } from "@/types/status.type";
 
 const StatusPage = () => {
   const router = useRouter();
@@ -34,8 +35,8 @@ const StatusPage = () => {
   const rgnOptions = useMemo(() => {
     return animals
       .map((animal) => ({
-        label: animal.animal.rgn || "",
-        value: animal.animal.rgn || "",
+        label: animal.rgn || "",
+        value: animal.rgn || "",
       }))
       .filter((option) => option.value);
   }, [animals]);
@@ -43,25 +44,12 @@ const StatusPage = () => {
   useEffect(() => {
     if (formData.rgn) {
       const animal = animals.find(
-        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
       if (animal) {
-        const currentStatus = animal.animal.status;
-        let statusValue: IStatus | null = null;
-
-        if (typeof currentStatus === "string") {
-          statusValue = currentStatus as IStatus;
-        } else if (
-          currentStatus &&
-          typeof currentStatus === "object" &&
-          "value" in currentStatus
-        ) {
-          statusValue = (currentStatus as any).value as IStatus;
-        }
-
         setFormData((prev) => ({
           ...prev,
-          status: statusValue,
+          status: animal.status || null,
         }));
       }
     } else {
@@ -83,25 +71,21 @@ const StatusPage = () => {
       }
 
       const animalToUpdate = animals.find(
-        (a) => a.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
       );
 
-      if (!animalToUpdate || !animalToUpdate.uuid) {
+      if (!animalToUpdate) {
         setError("Animal não encontrado");
         return;
       }
 
-      await updateAnimal(animalToUpdate.uuid, {
-        animal: {
-          ...animalToUpdate.animal,
-          status: formData.status
-            ? { label: formData.status, value: formData.status }
-            : undefined,
-        },
+      await updateAnimal(animalToUpdate.rgn, {
+        status: formData.status || "-",
       });
 
       setSuccessModalOpen(true);
     } catch (error) {
+      console.error("Erro ao atualizar status:", error);
       setError("Erro ao atualizar status");
     }
   };

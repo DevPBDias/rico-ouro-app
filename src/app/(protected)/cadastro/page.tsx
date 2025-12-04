@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateAnimal, useAnimals } from "@/hooks/db";
-import { useFarms } from "@/hooks/db/useFarms";
-import { AnimalData } from "@/types/schemas.types";
-import { v4 as uuidv4 } from "uuid";
+import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useFarms } from "@/hooks/db/farms/useFarms";
+import { Animal } from "@/types/animal.type";
 import { motion } from "framer-motion";
 import { Save, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -27,7 +27,6 @@ export default function CadastroPage() {
   const [formData, setFormData] = useState({
     rgn: "",
     sexo: "",
-    nasc: "",
     farm: "",
   });
 
@@ -51,8 +50,7 @@ export default function CadastroPage() {
     } else {
       const existingAnimal = animals?.find(
         (animal) =>
-          animal.animal?.rgn?.toLowerCase() ===
-          formData.rgn.trim().toLowerCase()
+          animal.rgn?.toLowerCase() === formData.rgn.trim().toLowerCase()
       );
 
       if (existingAnimal) {
@@ -62,10 +60,6 @@ export default function CadastroPage() {
 
     if (!formData.sexo) {
       newErrors.sexo = "Sexo é obrigatório";
-    }
-
-    if (!formData.nasc) {
-      newErrors.nasc = "Data de nascimento é obrigatória";
     }
 
     setErrors(newErrors);
@@ -80,43 +74,29 @@ export default function CadastroPage() {
     }
 
     try {
-      const newAnimal: AnimalData = {
-        uuid: uuidv4(),
-        animal: {
-          nome: "-",
-          serieRGD: "INDI",
-          rgn: formData.rgn,
-          sexo: formData.sexo === "M" ? "M" : "F",
-          nasc: formData.nasc,
-          iabcgz: "-",
-          deca: "-",
-          p: "-",
-          f: "-",
-          corNascimento: "-",
-          farm: formData.farm,
-          status: { label: "Ativo", value: "ativo" },
-          pesosMedidos: [],
-          ganhoDiario: [],
-          circunferenciaEscrotal: [],
-          vacinas: [],
-        },
-        pai: {
-          nome: "-",
-        },
-        mae: {
-          serieRGD: "-",
-          rgn: "-",
-        },
-        avoMaterno: {
-          nome: "-",
-        },
-        _deleted: false,
-        updatedAt: new Date().toISOString(),
+      const newAnimal: Partial<Animal> = {
+        rgn: formData.rgn,
+        name: "-",
+        serie_rgd: "INDI",
+        sex: formData.sexo === "M" ? "M" : "F",
+        born_date: "",
+        born_color: "-",
+        iabcgz: "-",
+        deca: "-",
+        p: "-",
+        f: "-",
+        status: "-",
+        farm_id: formData.farm || undefined,
+        father_name: "-",
+        mother_serie_rgd: "-",
+        mother_rgn: "-",
+        maternal_grandfather_name: "-",
       };
 
       await createAnimal(newAnimal);
       router.push("/consulta");
     } catch (error) {
+      console.error("Erro ao cadastrar animal:", error);
       setErrors({ submit: "Erro ao cadastrar animal. Tente novamente." });
     }
   };
@@ -187,26 +167,6 @@ export default function CadastroPage() {
 
               <div>
                 <label className="mb-1 block uppercase text-xs font-semibold text-primary">
-                  Data de Nascimento <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="nasc"
-                  value={formData.nasc}
-                  onChange={handleChange}
-                  className={`text-sm w-full rounded-lg border px-4 py-2.5 transition-all focus:outline-none focus:ring-2 ${
-                    errors.nasc
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                      : "border-gray-300 focus:border-primary focus:ring-primary/20"
-                  }`}
-                />
-                {errors.nasc && (
-                  <p className="mt-1 text-sm text-red-500">{errors.nasc}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-1 block uppercase text-xs font-semibold text-primary">
                   Fazenda
                 </label>
                 <Select
@@ -225,10 +185,10 @@ export default function CadastroPage() {
                     {farms.map((farm) => (
                       <SelectItem
                         className="uppercase"
-                        key={farm.uuid}
-                        value={farm.farmName}
+                        key={farm.id}
+                        value={farm.id}
                       >
-                        {farm.farmName}
+                        {farm.farm_name}
                       </SelectItem>
                     ))}
                   </SelectContent>

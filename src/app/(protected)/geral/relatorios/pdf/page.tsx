@@ -17,29 +17,26 @@ import {
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
-import { SelectedReportFields } from "@/types";
-import { useAnimals } from "@/hooks/db";
+import { SelectedReportFields } from "@/types/report_field.type";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
 
 const REPORT_OPTIONS: ReportOption[] = [
-  { key: "nomeAnimal", label: "Nome Animal" },
+  { key: "name", label: "Nome Animal" },
   { key: "rgn", label: "RGN" },
-  { key: "serieRGD", label: "Série RGD" },
-  { key: "sexo", label: "Sexo" },
-  { key: "dataNascimento", label: "Data Nascimento" },
-  { key: "corNascimento", label: "Cor Nascimento" },
+  { key: "serie_rgd", label: "Série RGD" },
+  { key: "sex", label: "Sexo" },
+  { key: "born_date", label: "Data Nascimento" },
+  { key: "born_color", label: "Cor Nascimento" },
   { key: "iabcgz", label: "iABCGz" },
   { key: "deca", label: "DECA" },
   { key: "p", label: "P%" },
   { key: "f", label: "F%" },
-  { key: "pesosMedidos", label: "Pesos" },
-  { key: "circunferenciaEscrotal", label: "Ce" },
   { key: "status", label: "Status" },
-  { key: "farm", label: "Fazenda" },
-  { key: "ganhoDiario", label: "GMD" },
-  { key: "vacinas", label: "Vacinas" },
-  { key: "nomePai", label: "Nome Pai" },
-  { key: "maeSerieRGD", label: "Mãe - RGD" },
-  { key: "maeRGN", label: "Mãe - RGN" },
+  { key: "farm_name", label: "Fazenda" },
+  { key: "father_name", label: "Nome Pai" },
+  { key: "mother_serie_rgd", label: "Mãe - RGD" },
+  { key: "mother_rgn", label: "Mãe - RGN" },
+  { key: "maternal_grandfather_name", label: "Avô Materno" },
 ];
 
 export default function RelatoriosPage() {
@@ -57,25 +54,26 @@ export default function RelatoriosPage() {
     type: "error",
   });
   const [selectedItems, setSelectedItems] = useState<SelectedReportFields>({
-    nomeAnimal: false,
+    name: false,
     rgn: false,
-    serieRGD: false,
-    sexo: false,
-    dataNascimento: false,
-    corNascimento: false,
+    serie_rgd: false,
+    sex: false,
+    born_date: false,
+    born_color: false,
     iabcgz: false,
     deca: false,
     p: false,
     f: false,
-    pesosMedidos: false,
-    circunferenciaEscrotal: false,
-    vacinas: false,
-    nomePai: false,
-    maeSerieRGD: false,
-    maeRGN: false,
+    animal_metrics_weight: false,
+    animal_metrics_ce: false,
+    vaccines: false,
+    father_name: false,
+    mother_serie_rgd: false,
+    mother_rgn: false,
+    maternal_grandfather_name: false,
     status: false,
-    farm: false,
-    ganhoDiario: false,
+    farm_name: false,
+    daily_gain: false,
   });
 
   const handleCheckboxChange = (key: string) => {

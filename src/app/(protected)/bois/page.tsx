@@ -1,14 +1,14 @@
 "use client";
 
-import { useBoisList } from "@/hooks/useBoisList";
-import { useRouter } from "next/navigation";
+import { useAnimalsList } from "@/hooks/db/animals/useAnimalsList";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Search, Trash2, Eye } from "lucide-react";
+import Header from "@/components/layout/Header";
 
-export default function BoisPage() {
+export default function AnimalsList() {
   const {
     filtered,
     paginatedData,
@@ -23,11 +23,23 @@ export default function BoisPage() {
     setSexo,
     parentQuery,
     setParentQuery,
-  } = useBoisList({ itemsPerPage: 10 });
-  const router = useRouter();
+    isLoading,
+  } = useAnimalsList({ itemsPerPage: 10 });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Carregando animais...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header title="Lista de Animais" />
+
       <div className="p-4 space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -44,17 +56,18 @@ export default function BoisPage() {
           </Button>
         </div>
 
+        {/* Filtros */}
         <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Buscar por RGN ou Série/RGD"
+              placeholder="Buscar por RGN, Série/RGD ou Nome"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <select
               value={sexo}
               onChange={(e) => setSexo(e.target.value)}
@@ -65,13 +78,14 @@ export default function BoisPage() {
               <option value="F">Fêmea</option>
             </select>
             <Input
-              placeholder="Filtrar por nome do pai ou dados da mãe"
+              placeholder="Filtrar por pai ou mãe"
               value={parentQuery}
               onChange={(e) => setParentQuery(e.target.value)}
             />
           </div>
         </div>
 
+        {/* Tabela */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <div className="px-4 py-3 border-b bg-gray-50 flex justify-between items-center">
             <div className="text-sm text-gray-600">
@@ -92,13 +106,16 @@ export default function BoisPage() {
                     Série/RGD
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Sexo
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     DECA
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mae
+                    Mãe
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Pai
@@ -109,59 +126,60 @@ export default function BoisPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedData.map((a) => (
+                {paginatedData.map((animal) => (
                   <tr
-                    key={a.uuid}
+                    key={animal.rgn}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {a.animal.rgn ?? "-"}
+                      {animal.rgn}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.animal.serieRGD ?? "-"}
+                      {animal.serie_rgd ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.animal.sexo ?? "-"}
+                      {animal.name ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.animal.deca ?? "-"}
+                      {animal.sex === "M" ? "Macho" : "Fêmea"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.mae.serieRGD
-                        ? `${a.mae.serieRGD}-${a.mae.rgn || ""}`
+                      {animal.deca ?? "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {animal.mother_serie_rgd && animal.mother_rgn
+                        ? `${animal.mother_serie_rgd}-${animal.mother_rgn}`
                         : "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {a.pai.nome ?? "-"}
+                      {animal.father_name ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-sm flex items-center gap-2">
                       <Link
-                        href={`/bois/${a.uuid}`}
+                        href={`/bois/${animal.rgn}`}
                         prefetch
                         className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
-                      {a.animal.rgn && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => excluirPorRgn(a.animal.rgn!)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => excluirPorRgn(animal.rgn)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}
                 {paginatedData.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-4 py-12 text-center text-gray-500"
                     >
-                      Nenhum registro encontrado
+                      Nenhum animal encontrado
                     </td>
                   </tr>
                 )}

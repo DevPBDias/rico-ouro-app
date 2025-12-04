@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRxDB } from "./RxDBProvider";
 import { RxReplicationState } from "rxdb/plugins/replication";
-import { combineLatest, map } from "rxjs";
+import { combineLatest } from "rxjs";
 
 interface ReplicationContextType {
   isSyncing: boolean;

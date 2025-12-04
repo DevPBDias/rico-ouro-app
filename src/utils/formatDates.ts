@@ -1,36 +1,46 @@
-export const FormatData = (dateString: string | undefined) => {
+export const formatDate = (dateString: string | undefined) => {
   if (!dateString || typeof dateString !== "string") return "";
 
   const normalized = dateString.replace(/[./]/g, "-");
   const parts = normalized.split("-").map((p) => p.trim());
 
+  if (parts.length !== 3) return dateString;
+
+  const [a, b, c] = parts;
+
   let year = "";
   let month = "";
   let day = "";
 
-  if (parts.length === 3) {
-    const [a, b, c] = parts;
-
-    if (parseInt(b) > 12) {
-      year = a;
-      day = b;
-      month = c;
-    } else {
-      year = a;
-      month = b;
-      day = c;
-    }
-  } else if (parts.length === 2) {
-    year = parts[0];
-    month = parts[1];
-    day = "01";
+  if (a.length === 4) {
+    year = a;
+    month = b;
+    day = c;
+  } else if (c.length === 4) {
+    day = a;
+    month = b;
+    year = c;
   } else {
-    return dateString;
+    if (parseInt(b) > 12) {
+      if (a.length === 4) {
+        year = a;
+        day = b;
+        month = c;
+      } else {
+        day = a;
+        month = c;
+        year = b.length === 4 ? b : `20${b}`;
+      }
+    } else {
+      day = a;
+      month = b;
+      year = c.length === 4 ? c : `20${c}`;
+    }
   }
 
   const formattedDay = day.padStart(2, "0");
   const formattedMonth = month.padStart(2, "0");
-  const formattedYear = year.slice(0, 4);
+  const formattedYear = year.padStart(4, "0").slice(-4);
 
   return `${formattedDay}/${formattedMonth}/${formattedYear}`;
 };

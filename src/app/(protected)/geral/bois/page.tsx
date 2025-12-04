@@ -1,7 +1,6 @@
 "use client";
 
-import { useBoisList } from "@/hooks/useBoisList";
-import { useRouter } from "next/navigation";
+import { useAnimalsList } from "@/hooks/db/animals/useAnimalsList";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +22,7 @@ export default function BoisPage() {
     setSexo,
     parentQuery,
     setParentQuery,
-  } = useBoisList({ itemsPerPage: 10 });
-  const router = useRouter();
+  } = useAnimalsList({ itemsPerPage: 10 });
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -100,46 +98,46 @@ export default function BoisPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedData.map((a) => (
                   <tr
-                    key={a.uuid}
+                    key={a.rgn}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                      {a.animal.rgn ?? "-"}
+                      {a.rgn ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.serieRGD ?? "-"}
+                      {a.serie_rgd ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.sexo ?? "-"}
+                      {a.sex ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.deca ?? "-"}
+                      {a.deca ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.mae.serieRGD && a.mae.rgn
-                        ? `${a.mae.serieRGD}-${a.mae.rgn}`
+                      {a.mother_serie_rgd && a.mother_rgn
+                        ? `${a.mother_serie_rgd}-${a.mother_rgn}`
                         : "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.pai.nome ?? "-"}
+                      {a.father_name ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm text-gray-900">
-                      {a.animal.iabcgz ?? "-"}
+                      {a.iabcgz ?? "-"}
                     </td>
                     <td className="px-4 py-2 text-sm flex items-center gap-2">
                       <Link
-                        href={`/bois/${a.uuid}`}
+                        href={`/bois/${a.rgn}`}
                         prefetch
                         className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
-                      {a.animal.rgn && (
+                      {a.rgn && (
                         <Button
                           size="sm"
                           variant="outline"
                           className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={() => excluirPorRgn(a.animal.rgn!)}
+                          onClick={() => excluirPorRgn(a.rgn!)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

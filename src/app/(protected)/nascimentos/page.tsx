@@ -15,9 +15,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
-import { FormatData } from "@/utils/formatDates";
-import { AnimalData } from "@/types/schemas.types";
-import { useCreateAnimal } from "@/hooks/db";
+import { formatDate } from "@/utils/formatDates";
+import { Animal } from "@/types/animal.type";
+import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
+import {
+  useAnimalWeights,
+  useCreateAnimalWeight,
+} from "@/hooks/db/animal_weights";
+import { AnimalMetric } from "@/types/animal_metrics.type";
 
 export default function NascimentosPage() {
   const router = useRouter();
@@ -32,35 +37,38 @@ export default function NascimentosPage() {
   });
 
   const { createAnimal } = useCreateAnimal();
+  const { createWeight } = useCreateAnimalWeight();
+  const { weights } = useAnimalWeights();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newAnimal: AnimalData = {
-      animal: {
-        nome: "",
-        serieRGD: "INDI",
-        rgn: formData.rgn,
-        sexo: formData.sexo === "Macho" ? "M" : "F",
-        nasc: FormatData(formData.data),
-        iabcgz: "-",
-        deca: "-",
-        p: "-",
-        f: "-",
-        corNascimento: formData.cor,
-        pesosMedidos: [{ mes: "", valor: Number(formData.peso) }],
-        circunferenciaEscrotal: [],
-      },
-      pai: { nome: "-" },
-      mae: { serieRGD: "INDI", rgn: formData.mae },
-      avoMaterno: { nome: "-" },
-      updatedAt: FormatData(formData.data),
+    const newAnimal: Partial<Animal> = {
+      serie_rgd: "INDI",
+      rgn: formData.rgn,
+      sex: formData.sexo === "Macho" ? "M" : "F",
+      born_date: formData.data,
+      born_color: formData.cor,
+      mother_rgn: formData.mae,
+      mother_serie_rgd: "INDI",
+    };
+
+    const bornWeightAnimal: AnimalMetric = {
+      id: String(weights.length + 1),
+      rgn: formData.rgn,
+      value: Number(formData.peso.replace(",", ".")),
+      born_metric: true,
+      date: formData.data,
+      updated_at: new Date().toISOString(),
+      _deleted: false,
     };
 
     try {
       await createAnimal(newAnimal);
+      await createWeight(bornWeightAnimal);
       setShowModal(true);
     } catch (error) {
+      console.error("Erro ao cadastrar nascimento:", error);
     }
   };
 

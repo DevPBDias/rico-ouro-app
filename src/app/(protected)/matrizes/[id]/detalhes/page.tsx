@@ -1,49 +1,61 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import Header from "@/components/layout/Header";
-import { useMatrizDetail } from "@/hooks/useMatrizDetail";
-import { useAuth } from "@/hooks/useAuth";
+import { useMatrizById } from "@/hooks/matrizes/useMatrizById";
+import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
+import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import {
   calculateAgeInMonths,
   calculateAnimalStage,
 } from "@/utils/animalUtils";
-import { FormatData } from "@/utils/formatDates";
+import { formatDate } from "@/utils/formatDates";
+import { getAgeRange } from "@/hooks/utils/useAnimalsByAgeAndSex";
 
 const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { user } = useAuth();
+  const { matriz, isLoading: matrizLoading } = useMatrizById(id);
+  const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(id);
+  const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
 
-  const { matriz, isLoading, vacinas } = useMatrizDetail(id);
+  const isLoading = matrizLoading || vaccinesLoading || allVaccinesLoading;
 
-  if (isLoading) return <p className="p-4">Carregando...</p>;
-  if (!matriz) return <p className="p-4">Matriz não encontrada</p>;
+  if (isLoading) {
+    return (
+      <main>
+        <Header title="Carregando..." />
+        <div className="p-4 text-center">
+          <p>Carregando dados da matriz...</p>
+        </div>
+      </main>
+    );
+  }
 
-  // Função auxiliar para garantir data válida para cálculos
-  // Tenta converter DD/MM/YYYY para ISO se necessário, ou retorna a string original
-  const getValidDateForCalculation = (dateStr: string | undefined | null) => {
-    if (!dateStr) return undefined;
-    if (dateStr.includes("/")) {
-      const [day, month, year] = dateStr.split("/");
-      return `${year}-${month}-${day}`;
-    }
-    return dateStr;
-  };
+  if (!matriz) {
+    return (
+      <main>
+        <Header title="Não encontrado" />
+        <div className="p-4 text-center">
+          <p>Matriz não encontrada</p>
+        </div>
+      </main>
+    );
+  }
 
-  const validDate = getValidDateForCalculation(matriz.nasc);
+  const ageInMonths = calculateAgeInMonths(matriz.born_date);
 
   return (
     <main>
-      <Header title={`${matriz.serieRGD || ""} ${matriz.rgn}`} />
+      <Header title={`${matriz.serie_rgd || ""} ${matriz.rgn}`} />
 
       <section className="p-4 mt-4">
         <div className="flex flex-row justify-between items-end gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
           <div className="flex flex-row items-center gap-2">
             <span className="text-gray-400 text-sm font-medium uppercase">
-              fazenda
+              Fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {matriz.farm || "SEM DADO"}
+              {matriz.farm_id}
             </p>
           </div>
         </div>
@@ -54,19 +66,19 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Categoria
               </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {calculateAnimalStage(validDate, matriz.sexo)}
-              </span>
+              <p className="font-bold uppercase text-[#1162AE]">
+                {getAgeRange(ageInMonths)}
+                <span className="text-xs text-gray-500 ml-1">
+                  ({ageInMonths}m)
+                </span>
+              </p>
             </div>
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Nascimento
               </span>
               <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.nasc}
-                <span className="text-xs text-gray-500 ml-1">
-                  ({calculateAgeInMonths(validDate)}m)
-                </span>
+                {matriz.born_date ? formatDate(matriz.born_date) : "-"}
               </span>
             </div>
           </div>
@@ -112,19 +124,37 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
-                Status
+                Pai
               </span>
               <span className="font-bold uppercase text-[#1162AE]">
-                {(matriz.status as any)?.value ||
-                  (typeof matriz.status === "string" ? matriz.status : "-")}
+                {matriz.father_name ?? "-"}
               </span>
             </div>
             <div className="font-normal text-black flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
-                Sexo
+                Mãe
               </span>
               <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.sexo === "M" ? "Macho" : "Fêmea"}
+                {matriz.mother_serie_rgd ?? "-"} {matriz.mother_rgn ?? "-"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Status
+              </span>
+              <span className="font-bold uppercase text-[#1162AE]">
+                {matriz.status ?? "-"}
+              </span>
+            </div>
+            <div className="font-normal text-black flex flex-col gap-1">
+              <span className="text-gray-400 text-sm font-medium uppercase">
+                Avô Materno
+              </span>
+              <span className="font-bold uppercase text-[#1162AE]">
+                {matriz.maternal_grandfather_name ?? "-"}
               </span>
             </div>
           </div>
@@ -134,20 +164,34 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               Vacinas:
             </span>
             <ul className="list-disc list-inside mt-1">
-              {vacinas && vacinas.length > 0 ? (
-                vacinas.map((vacina, index) => (
-                  <li
-                    className="font-bold uppercase text-[#1162AE]"
-                    key={index}
-                  >
-                    {vacina.nome} - {vacina.data}
-                  </li>
-                ))
-              ) : (
-                <span className="font-bold uppercase text-[#1162AE]">
-                  Sem vacinas anotadas
-                </span>
-              )}
+              {(() => {
+                const vaccineMap = new Map(
+                  vaccines.map((v) => [v.id, v.vaccine_name])
+                );
+
+                const vaccinesWithNames = animalVaccines
+                  .map((av) => ({
+                    ...av,
+                    name: vaccineMap.get(av.vaccine_id),
+                  }))
+                  .filter((av) => av.name);
+
+                return vaccinesWithNames.length > 0 ? (
+                  vaccinesWithNames.map((vaccine) => (
+                    <li
+                      className="font-bold uppercase text-[#1162AE]"
+                      key={vaccine.id}
+                    >
+                      {vaccine.name} -{" "}
+                      {vaccine.date ? formatDate(vaccine.date) : "-"}
+                    </li>
+                  ))
+                ) : (
+                  <span className="font-bold uppercase text-[#1162AE]">
+                    Sem vacinas anotadas
+                  </span>
+                );
+              })()}
             </ul>
           </div>
         </div>

@@ -2,12 +2,12 @@
 
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { useDeleteAnimal } from "@/hooks/db";
+import { useDeleteAnimal } from "@/hooks/db/animals/useDeleteAnimal";
+import { useAnimalById } from "@/hooks/db/animals/useAnimalById";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import detailsAnimalLinks from "@/constants/detailsAnimalLinks";
 import DetailsAnimalButtons from "@/components/buttons/DetailsAnimalButtons";
-import { useBoiDetail } from "@/hooks/useBoiDetail";
 
 export default function AnimalDetailsPage({
   params,
@@ -16,27 +16,23 @@ export default function AnimalDetailsPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { boi, isLoading } = useBoiDetail(id);
   const { deleteAnimal } = useDeleteAnimal();
-
-  if (isLoading) return <p>Carregando...</p>;
-  if (!boi) return <p>Boi não encontrado</p>;
+  const { animal } = useAnimalById(id);
 
   async function handleExcluir() {
-    if (!boi || !boi.uuid) {
+    if (!animal || !animal.rgn) {
       return;
     }
 
     try {
-      await deleteAnimal(boi.uuid);
+      await deleteAnimal(animal.rgn);
       router.push("/home");
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   return (
     <main>
-      <Header title={`${boi.animal?.serieRGD} ${boi.animal?.rgn}`} />
+      <Header title={`${animal?.serie_rgd} ${animal?.rgn}`} />
       <DetailsAnimalButtons
         data={detailsAnimalLinks}
         className="grid-cols-1"

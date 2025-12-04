@@ -2,39 +2,48 @@
 
 import Header from "@/components/layout/Header";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { useAnimals } from "@/hooks/db";
 import { useMemo, useState, useEffect } from "react";
 import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import { WeightList } from "@/components/lists/WeightList";
-import { useBoiDetail } from "@/hooks/useBoiDetail";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useAnimalWeights } from "@/hooks/db/animal_weights/useAnimalWeights";
+import { useCreateAnimalWeight } from "@/hooks/db/animal_weights/useCreateAnimalWeight";
+import { useUpdateAnimalWeight } from "@/hooks/db/animal_weights/useUpdateAnimalWeight";
+import { useDeleteAnimalWeight } from "@/hooks/db/animal_weights/useDeleteAnimalWeight";
+import { useAnimalCE } from "@/hooks/db/animal_ce/useAnimalCE";
+import { useCreateAnimalCE } from "@/hooks/db/animal_ce/useCreateAnimalCE";
+import { useUpdateAnimalCE } from "@/hooks/db/animal_ce/useUpdateAnimalCE";
+import { useDeleteAnimalCE } from "@/hooks/db/animal_ce/useDeleteAnimalCE";
 
 const PesagemPage = () => {
   const { animals: dados } = useAnimals();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
-  const [selectedAnimal, setSelectedAnimal] = useState<AnimalData | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [type, setType] = useState<string>("");
-  const {
-    boi,
-    isLoading,
-    editCirc,
-    deleteCirc,
-    saveCircComMes,
-    savePesoComMes,
-    editPeso,
-    deletePeso,
-    pesosMedidos,
-    circunferenciaEscrotal,
-  } = useBoiDetail(selectedAnimal?.uuid ?? null);
+
+  const { weights: pesosMedidos, isLoading: loadingWeights } = useAnimalWeights(
+    selectedAnimal?.rgn
+  );
+  const { createWeight } = useCreateAnimalWeight();
+  const { updateWeight } = useUpdateAnimalWeight();
+  const { deleteWeight } = useDeleteAnimalWeight();
+
+  const { metrics: circunferenciaEscrotal, isLoading: loadingCE } = useAnimalCE(
+    selectedAnimal?.rgn
+  );
+  const { createCE } = useCreateAnimalCE();
+  const { updateCE } = useUpdateAnimalCE();
+  const { deleteCE } = useDeleteAnimalCE();
 
   const rgnOptions = useMemo(() => {
     return dados
       .map((animal) => ({
-        label: animal.animal.rgn || "",
-        value: animal.animal.rgn || "",
+        label: animal.rgn || "",
+        value: animal.rgn || "",
       }))
       .filter((option) => option.value);
   }, [dados]);
@@ -46,50 +55,102 @@ const PesagemPage = () => {
     }
 
     const a = dados.find(
-      (d) => d.animal.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+      (d) => d.rgn?.toLowerCase() === formData.rgn.toLowerCase()
     );
     setSelectedAnimal(a ?? null);
   }, [formData.rgn, dados]);
 
   const getPesosWithDefault = () => {
-    const source = pesosMedidos;
-    if (!source || source.length === 0) {
-      const nascimento =
-        boi?.animal?.nasc ||
-        selectedAnimal?.animal?.nasc ||
-        new Date().toISOString();
-      return [{ uuid: "default", mes: nascimento, valor: 0 }];
+    if (!pesosMedidos || pesosMedidos.length === 0) {
+      const nascimento = selectedAnimal?.born_date || new Date().toISOString();
+      return [
+        { id: "0", rgn: selectedAnimal?.rgn || "", date: nascimento, value: 0 },
+      ];
     }
-    return source;
+    return pesosMedidos;
   };
 
   const getCircWithDefault = () => {
-    const source = circunferenciaEscrotal;
-    if (!source || source.length === 0) {
-      const nascimento =
-        boi?.animal?.nasc ||
-        selectedAnimal?.animal?.nasc ||
-        new Date().toISOString();
-      return [{ uuid: "default", mes: nascimento, valor: 0 }];
+    if (!circunferenciaEscrotal || circunferenciaEscrotal.length === 0) {
+      const nascimento = selectedAnimal?.born_date || new Date().toISOString();
+      return [
+        { id: "0", rgn: selectedAnimal?.rgn || "", date: nascimento, value: 0 },
+      ];
     }
-    return source;
+    return circunferenciaEscrotal;
   };
 
   const handleAddPeso = async (date: string, valor: number) => {
     setError(null);
+    if (!selectedAnimal?.rgn) {
+      setError("Selecione um animal");
+      return;
+    }
+
     try {
-      await savePesoComMes(date, valor);
+      await createWeight({
+        rgn: selectedAnimal.rgn,
+        date,
+        value: valor,
+      });
     } catch (err) {
+      console.error("Erro ao adicionar peso:", err);
       setError("Erro ao adicionar peso");
     }
   };
 
   const handleAddCE = async (date: string, valor: number) => {
     setError(null);
+    if (!selectedAnimal?.rgn) {
+      setError("Selecione um animal");
+      return;
+    }
+
     try {
-      await saveCircComMes(date, valor);
+      await createCE({
+        rgn: selectedAnimal.rgn,
+        date,
+        value: valor,
+      });
     } catch (err) {
+      console.error("Erro ao adicionar CE:", err);
       setError("Erro ao adicionar CE");
+    }
+  };
+
+  const handleEditPeso = async (id: string, valor: number) => {
+    try {
+      await updateWeight(parseInt(id), { value: valor });
+    } catch (err) {
+      console.error("Erro ao editar peso:", err);
+      setError("Erro ao editar peso");
+    }
+  };
+
+  const handleDeletePeso = async (id: string) => {
+    try {
+      await deleteWeight(parseInt(id));
+    } catch (err) {
+      console.error("Erro ao deletar peso:", err);
+      setError("Erro ao deletar peso");
+    }
+  };
+
+  const handleEditCE = async (id: string, valor: number) => {
+    try {
+      await updateCE(parseInt(id), { value: valor });
+    } catch (err) {
+      console.error("Erro ao editar CE:", err);
+      setError("Erro ao editar CE");
+    }
+  };
+
+  const handleDeleteCE = async (id: string) => {
+    try {
+      await deleteCE(parseInt(id));
+    } catch (err) {
+      console.error("Erro ao deletar CE:", err);
+      setError("Erro ao deletar CE");
     }
   };
 
@@ -101,6 +162,8 @@ const PesagemPage = () => {
       return;
     }
   };
+
+  const isLoading = loadingWeights || loadingCE;
 
   return (
     <main className="min-h-screen">
@@ -164,10 +227,10 @@ const PesagemPage = () => {
           </div>
 
           <WeightList
-            deletePeso={(index) => deletePeso(index)}
-            editPeso={(index, valor) => editPeso(index, valor)}
+            deletePeso={(id) => handleDeletePeso(id)}
+            editPeso={(id, valor) => handleEditPeso(id, valor)}
             pesosMedidos={getPesosWithDefault()}
-            gainDaily={selectedAnimal?.animal?.ganhoDiario || []}
+            gainDaily={[]}
           />
         </section>
       )}
@@ -181,8 +244,8 @@ const PesagemPage = () => {
           </div>
 
           <CircunfList
-            deleteCE={(index) => deleteCirc(index)}
-            editCE={(index, valor) => editCirc(index, valor)}
+            deleteCE={(id) => handleDeleteCE(id)}
+            editCE={(id, valor) => handleEditCE(id, valor)}
             CEMedidos={getCircWithDefault()}
           />
         </section>

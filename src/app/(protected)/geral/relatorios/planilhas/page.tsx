@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
-import { useAnimals } from "@/hooks/db";
-import { AnimalData } from "@/types/schemas.types";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { Animal } from "@/types/animal.type";
 
 export default function ExcelExport() {
   const [isExporting, setIsExporting] = useState(false);
@@ -24,40 +24,24 @@ export default function ExcelExport() {
 
     setIsExporting(true);
 
-    const flattenedData = dados.map((item: AnimalData) => ({
+    const flattenedData = dados.map((item: Animal) => ({
       "Nome Animal":
-        item.animal?.nome ||
-        `${item.animal?.serieRGD || ""} ${item.animal?.rgn || ""}`.trim() ||
-        "-",
-      RGN: item.animal?.rgn || "-",
-      "Série/RGD": item.animal?.serieRGD || "-",
-      Sexo: item.animal?.sexo || "-",
-      Nascimento: item.animal?.nasc || "-",
-      "Cor ao Nascer": item.animal?.corNascimento || "-",
-      iABCz: item.animal?.iabcgz || "-",
-      Deca: item.animal?.deca || "-",
-      "P%": item.animal?.p || "-",
-      "F%": item.animal?.f || "-",
-      Pai: item.pai?.nome || "-",
-      "Mãe Série/RGD": item.mae?.serieRGD || "-",
-      "Mãe RGN": item.mae?.rgn || "-",
-      Pesos:
-        item.animal?.pesosMedidos
-          ?.map((p) => `${p.valor}kg (${p.mes})`)
-          .join("; ") || "-",
-      Vacinas:
-        item.animal?.vacinas?.map((v) => `${v.nome} (${v.data})`).join("; ") ||
-        "-",
-      CE:
-        item.animal?.circunferenciaEscrotal
-          ?.map((c) => `${c.valor}cm (${c.mes})`)
-          .join("; ") || "-",
-      Status: item.animal?.status?.value || "-",
-      Fazenda: item.animal?.farm || "-",
-      GMD:
-        item.animal?.ganhoDiario
-          ?.map((v) => `${v.dailyGain} (${v.days})`)
-          .join("; ") || "-",
+        item.name || `${item.serie_rgd || ""} ${item.rgn || ""}`.trim() || "-",
+      RGN: item.rgn || "-",
+      "Série/RGD": item.serie_rgd || "-",
+      Sexo: item.sex === "M" ? "Macho" : item.sex === "F" ? "Fêmea" : "-",
+      Nascimento: item.born_date || "-",
+      "Cor ao Nascer": item.born_color || "-",
+      iABCz: item.iabcgz || "-",
+      Deca: item.deca || "-",
+      "P%": item.p || "-",
+      "F%": item.f || "-",
+      Pai: item.father_name || "-",
+      "Mãe Série/RGD": item.mother_serie_rgd || "-",
+      "Mãe RGN": item.mother_rgn || "-",
+      "Avô Materno": item.maternal_grandfather_name || "-",
+      Status: item.status || "-",
+      "Fazenda ID": item.farm_id || "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(flattenedData);
