@@ -40,6 +40,7 @@ const SearchCsvFile = () => {
     normalAnimals: 0,
     matrizes: 0,
   });
+  const [forceMatrizImport, setForceMatrizImport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,13 +57,15 @@ const SearchCsvFile = () => {
     console.log("🔄 Separando animais e matrizes...");
 
     // Separar animais normais de matrizes
-    const { animals: normalAnimals, matrizes } =
-      separateAnimalsAndMatrizes(animals);
+    const { animals: normalAnimals, matrizes } = separateAnimalsAndMatrizes(
+      animals,
+      forceMatrizImport
+    );
 
     console.log(`📊 Estatísticas:
       - Total de animais processados: ${animals.length}
       - Animais normais: ${normalAnimals.length}
-      - Matrizes (fêmeas com >24 meses): ${matrizes.length}`);
+      - Matrizes (fêmeas com >24 meses ou forçadas): ${matrizes.length}`);
 
     // Salvar animais normais
     if (normalAnimals.length > 0) {
@@ -459,4 +462,3 @@ const SearchCsvFile = () => {
 };
 
 export default SearchCsvFile;
-

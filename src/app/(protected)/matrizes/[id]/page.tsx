@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import detailsMatrizLinks from "@/constants/detailsMatrizLinks";
 import DetailsMatrizButtons from "@/components/buttons/DetailsMatrizBtns";
 import Link from "next/link";
+import { use } from "react";
 
-export default function MatrizDetalhePage() {
-  const params = useParams();
+export default function MatrizDetalhePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
-  const { matriz, isLoading } = useMatriz(params.id as string);
+  const { matriz, isLoading } = useMatriz(id);
   const { deleteMatriz } = useDeleteMatriz();
 
   if (isLoading) return <p>Carregando...</p>;
@@ -25,32 +30,17 @@ export default function MatrizDetalhePage() {
     try {
       await deleteMatriz(matriz.uuid);
       router.push("/matrizes");
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   return (
     <main>
       <Header title={`${matriz.serieRGD ?? ""} ${matriz.rgn ?? ""}`} />
-      <Link
-        href={`/matrizes/${params.id}/detalhes`}
-        prefetch
-        aria-hidden
-        className="hidden"
+      <DetailsMatrizButtons
+        matrizId={id}
+        data={detailsMatrizLinks}
+        className="grid-cols-1"
       />
-      <Link
-        href={`/matrizes/${params.id}/realizar-reprodução`}
-        prefetch
-        aria-hidden
-        className="hidden"
-      />
-      <Link
-        href={`/matrizes/${params.id}/dados-reprodução`}
-        prefetch
-        aria-hidden
-        className="hidden"
-      />
-      <DetailsMatrizButtons data={detailsMatrizLinks} className="grid-cols-1" />
       <Button
         variant="default"
         onClick={handleExcluir}

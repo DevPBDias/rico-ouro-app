@@ -41,7 +41,10 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               Categoria
             </span>
             <span className="font-bold uppercase text-[#1162AE] text-sm">
-              {calculateAnimalStage(animal.animal.nasc, animal.animal.sexo)}
+              {calculateAnimalStage(
+                FormatData(animal.animal.nasc),
+                animal.animal.sexo
+              )}
             </span>
           </div>
         </div>
@@ -72,7 +75,7 @@ export function AnimalCard({ animal }: AnimalCardProps) {
               <span className="font-bold uppercase text-[#1162AE] text-sm">
                 {animal.animal.nasc ?? "-"}
                 <span className="text-xs text-gray-500 ml-1">
-                  ({calculateAgeInMonths(animal.animal.nasc)}m)
+                  ({calculateAgeInMonths(FormatData(animal.animal.nasc))}m)
                 </span>
               </span>
             </div>

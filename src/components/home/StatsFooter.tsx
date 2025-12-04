@@ -3,6 +3,7 @@
 import { useAnimals } from "@/hooks/db/useAnimals";
 import { useMatrizes } from "@/hooks/db/useMatrizes";
 import { calculateAgeInMonths } from "@/utils/animalUtils";
+import { FormatData } from "@/utils/formatDates";
 import { useMemo } from "react";
 
 export function StatsFooter() {
@@ -16,7 +17,6 @@ export function StatsFooter() {
       female: { range1: 0, range2: 0, range3: 0, range4: 0, total: 0 },
     };
 
-    // Processar animais (Machos e Fêmeas jovens)
     animals?.forEach((animal) => {
       const months = calculateAgeInMonths(animal.animal.nasc);
       const sex = animal.animal.sexo?.toUpperCase();
@@ -28,25 +28,18 @@ export function StatsFooter() {
         else if (months <= 36) counts.male.range3++;
         else counts.male.range4++;
       } else if (sex === "F") {
-        // Fêmeas na tabela animals são geralmente < 24 meses, mas contamos tudo que estiver lá
         counts.female.total++;
         if (months <= 12) counts.female.range1++;
         else if (months <= 24) counts.female.range2++;
-        else if (months <= 36) counts.female.range3++;
-        else counts.female.range4++;
       }
     });
 
-    // Processar matrizes (Fêmeas adultas > 24 meses)
     matrizes?.forEach((matriz) => {
-      const months = calculateAgeInMonths(matriz.nasc);
+      const months = calculateAgeInMonths(FormatData(matriz.nasc));
 
-      // Matrizes são sempre fêmeas
       counts.female.total++;
-      if (months <= 12) counts.female.range1++;
-      else if (months <= 24) counts.female.range2++;
-      else if (months <= 36) counts.female.range3++;
-      else counts.female.range4++;
+      if (months >= 25 && months <= 36) counts.female.range3++;
+      else if (months > 36) counts.female.range4++;
     });
 
     counts.total = counts.male.total + counts.female.total;

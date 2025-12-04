@@ -1,5 +1,5 @@
 import { Links } from "@/types";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface DetailsAnimalButtonsProps {
   data: Links[];

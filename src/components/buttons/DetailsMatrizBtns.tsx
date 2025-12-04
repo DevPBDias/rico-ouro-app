@@ -1,18 +1,18 @@
 import { Links } from "@/types";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface DetailsMatrizButtonsProps {
   data: Links[];
   className?: string;
+  matrizId: string;
 }
 
 const DetailsMatrizButtons = ({
   data,
   className,
+  matrizId,
 }: DetailsMatrizButtonsProps) => {
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params?.id);
 
   return (
     <section
@@ -21,7 +21,7 @@ const DetailsMatrizButtons = ({
       {data.map((link: Links) => (
         <button
           key={link.id}
-          onClick={() => router.push(link.href.replace(":id", id.toString()))}
+          onClick={() => router.push(link.href.replace(":id", matrizId))}
           className={`bg-[#1162AE] text-white w-full pl-4 py-3 rounded-md flex flex-row justify-start items-center font-medium text-sm uppercase shadow-lg gap-2 text-left `}
         >
           {link.name}

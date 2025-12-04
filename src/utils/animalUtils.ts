@@ -23,11 +23,13 @@ export function calculateAnimalStage(
   const normalizedSex = sex?.toUpperCase();
 
   if (months <= 12) {
-    return "Bezerro";
-  } else if (months <= 24) {
-    return normalizedSex === "M" ? "Garrote" : "Novilha";
+    return "0 - 12 m";
+  } else if (months <= 24 && months > 12) {
+    return "12 - 24 m";
+  } else if (months <= 36 && months > 24) {
+    return "24 - 36 m";
   } else {
-    return normalizedSex === "M" ? "Touro" : "Matriz";
+    return "+36 m";
   }
 }
 
