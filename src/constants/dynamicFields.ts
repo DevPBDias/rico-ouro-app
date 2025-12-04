@@ -1,27 +1,28 @@
-import { SelectedReportFields } from "@/types";
-import { AnimalData } from "@/types/schemas.types";
+import { SelectedReportFields } from "@/types/report_field.type";
+import { Animal } from "@/types/animal.type";
 
 export const fieldMap: Record<
   keyof SelectedReportFields,
-  [string, keyof AnimalData | string]
+  [string, keyof Animal | string]
 > = {
-  nomeAnimal: ["Nome", "nomeAnimal"],
+  name: ["Nome", "name"],
   rgn: ["RGN", "rgn"],
-  serieRGD: ["Série/RGD", "serieRGD"],
-  sexo: ["Sexo", "sexo"],
-  dataNascimento: ["Nascimento", "nasc"],
-  corNascimento: ["Cor ao nascer", "corNascimento"],
+  serie_rgd: ["Série/RGD", "serie_rgd"],
+  sex: ["Sexo", "sex"],
+  born_date: ["Nascimento", "born_date"],
+  born_color: ["Cor ao nascer", "born_color"],
   iabcgz: ["iABCz", "iabcgz"],
   deca: ["Deca", "deca"],
   p: ["P%", "p"],
   f: ["F%", "f"],
-  pesosMedidos: ["Pesos", "pesosMedidos"],
-  circunferenciaEscrotal: ["CE", "circunferenciaEscrotal"],
-  vacinas: ["Vacinas", "vacinas"],
-  nomePai: ["Pai", "paiNome"],
-  maeSerieRGD: ["Mãe Série/RGD", "maeSerieRGD"],
-  maeRGN: ["Mãe RGN", "maeRGN"],
+  animal_metrics_weight: ["Pesos", "animal_metrics_weight"],
+  animal_metrics_ce: ["CE", "animal_metrics_ce"],
+  vaccines: ["Vacinas", "vaccines"],
+  father_name: ["Pai", "father_name"],
+  mother_serie_rgd: ["Mãe Série/RGD", "mother_serie_rgd"],
+  mother_rgn: ["Mãe RGN", "mother_rgn"],
+  maternal_grandfather_name: ["Avô Materno", "maternal_grandfather_name"],
   status: ["Status", "status"],
-  farm: ["Fazenda", "farm"],
-  ganhoDiario: ["GMD", "ganhoDiario"],
+  farm_name: ["Fazenda", "farm_id"],
+  daily_gain: ["GMD", "daily_gain"],
 };
