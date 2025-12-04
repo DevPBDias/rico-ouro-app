@@ -1,4 +1,4 @@
-import { Links } from "@/types";
+import { Links } from "@/types/links.type";
 import Image from "next/image";
 import Link from "next/link";
 

@@ -1,4 +1,4 @@
-import { SelectedReportFields } from "@/types";
+import { SelectedReportFields } from "@/types/report_field.type";
 import { ReportCheckboxItem } from "./ReportCheckboxItem";
 
 export interface ReportOption {

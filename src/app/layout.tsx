@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
-import SyncManager from "@/components/sync/SyncManager";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 import { LocalFirstProvider } from "@/providers";
@@ -113,7 +112,6 @@ export default function RootLayout({
           <SyncStatusIndicator />
           {children}
           <ServiceWorkerUpdater />
-          <SyncManager />
         </LocalFirstProvider>
       </body>
     </html>

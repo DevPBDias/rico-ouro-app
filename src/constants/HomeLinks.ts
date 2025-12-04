@@ -1,5 +1,4 @@
-import { Links } from "@/types";
-
+import { Links } from "@/types/links.type";
 import matrizes2 from "@/assets/icons/matrizes2.png";
 import consult2 from "@/assets/icons/consult2.png";
 import borns2 from "@/assets/icons/borns2.png";

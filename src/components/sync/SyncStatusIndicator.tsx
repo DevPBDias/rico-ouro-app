@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
+import { useSyncStatus } from "@/hooks/sync/useSyncStatus";
 
 export function SyncStatusIndicator() {
   const [isMounted, setIsMounted] = useState(false);

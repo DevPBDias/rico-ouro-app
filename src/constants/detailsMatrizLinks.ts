@@ -1,4 +1,4 @@
-import { Links } from "@/types";
+import { Links } from "@/types/links.type";
 
 const detailsMatrizLinks: Links[] = [
   {

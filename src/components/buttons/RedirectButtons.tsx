@@ -1,6 +1,4 @@
-"use client";
-
-import { Links } from "@/types";
+import { Links } from "@/types/links.type";
 import Link from "next/link";
 
 interface RedirectButtonsProps {
