@@ -1,18 +1,16 @@
-import { Vaccine } from "@/types/schemas.types";
+import { Vaccine } from "@/types/vaccine.type";
 import { RxJsonSchema } from "rxdb";
 
 export const vaccineSchema: RxJsonSchema<Vaccine> = {
   title: "vaccines",
   version: 1,
-  primaryKey: "uuid",
+  primaryKey: "id",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 36 },
-    id: { type: ["number", "null"] },
-    vaccineName: { type: "string", maxLength: 200 },
+    id: { type: "string", maxLength: 10 },
+    vaccine_name: { type: "string", maxLength: 200 },
     _deleted: { type: "boolean", default: false },
-    updatedAt: { type: "string", maxLength: 40 },
+    updated_at: { type: "string", maxLength: 40 },
   },
-  required: ["uuid", "vaccineName", "updatedAt"],
-  indexes: ["vaccineName", "updatedAt"],
+  required: ["id", "vaccine_name"],
 };

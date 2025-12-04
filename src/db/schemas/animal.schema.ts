@@ -1,110 +1,50 @@
-import { AnimalData } from "@/types/schemas.types";
+import { Animal } from "@/types/animal.type";
 import { RxJsonSchema } from "rxdb";
 
-export const animalSchema: RxJsonSchema<AnimalData> = {
+export const animalSchema: RxJsonSchema<Animal> = {
   title: "animals",
-  version: 2,
-  primaryKey: "uuid",
+  version: 1,
+  primaryKey: "rgn",
   type: "object",
   properties: {
-    uuid: { type: "string", maxLength: 36 },
-    id: { type: ["number", "null"] },
-
-    animal: {
-      type: "object",
-      properties: {
-        nome: { type: "string" },
-        serieRGD: { type: "string" },
-        rgn: { type: "string" },
-        sexo: { type: "string" },
-        nasc: { type: "string" },
-        iabcgz: { type: "string" },
-        deca: { type: "string" },
-        p: { type: "string" },
-        f: { type: "string" },
-        corNascimento: { type: "string" },
-        farm: { type: "string" },
-        status: {
-          type: "object",
-          properties: {
-            label: { type: "string" },
-            value: { type: "string" },
-          },
-          additionalProperties: true,
-        },
-
-        pesosMedidos: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              mes: { type: "string" },
-              valor: { type: "number" },
-            },
-          },
-        },
-        ganhoDiario: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              initialDate: { type: "string" },
-              endDate: { type: "string" },
-              days: { type: "number" },
-              totalGain: { type: "number" },
-              dailyGain: { type: "number" },
-            },
-          },
-        },
-        circunferenciaEscrotal: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              mes: { type: "string" },
-              valor: { type: "number" },
-            },
-          },
-        },
-        vacinas: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              nome: { type: "string" },
-              data: { type: "string" },
-            },
-          },
-        },
-      },
+    rgn: { type: "string", maxLength: 10 },
+    name: { type: "string" },
+    sex: { type: "string" },
+    born_date: { type: "string", format: "date" },
+    serie_rgd: { type: "string" },
+    born_color: { type: "string" },
+    iabcgz: { type: "string" },
+    deca: { type: "string" },
+    p: { type: "string" },
+    f: { type: "string" },
+    status: {
+      type: "string",
+      enum: [
+        "Descarte",
+        "RGD",
+        "RGN",
+        "Vendido",
+        "Troca",
+        "SRGN",
+        "Morte",
+        "-",
+      ],
     },
-
-    pai: {
+    farm_id: { type: "string", maxLength: 36 },
+    type: { type: "string" },
+    genotyping: { type: "string" },
+    condition: { type: "string" },
+    class_matriz: { type: "string" },
+    parturition_from: {
       type: "object",
-      properties: {
-        nome: { type: "string" },
-      },
+      properties: { sex: { type: "string" }, baby_rgn: { type: "string" } },
     },
-
-    mae: {
-      type: "object",
-      properties: {
-        serieRGD: { type: "string" },
-        rgn: { type: "string" },
-      },
-    },
-
-    avoMaterno: {
-      type: "object",
-      properties: {
-        nome: { type: "string" },
-      },
-    },
-
+    father_name: { type: "string" },
+    mother_serie_rgd: { type: "string" },
+    mother_rgn: { type: "string" },
+    maternal_grandfather_name: { type: "string" },
+    updated_at: { type: "string" },
     _deleted: { type: "boolean" },
-    updatedAt: { type: "string", maxLength: 40 },
   },
-
-  required: ["uuid", "updatedAt", "_deleted"],
-  indexes: [["_deleted", "updatedAt", "uuid"]],
+  required: ["rgn", "serie_rgd", "sex"],
 };

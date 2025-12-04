@@ -5,11 +5,6 @@ declare interface ServiceWorkerRegistration {
   };
 }
 
-declare interface SyncManager {
-  register: (tag: string) => Promise<void>;
-  getTags: () => Promise<string[]>;
-}
-
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: string[];
   skipWaiting(): Promise<void>;
