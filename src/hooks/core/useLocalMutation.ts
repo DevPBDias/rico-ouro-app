@@ -5,14 +5,14 @@ import { useState, useCallback } from "react";
 import type { RxCollection } from "rxdb";
 
 export function useLocalMutation<
-  T extends { uuid?: string; _deleted?: boolean }
+  T extends { updated_at?: string; _deleted?: boolean }
 >(collectionName: string) {
   const db = useRxDatabase();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const create = useCallback(
-    async (data: Partial<T>): Promise<string> => {
+    async (data: Partial<T>): Promise<T> => {
       if (!db) throw new Error("Database not initialized");
 
       setIsLoading(true);
@@ -24,21 +24,53 @@ export function useLocalMutation<
           throw new Error(`Collection ${collectionName} not found`);
         }
 
-        const uuid = data.uuid || crypto.randomUUID();
         const documentData = {
           ...data,
-          uuid,
-          updatedAt: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           _deleted: false,
         };
 
-        await collection.insert(documentData as unknown as T);
+        const doc = await collection.insert(documentData as unknown as T);
 
         setIsLoading(false);
-        return uuid;
+        return doc.toJSON() as T;
       } catch (err) {
         const errorObj =
           err instanceof Error ? err : new Error("Failed to create document");
+        setError(errorObj);
+        setIsLoading(false);
+        throw errorObj;
+      }
+    },
+    [db, collectionName]
+  );
+
+  const upsert = useCallback(
+    async (data: Partial<T>): Promise<T> => {
+      if (!db) throw new Error("Database not initialized");
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const collection = (db as any)[collectionName] as RxCollection<T>;
+        if (!collection) {
+          throw new Error(`Collection ${collectionName} not found`);
+        }
+
+        const documentData = {
+          ...data,
+          updated_at: new Date().toISOString(),
+          _deleted: false,
+        };
+
+        const doc = await collection.upsert(documentData as unknown as T);
+
+        setIsLoading(false);
+        return doc.toJSON() as T;
+      } catch (err) {
+        const errorObj =
+          err instanceof Error ? err : new Error("Failed to upsert document");
         setError(errorObj);
         setIsLoading(false);
         throw errorObj;
@@ -67,7 +99,7 @@ export function useLocalMutation<
 
         const updateData = {
           ...data,
-          updatedAt: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         };
 
         if (typeof (doc as any).update === "function") {
@@ -148,8 +180,7 @@ export function useLocalMutation<
         const now = new Date().toISOString();
         const documentsWithMeta = documents.map((doc) => ({
           ...doc,
-          uuid: doc.uuid || crypto.randomUUID(),
-          updatedAt: now,
+          updated_at: now,
           _deleted: false,
         }));
 
@@ -212,6 +243,7 @@ export function useLocalMutation<
 
   return {
     create,
+    upsert,
     update,
     remove,
     bulkInsert,
