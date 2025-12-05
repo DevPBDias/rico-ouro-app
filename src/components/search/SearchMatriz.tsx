@@ -8,6 +8,7 @@ import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 
 function SearchMatriz() {
   const { matrizes } = useMatrizes();
@@ -16,6 +17,20 @@ function SearchMatriz() {
   const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const { farms } = useFarms();
+
+  const getFarmNameById = (id: string | undefined) => {
+    if (id === "" || id === undefined || id === null) return "SEM FAZENDA";
+
+    const farm = farms.find((item) => item.id === id);
+    return farm?.farm_name;
+  };
+
+  const getStatus = (status: string) => {
+    if (status === "-" || status === undefined || status === null)
+      return "Sem status";
+    return status;
+  };
 
   const handleSearch = useCallback(
     async (query: string) => {
@@ -135,15 +150,10 @@ function SearchMatriz() {
                           <div className="font-bold text-lg text-[#1162AE]">
                             {matriz.serie_rgd} {matriz.rgn || "N/A"}
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            {matriz.name || "Sem nome"}
-                          </div>
-                          <div className="text-xs uppercase text-gray-500 mt-1">
-                            {matriz.sex === "M" ? "Macho" : "Fêmea"} •{" "}
-                            {matriz.farm_id
-                              ? `Fazenda ${matriz.farm_id}`
-                              : "Sem fazenda"}{" "}
-                            • {matriz.status || "Sem status"}
+                          <div className="text-[11px] uppercase text-gray-400 mt-1">
+                            {matriz.class_matriz || "Sem classe"} •{" "}
+                            {getFarmNameById(matriz.farm_id)} •{" "}
+                            {getStatus(matriz?.status)}
                           </div>
                         </div>
                         <div className="text-[#1162AE] text-sm font-medium">

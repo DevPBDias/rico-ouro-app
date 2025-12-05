@@ -20,10 +20,16 @@ function SearchAnimal() {
   const { farms } = useFarms();
 
   const getFarmNameById = (id: string | undefined) => {
-    if (id === "" || id === undefined || id === null) return "SEM DADO";
+    if (id === "" || id === undefined || id === null) return "SEM FAZENDA";
 
     const farm = farms.find((item) => item.id === id);
     return farm?.farm_name;
+  };
+
+  const getStatus = (status: string) => {
+    if (status === "-" || status === undefined || status === null)
+      return "Sem status";
+    return status;
   };
 
   const handleSearch = useCallback(
@@ -144,14 +150,10 @@ function SearchAnimal() {
                           <div className="font-bold text-lg text-[#1162AE]">
                             {animal.serie_rgd} {animal.rgn || "N/A"}
                           </div>
-                          <div className="text-xs uppercase text-gray-500 mt-1">
+                          <div className="text-[11px] uppercase text-gray-400 mt-1">
                             {animal.sex === "M" ? "Macho" : "Fêmea"} •{" "}
                             {getFarmNameById(animal?.farm_id)} •{" "}
-                            {animal.status === "-" ||
-                            animal.status === undefined ||
-                            animal.status === null
-                              ? "Sem status"
-                              : animal.status}
+                            {getStatus(animal?.status)}
                           </div>
                         </div>
                         <div className="text-[#1162AE] text-sm font-medium">
