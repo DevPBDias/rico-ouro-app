@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description:
     "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
   manifest: "/manifest.webmanifest",
-  themeColor: "#1162ae",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -37,6 +36,10 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
+};
+
+export const viewport = {
+  themeColor: "#1162ae",
 };
 
 export default function RootLayout({
