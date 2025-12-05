@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { CheckCircle2, X, AlertTriangle } from "lucide-react";
+import { CheckCircle2, X, AlertTriangle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Animal } from "@/types/animal.type";
 import { checkDuplicateRGNs } from "@/lib/supabase/api";
@@ -23,11 +23,15 @@ const SearchCsvFile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicates, setDuplicates] = useState<DuplicateInfo[]>([]);
-  const [pendingAnimals, setPendingAnimals] = useState<Animal[]>([]);
   const [totalImported, setTotalImported] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [notificationTitle, setNotificationTitle] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState<"warning" | "error">(
+    "warning"
+  );
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -40,9 +44,6 @@ const SearchCsvFile = () => {
   };
 
   const processAnimals = async (animals: Animal[]) => {
-    console.log(`💾 Salvando ${animals.length} animais...`);
-
-    // Salvar animais usando o hook
     for (const animal of animals) {
       try {
         await saveAnimal(animal);
@@ -51,14 +52,11 @@ const SearchCsvFile = () => {
       }
     }
 
-    console.log("✅ Animais salvos com sucesso!");
     setTotalImported(animals.length);
     setIsProcessing(false);
     setShowSuccessModal(true);
-    setPendingAnimals([]);
   };
 
-  // Verificar duplicatas no banco local (RxDB)
   const checkLocalDuplicates = async (
     rgns: string[]
   ): Promise<DuplicateInfo[]> => {
@@ -68,8 +66,6 @@ const SearchCsvFile = () => {
     if (validRgns.length === 0) return [];
 
     try {
-      // Otimização: Buscar apenas os animais que estão na lista de RGNs
-      // Usando $in para evitar carregar todos os animais em memória
       const localAnimals = await db.animals
         .find({
           selector: {
@@ -84,8 +80,6 @@ const SearchCsvFile = () => {
 
       localAnimals.forEach((doc: any) => {
         const animal = doc.toJSON();
-        // Se o animal existe e não está deletado, é uma duplicata
-        // Se estiver deletado, tecnicamente podemos recriar/sobrescrever, mas vamos alertar por segurança
         if (animal.rgn) {
           duplicates.push({
             rgn: animal.rgn,
@@ -110,44 +104,23 @@ const SearchCsvFile = () => {
     try {
       const extractedData: Animal[] = await extractDataFromExcel(selectedFile);
 
-      // Extrair todos os RGNs dos animais para verificação
       const rgnsToCheck = extractedData
         .map((animal) => animal.rgn)
         .filter((rgn): rgn is string => !!rgn && rgn.trim() !== "");
 
-      console.log(
-        `📋 Planilha processada: ${extractedData.length} animais encontrados`
-      );
-
       let allDuplicates: DuplicateInfo[] = [];
 
       if (rgnsToCheck.length > 0) {
-        // 1. Verificar duplicatas no banco LOCAL (RxDB)
-        console.log(
-          `🔍 Verificando ${rgnsToCheck.length} RGNs no banco local...`
-        );
         const localDuplicates = await checkLocalDuplicates(rgnsToCheck);
 
         if (localDuplicates.length > 0) {
-          console.log(
-            `⚠️ ${localDuplicates.length} duplicatas encontradas no banco local`
-          );
           allDuplicates = [...localDuplicates];
         }
 
-        // 2. Verificar duplicatas no banco GLOBAL (Supabase)
         try {
-          console.log(
-            `🔍 Verificando ${rgnsToCheck.length} RGNs no banco global...`
-          );
           const globalDuplicates = await checkDuplicateRGNs(rgnsToCheck);
 
           if (globalDuplicates.length > 0) {
-            console.log(
-              `⚠️ ${globalDuplicates.length} duplicatas encontradas no banco global`
-            );
-
-            // Adicionar duplicatas globais que não estão na lista local
             const localRgns = new Set(localDuplicates.map((d) => d.rgn));
             const uniqueGlobalDuplicates = globalDuplicates
               .filter((d) => !localRgns.has(d.rgn))
@@ -161,61 +134,54 @@ const SearchCsvFile = () => {
             allDuplicates = [...allDuplicates, ...uniqueGlobalDuplicates];
           }
         } catch (checkError) {
-          // Se a verificação global falhar, continuar apenas com duplicatas locais
           console.warn(
             "⚠️ Erro na verificação de duplicatas globais, mas verificação local foi realizada:",
             checkError
           );
         }
 
-        // Se encontrou duplicatas (locais ou globais), mostrar modal
         if (allDuplicates.length > 0) {
-          console.log(
-            `⚠️ Total: ${allDuplicates.length} duplicatas encontradas - aguardando decisão do usuário`
+          const duplicateRgns = new Set(allDuplicates.map((d) => d.rgn));
+
+          const nonDuplicateAnimals = extractedData.filter(
+            (animal) => !duplicateRgns.has(animal.rgn)
           );
+
+          if (nonDuplicateAnimals.length === 0) {
+            setIsProcessing(false);
+            setNotificationType("warning");
+            setNotificationTitle("Todos os animais já existem");
+            setNotificationMessage(
+              `Todos os ${extractedData.length} animais da planilha já existem no banco de dados. Nenhum animal foi importado.`
+            );
+            setShowNotificationModal(true);
+            return;
+          }
+
           setDuplicates(allDuplicates);
-          setPendingAnimals(extractedData);
-          setShowDuplicateModal(true);
-          setIsProcessing(false);
+
+          await processAnimals(nonDuplicateAnimals);
           return;
         }
       }
 
-      // Não há duplicatas - processar normalmente
-      console.log("✅ Nenhuma duplicata encontrada - processando animais...");
+      setDuplicates([]);
       await processAnimals(extractedData);
     } catch (error) {
       setIsProcessing(false);
-      console.error("❌ Erro ao processar o arquivo:", error);
 
-      // Mensagem de erro mais específica
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Erro desconhecido ao processar o arquivo";
 
-      alert(
-        `Erro ao processar o arquivo:\n\n${errorMessage}\n\nPor favor, verifique se o arquivo está no formato correto e tente novamente.`
+      setNotificationType("error");
+      setNotificationTitle("Erro ao processar arquivo");
+      setNotificationMessage(
+        `${errorMessage}\n\nPor favor, verifique se o arquivo está no formato correto e tente novamente.`
       );
+      setShowNotificationModal(true);
     }
-  };
-
-  const handleContinueWithDuplicates = async () => {
-    setShowDuplicateModal(false);
-    setIsProcessing(true);
-    try {
-      await processAnimals(pendingAnimals);
-    } catch (error) {
-      setIsProcessing(false);
-      alert("Erro ao processar o arquivo. Tente novamente.");
-    }
-  };
-
-  const handleCancelImport = () => {
-    setShowDuplicateModal(false);
-    setPendingAnimals([]);
-    setDuplicates([]);
-    setIsProcessing(false);
   };
 
   return (
@@ -302,10 +268,20 @@ const SearchCsvFile = () => {
                       <span className="text-muted-foreground">
                         Total importado:
                       </span>
-                      <span className="font-medium text-blue-600">
+                      <span className="font-medium text-green-600">
                         {totalImported} animais
                       </span>
                     </div>
+                    {duplicates.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Duplicados ignorados:
+                        </span>
+                        <span className="font-medium text-yellow-600">
+                          {duplicates.length} animais
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -321,86 +297,49 @@ const SearchCsvFile = () => {
         </div>
       )}
 
-      {/* Modal de RGNs Duplicados */}
-      {showDuplicateModal && (
+      {/* Modal de Notificação (Warning/Error) */}
+      {showNotificationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="relative w-full max-w-2xl rounded-lg bg-background p-6 shadow-lg max-h-[80vh] overflow-y-auto">
+          <div className="relative w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
             <Button
               size="icon"
               variant={"ghost"}
               className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Fechar"
-              onClick={handleCancelImport}
+              onClick={() => setShowNotificationModal(false)}
             >
               <X />
             </Button>
 
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-12 w-12 text-yellow-600" />
-                <h2 className="text-xl font-semibold text-yellow-600">
-                  RGNs Duplicados Encontrados
-                </h2>
-              </div>
+            <div className="flex flex-col items-center space-y-4 text-center">
+              {notificationType === "warning" ? (
+                <AlertTriangle className="h-12 w-12 text-yellow-500" />
+              ) : (
+                <XCircle className="h-12 w-12 text-red-500" />
+              )}
 
-              <p className="text-muted-foreground">
-                Os seguintes animais já existem no banco de dados:
-              </p>
+              <h2
+                className={`text-xl font-semibold ${
+                  notificationType === "warning"
+                    ? "text-yellow-600"
+                    : "text-red-600"
+                }`}
+              >
+                {notificationTitle}
+              </h2>
 
-              <div className="bg-muted rounded-lg p-4 space-y-2 max-h-60 overflow-y-auto">
-                {duplicates.map((dup, index) => (
-                  <div
-                    key={index}
-                    className="bg-background rounded p-3 text-sm border border-yellow-200"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold">RGN: {dup.rgn}</p>
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          dup.source === "local"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-purple-100 text-purple-700"
-                        }`}
-                      >
-                        {dup.source === "local"
-                          ? "📱 Banco Local"
-                          : "🌐 Banco Global"}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground">Nome: {dup.name}</p>
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Total de duplicados: <strong>{duplicates.length}</strong>
-              </p>
-
-              <div className="border-t pt-4 space-y-3">
-                <p className="text-sm font-medium">
-                  Deseja continuar com a importação?
+              <div className="w-full bg-muted rounded-lg p-4">
+                <p className="text-sm text-foreground whitespace-pre-line">
+                  {notificationMessage}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Os animais duplicados serão atualizados com os dados da
-                  planilha.
-                </p>
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={handleCancelImport}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleContinueWithDuplicates}
-                    className="flex-1 bg-[#1162AE] hover:bg-[#1162AE]/90"
-                  >
-                    Continuar
-                  </Button>
-                </div>
               </div>
+
+              <Button
+                onClick={() => setShowNotificationModal(false)}
+                className="mt-4 w-full rounded-lg bg-[#1162AE] py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                Entendi
+              </Button>
             </div>
           </div>
         </div>
