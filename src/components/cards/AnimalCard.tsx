@@ -1,11 +1,15 @@
+"use client";
+
 import { Eye } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
 import { Animal } from "@/types/animal.type";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
 } from "@/hooks/utils/useAnimalsByAgeAndSex";
 import { formatDate } from "@/utils/formatDates";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 
 interface AnimalCardProps {
   animal: Animal;
@@ -13,7 +17,14 @@ interface AnimalCardProps {
 }
 
 export function AnimalCard({ animal, type }: AnimalCardProps) {
+  const { farms } = useFarms();
   const getMonths = getAgeMonths(animal.born_date);
+
+  const farmName = useMemo(() => {
+    if (!animal.farm_id) return "SEM DADO";
+    const farm = farms.find((f) => f.id === animal.farm_id);
+    return farm ? farm.farm_name : "SEM DADO";
+  }, [animal.farm_id, farms]);
 
   return (
     <div className="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 w-full">
@@ -36,7 +47,7 @@ export function AnimalCard({ animal, type }: AnimalCardProps) {
               fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE] text-sm">
-              {animal.farm_id || "SEM DADO"}
+              {farmName}
             </p>
           </div>
           <div className="flex flex-row gap-1 items-center">

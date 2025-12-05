@@ -79,7 +79,7 @@ export default function CadastroPage() {
         name: "-",
         serie_rgd: "INDI",
         sex: formData.sexo === "M" ? "M" : "F",
-        born_date: "",
+        born_date: undefined,
         born_color: "-",
         iabcgz: "-",
         deca: "-",

@@ -1,22 +1,28 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import { useAnimalById } from "@/hooks/db/animals/useAnimalById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
-import { useAuth } from "@/hooks/auth/useAuth";
 import { formatDate } from "@/utils/formatDates";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { user } = useAuth();
-
   const { animal, isLoading: animalLoading } = useAnimalById(id);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(id);
   const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
 
   const isLoading = animalLoading || vaccinesLoading || allVaccinesLoading;
+
+  const { farms } = useFarms();
+
+  const farmName = useMemo(() => {
+    if (!animal?.farm_id) return "SEM DADO";
+    const farm = farms.find((f) => f.id === animal.farm_id);
+    return farm ? farm.farm_name : "SEM DADO";
+  }, [animal?.farm_id, farms]);
 
   if (isLoading) {
     return (
@@ -48,10 +54,10 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="flex flex-row justify-between items-end gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
           <div className="flex flex-row items-center gap-2">
             <span className="text-gray-400 text-sm font-medium uppercase">
-              RGN
+              Fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {animal.rgn}
+              {farmName}
             </p>
           </div>
         </div>

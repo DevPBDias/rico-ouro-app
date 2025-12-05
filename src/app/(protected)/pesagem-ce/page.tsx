@@ -24,6 +24,7 @@ const PesagemPage = () => {
   const [formData, setFormData] = useState({ rgn: "" });
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [type, setType] = useState<string>("");
+  const [isBorn, setIsBorn] = useState<boolean>(false);
 
   const { weights: pesosMedidos, isLoading: loadingWeights } = useAnimalWeights(
     selectedAnimal?.rgn
@@ -92,6 +93,7 @@ const PesagemPage = () => {
         rgn: selectedAnimal.rgn,
         date,
         value: valor,
+        born_metric: isBorn,
       });
     } catch (err) {
       console.error("Erro ao adicionar peso:", err);
@@ -120,7 +122,7 @@ const PesagemPage = () => {
 
   const handleEditPeso = async (id: string, valor: number) => {
     try {
-      await updateWeight(parseInt(id), { value: valor });
+      await updateWeight(id, { value: valor });
     } catch (err) {
       console.error("Erro ao editar peso:", err);
       setError("Erro ao editar peso");
@@ -129,7 +131,7 @@ const PesagemPage = () => {
 
   const handleDeletePeso = async (id: string) => {
     try {
-      await deleteWeight(parseInt(id));
+      await deleteWeight(id);
     } catch (err) {
       console.error("Erro ao deletar peso:", err);
       setError("Erro ao deletar peso");
@@ -138,7 +140,7 @@ const PesagemPage = () => {
 
   const handleEditCE = async (id: string, valor: number) => {
     try {
-      await updateCE(parseInt(id), { value: valor });
+      await updateCE(id, { value: valor });
     } catch (err) {
       console.error("Erro ao editar CE:", err);
       setError("Erro ao editar CE");
@@ -147,7 +149,7 @@ const PesagemPage = () => {
 
   const handleDeleteCE = async (id: string) => {
     try {
-      await deleteCE(parseInt(id));
+      await deleteCE(id);
     } catch (err) {
       console.error("Erro ao deletar CE:", err);
       setError("Erro ao deletar CE");
@@ -223,6 +225,8 @@ const PesagemPage = () => {
             <AddPesoModal
               type="peso"
               onAddPeso={(date, valor) => handleAddPeso(date, valor)}
+              isBorn={isBorn}
+              setIsBorn={setIsBorn}
             />
           </div>
 

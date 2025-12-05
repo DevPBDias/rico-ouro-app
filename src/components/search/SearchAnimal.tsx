@@ -2,12 +2,13 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { Animal } from "@/types/animal.type";
 import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 
 function SearchAnimal() {
   const { animals } = useAnimals();
@@ -16,6 +17,14 @@ function SearchAnimal() {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const { farms } = useFarms();
+
+  const getFarmNameById = (id: string | undefined) => {
+    if (id === "" || id === undefined || id === null) return "SEM DADO";
+
+    const farm = farms.find((item) => item.id === id);
+    return farm?.farm_name;
+  };
 
   const handleSearch = useCallback(
     async (query: string) => {
@@ -135,15 +144,14 @@ function SearchAnimal() {
                           <div className="font-bold text-lg text-[#1162AE]">
                             {animal.serie_rgd} {animal.rgn || "N/A"}
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            {animal.name || "Sem nome"}
-                          </div>
                           <div className="text-xs uppercase text-gray-500 mt-1">
                             {animal.sex === "M" ? "Macho" : "Fêmea"} •{" "}
-                            {animal.farm_id
-                              ? `Fazenda ${animal.farm_id}`
-                              : "Sem fazenda"}{" "}
-                            • {animal.status || "Sem status"}
+                            {getFarmNameById(animal?.farm_id)} •{" "}
+                            {animal.status === "-" ||
+                            animal.status === undefined ||
+                            animal.status === null
+                              ? "Sem status"
+                              : animal.status}
                           </div>
                         </div>
                         <div className="text-[#1162AE] text-sm font-medium">

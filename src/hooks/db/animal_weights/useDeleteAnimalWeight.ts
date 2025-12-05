@@ -6,8 +6,8 @@ import { AnimalMetric } from "@/types/animal_metrics.type";
 export function useDeleteAnimalWeight() {
   const { remove, isLoading, error } = useLocalMutation<AnimalMetric>("animal_metrics_weight");
 
-  const deleteWeight = async (id: number): Promise<void> => {
-    await remove(id.toString());
+  const deleteWeight = async (id: string): Promise<void> => {
+    await remove(id);
   };
 
   return {

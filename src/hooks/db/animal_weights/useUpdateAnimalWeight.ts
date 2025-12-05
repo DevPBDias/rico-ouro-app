@@ -7,10 +7,10 @@ export function useUpdateAnimalWeight() {
   const { update, isLoading, error } = useLocalMutation<AnimalMetric>("animal_metrics_weight");
 
   const updateWeight = async (
-    id: number,
+    id: string,
     data: Partial<AnimalMetric>
   ): Promise<void> => {
-    await update(id.toString(), data);
+    await update(id, data);
   };
 
   return {

@@ -13,13 +13,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface AddPesoModalProps {
   onAddPeso: (mes: string, valor: number) => void;
   type: "peso" | "circunferencia";
+  isBorn?: boolean;
+  setIsBorn?: (value: boolean) => void;
 }
 
-export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
+export function AddPesoModal({
+  onAddPeso,
+  type,
+  isBorn,
+  setIsBorn,
+}: AddPesoModalProps) {
   const [open, setOpen] = useState(false);
   const [valor, setValor] = useState("");
   const [data, setData] = useState("");
@@ -97,6 +106,20 @@ export function AddPesoModal({ onAddPeso, type }: AddPesoModalProps) {
               onChange={(e) => setData(e.target.value)}
               required
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="born_metric"
+              checked={isBorn}
+              onCheckedChange={(checked) => setIsBorn?.(checked as boolean)}
+            />
+            <Label
+              htmlFor="born_metric"
+              className="text-base font-semibold text-[#1162AE]"
+            >
+              Peso Nascimento?
+            </Label>
           </div>
 
           <DialogFooter className="grid grid-cols-2 gap-2">
