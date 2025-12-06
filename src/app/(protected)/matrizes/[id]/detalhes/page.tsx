@@ -1,24 +1,29 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import { useMatrizById } from "@/hooks/matrizes/useMatrizById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
-import {
-  calculateAgeInMonths,
-  calculateAnimalStage,
-} from "@/utils/animalUtils";
+import { calculateAgeInMonths } from "@/utils/animalUtils";
 import { formatDate } from "@/utils/formatDates";
 import { getAgeRange } from "@/hooks/utils/useAnimalsByAgeAndSex";
+import DetailsInformation from "@/components/cards/DetailsInformation";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 
 const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { matriz, isLoading: matrizLoading } = useMatrizById(id);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(id);
   const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
-
+  const { farms } = useFarms();
   const isLoading = matrizLoading || vaccinesLoading || allVaccinesLoading;
+
+  const farmName = useMemo(() => {
+    if (!matriz?.farm_id) return "SEM DADO";
+    const farm = farms.find((f) => f.id === matriz.farm_id);
+    return farm ? farm.farm_name : "SEM DADO";
+  }, [matriz?.farm_id, farms]);
 
   if (isLoading) {
     return (
@@ -43,6 +48,9 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   const ageInMonths = calculateAgeInMonths(matriz.born_date);
+  const mother_name = `${matriz.mother_serie_rgd || ""} ${
+    matriz.mother_rgn || ""
+  }`;
 
   return (
     <main>
@@ -55,111 +63,48 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               Fazenda
             </span>
             <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {matriz.farm_id}
+              {farmName}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Categoria
-              </span>
-              <p className="font-bold uppercase text-[#1162AE]">
-                {getAgeRange(ageInMonths)}
-                <span className="text-xs text-gray-500 ml-1">
-                  ({ageInMonths}m)
-                </span>
-              </p>
-            </div>
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Nascimento
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.born_date ? formatDate(matriz.born_date) : "-"}
-              </span>
-            </div>
+            <DetailsInformation
+              label="Categoria"
+              value={getAgeRange(ageInMonths)}
+            />
+            <DetailsInformation
+              label="Nascimento"
+              value={formatDate(matriz.born_date)}
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center mb-2 gap-10">
+            <DetailsInformation label="iABCZg" value={matriz.iabcgz} />
+            <DetailsInformation label="DECA" value={matriz.deca} />
+            <DetailsInformation label="F%" value={matriz.f} />
+            <DetailsInformation label="P%" value={matriz.p} />
           </div>
 
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                iABCZg
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.iabcgz ?? "-"}
-              </span>
-            </div>
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                DECA
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.deca ?? "-"}
-              </span>
-            </div>
+            <DetailsInformation label="Pai" value={matriz.father_name} />
+            <DetailsInformation label="Mãe" value={mother_name} />
           </div>
 
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                F%
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.f ?? "-"}
-              </span>
-            </div>
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                P%
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.p ?? "-"}
-              </span>
-            </div>
+            <DetailsInformation
+              label="Avô Materno"
+              value={matriz.maternal_grandfather_name}
+            />
+            <DetailsInformation label="Status" value={matriz.status} />
           </div>
 
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Pai
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.father_name ?? "-"}
-              </span>
-            </div>
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Mãe
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.mother_serie_rgd ?? "-"} {matriz.mother_rgn ?? "-"}
-              </span>
-            </div>
+          <div className="grid grid-cols-2 items-center gap-20">
+            <DetailsInformation label="Classe" value={matriz.class_matriz} />
           </div>
 
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Status
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.status ?? "-"}
-              </span>
-            </div>
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Avô Materno
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {matriz.maternal_grandfather_name ?? "-"}
-              </span>
-            </div>
-          </div>
-
-          <div className="md:col-span-3 mt-4">
+          <div className="md:col-span-3 mt-2">
             <span className="text-gray-400 text-sm font-medium uppercase">
               Vacinas:
             </span>

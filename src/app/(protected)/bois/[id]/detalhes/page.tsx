@@ -64,7 +64,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Sexo
               </span>
@@ -73,7 +73,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
               </span>
             </div>
 
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Nascimento
               </span>
@@ -84,7 +84,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 iABCZg
               </span>
@@ -92,7 +92,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 {animal.iabcgz ?? "-"}
               </span>
             </div>
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 DECA
               </span>
@@ -103,7 +103,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Pai
               </span>
@@ -111,7 +111,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 {animal.father_name ?? "-"}
               </span>
             </div>
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Mãe
               </span>
@@ -124,15 +124,25 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <div className="grid grid-cols-2 items-start justify-start mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                P%
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.p ?? "-"}
-              </span>
+            <div className="grid grid-cols-2 items-start justify-start mb-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-400 text-sm font-medium uppercase">
+                  P%
+                </span>
+                <span className="font-bold uppercase text-[#1162AE]">
+                  {animal.p ?? "-"}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-gray-400 text-sm font-medium uppercase">
+                  F%
+                </span>
+                <span className="font-bold uppercase text-[#1162AE]">
+                  {animal.f ?? "-"}
+                </span>
+              </div>
             </div>
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 avô MATERNO
               </span>
@@ -143,16 +153,15 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <div className="grid grid-cols-2 items-center mb-2 gap-20">
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
-                F%
+                Classe
               </span>
               <span className="font-bold uppercase text-[#1162AE]">
-                {animal.f ?? "-"}
+                {animal.class_matriz ?? "-"}
               </span>
             </div>
-
-            <div className="font-normal text-black flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Status
               </span>
