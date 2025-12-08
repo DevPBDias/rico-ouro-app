@@ -158,7 +158,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 Classe
               </span>
               <span className="font-bold uppercase text-[#1162AE]">
-                {animal.class_matriz ?? "-"}
+                {animal.classification ?? "-"}
               </span>
             </div>
             <div className="flex flex-col gap-1">

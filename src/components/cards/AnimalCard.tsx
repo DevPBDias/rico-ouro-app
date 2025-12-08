@@ -173,18 +173,18 @@ export function AnimalCard({ animal, type }: AnimalCardProps) {
             </div>
           </div>
 
-          {(animal.class_matriz ||
+          {(animal.classification ||
             animal.type ||
             animal.genotyping ||
             animal.condition) && (
             <div className="flex flex-row items-start justify-between mb-2 gap-4">
-              {animal.class_matriz && (
+              {animal.classification && (
                 <div className="flex flex-col gap-1">
                   <span className="text-gray-400 text-xs font-medium uppercase">
                     Classe
                   </span>
                   <span className="font-bold uppercase text-[#1162AE] text-sm">
-                    {animal.class_matriz}
+                    {animal.classification}
                   </span>
                 </div>
               )}

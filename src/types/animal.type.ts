@@ -13,7 +13,7 @@ export interface Animal {
   f?: string;
   status: IStatus;
   farm_id?: string;
-  class_matriz?: "A" | "B" | "C" | "D";
+  classification?: "A" | "B" | "C" | "D";
   type?: "Doadora" | "Reprodutora" | "Receptora FIV";
   genotyping?: "Sim" | "Não";
   condition?: "Parida" | "Solteira";

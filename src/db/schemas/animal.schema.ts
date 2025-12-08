@@ -34,10 +34,13 @@ export const animalSchema: RxJsonSchema<Animal> = {
     type: { type: "string" },
     genotyping: { type: "string" },
     condition: { type: "string" },
-    class_matriz: { type: "string" },
+    classification: { type: "string" },
     parturition_from: {
       type: "object",
-      properties: { sex: { type: "string" }, baby_rgn: { type: "string" } },
+      properties: {
+        baby_sex: { type: "string" },
+        baby_rgn: { type: "string" },
+      },
     },
     father_name: { type: "string" },
     mother_serie_rgd: { type: "string" },

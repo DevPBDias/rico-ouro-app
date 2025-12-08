@@ -151,7 +151,7 @@ function SearchMatriz() {
                             {matriz.serie_rgd} {matriz.rgn || "N/A"}
                           </div>
                           <div className="text-[11px] uppercase text-gray-400 mt-1">
-                            {matriz.class_matriz || "Sem classe"} •{" "}
+                            {matriz.classification || "Sem classe"} •{" "}
                             {getFarmNameById(matriz.farm_id)} •{" "}
                             {getStatus(matriz?.status)}
                           </div>

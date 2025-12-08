@@ -23,7 +23,7 @@ export function exportToExcel(
     "Avô Materno": item.maternal_grandfather_name || "",
     Status: item.status || "",
     "Farm ID": item.farm_id || "",
-    Classe: item.class_matriz || "",
+    Classe: item.classification || "",
     Tipo: item.type || "",
     Genotipagem: item.genotyping || "",
     Condição: item.condition || "",

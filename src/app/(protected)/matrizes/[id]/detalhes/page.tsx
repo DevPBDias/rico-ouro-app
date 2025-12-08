@@ -101,7 +101,7 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
 
           <div className="grid grid-cols-2 items-center gap-20">
-            <DetailsInformation label="Classe" value={matriz.class_matriz} />
+            <DetailsInformation label="Classe" value={matriz.classification} />
           </div>
 
           <div className="md:col-span-3 mt-2">
