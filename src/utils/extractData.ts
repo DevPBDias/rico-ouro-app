@@ -1,8 +1,30 @@
 import * as XLSX from "xlsx";
 import { Animal } from "@/types/animal.type";
 
-function convertDateToISO(dateStr: string): string | undefined {
-  if (!dateStr || dateStr.trim() === "") return undefined;
+function convertDateToISO(dateValue: unknown): string | undefined {
+  if (dateValue === null || dateValue === undefined) return undefined;
+
+  // Handle Excel serial number (days since 1900-01-01, with Excel bug for 1900 leap year)
+  if (typeof dateValue === "number") {
+    // Excel serial date to JavaScript Date
+    // Excel incorrectly considers 1900 a leap year, so we need to adjust
+    const excelEpoch = new Date(1899, 11, 30); // Dec 30, 1899
+    const jsDate = new Date(
+      excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000
+    );
+
+    if (isNaN(jsDate.getTime())) return undefined;
+
+    const y = jsDate.getFullYear();
+    const m = jsDate.getMonth() + 1;
+    const d = jsDate.getDate();
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+
+  // Handle string format DD/MM/YYYY
+  const dateStr = String(dateValue).trim();
+  if (dateStr === "") return undefined;
+
   const [d, m, y] = dateStr.split("/").map((x) => parseInt(x, 10));
   if (!d || !m || !y) return undefined;
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -38,10 +60,15 @@ export async function extractDataFromExcel(file: File): Promise<Animal[]> {
 
         const blockHeader = rows[5].map((h: any) => String(h || "").trim());
 
+        const colHeader = rows[6].map((h: any) => String(h || "").trim());
+
         const animalStart = findBlockStart(blockHeader, "ANIMAL");
         const paiStart = findBlockStart(blockHeader, "PAI");
         const maeStart = findBlockStart(blockHeader, "MÃE");
         const avoStart = findBlockStart(blockHeader, "AVÔ MATERNO");
+
+        const genotypingStart = findBlockStart(colHeader, "GENOTIPADO");
+        const classificationStart = findBlockStart(colHeader, "CLASSE");
 
         console.log("📍 Block positions:", {
           animalStart,
@@ -63,11 +90,19 @@ export async function extractDataFromExcel(file: File): Promise<Animal[]> {
               serie_rgd: cleanStringValue(row[animalStart + 1]),
               rgn: cleanStringValue(row[animalStart + 2]),
               sex: cleanStringValue(row[animalStart + 3]) as "M" | "F",
-              born_date: convertDateToISO(String(row[animalStart + 4] || "")),
+              born_date: convertDateToISO(row[animalStart + 4]),
               iabcgz: cleanStringValue(row[animalStart + 5]),
               deca: cleanStringValue(row[animalStart + 6]),
               p: cleanStringValue(row[animalStart + 7]),
               f: cleanStringValue(row[animalStart + 8]),
+              genotyping:
+                genotypingStart !== -1
+                  ? cleanStringValue(row[genotypingStart])
+                  : undefined,
+              classification:
+                classificationStart !== -1
+                  ? cleanStringValue(row[classificationStart])
+                  : undefined,
               father_name:
                 paiStart !== -1 ? cleanStringValue(row[paiStart]) : undefined,
               mother_serie_rgd:

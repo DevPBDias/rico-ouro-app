@@ -3,7 +3,7 @@ import type { IStatus } from "./status.type";
 export interface Animal {
   rgn: string;
   name?: string;
-  sex: "M" | "F";
+  sex?: "M" | "F" | string;
   born_date?: string;
   serie_rgd: string;
   born_color?: string;
@@ -13,9 +13,9 @@ export interface Animal {
   f?: string;
   status: IStatus;
   farm_id?: string;
-  classification?: "A" | "B" | "C" | "D";
+  classification?: string;
   type?: "Doadora" | "Reprodutora" | "Receptora FIV";
-  genotyping?: "Sim" | "Não";
+  genotyping?: string;
   condition?: "Parida" | "Solteira";
   parturition_from?: {
     baby_sex?: "M" | "F";

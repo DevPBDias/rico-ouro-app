@@ -64,15 +64,40 @@ export async function replicateAnimals(
     push: {
       async handler(rows) {
         console.log(`🔼 [Animals] PUSH triggered with ${rows.length} rows`);
-        const documents = rows.map((row) => row.newDocumentState);
+        // Normalize all documents to have the same keys for Supabase bulk insert
+        const documents = rows.map((row) => {
+          const doc = row.newDocumentState as any;
+          return {
+            rgn: doc.rgn,
+            name: doc.name ?? null,
+            sex: doc.sex ?? null,
+            born_date: doc.born_date ?? null,
+            serie_rgd: doc.serie_rgd ?? null,
+            born_color: doc.born_color ?? null,
+            iabcgz: doc.iabcgz ?? null,
+            deca: doc.deca ?? null,
+            p: doc.p ?? null,
+            f: doc.f ?? null,
+            status: doc.status ?? null,
+            farm_id: doc.farm_id ?? null,
+            type: doc.type ?? null,
+            genotyping: doc.genotyping ?? null,
+            condition: doc.condition ?? null,
+            classification: doc.classification ?? null,
+            parturition_from: doc.parturition_from ?? null,
+            father_name: doc.father_name ?? null,
+            mother_serie_rgd: doc.mother_serie_rgd ?? null,
+            mother_rgn: doc.mother_rgn ?? null,
+            maternal_grandfather_name: doc.maternal_grandfather_name ?? null,
+            updated_at: doc.updated_at,
+            _deleted: doc._deleted ?? false,
+          };
+        });
 
         console.log(`🔼 [Animals] Sending to Supabase:`, {
           count: documents.length,
-          sample: documents[0]
-            ? {
-                rgn: (documents[0] as any).rgn,
-              }
-            : null,
+          sampleKeys: documents[0] ? Object.keys(documents[0]) : [],
+          sample: documents[0],
         });
 
         const headers = await getAuthHeaders();
