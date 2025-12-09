@@ -7,10 +7,10 @@ export function useUpdateReproductionEvent() {
   const { update, isLoading, error } = useLocalMutation<ReproductionEvent>("reproduction_events");
 
   const updateEvent = async (
-    id: number,
+    id: string,
     data: Partial<ReproductionEvent>
   ): Promise<void> => {
-    await update(id.toString(), data);
+    await update(id, data);
   };
 
   return {
