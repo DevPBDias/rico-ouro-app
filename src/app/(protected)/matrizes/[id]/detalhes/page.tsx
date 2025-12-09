@@ -5,9 +5,11 @@ import Header from "@/components/layout/Header";
 import { useMatrizById } from "@/hooks/matrizes/useMatrizById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
-import { calculateAgeInMonths } from "@/utils/animalUtils";
+import {
+  calculateAgeInMonths,
+  getAgeRange,
+} from "@/hooks/utils/useAnimalsByAgeAndSex";
 import { formatDate } from "@/utils/formatDates";
-import { getAgeRange } from "@/hooks/utils/useAnimalsByAgeAndSex";
 import DetailsInformation from "@/components/cards/DetailsInformation";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 
@@ -81,18 +83,26 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               </span>
             </p>
           </div>
+          <div className="flex flex-row gap-1 items-center">
+            <span className="text-gray-400 text-xs font-medium uppercase">
+              Categoria
+            </span>
+            <p className="font-bold uppercase text-[#1162AE] text-sm">
+              {getAgeRange(ageInMonths)}
+              <span className="text-xs text-gray-500 ml-1">
+                ({ageInMonths}m)
+              </span>
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
           <div className="grid grid-cols-2 items-start mb-2 gap-20">
             <DetailsInformation
-              label="Categoria"
-              value={getAgeRange(ageInMonths)}
-            />
-            <DetailsInformation
               label="Nascimento"
               value={formatDate(matriz.born_date)}
             />
+            <DetailsInformation label="Genotipagem" value={matriz.genotyping} />
           </div>
 
           <div className="grid grid-cols-4 items-start mb-2 gap-10">
@@ -117,6 +127,7 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
           <div className="grid grid-cols-2 items-center gap-20">
             <DetailsInformation label="Classe" value={matriz.classification} />
+            <DetailsInformation label="Tipo" value={matriz.type} />
           </div>
 
           <div className="md:col-span-3 mt-2">

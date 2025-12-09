@@ -7,7 +7,10 @@ import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines"
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import { formatDate } from "@/utils/formatDates";
 import { useFarms } from "@/hooks/db/farms/useFarms";
-import { calculateAgeInMonths as getAgeMonths } from "@/hooks/utils/useAnimalsByAgeAndSex";
+import {
+  calculateAgeInMonths as getAgeMonths,
+  getAgeRange,
+} from "@/hooks/utils/useAnimalsByAgeAndSex";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -73,6 +76,15 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <span className="text-xs lowercase text-gray-500 ml-1">
                 {getMonths % 12 === 1 ? "mes" : "meses"}
               </span>
+            </p>
+          </div>
+          <div className="flex flex-row gap-1 items-center">
+            <span className="text-gray-400 text-xs font-medium uppercase">
+              Categoria
+            </span>
+            <p className="font-bold uppercase text-[#1162AE] text-sm">
+              {getAgeRange(getMonths)}
+              <span className="text-xs text-gray-500 ml-1">({getMonths}m)</span>
             </p>
           </div>
         </div>
