@@ -11,6 +11,7 @@ import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
 } from "@/hooks/utils/useAnimalsByAgeAndSex";
+import DetailsInformation from "@/components/cards/DetailsInformation";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -26,6 +27,10 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
     const farm = farms.find((f) => f.id === animal.farm_id);
     return farm ? farm.farm_name : "SEM DADO";
   }, [animal?.farm_id, farms]);
+
+  const mother_name = `${animal?.mother_serie_rgd || ""} ${
+    animal?.mother_rgn || ""
+  }`;
 
   if (isLoading) {
     return (
@@ -84,138 +89,66 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </span>
             <p className="font-bold uppercase text-[#1162AE] text-sm">
               {getAgeRange(getMonths)}
-              <span className="text-xs text-gray-500 ml-1">({getMonths}m)</span>
+              <span className="text-xs text-[11px] lowercase text-gray-500 ml-1">
+                ({getMonths}m)
+              </span>
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
           <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Sexo
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.sex === "M" ? "Macho" : "Fêmea"}
-              </span>
-            </div>
+            <DetailsInformation
+              label="Nascimento"
+              value={formatDate(animal.born_date)}
+            />
+            <DetailsInformation label="iABCZg" value={animal.iabcgz} />
+          </div>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Nascimento
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.born_date ? formatDate(animal.born_date) : "-"}
-              </span>
-            </div>
+          <div className="grid grid-cols-4 items-start mb-2 gap-10">
+            <DetailsInformation label="DECA" value={animal.deca} />
+            <DetailsInformation label="F%" value={animal.f} />
+            <DetailsInformation label="P%" value={animal.p} />
+            <DetailsInformation label="Sexo" value={animal.sex} />
           </div>
 
           <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                iABCZg
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.iabcgz ?? "-"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                DECA
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.deca ?? "-"}
-              </span>
-            </div>
+            <DetailsInformation label="Pai" value={animal.father_name} />
+            <DetailsInformation label="Mãe" value={mother_name} />
           </div>
 
           <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Pai
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.father_name ?? "-"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Mãe
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.mother_serie_rgd && animal.mother_rgn
-                  ? `${animal.mother_serie_rgd} ${animal.mother_rgn}`
-                  : "-"}
-              </span>
-            </div>
+            <DetailsInformation
+              label="Avô Materno"
+              value={animal.maternal_grandfather_name}
+            />
+            <DetailsInformation label="Genotipagem" value={animal.genotyping} />
           </div>
 
-          <div className="grid grid-cols-2 items-start justify-start mb-2 gap-20">
-            <div className="grid grid-cols-2 items-start justify-start mb-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-gray-400 text-sm font-medium uppercase">
-                  P%
-                </span>
-                <span className="font-bold uppercase text-[#1162AE]">
-                  {animal.p ?? "-"}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-gray-400 text-sm font-medium uppercase">
-                  F%
-                </span>
-                <span className="font-bold uppercase text-[#1162AE]">
-                  {animal.f ?? "-"}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                avô MATERNO
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.maternal_grandfather_name ?? "-"}
-              </span>
-            </div>
+          <div className="grid grid-cols-3 items-center gap-20">
+            <DetailsInformation label="Classe" value={animal.classification} />
+            {animal.sex === "F" && (
+              <DetailsInformation label="Tipo" value={animal.type} />
+            )}
+            <DetailsInformation label="Status" value={animal.status} />
           </div>
 
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Classe
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.classification ?? "-"}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-gray-400 text-sm font-medium uppercase">
-                Status
-              </span>
-              <span className="font-bold uppercase text-[#1162AE]">
-                {animal.status ?? "-"}
-              </span>
-            </div>
-          </div>
-
-          <div className="md:col-span-3">
+          <div className="md:col-span-3 mt-2">
             <span className="text-gray-400 text-sm font-medium uppercase">
               Vacinas:
             </span>
             <ul className="list-disc list-inside mt-1">
               {(() => {
-                // Create a map of vaccine_id to vaccine_name for quick lookup
                 const vaccineMap = new Map(
                   vaccines.map((v) => [v.id, v.vaccine_name])
                 );
 
-                // Join animal vaccines with vaccine names
                 const vaccinesWithNames = animalVaccines
                   .map((av) => ({
                     ...av,
                     name: vaccineMap.get(av.vaccine_id),
                   }))
-                  .filter((av) => av.name); // Only show vaccines that have a matching name
+                  .filter((av) => av.name);
 
                 return vaccinesWithNames.length > 0 ? (
                   vaccinesWithNames.map((vaccine) => (

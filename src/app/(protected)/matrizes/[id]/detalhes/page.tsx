@@ -56,7 +56,7 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <main>
-      <Header title={`${matriz.serie_rgd || ""} ${matriz.rgn}`} />
+      <Header title={`Matriz ${matriz.serie_rgd || ""} ${matriz.rgn}`} />
 
       <section className="p-4 mt-4">
         <div className="flex flex-col justify-start items-start mb-3 border-b-2 border-[#1162AE] pb-2">
@@ -89,7 +89,7 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </span>
             <p className="font-bold uppercase text-[#1162AE] text-sm">
               {getAgeRange(ageInMonths)}
-              <span className="text-xs text-gray-500 ml-1">
+              <span className="text-[11px] lowercase text-gray-500 ml-1">
                 ({ageInMonths}m)
               </span>
             </p>
@@ -102,11 +102,10 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               label="Nascimento"
               value={formatDate(matriz.born_date)}
             />
-            <DetailsInformation label="Genotipagem" value={matriz.genotyping} />
+            <DetailsInformation label="iABCZg" value={matriz.iabcgz} />
           </div>
 
-          <div className="grid grid-cols-4 items-start mb-2 gap-10">
-            <DetailsInformation label="iABCZg" value={matriz.iabcgz} />
+          <div className="grid grid-cols-3 items-start mb-2 gap-10">
             <DetailsInformation label="DECA" value={matriz.deca} />
             <DetailsInformation label="F%" value={matriz.f} />
             <DetailsInformation label="P%" value={matriz.p} />
@@ -122,12 +121,13 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
               label="Avô Materno"
               value={matriz.maternal_grandfather_name}
             />
-            <DetailsInformation label="Status" value={matriz.status} />
+            <DetailsInformation label="Genotipagem" value={matriz.genotyping} />
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-20">
+          <div className="grid grid-cols-3 items-center gap-20">
             <DetailsInformation label="Classe" value={matriz.classification} />
             <DetailsInformation label="Tipo" value={matriz.type} />
+            <DetailsInformation label="Status" value={matriz.status} />
           </div>
 
           <div className="md:col-span-3 mt-2">
