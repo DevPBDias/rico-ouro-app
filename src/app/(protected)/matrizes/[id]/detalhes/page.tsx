@@ -5,27 +5,47 @@ import Header from "@/components/layout/Header";
 import { useMatrizById } from "@/hooks/matrizes/useMatrizById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 import {
-  calculateAgeInMonths,
+  calculateAgeInMonths as getAgeMonths,
   getAgeRange,
 } from "@/hooks/utils/useAnimalsByAgeAndSex";
+import { ChartLineLabel } from "@/components/charts/BoiCharts";
+import { useAnimalWeights } from "@/hooks/db/animal_weights";
+import InfoRow from "@/components/layout/InfoRow";
+import InfoSection from "@/components/layout/InfoSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/utils/formatDates";
-import DetailsInformation from "@/components/cards/DetailsInformation";
-import { useFarms } from "@/hooks/db/farms/useFarms";
+import Link from "next/link";
+import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 
 const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { matriz, isLoading: matrizLoading } = useMatrizById(id);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(id);
   const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
-  const { farms } = useFarms();
   const isLoading = matrizLoading || vaccinesLoading || allVaccinesLoading;
+  const { farms } = useFarms();
+  const getMonths = getAgeMonths(matriz?.born_date);
+  const { weights, isLoading: weightsLoading } = useAnimalWeights(
+    id ?? undefined
+  );
+
+  // Transformar dados para o formato do gráfico
+  const weightData = (weights || []).map((w) => ({
+    date: w.date,
+    value: w.value,
+  }));
 
   const farmName = useMemo(() => {
     if (!matriz?.farm_id) return "SEM DADO";
     const farm = farms.find((f) => f.id === matriz.farm_id);
     return farm ? farm.farm_name : "SEM DADO";
   }, [matriz?.farm_id, farms]);
+
+  const mother_name = `${matriz?.mother_serie_rgd || ""} ${
+    matriz?.mother_rgn || ""
+  }`;
 
   if (isLoading) {
     return (
@@ -49,124 +69,162 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const ageInMonths = calculateAgeInMonths(matriz.born_date);
-  const mother_name = `${matriz.mother_serie_rgd || ""} ${
-    matriz.mother_rgn || ""
-  }`;
-
   return (
     <main>
-      <Header title={`Matriz ${matriz.serie_rgd || ""} ${matriz.rgn}`} />
+      <Header title={`${matriz.serie_rgd || ""} ${matriz.rgn}`} />
 
-      <section className="p-4 mt-4">
-        <div className="flex flex-col justify-start items-start mb-3 border-b-2 border-[#1162AE] pb-2">
-          <div className="flex flex-row items-center gap-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Fazenda
-            </span>
-            <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {farmName}
-            </p>
-          </div>
-          <div className="flex flex-row items-center gap-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Idade
-            </span>
-            <p className="font-bold uppercase text-sm text-[#1162AE]">
-              {Math.floor(ageInMonths / 12)}
-              <span className="text-xs lowercase text-gray-500 ml-1">
-                {Math.floor(ageInMonths / 12) === 1 ? "ano" : "anos"} e
-              </span>{" "}
-              {ageInMonths % 12}
-              <span className="text-xs lowercase text-gray-500 ml-1">
-                {ageInMonths % 12 === 1 ? "mes" : "meses"}
-              </span>
-            </p>
-          </div>
-          <div className="flex flex-row gap-1 items-center">
-            <span className="text-gray-400 text-xs font-medium uppercase">
-              Categoria
-            </span>
-            <p className="font-bold uppercase text-[#1162AE] text-sm">
-              {getAgeRange(ageInMonths)}
-              <span className="text-[11px] lowercase text-gray-500 ml-1">
-                ({ageInMonths}m)
-              </span>
-            </p>
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 py-6 space-y-6">
+          <div>
+            <Tabs defaultValue="dados" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-6 h-auto gap-1 shadow-sm">
+                <TabsTrigger
+                  value="dados"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Dados</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="vaccines"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Vacinas</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pesagem-list"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Histórico</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="graphics"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Gráficos</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="dados"
+                className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+              >
+                <InfoSection title="Dados Básicos">
+                  <InfoRow label="Fazenda" value={farmName} />
+                  <InfoRow label="Idade" value={getMonths} />
+                  <InfoRow label="Categoria" value={getAgeRange(getMonths)} />
+                </InfoSection>
+
+                <InfoSection title="Identificação">
+                  <InfoRow label="Nascimento" value={matriz?.born_date} />
+                  <InfoRow label="IABCZG" value={matriz?.iabcgz} />
+                  <InfoRow label="Deca" value={matriz?.deca} />
+                </InfoSection>
+
+                <InfoSection title="Índices Genéticos">
+                  <InfoRow label="F%" value={matriz?.f} />
+                  <InfoRow label="P%" value={matriz?.p} />
+                  <InfoRow label="COR" value={matriz?.born_color} />
+                </InfoSection>
+
+                <InfoSection title="Genealogia">
+                  <InfoRow label="Pai" value={matriz?.father_name} />
+                  <InfoRow label="Mãe" value={mother_name} />
+                  <InfoRow
+                    label="Avó Materno"
+                    value={matriz?.maternal_grandfather_name}
+                  />
+                </InfoSection>
+
+                <InfoSection title="Classificação">
+                  <InfoRow label="Classe" value={matriz?.classification} />
+                  <InfoRow label="Genotipagem" value={matriz?.genotyping} />
+                  <InfoRow label="Status" value={matriz?.status} />
+                  <InfoRow label="Tipo" value={matriz?.type} />
+                </InfoSection>
+              </TabsContent>
+
+              <TabsContent
+                value="vaccines"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="md:col-span-3 mt-2">
+                  <ul className="list-disc list-inside mt-1">
+                    {(() => {
+                      const vaccineMap = new Map(
+                        vaccines.map((v) => [v.id, v.vaccine_name])
+                      );
+
+                      const vaccinesWithNames = animalVaccines
+                        .map((av) => ({
+                          ...av,
+                          name: vaccineMap.get(av.vaccine_id),
+                        }))
+                        .filter((av) => av.name);
+
+                      return vaccinesWithNames.length > 0 ? (
+                        vaccinesWithNames.map((vaccine) => (
+                          <li
+                            className="font-bold uppercase text-[#1162AE]"
+                            key={vaccine.id}
+                          >
+                            {vaccine.name} -{" "}
+                            {vaccine.date ? formatDate(vaccine.date) : "-"}
+                          </li>
+                        ))
+                      ) : (
+                        <InfoSection title="Vacinação">
+                          <div className="px-4 py-3 bg-warning/10 border border-warning/30 rounded-lg">
+                            <p className="text-sm font-semibold text-red-500">
+                              ⚠️ SEM VACINAS ANOTADAS
+                            </p>
+                          </div>
+                        </InfoSection>
+                      );
+                    })()}
+                  </ul>
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="pesagem-list"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="border-t border-border pt-3"></div>
+                <div className="space-y-3 w-full">
+                  <DetailsWeightList weightData={weightData} gainDaily={[]} />
+
+                  {weightData.length === 0 && (
+                    <div className="flex flex-col items-center justify-center gap-4 w-full">
+                      <p className="text-gray-500 text-sm">
+                        Nenhum peso registrado
+                      </p>
+                      <Link
+                        className="w-full bg-primary text-center py-2.5 uppercase text-white text-sm font-semibold rounded-lg"
+                        href="/pesagem-ce"
+                      >
+                        + Pesagem
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="graphics"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="border-t border-border pt-3"></div>
+                <ChartLineLabel
+                  title="Pesos"
+                  description="Evolução mensal"
+                  data={weightData}
+                  colorVar="--chart-1"
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation
-              label="Nascimento"
-              value={formatDate(matriz.born_date)}
-            />
-            <DetailsInformation label="iABCZg" value={matriz.iabcgz} />
-          </div>
-
-          <div className="grid grid-cols-3 items-start mb-2 gap-10">
-            <DetailsInformation label="DECA" value={matriz.deca} />
-            <DetailsInformation label="F%" value={matriz.f} />
-            <DetailsInformation label="P%" value={matriz.p} />
-          </div>
-
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation label="Pai" value={matriz.father_name} />
-            <DetailsInformation label="Mãe" value={mother_name} />
-          </div>
-
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation
-              label="Avô Materno"
-              value={matriz.maternal_grandfather_name}
-            />
-            <DetailsInformation label="Genotipagem" value={matriz.genotyping} />
-          </div>
-
-          <div className="grid grid-cols-3 items-center gap-20">
-            <DetailsInformation label="Classe" value={matriz.classification} />
-            <DetailsInformation label="Tipo" value={matriz.type} />
-            <DetailsInformation label="Status" value={matriz.status} />
-          </div>
-
-          <div className="md:col-span-3 mt-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Vacinas:
-            </span>
-            <ul className="list-disc list-inside mt-1">
-              {(() => {
-                const vaccineMap = new Map(
-                  vaccines.map((v) => [v.id, v.vaccine_name])
-                );
-
-                const vaccinesWithNames = animalVaccines
-                  .map((av) => ({
-                    ...av,
-                    name: vaccineMap.get(av.vaccine_id),
-                  }))
-                  .filter((av) => av.name);
-
-                return vaccinesWithNames.length > 0 ? (
-                  vaccinesWithNames.map((vaccine) => (
-                    <li
-                      className="font-bold uppercase text-[#1162AE]"
-                      key={vaccine.id}
-                    >
-                      {vaccine.name} -{" "}
-                      {vaccine.date ? formatDate(vaccine.date) : "-"}
-                    </li>
-                  ))
-                ) : (
-                  <span className="font-bold uppercase text-[#1162AE]">
-                    Sem vacinas anotadas
-                  </span>
-                );
-              })()}
-            </ul>
-          </div>
-        </div>
-      </section>
+      </div>
     </main>
   );
 };

@@ -116,41 +116,180 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
               <TabsContent
                 value="dados"
-                className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+                className="mt-0 animate-in fade-in-0 duration-200"
               >
-                <InfoSection title="Dados Básicos">
-                  <InfoRow label="Fazenda" value={farmName} />
-                  <InfoRow label="Idade" value={getMonths} />
-                  <InfoRow label="Categoria" value={getAgeRange(getMonths)} />
-                </InfoSection>
+                <div className="grid grid-cols-1 gap-y-1.5">
+                  <div className="space-y-1">
+                    <div className="bg-card border border-border rounded-lg p-3">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                        Dados Básicos
+                      </h3>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Fazenda
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {farmName}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Nascimento
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {animal?.born_date}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Idade
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {Math.floor(getMonths / 12)}{" "}
+                          {Math.floor(getMonths / 12) === 1 ? "ano" : "anos"} e{" "}
+                          {getMonths % 12}{" "}
+                          {getMonths % 12 === 1 ? "mês" : "meses"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Categoria
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {getAgeRange(getMonths)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          SEXO
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {animal?.sex}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                <InfoSection title="Identificação">
-                  <InfoRow label="Nascimento" value={animal?.born_date} />
-                  <InfoRow label="IABCZG" value={animal?.iabcgz} />
-                  <InfoRow label="Deca" value={animal?.deca} />
-                </InfoSection>
+                  <div className="space-y-1 grid grid-cols-1 gap-x-4">
+                    <div className="bg-card border border-border rounded-lg p-3">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                        Índices Genéticos
+                      </h3>
+                      <div className="flex flex-row justify-between items-start">
+                        <div className="flex flex-col justify-start items-start">
+                          <span className="text-[11px] text-gray-500 uppercase block">
+                            F%
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            {animal?.f}
+                          </span>
+                        </div>
+                        <div className="flex flex-col justify-start items-start">
+                          <span className="text-[11px] text-gray-500 uppercase block">
+                            P%
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            {animal?.p}
+                          </span>
+                        </div>
+                        <div className="flex flex-col justify-start items-start">
+                          <span className="text-[11px] text-gray-500 uppercase">
+                            IABCZG
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            {animal?.iabcgz}
+                          </span>
+                        </div>
+                        <div className="flex flex-col justify-start items-start">
+                          <span className="text-[10px] text-gray-500 uppercase">
+                            Deca
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            {animal?.deca}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                <InfoSection title="Índices Genéticos">
-                  <InfoRow label="F%" value={animal?.f} />
-                  <InfoRow label="P%" value={animal?.p} />
-                  <InfoRow label="COR" value={animal?.born_color} />
-                </InfoSection>
+                  <div className="space-y-1">
+                    <div className="bg-card border border-border rounded-lg p-3">
+                      <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                        Genealogia
+                      </h3>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          pai
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {animal?.father_name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Mãe
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {mother_name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Avô Materno
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {animal?.maternal_grandfather_name}
+                        </span>
+                      </div>
+                    </div>
 
-                <InfoSection title="Genealogia">
-                  <InfoRow label="Pai" value={animal?.father_name} />
-                  <InfoRow label="Mãe" value={mother_name} />
-                  <InfoRow
-                    label="Avó Materno"
-                    value={animal?.maternal_grandfather_name}
-                  />
-                </InfoSection>
-
-                <InfoSection title="Classificação">
-                  <InfoRow label="Classe" value={animal?.classification} />
-                  <InfoRow label="Genotipagem" value={animal?.genotyping} />
-                  <InfoRow label="Status" value={animal?.status} />
-                  <InfoRow label="Tipo" value={animal?.type} />
-                </InfoSection>
+                    <div className="space-y-1 grid grid-cols-1 gap-x-4">
+                      <div className="bg-card border border-border rounded-lg p-3">
+                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                          Classificação
+                        </h3>
+                        <div className="flex flex-col justify-start items-start gap-2">
+                          <div className="grid grid-cols-2 gap-8 w-full">
+                            <div className="flex flex-col justify-start items-start">
+                              <span className="text-[11px] text-gray-500 uppercase block">
+                                Classe
+                              </span>
+                              <span className="text-sm font-semibold text-primary">
+                                {animal?.classification}
+                              </span>
+                            </div>
+                            <div className="flex flex-col justify-start items-start">
+                              <span className="text-[11px] text-gray-500 uppercase block">
+                                Genotipagem
+                              </span>
+                              <span className="text-sm font-semibold text-primary">
+                                {animal?.genotyping}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-8 w-full">
+                            <div className="flex flex-col justify-start items-start">
+                              <span className="text-[11px] text-gray-500 uppercase">
+                                Status
+                              </span>
+                              <span className="text-sm font-semibold text-primary">
+                                {animal?.status}
+                              </span>
+                            </div>
+                            <div className="flex flex-col justify-start items-start">
+                              <span className="text-[10px] text-gray-500 uppercase">
+                                Tipo
+                              </span>
+                              <span className="text-sm font-semibold text-primary">
+                                {animal?.type || "-"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent
