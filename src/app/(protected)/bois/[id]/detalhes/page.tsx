@@ -7,16 +7,16 @@ import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines"
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import { formatDate } from "@/utils/formatDates";
 import { useFarms } from "@/hooks/db/farms/useFarms";
+import { calculateAgeInMonths as getAgeMonths } from "@/hooks/utils/useAnimalsByAgeAndSex";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const { animal, isLoading: animalLoading } = useAnimalById(id);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(id);
   const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
-
   const isLoading = animalLoading || vaccinesLoading || allVaccinesLoading;
-
   const { farms } = useFarms();
+  const getMonths = getAgeMonths(animal?.born_date);
 
   const farmName = useMemo(() => {
     if (!animal?.farm_id) return "SEM DADO";
@@ -51,7 +51,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <Header title={`${animal.serie_rgd || ""} ${animal.rgn}`} />
 
       <section className="p-4 mt-4">
-        <div className="flex flex-row justify-between items-end gap-2 mb-3 border-b-2 border-[#1162AE] pb-2">
+        <div className="flex flex-col justify-start items-start mb-3 border-b-2 border-[#1162AE] pb-2">
           <div className="flex flex-row items-center gap-2">
             <span className="text-gray-400 text-sm font-medium uppercase">
               Fazenda
@@ -60,10 +60,25 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
               {farmName}
             </p>
           </div>
+          <div className="flex flex-row items-center gap-2">
+            <span className="text-gray-400 text-sm font-medium uppercase">
+              Idade
+            </span>
+            <p className="font-bold uppercase text-sm text-[#1162AE]">
+              {Math.floor(getMonths / 12)}
+              <span className="text-xs lowercase text-gray-500 ml-1">
+                {Math.floor(getMonths / 12) === 1 ? "ano" : "anos"} e
+              </span>{" "}
+              {getMonths % 12}
+              <span className="text-xs lowercase text-gray-500 ml-1">
+                {getMonths % 12 === 1 ? "mes" : "meses"}
+              </span>
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+          <div className="grid grid-cols-2 items-start mb-2 gap-20">
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Sexo
@@ -83,7 +98,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+          <div className="grid grid-cols-2 items-start mb-2 gap-20">
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 iABCZg
@@ -152,7 +167,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 items-center mb-2 gap-20">
+          <div className="grid grid-cols-2 items-start mb-2 gap-20">
             <div className="flex flex-col gap-1">
               <span className="text-gray-400 text-sm font-medium uppercase">
                 Classe
