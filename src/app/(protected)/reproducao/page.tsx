@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Search, Loader2, ArrowRight, Plus, Pencil } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  ArrowRight,
+  Plus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +18,7 @@ import { Animal } from "@/types/animal.type";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
 import { CreateReproductionModal } from "@/components/modals/reproduction/CreateReproductionModal";
 import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
+import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { formatDate } from "@/utils/formatDates";
 import {
@@ -35,6 +43,10 @@ export default function ReproducaoPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<ReproductionEvent | null>(
+    null
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<ReproductionEvent | null>(
     null
   );
 
@@ -87,6 +99,12 @@ export default function ReproducaoPage() {
     e.stopPropagation(); // Evitar abrir o accordion
     setEventToEdit(event);
     setIsEditModalOpen(true);
+  };
+
+  const handleDeleteEvent = (event: ReproductionEvent, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar abrir o accordion
+    setEventToDelete(event);
+    setIsDeleteModalOpen(true);
   };
 
   return (
@@ -231,8 +249,18 @@ export default function ReproducaoPage() {
                                 role="button"
                                 onClick={(e) => handleEditEvent(event, e)}
                                 className="p-1.5 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-primary z-10"
+                                title="Editar"
                               >
                                 <Pencil className="w-4 h-4" />
+                              </div>
+                              {/* Botão de Exclusão Inline */}
+                              <div
+                                role="button"
+                                onClick={(e) => handleDeleteEvent(event, e)}
+                                className="p-1.5 hover:bg-destructive/10 rounded-full transition-colors text-muted-foreground hover:text-destructive z-10"
+                                title="Excluir"
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </div>
                             </div>
                           </div>
@@ -356,6 +384,17 @@ export default function ReproducaoPage() {
             setEventToEdit(null);
           }}
           event={eventToEdit}
+        />
+      )}
+
+      {eventToDelete && (
+        <DeleteReproductionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setEventToDelete(null);
+          }}
+          event={eventToDelete}
         />
       )}
     </div>

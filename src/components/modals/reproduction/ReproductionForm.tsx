@@ -57,7 +57,6 @@ export function ReproductionForm({
     if (!date) return;
     const initialDate = new Date(date);
 
-    // 290 dias de gestação média
     const date270 = new Date(initialDate);
     date270.setDate(date270.getDate() + 270);
 
@@ -204,9 +203,13 @@ export function ReproductionForm({
             <Input
               type="date"
               value={formData.gestation_diagnostic_date || ""}
-              onChange={(e) =>
-                handleChange("gestation_diagnostic_date", e.target.value)
-              }
+              onChange={(e) => {
+                handleChange("gestation_diagnostic_date", e.target.value);
+                // Se já estiver prenha, recalcula as datas baseado na nova data de diagnóstico
+                if (formData.gestation_diagnostic_type === "Prenha") {
+                  calculateBirthDates(e.target.value);
+                }
+              }}
               className="bg-muted border-0"
             />
           </div>
@@ -218,8 +221,11 @@ export function ReproductionForm({
               value={formData.gestation_diagnostic_type || ""}
               onValueChange={(val) => {
                 handleChange("gestation_diagnostic_type", val);
-                if (val === "Prenha" && formData.date) {
-                  calculateBirthDates(formData.date);
+                if (val === "Prenha") {
+                  // Usa data de diagnóstico preferencialmente, ou data do evento
+                  const baseDate =
+                    formData.gestation_diagnostic_date || formData.date || "";
+                  calculateBirthDates(baseDate);
                 } else if (val === "Vazia") {
                   handleChange("expected_birth_date_270", undefined);
                   handleChange("expected_birth_date_305", undefined);
