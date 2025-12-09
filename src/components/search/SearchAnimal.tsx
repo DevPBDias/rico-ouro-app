@@ -2,13 +2,11 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Animal } from "@/types/animal.type";
-import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
-import { useFarms } from "@/hooks/db/farms/useFarms";
 import SearchCard from "../cards/SearchCard";
 
 function SearchAnimal() {
@@ -18,20 +16,6 @@ function SearchAnimal() {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const { farms } = useFarms();
-
-  const getFarmNameById = (id: string | undefined) => {
-    if (id === "" || id === undefined || id === null) return "SEM FAZENDA";
-
-    const farm = farms.find((item) => item.id === id);
-    return farm?.farm_name;
-  };
-
-  const getStatus = (status: string) => {
-    if (status === "-" || status === undefined || status === null)
-      return "Sem status";
-    return status;
-  };
 
   const handleSearch = useCallback(
     async (query: string) => {

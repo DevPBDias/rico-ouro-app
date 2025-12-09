@@ -1,7 +1,6 @@
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { formatDate } from "@/utils/formatDates";
-import InfoSection from "../layout/InfoSection";
-import InfoRow from "../layout/InfoRow";
+
 
 interface GainDaily {
   dailyGain: number;
@@ -45,21 +44,67 @@ export function DetailsWeightList({ weightData, gainDaily }: WeightListProps) {
 
     const entry = gainDaily.find((g) => g.endDate === weightData[i].date);
     if (!entry) return "0";
-    return String(entry.dailyGain);
+    return entry.dailyGain.toFixed(2);
   };
 
   return (
-    <div className="space-y-4 mt-6">
+    <div className="space-y-3 mt-6">
       {weightData?.map((p, i) => (
-        <InfoSection
-          key={i}
-          title={i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
+        <div
+          key={p.id || i}
+          className="border border-border rounded-lg bg-card overflow-hidden"
         >
-          <InfoRow label="Data" value={formatDate(p.date)} />
-          <InfoRow label="Peso (kg)" value={p.value} />
-          <InfoRow label="Intervalo (dias)" value={valueInteval(i)} />
-          <InfoRow label="GMD (kg/dia)" value={valueGmd(i)} />
-        </InfoSection>
+          {/* Header Minimalista */}
+          <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {i === 0 ? "Peso Nascimento" : `${i}ª Pesagem`}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(p.date)}
+            </span>
+          </div>
+
+          {/* Conteúdo Principal */}
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              {/* Valor Principal em Destaque */}
+              <div>
+                <span className="text-2xl font-bold text-primary">
+                  {p.value}
+                </span>
+                <span className="text-sm text-muted-foreground ml-1">kg</span>
+              </div>
+
+              {/* Métricas Secundárias (só para i > 0) */}
+              {i > 0 && (
+                <div className="flex gap-4">
+                  <div className="text-right">
+                    <span className="text-[10px] text-muted-foreground uppercase block">
+                      Intervalo
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {valueInteval(i)}{" "}
+                      <span className="text-muted-foreground font-normal">
+                        dias
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-muted-foreground uppercase block">
+                      GMD
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {valueGmd(i)}{" "}
+                      <span className="text-muted-foreground font-normal">
+                        kg/dia
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );

@@ -103,7 +103,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   value="pesagem-ce-list"
                   className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                 >
-                  <span className="uppercase">Histórico</span>
+                  <span className="uppercase">Medidas</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="graphics"

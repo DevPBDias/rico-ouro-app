@@ -80,7 +80,7 @@ export function ChartLineLabel({
             <LineChart
               accessibilityLayer
               data={chartData}
-              margin={{ top: 30, left: 10, right: 20, bottom: 20 }}
+              margin={{ top: 30, left: 25, right: 25, bottom: 20 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
 

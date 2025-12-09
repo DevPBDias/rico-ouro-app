@@ -4,11 +4,10 @@ import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
 import { useCallback, useEffect, useState } from "react";
 import { Animal } from "@/types/animal.type";
-import { AnimalCard } from "../cards/AnimalCard";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
-import { useFarms } from "@/hooks/db/farms/useFarms";
+import SearchCard from "../cards/SearchCard";
 
 function SearchMatriz() {
   const { matrizes } = useMatrizes();
@@ -17,20 +16,6 @@ function SearchMatriz() {
   const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const { farms } = useFarms();
-
-  const getFarmNameById = (id: string | undefined) => {
-    if (id === "" || id === undefined || id === null) return "SEM FAZENDA";
-
-    const farm = farms.find((item) => item.id === id);
-    return farm?.farm_name;
-  };
-
-  const getStatus = (status: string) => {
-    if (status === "-" || status === undefined || status === null)
-      return "Sem status";
-    return status;
-  };
 
   const handleSearch = useCallback(
     async (query: string) => {
@@ -77,10 +62,6 @@ function SearchMatriz() {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
-
-  const handleSelectMatriz = (matriz: Animal) => {
-    setSelectedMatriz(matriz);
-  };
 
   const handleBackToResults = () => {
     setSelectedMatriz(null);
@@ -132,7 +113,7 @@ function SearchMatriz() {
                       Voltar para resultados ({searchResults.length})
                     </button>
                   )}
-                  <AnimalCard type="matrizes" animal={selectedMatriz} />
+                  <SearchCard animal={selectedMatriz} />
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -141,25 +122,7 @@ function SearchMatriz() {
                   </h2>
                   <div className="grid gap-3">
                     {searchResults.map((matriz) => (
-                      <div
-                        key={matriz.rgn}
-                        onClick={() => handleSelectMatriz(matriz)}
-                        className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:border-[#1162AE] transition-colors flex justify-between items-center"
-                      >
-                        <div>
-                          <div className="font-bold text-lg text-[#1162AE]">
-                            {matriz.serie_rgd} {matriz.rgn || "N/A"}
-                          </div>
-                          <div className="text-[11px] uppercase text-gray-400 mt-1">
-                            {matriz.classification || "Sem classe"} •{" "}
-                            {getFarmNameById(matriz.farm_id)} •{" "}
-                            {getStatus(matriz?.status)}
-                          </div>
-                        </div>
-                        <div className="text-[#1162AE] text-sm font-medium">
-                          Ver detalhes
-                        </div>
-                      </div>
+                      <SearchCard key={matriz.rgn} animal={matriz} />
                     ))}
                   </div>
                 </div>
