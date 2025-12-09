@@ -5,13 +5,21 @@ import Header from "@/components/layout/Header";
 import { useAnimalById } from "@/hooks/db/animals/useAnimalById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
-import { formatDate } from "@/utils/formatDates";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
 } from "@/hooks/utils/useAnimalsByAgeAndSex";
-import DetailsInformation from "@/components/cards/DetailsInformation";
+import { ChartLineLabel } from "@/components/charts/BoiCharts";
+import { useAnimalWeights } from "@/hooks/db/animal_weights";
+import { useAnimalCE } from "@/hooks/db/animal_ce";
+import InfoRow from "@/components/layout/InfoRow";
+import InfoSection from "@/components/layout/InfoSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDate } from "@/utils/formatDates";
+import Link from "next/link";
+import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
+import { DetailsCircunfList } from "@/components/lists/DetailsCircunfList";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -21,6 +29,23 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const isLoading = animalLoading || vaccinesLoading || allVaccinesLoading;
   const { farms } = useFarms();
   const getMonths = getAgeMonths(animal?.born_date);
+  const { weights, isLoading: weightsLoading } = useAnimalWeights(
+    id ?? undefined
+  );
+  const { metrics: ceMetrics, isLoading: ceLoading } = useAnimalCE(
+    id ?? undefined
+  );
+
+  // Transformar dados para o formato do gráfico
+  const weightData = (weights || []).map((w) => ({
+    date: w.date,
+    value: w.value,
+  }));
+
+  const ceData = (ceMetrics || []).map((ce) => ({
+    date: ce.date,
+    value: ce.value,
+  }));
 
   const farmName = useMemo(() => {
     if (!animal?.farm_id) return "SEM DADO";
@@ -58,118 +83,242 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
     <main>
       <Header title={`${animal.serie_rgd || ""} ${animal.rgn}`} />
 
-      <section className="p-4 mt-4">
-        <div className="flex flex-col justify-start items-start mb-3 border-b-2 border-[#1162AE] pb-2">
-          <div className="flex flex-row items-center gap-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Fazenda
-            </span>
-            <p className="font-bold uppercase text-lg text-[#1162AE]">
-              {farmName}
-            </p>
-          </div>
-          <div className="flex flex-row items-center gap-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Idade
-            </span>
-            <p className="font-bold uppercase text-sm text-[#1162AE]">
-              {Math.floor(getMonths / 12)}
-              <span className="text-xs lowercase text-gray-500 ml-1">
-                {Math.floor(getMonths / 12) === 1 ? "ano" : "anos"} e
-              </span>{" "}
-              {getMonths % 12}
-              <span className="text-xs lowercase text-gray-500 ml-1">
-                {getMonths % 12 === 1 ? "mes" : "meses"}
-              </span>
-            </p>
-          </div>
-          <div className="flex flex-row gap-1 items-center">
-            <span className="text-gray-400 text-xs font-medium uppercase">
-              Categoria
-            </span>
-            <p className="font-bold uppercase text-[#1162AE] text-sm">
-              {getAgeRange(getMonths)}
-              <span className="text-xs text-[11px] lowercase text-gray-500 ml-1">
-                ({getMonths}m)
-              </span>
-            </p>
-          </div>
-        </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 py-6 space-y-6">
+          <div>
+            <Tabs defaultValue="dados" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-6 h-auto gap-1 shadow-sm">
+                <TabsTrigger
+                  value="dados"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Dados</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="vaccines"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Vacinas</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="pesagem-ce-list"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Histórico</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="graphics"
+                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                >
+                  <span className="uppercase">Gráficos</span>
+                </TabsTrigger>
+              </TabsList>
 
-        <div className="grid grid-cols-1 gap-3 pt-4 text-base pb-8">
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation
-              label="Nascimento"
-              value={formatDate(animal.born_date)}
-            />
-            <DetailsInformation label="iABCZg" value={animal.iabcgz} />
-          </div>
+              <TabsContent
+                value="dados"
+                className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+              >
+                <InfoSection title="Dados Básicos">
+                  <InfoRow label="Fazenda" value={farmName} />
+                  <InfoRow label="Idade" value={getMonths} />
+                  <InfoRow label="Categoria" value={getAgeRange(getMonths)} />
+                </InfoSection>
 
-          <div className="grid grid-cols-4 items-start mb-2 gap-10">
-            <DetailsInformation label="DECA" value={animal.deca} />
-            <DetailsInformation label="F%" value={animal.f} />
-            <DetailsInformation label="P%" value={animal.p} />
-            <DetailsInformation label="Sexo" value={animal.sex} />
-          </div>
+                <InfoSection title="Identificação">
+                  <InfoRow label="Nascimento" value={animal?.born_date} />
+                  <InfoRow label="IABCZG" value={animal?.iabcgz} />
+                  <InfoRow label="Deca" value={animal?.deca} />
+                </InfoSection>
 
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation label="Pai" value={animal.father_name} />
-            <DetailsInformation label="Mãe" value={mother_name} />
-          </div>
+                <InfoSection title="Índices Genéticos">
+                  <InfoRow label="F%" value={animal?.f} />
+                  <InfoRow label="P%" value={animal?.p} />
+                  <InfoRow label="COR" value={animal?.born_color} />
+                </InfoSection>
 
-          <div className="grid grid-cols-2 items-start mb-2 gap-20">
-            <DetailsInformation
-              label="Avô Materno"
-              value={animal.maternal_grandfather_name}
-            />
-            <DetailsInformation label="Genotipagem" value={animal.genotyping} />
-          </div>
+                <InfoSection title="Genealogia">
+                  <InfoRow label="Pai" value={animal?.father_name} />
+                  <InfoRow label="Mãe" value={mother_name} />
+                  <InfoRow
+                    label="Avó Materno"
+                    value={animal?.maternal_grandfather_name}
+                  />
+                </InfoSection>
 
-          <div className="grid grid-cols-3 items-center gap-20">
-            <DetailsInformation label="Classe" value={animal.classification} />
-            {animal.sex === "F" && (
-              <DetailsInformation label="Tipo" value={animal.type} />
-            )}
-            <DetailsInformation label="Status" value={animal.status} />
-          </div>
+                <InfoSection title="Classificação">
+                  <InfoRow label="Classe" value={animal?.classification} />
+                  <InfoRow label="Genotipagem" value={animal?.genotyping} />
+                  <InfoRow label="Status" value={animal?.status} />
+                  <InfoRow label="Tipo" value={animal?.type} />
+                </InfoSection>
+              </TabsContent>
 
-          <div className="md:col-span-3 mt-2">
-            <span className="text-gray-400 text-sm font-medium uppercase">
-              Vacinas:
-            </span>
-            <ul className="list-disc list-inside mt-1">
-              {(() => {
-                const vaccineMap = new Map(
-                  vaccines.map((v) => [v.id, v.vaccine_name])
-                );
+              <TabsContent
+                value="vaccines"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="md:col-span-3 mt-2">
+                  <ul className="list-disc list-inside mt-1">
+                    {(() => {
+                      const vaccineMap = new Map(
+                        vaccines.map((v) => [v.id, v.vaccine_name])
+                      );
 
-                const vaccinesWithNames = animalVaccines
-                  .map((av) => ({
-                    ...av,
-                    name: vaccineMap.get(av.vaccine_id),
-                  }))
-                  .filter((av) => av.name);
+                      const vaccinesWithNames = animalVaccines
+                        .map((av) => ({
+                          ...av,
+                          name: vaccineMap.get(av.vaccine_id),
+                        }))
+                        .filter((av) => av.name);
 
-                return vaccinesWithNames.length > 0 ? (
-                  vaccinesWithNames.map((vaccine) => (
-                    <li
-                      className="font-bold uppercase text-[#1162AE]"
-                      key={vaccine.id}
+                      return vaccinesWithNames.length > 0 ? (
+                        vaccinesWithNames.map((vaccine) => (
+                          <li
+                            className="font-bold uppercase text-[#1162AE]"
+                            key={vaccine.id}
+                          >
+                            {vaccine.name} -{" "}
+                            {vaccine.date ? formatDate(vaccine.date) : "-"}
+                          </li>
+                        ))
+                      ) : (
+                        <InfoSection title="Vacinação">
+                          <div className="px-4 py-3 bg-warning/10 border border-warning/30 rounded-lg">
+                            <p className="text-sm font-semibold text-red-500">
+                              ⚠️ SEM VACINAS ANOTADAS
+                            </p>
+                          </div>
+                        </InfoSection>
+                      );
+                    })()}
+                  </ul>
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="pesagem-ce-list"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="border-t border-border pt-3"></div>
+                <Tabs defaultValue="weight" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 -mb-3 h-auto gap-1 shadow-sm">
+                    <TabsTrigger
+                      value="weight"
+                      className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
                     >
-                      {vaccine.name} -{" "}
-                      {vaccine.date ? formatDate(vaccine.date) : "-"}
-                    </li>
-                  ))
-                ) : (
-                  <span className="font-bold uppercase text-[#1162AE]">
-                    Sem vacinas anotadas
-                  </span>
-                );
-              })()}
-            </ul>
+                      <span className="uppercase">Pesagem</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="ce"
+                      className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                    >
+                      <span className="uppercase">Per. Escrotal</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent
+                    value="weight"
+                    className="mt-0 animate-in fade-in-0 duration-200"
+                  >
+                    <div className="space-y-3 w-full">
+                      <DetailsWeightList
+                        weightData={weightData}
+                        gainDaily={[]}
+                      />
+
+                      {weightData.length === 0 && (
+                        <div className="flex flex-col items-center justify-center gap-4 w-full">
+                          <p className="text-gray-500 text-sm">
+                            Nenhum peso registrado
+                          </p>
+                          <Link
+                            className="w-full bg-primary text-center py-2.5 uppercase text-white text-sm font-semibold rounded-lg"
+                            href="/pesagem-ce"
+                          >
+                            + Pesagem
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent
+                    value="ce"
+                    className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+                  >
+                    <div className="space-y-3 w-full">
+                      <DetailsCircunfList CEMedidos={ceMetrics} />
+
+                      {ceMetrics.length === 0 && (
+                        <div className="flex flex-col items-center justify-center gap-4 w-full">
+                          <p className="text-gray-500 text-sm">
+                            Nenhum peso registrado
+                          </p>
+                          <Link
+                            className="w-full bg-primary text-center py-2.5 uppercase text-white text-sm font-semibold rounded-lg"
+                            href="/pesagem-ce"
+                          >
+                            + Per. Escrotal
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+
+              <TabsContent
+                value="graphics"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <div className="border-t border-border pt-3"></div>
+                <Tabs defaultValue="graphic-weight" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-3 h-auto gap-1 shadow-sm">
+                    <TabsTrigger
+                      value="graphic-weight"
+                      className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                    >
+                      <span className="uppercase">Pesagem</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="graphic-ce"
+                      className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
+                    >
+                      <span className="uppercase">Per. Escrotal</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <div className="border-t border-border pt-3"></div>
+
+                  <TabsContent
+                    value="graphic-weight"
+                    className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+                  >
+                    <ChartLineLabel
+                      title="Pesos"
+                      description="Evolução mensal"
+                      data={weightData}
+                      colorVar="--chart-1"
+                    />
+                  </TabsContent>
+
+                  <TabsContent
+                    value="graphic-ce"
+                    className="mt-0 space-y-6 animate-in fade-in-0 duration-200"
+                  >
+                    <ChartLineLabel
+                      title="Circunferência Escrotal"
+                      description="Evolução mensal"
+                      data={ceData}
+                      colorVar="--chart-2"
+                    />
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 };

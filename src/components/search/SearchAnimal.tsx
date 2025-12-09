@@ -9,6 +9,7 @@ import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useFarms } from "@/hooks/db/farms/useFarms";
+import SearchCard from "../cards/SearchCard";
 
 function SearchAnimal() {
   const { animals } = useAnimals();
@@ -78,10 +79,6 @@ function SearchAnimal() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
 
-  const handleSelectAnimal = (animal: Animal) => {
-    setSelectedAnimal(animal);
-  };
-
   const handleBackToResults = () => {
     setSelectedAnimal(null);
   };
@@ -132,7 +129,7 @@ function SearchAnimal() {
                       Voltar para resultados ({searchResults.length})
                     </button>
                   )}
-                  <AnimalCard type="bois" animal={selectedAnimal} />
+                  <SearchCard animal={selectedAnimal} />
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -141,25 +138,7 @@ function SearchAnimal() {
                   </h2>
                   <div className="grid gap-3">
                     {searchResults.map((animal) => (
-                      <div
-                        key={animal.rgn}
-                        onClick={() => handleSelectAnimal(animal)}
-                        className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:border-[#1162AE] transition-colors flex justify-between items-center"
-                      >
-                        <div>
-                          <div className="font-bold text-lg text-[#1162AE]">
-                            {animal.serie_rgd} {animal.rgn || "N/A"}
-                          </div>
-                          <div className="text-[11px] uppercase text-gray-400 mt-1">
-                            {animal.sex === "M" ? "Macho" : "Fêmea"} •{" "}
-                            {getFarmNameById(animal?.farm_id)} •{" "}
-                            {getStatus(animal?.status)}
-                          </div>
-                        </div>
-                        <div className="text-[#1162AE] text-sm font-medium">
-                          Ver detalhes
-                        </div>
-                      </div>
+                      <SearchCard key={animal.rgn} animal={animal} />
                     ))}
                   </div>
                 </div>

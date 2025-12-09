@@ -1,5 +1,7 @@
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { formatDate } from "@/utils/formatDates";
+import InfoSection from "../layout/InfoSection";
+import InfoRow from "../layout/InfoRow";
 
 interface GainDaily {
   dailyGain: number;
@@ -10,14 +12,11 @@ interface GainDaily {
 }
 
 interface WeightListProps {
-  pesosMedidos: Partial<AnimalMetric>[];
+  weightData: Partial<AnimalMetric>[];
   gainDaily: GainDaily[];
 }
 
-export function DetailsWeightList({
-  pesosMedidos,
-  gainDaily,
-}: WeightListProps) {
+export function DetailsWeightList({ weightData, gainDaily }: WeightListProps) {
   function diferencaEmDias(data1: string, data2: string): number {
     const [dia1, mes1, ano1] = data1.split("/").map(Number);
     const [dia2, mes2, ano2] = data2.split("/").map(Number);
@@ -32,8 +31,8 @@ export function DetailsWeightList({
   const valueInteval = (i: number): string => {
     if (i === 0) return "0";
 
-    const currentDate = pesosMedidos[i].date;
-    const previousDate = pesosMedidos[i - 1].date;
+    const currentDate = weightData[i].date;
+    const previousDate = weightData[i - 1].date;
 
     if (!currentDate || !previousDate) return "0";
 
@@ -44,54 +43,23 @@ export function DetailsWeightList({
   const valueGmd = (i: number): string => {
     if (i === 0) return "0";
 
-    const entry = gainDaily.find((g) => g.endDate === pesosMedidos[i].date);
+    const entry = gainDaily.find((g) => g.endDate === weightData[i].date);
     if (!entry) return "0";
     return String(entry.dailyGain);
   };
 
   return (
     <div className="space-y-4 mt-6">
-      {pesosMedidos?.map((p, i) => (
-        <div
+      {weightData?.map((p, i) => (
+        <InfoSection
           key={i}
-          className="flex items-start justify-between border rounded-xl p-3 bg-white shadow-sm"
+          title={i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
         >
-          <div className="flex flex-col items-start gap-3 uppercase">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400">
-                {i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
-              </span>
-              <span className="text-xs font-medium text-primary">
-                {formatDate(p.date)}
-              </span>
-            </div>
-            <div className="text-xl mt-4 font-bold text-[#1162AE] flex flex-row items-center  gap-1">
-              {p.value}
-              <span className="text-xs font-medium text-gray-400 lowercase">
-                kg
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400 uppercase">
-                intervalo (dias)
-              </span>
-              <span className="uppercase text-sm font-bold text-primary">
-                {valueInteval(i)}
-              </span>
-            </div>
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400 uppercase">
-                gmd
-              </span>
-              <span className="uppercase text-sm font-bold text-[#1162AE]">
-                {valueGmd(i)}
-              </span>
-            </div>
-          </div>
-        </div>
+          <InfoRow label="Data" value={formatDate(p.date)} />
+          <InfoRow label="Peso (kg)" value={p.value} />
+          <InfoRow label="Intervalo (dias)" value={valueInteval(i)} />
+          <InfoRow label="GMD (kg/dia)" value={valueGmd(i)} />
+        </InfoSection>
       ))}
     </div>
   );

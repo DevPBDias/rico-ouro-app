@@ -1,6 +1,9 @@
 "use client";
 
 import { AnimalMetric } from "@/types/animal_metrics.type";
+import InfoSection from "../layout/InfoSection";
+import InfoRow from "../layout/InfoRow";
+import { formatDate } from "@/utils/formatDates";
 
 interface DetailsCircunfListProps {
   CEMedidos: AnimalMetric[];
@@ -38,42 +41,15 @@ export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
   return (
     <div className="space-y-4 mt-6">
       {CEMedidos?.map((p, i) => (
-        <div
+        <InfoSection
           key={i}
-          className="flex items-start justify-between border rounded-xl p-3 bg-white shadow-sm"
+          title={i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
         >
-          <div className="flex flex-col items-start gap-3 uppercase">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400">
-                {i === 0 ? "Medição Nascimento" : `${i}ª Medição`}
-              </span>
-              <span className="text-xs font-medium text-primary">{p.date}</span>
-            </div>
-            <div className="text-xl mt-4 font-bold text-[#1162AE] flex flex-row items-center  gap-1">
-              {p.value}
-              <span className="text-xs">cm</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400 uppercase">
-                intervalo (dias)
-              </span>
-              <span className="uppercase text-sm font-bold text-primary">
-                {valueInterval(i)}
-              </span>
-            </div>
-            <div className="flex flex-col items-start gap-[2px]">
-              <span className="text-sm font-semibold text-gray-400 uppercase">
-                Aumento/dia
-              </span>
-              <span className="uppercase text-sm font-bold text-[#1162AE]">
-                {valueDailyChange(i)}
-              </span>
-            </div>
-          </div>
-        </div>
+          <InfoRow label="Data" value={formatDate(p.date)} />
+          <InfoRow label="Circunferência (cm)" value={p.value} />
+          <InfoRow label="Intervalo (dias)" value={valueInterval(i)} />
+          <InfoRow label="GMD (cm/dia)" value={valueDailyChange(i)} />
+        </InfoSection>
       ))}
     </div>
   );
