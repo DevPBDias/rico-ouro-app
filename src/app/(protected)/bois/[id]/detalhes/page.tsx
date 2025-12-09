@@ -13,7 +13,6 @@ import {
 import { ChartLineLabel } from "@/components/charts/BoiCharts";
 import { useAnimalWeights } from "@/hooks/db/animal_weights";
 import { useAnimalCE } from "@/hooks/db/animal_ce";
-import InfoRow from "@/components/layout/InfoRow";
 import InfoSection from "@/components/layout/InfoSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/utils/formatDates";
