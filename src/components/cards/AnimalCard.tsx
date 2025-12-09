@@ -181,13 +181,23 @@ export function AnimalCard({ animal, type }: AnimalCardProps) {
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-400 text-xs font-medium uppercase">
-              avô MATERNO
-            </span>
-            <span className="font-bold uppercase text-[#1162AE] text-sm">
-              {animal.maternal_grandfather_name ?? "-"}
-            </span>
+          <div className="flex flex-row items-start justify-between mb-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-gray-400 text-xs font-medium uppercase">
+                avô MATERNO
+              </span>
+              <span className="font-bold uppercase text-[#1162AE] text-sm">
+                {animal.maternal_grandfather_name ?? "-"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-gray-400 text-xs font-medium uppercase">
+                Tipo
+              </span>
+              <span className="font-bold uppercase text-[#1162AE] text-sm">
+                {animal.type ?? "-"}
+              </span>
+            </div>
           </div>
 
           {(animal.classification ||
