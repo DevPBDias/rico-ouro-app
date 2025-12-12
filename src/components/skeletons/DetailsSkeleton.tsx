@@ -8,7 +8,6 @@ export function DetailsSkeleton() {
       </div>
 
       <div className="p-4 space-y-6 mt-4">
-        {/* Tabs Skeleton */}
         <div className="w-full">
           <div className="grid w-full grid-cols-4 gap-1 mb-6">
             <Skeleton className="h-10 rounded-lg" />
@@ -17,7 +16,6 @@ export function DetailsSkeleton() {
             <Skeleton className="h-10 rounded-lg" />
           </div>
 
-          {/* Info Card Skeleton */}
           <div className="space-y-4">
             <div className="border rounded-lg p-4 space-y-4">
               <Skeleton className="h-4 w-24 mb-4" />
