@@ -1,11 +1,9 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import logo from "@/assets/icons/logo-hor-indiouro.png";
 
-const ShortHeader = () => {
+const ShortHeader = ({ title }: { title: string }) => {
   const router = useRouter();
   return (
     <div className="bg-primary text-primary-foreground px-4 py-3.5 shadow-lg sticky top-0 z-20">
@@ -18,9 +16,7 @@ const ShortHeader = () => {
           <ArrowLeft className="w-6 h-6" />
         </button>
 
-        <div className="flex items-center justify-center">
-          <Image src={logo} alt="Logo" width={113} height={36} />
-        </div>
+        <h3 className="text-lg font-semibold uppercase">{title}</h3>
       </div>
     </div>
   );

@@ -12,9 +12,13 @@ import { useMemo } from "react";
 
 interface SearchCardProps {
   animal: Animal;
+  onDetailsClick?: () => void;
 }
 
-export default function SearchCard({ animal }: SearchCardProps) {
+export default function SearchCard({
+  animal,
+  onDetailsClick,
+}: SearchCardProps) {
   const { farms } = useFarms();
 
   const farmName = useMemo(() => {
@@ -28,6 +32,14 @@ export default function SearchCard({ animal }: SearchCardProps) {
   const animalAge = getMonths >= 25;
   const isMatriz = animalAge && isFemale;
   const pathName = isMatriz ? "matrizes" : "animals";
+
+  const handleDetailsClick = (e: React.MouseEvent) => {
+    if (onDetailsClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      onDetailsClick();
+    }
+  };
 
   return (
     <div className="relative w-full text-left bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/30 transition-all duration-200 group">
@@ -81,13 +93,23 @@ export default function SearchCard({ animal }: SearchCardProps) {
           </div>
         </div>
 
-        <Link
-          href={`/${pathName}/${animal?.rgn}/detalhes`}
-          className="absolute right-4 top-4 z-10 px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center"
-        >
-          Detalhes
-          <ChevronRight size={16} color="white" />
-        </Link>
+        {onDetailsClick ? (
+          <button
+            onClick={handleDetailsClick}
+            className="absolute right-4 top-4 z-10 px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center hover:bg-primary/90 transition-colors"
+          >
+            Detalhes
+            <ChevronRight size={16} color="white" />
+          </button>
+        ) : (
+          <Link
+            href={`/${pathName}/${animal?.rgn}/detalhes`}
+            className="absolute right-4 top-4 z-10 px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center"
+          >
+            Detalhes
+            <ChevronRight size={16} color="white" />
+          </Link>
+        )}
       </div>
     </div>
   );

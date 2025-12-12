@@ -12,6 +12,7 @@ import {
   useCacheDynamicRoutes,
   routePatterns,
 } from "@/hooks/sync/useCacheDynamicRoutes";
+import DetailsMatrizLayout from "../details-animals/DetailsMatrizLayout";
 
 function SearchMatriz() {
   const { matrizes } = useMatrizes();
@@ -20,6 +21,7 @@ function SearchMatriz() {
   const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const matrizIds = useMemo(() => matrizes.map((m) => m.rgn), [matrizes]);
   useCacheDynamicRoutes(matrizIds, routePatterns.matrizes, "matrizes");
@@ -37,11 +39,26 @@ function SearchMatriz() {
       setHasSearched(false);
       setSelectedMatriz(null);
 
+      const queryLower = query.toLowerCase().trim();
+
+      // Verificar match exato de RGN
+      const exactMatch = matrizes.find(
+        (matriz) => matriz.rgn?.toLowerCase() === queryLower
+      );
+
+      if (exactMatch) {
+        // Se encontrou match exato, mostra apenas essa matriz
+        setSearchResults([exactMatch]);
+        setIsSearching(false);
+        setHasSearched(true);
+        return;
+      }
+
+      // Busca parcial em RGN, nome e série
       const results = matrizes.filter((matriz) => {
         const rgn = matriz.rgn?.toString().toLowerCase() || "";
         const name = matriz.name?.toLowerCase() || "";
         const serieRgd = matriz.serie_rgd?.toLowerCase() || "";
-        const queryLower = query.toLowerCase();
 
         return (
           rgn.includes(queryLower) ||
@@ -51,11 +68,6 @@ function SearchMatriz() {
       });
 
       setSearchResults(results);
-
-      if (results.length === 1) {
-        setSelectedMatriz(results[0]);
-      }
-
       setIsSearching(false);
       setHasSearched(true);
     },
@@ -70,25 +82,56 @@ function SearchMatriz() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
 
-  const handleBackToResults = () => {
+  const handleSelectMatriz = (matriz: Animal) => {
+    setSelectedMatriz(matriz);
+    setShowDetails(true);
+  };
+
+  const handleBackToSearch = () => {
+    setShowDetails(false);
     setSelectedMatriz(null);
   };
 
+  // MODO DETALHES - Search some, mostra apenas os detalhes
+  if (showDetails && selectedMatriz) {
+    return (
+      <section className="px-4 py-4">
+        <button
+          onClick={handleBackToSearch}
+          className="flex items-center text-[#1162AE] font-medium hover:underline mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Voltar para busca
+        </button>
+
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
+          <p className="text-sm text-primary font-semibold">
+            {selectedMatriz.serie_rgd} {selectedMatriz.rgn} -{" "}
+            {selectedMatriz.name || "Sem nome"}
+          </p>
+        </div>
+
+        <DetailsMatrizLayout rgn={selectedMatriz.rgn} />
+      </section>
+    );
+  }
+
+  // MODO BUSCA - Campo de busca e resultados
   return (
-    <section className="p-4">
-      <div className="my-8">
+    <section className="px-4">
+      <div className="py-3 border-b border-border">
         <label
           htmlFor="search-matriz"
-          className="text-xl font-bold text-[#1162AE]"
+          className="text-base font-bold text-[#1162AE] uppercase"
         >
           Buscar Matriz:
         </label>
-        <div className="relative mt-3">
+        <div className="relative mt-1">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             id="search-matriz"
             type="text"
-            className="placeholder:text-sm placeholder:text-gray-400 pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
+            className="placeholder:text-sm placeholder:text-gray-400 pl-2 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Digite o RGN, nome ou série da matriz..."
@@ -97,7 +140,7 @@ function SearchMatriz() {
       </div>
 
       {isSearching ? (
-        <div className="space-y-3 my-12">
+        <div className="space-y-3 my-4">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
             Buscando...
           </h2>
@@ -106,30 +149,33 @@ function SearchMatriz() {
           ))}
         </div>
       ) : (
-        <div className="my-6">
+        <div className="my-4">
           {searchQuery.trim() && hasSearched && (
             <>
-              {selectedMatriz ? (
-                <div className="space-y-4">
-                  {searchResults.length > 1 && (
-                    <button
-                      onClick={handleBackToResults}
-                      className="flex items-center text-[#1162AE] font-medium hover:underline"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-1" />
-                      Voltar para resultados ({searchResults.length})
-                    </button>
-                  )}
-                  <SearchCard animal={selectedMatriz} />
-                </div>
-              ) : searchResults.length > 0 ? (
+              {searchResults.length > 0 ? (
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-                    Resultados encontrados ({searchResults.length}):
+                  <h2 className="text-lg font-semibold text-[#1162AE] mb-1">
+                    {searchResults.length === 1
+                      ? "Matriz encontrada:"
+                      : `Resultados encontrados (${searchResults.length}):`}
                   </h2>
+                  {searchResults.length > 1 && (
+                    <p className="text-sm text-gray-500 mb-3">
+                      Toque em uma matriz para ver os detalhes
+                    </p>
+                  )}
                   <div className="grid gap-3">
                     {searchResults.map((matriz) => (
-                      <SearchCard key={matriz.rgn} animal={matriz} />
+                      <div
+                        key={matriz.rgn}
+                        onClick={() => handleSelectMatriz(matriz)}
+                        className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-lg transition-all active:scale-[0.98]"
+                      >
+                        <SearchCard
+                          animal={matriz}
+                          onDetailsClick={() => handleSelectMatriz(matriz)}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>

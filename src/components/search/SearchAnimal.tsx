@@ -12,6 +12,7 @@ import {
   routePatterns,
   useCacheDynamicRoutes,
 } from "@/hooks/sync/useCacheDynamicRoutes";
+import DetailsAnimalLayout from "../details-animals/DetailsAnimalLayout";
 
 function SearchAnimal() {
   const { animals } = useAnimals();
@@ -20,6 +21,7 @@ function SearchAnimal() {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const animalIds = useMemo(() => animals.map((a) => a.rgn), [animals]);
   useCacheDynamicRoutes(animalIds, routePatterns.animals, "animals");
@@ -37,11 +39,26 @@ function SearchAnimal() {
       setHasSearched(false);
       setSelectedAnimal(null);
 
+      const queryLower = query.toLowerCase().trim();
+
+      // Verificar match exato de RGN
+      const exactMatch = animals.find(
+        (animal) => animal.rgn?.toLowerCase() === queryLower
+      );
+
+      if (exactMatch) {
+        // Se encontrou match exato, mostra apenas esse animal
+        setSearchResults([exactMatch]);
+        setIsSearching(false);
+        setHasSearched(true);
+        return;
+      }
+
+      // Busca parcial em RGN, nome e série
       const results = animals.filter((animal) => {
         const rgn = animal.rgn?.toString().toLowerCase() || "";
         const name = animal.name?.toLowerCase() || "";
         const serieRgd = animal.serie_rgd?.toLowerCase() || "";
-        const queryLower = query.toLowerCase();
 
         return (
           rgn.includes(queryLower) ||
@@ -51,11 +68,6 @@ function SearchAnimal() {
       });
 
       setSearchResults(results);
-
-      if (results.length === 1) {
-        setSelectedAnimal(results[0]);
-      }
-
       setIsSearching(false);
       setHasSearched(true);
     },
@@ -70,25 +82,55 @@ function SearchAnimal() {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, handleSearch]);
 
-  const handleBackToResults = () => {
+  const handleSelectAnimal = (animal: Animal) => {
+    setSelectedAnimal(animal);
+    setShowDetails(true);
+  };
+
+  const handleBackToSearch = () => {
+    setShowDetails(false);
     setSelectedAnimal(null);
   };
 
+  // MODO DETALHES - Search some, mostra apenas os detalhes
+  if (showDetails && selectedAnimal) {
+    return (
+      <section className="px-4 py-4">
+        <button
+          onClick={handleBackToSearch}
+          className="flex items-center text-[#1162AE] font-medium hover:underline mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Voltar para busca
+        </button>
+
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
+          <p className="text-sm text-primary font-semibold">
+            {selectedAnimal.serie_rgd} {selectedAnimal.rgn}
+          </p>
+        </div>
+
+        <DetailsAnimalLayout rgn={selectedAnimal.rgn} />
+      </section>
+    );
+  }
+
+  // MODO BUSCA - Campo de busca e resultados
   return (
-    <section className="p-4">
-      <div className="my-8">
+    <section className="px-4">
+      <div className="py-3 border-b border-border">
         <label
           htmlFor="search-animal"
-          className="text-xl font-bold text-[#1162AE]"
+          className="text-base font-bold text-[#1162AE] uppercase"
         >
           Buscar Animal:
         </label>
-        <div className="relative mt-3">
+        <div className="relative mt-1">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             id="search-animal"
             type="text"
-            className="placeholder:text-sm placeholder:text-gray-400 pl-2 py-2 h-12 bg-white border border-gray-200 rounded-lg text-base"
+            className="placeholder:text-sm placeholder:text-gray-400 pl-2 bg-white border border-gray-200 rounded-lg text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Digite o RGN, nome ou série do animal..."
@@ -97,7 +139,7 @@ function SearchAnimal() {
       </div>
 
       {isSearching ? (
-        <div className="space-y-3 my-12">
+        <div className="space-y-3 my-4">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
             Buscando...
           </h2>
@@ -106,30 +148,33 @@ function SearchAnimal() {
           ))}
         </div>
       ) : (
-        <div className="my-6">
+        <div className="my-4">
           {searchQuery.trim() && hasSearched && (
             <>
-              {selectedAnimal ? (
-                <div className="space-y-4">
-                  {searchResults.length > 1 && (
-                    <button
-                      onClick={handleBackToResults}
-                      className="flex items-center text-[#1162AE] font-medium hover:underline"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-1" />
-                      Voltar para resultados ({searchResults.length})
-                    </button>
-                  )}
-                  <SearchCard animal={selectedAnimal} />
-                </div>
-              ) : searchResults.length > 0 ? (
+              {searchResults.length > 0 ? (
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-                    Resultados encontrados ({searchResults.length}):
+                  <h2 className="text-lg font-semibold text-[#1162AE] mb-1">
+                    {searchResults.length === 1
+                      ? "Animal encontrado:"
+                      : `Resultados encontrados (${searchResults.length}):`}
                   </h2>
+                  {searchResults.length > 1 && (
+                    <p className="text-sm text-gray-500 mb-3">
+                      Toque em um animal para ver os detalhes
+                    </p>
+                  )}
                   <div className="grid gap-3">
                     {searchResults.map((animal) => (
-                      <SearchCard key={animal.rgn} animal={animal} />
+                      <div
+                        key={animal.rgn}
+                        onClick={() => handleSelectAnimal(animal)}
+                        className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-lg transition-all active:scale-[0.98]"
+                      >
+                        <SearchCard
+                          animal={animal}
+                          onDetailsClick={() => handleSelectAnimal(animal)}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>

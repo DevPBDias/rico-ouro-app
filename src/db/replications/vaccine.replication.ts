@@ -23,8 +23,9 @@ export async function replicateVaccines(
 
         const headers = await getAuthHeaders();
 
+        const encodedDate = encodeURIComponent(lastModified);
         const response = await fetch(
-          `${supabaseUrl}/rest/v1/vaccines?select=*&order=updated_at.asc&limit=${batchSize}&updated_at=gt.${lastModified}`,
+          `${supabaseUrl}/rest/v1/vaccines?select=*&order=updated_at.asc&limit=${batchSize}&updated_at=gt.${encodedDate}`,
           { headers }
         );
 

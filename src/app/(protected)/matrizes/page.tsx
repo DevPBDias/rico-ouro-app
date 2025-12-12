@@ -1,10 +1,10 @@
-import Header from "@/components/layout/Header";
+import ShortHeader from "@/components/layout/ShortHeader";
 import SearchMatriz from "@/components/search/SearchMatriz";
 
 const ConsultMatrizes = () => {
   return (
     <main className="w-full h-dvh">
-      <Header title="Consulta Matriz" />
+      <ShortHeader title="Consulta Matriz" />
       <SearchMatriz />
     </main>
   );
