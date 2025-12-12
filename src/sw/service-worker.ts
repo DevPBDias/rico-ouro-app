@@ -3,31 +3,32 @@
 export type {};
 declare const self: ServiceWorkerGlobalScope;
 
-const SCHEMA_VERSION = "v21"; // Added PWA assets to cache
+// ============================================================================
+// CONFIGURAÇÃO - Versão e nomes de cache
+// ============================================================================
+const SCHEMA_VERSION = "v22"; // App Shell + Dynamic Routes Offline Support
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
+const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
+const DYNAMIC_CACHE_NAME = `rico-ouro-dynamic-${SCHEMA_VERSION}`;
 
-// All static routes and assets to be precached on install
-// Dynamic routes are cached proactively when user visits list pages
-const ASSETS_TO_CACHE = [
-  // Core
+// ============================================================================
+// APP SHELL - Assets essenciais que DEVEM estar disponíveis offline
+// ============================================================================
+const APP_SHELL_ASSETS = [
+  // Core HTML/Manifest
   "/",
   "/manifest.json",
   "/offline.html",
 
   // PWA Icons
   "/logo.svg",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/icon-maskable-192.png",
-  "/icon-maskable-512.png",
-  "/apple-touch-icon.png",
   "/splash.png",
 
   // Auth
   "/login",
   "/home",
 
-  // Main pages (protected)
+  // Main pages (protected) - Estas servem como fallback para rotas dinâmicas
   "/bois",
   "/matrizes",
   "/cadastro",
@@ -53,29 +54,83 @@ const ASSETS_TO_CACHE = [
   "/geral/relatorios/planilhas",
 ];
 
-// Dynamic route patterns and their parent fallback routes
-const DYNAMIC_ROUTE_FALLBACKS: Record<string, string> = {
-  "/bois/": "/bois",
-  "/matrizes/": "/matrizes",
-};
-
-// Helper function to find appropriate fallback for dynamic routes
-function getFallbackRoute(pathname: string): string | null {
-  for (const [pattern, fallback] of Object.entries(DYNAMIC_ROUTE_FALLBACKS)) {
-    if (pathname.startsWith(pattern)) {
-      return fallback;
-    }
-  }
-  return null;
+// ============================================================================
+// PADRÕES DE ROTAS DINÂMICAS - Mapeamento para fallback
+// ============================================================================
+interface DynamicRoutePattern {
+  pattern: RegExp;
+  fallbackShell: string;
+  description: string;
 }
 
-// Cache dynamic routes in background
-async function cacheDynamicRoutes(urls: string[]) {
-  const cache = await caches.open(CACHE_NAME);
+const DYNAMIC_ROUTE_PATTERNS: DynamicRoutePattern[] = [
+  {
+    pattern: /^\/bois\/[^/]+\/detalhes\/?$/,
+    fallbackShell: "/",
+    description: "Detalhes do animal (boi)",
+  },
+  {
+    pattern: /^\/bois\/[^/]+\/?$/,
+    fallbackShell: "/",
+    description: "Animal específico (boi)",
+  },
+  {
+    pattern: /^\/matrizes\/[^/]+\/detalhes\/?$/,
+    fallbackShell: "/",
+    description: "Detalhes da matriz",
+  },
+  {
+    pattern: /^\/matrizes\/[^/]+\/?$/,
+    fallbackShell: "/",
+    description: "Matriz específica",
+  },
+];
+
+// ============================================================================
+// FUNÇÕES AUXILIARES
+// ============================================================================
+
+/**
+ * Verifica se uma URL corresponde a uma rota dinâmica conhecida
+ */
+function isDynamicRoute(pathname: string): boolean {
+  return DYNAMIC_ROUTE_PATTERNS.some((route) => route.pattern.test(pathname));
+}
+
+/**
+ * Encontra o shell de fallback apropriado para uma rota dinâmica
+ */
+function getFallbackShell(pathname: string): string {
+  const route = DYNAMIC_ROUTE_PATTERNS.find((r) => r.pattern.test(pathname));
+  return route?.fallbackShell || "/";
+}
+
+/**
+ * Tenta clonar e cachear uma resposta de forma segura
+ */
+async function cacheResponse(
+  cacheName: string,
+  request: Request,
+  response: Response
+): Promise<void> {
+  try {
+    if (response && response.status === 200 && response.type === "basic") {
+      const cache = await caches.open(cacheName);
+      await cache.put(request, response.clone());
+    }
+  } catch (error) {
+    console.warn("Service Worker: Failed to cache response", error);
+  }
+}
+
+/**
+ * Cache proativo de rotas dinâmicas (chamado pelo app quando carrega listas)
+ */
+async function cacheDynamicRoutes(urls: string[]): Promise<void> {
+  const cache = await caches.open(DYNAMIC_CACHE_NAME);
 
   for (const url of urls) {
     try {
-      // Check if already cached
       const cached = await cache.match(url);
       if (!cached) {
         const response = await fetch(url);
@@ -90,13 +145,18 @@ async function cacheDynamicRoutes(urls: string[]) {
   }
 }
 
-self.addEventListener("install", (event: any) => {
-  console.log("Service Worker: Installing...");
+// ============================================================================
+// INSTALAÇÃO - Pré-cache do App Shell
+// ============================================================================
+self.addEventListener("install", (event: ExtendableEvent) => {
+  console.log("Service Worker: Installing v22 (App Shell + Dynamic Routes)...");
+
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       console.log("Service Worker: Caching App Shell");
-      // Cache assets one by one to avoid failure if one doesn't exist
-      const cachePromises = ASSETS_TO_CACHE.map(async (url) => {
+
+      // Cache individual para não falhar se um asset não existir
+      const cachePromises = APP_SHELL_ASSETS.map(async (url) => {
         try {
           await cache.add(url);
           console.log(`Service Worker: Cached ${url}`);
@@ -104,19 +164,32 @@ self.addEventListener("install", (event: any) => {
           console.warn(`Service Worker: Failed to cache ${url}`, error);
         }
       });
+
       await Promise.all(cachePromises);
     })
   );
+
+  // Ativa imediatamente sem esperar tabs fecharem
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event: any) => {
+// ============================================================================
+// ATIVAÇÃO - Limpeza de caches antigos
+// ============================================================================
+self.addEventListener("activate", (event: ExtendableEvent) => {
   console.log("Service Worker: Activating...");
+
   event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(
         keyList.map((key) => {
-          if (key !== CACHE_NAME) {
+          // Remove caches de versões anteriores
+          if (
+            !key.includes(SCHEMA_VERSION) &&
+            (key.startsWith("rico-ouro-cache-") ||
+              key.startsWith("rico-ouro-api-") ||
+              key.startsWith("rico-ouro-dynamic-"))
+          ) {
             console.log("Service Worker: Removing old cache", key);
             return caches.delete(key);
           }
@@ -124,11 +197,15 @@ self.addEventListener("activate", (event: any) => {
       );
     })
   );
+
+  // Toma controle de todas as abas imediatamente
   self.clients.claim();
 });
 
-// Listen for messages from the app to proactively cache dynamic routes
-self.addEventListener("message", (event: any) => {
+// ============================================================================
+// MENSAGENS DO APP
+// ============================================================================
+self.addEventListener("message", (event: ExtendableMessageEvent) => {
   if (event.data && event.data.type === "CACHE_DYNAMIC_ROUTES") {
     const urls = event.data.urls as string[];
     console.log(
@@ -140,97 +217,220 @@ self.addEventListener("message", (event: any) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
+
+  if (event.data && event.data.type === "CLEAR_CACHE") {
+    event.waitUntil(
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((key) => caches.delete(key)));
+      })
+    );
+  }
 });
 
-self.addEventListener("fetch", (event: any) => {
-  // Ignore non-GET requests
+// ============================================================================
+// FETCH - Estratégias de Cache
+// ============================================================================
+self.addEventListener("fetch", (event: FetchEvent) => {
+  // Ignora requisições não-GET
   if (event.request.method !== "GET") return;
 
-  // Ignore chrome-extension schemes
+  // Ignora extensões do Chrome
   if (event.request.url.startsWith("chrome-extension")) return;
 
   const url = new URL(event.request.url);
 
-  // CACHE-FIRST strategy for Next.js static assets (hashed files)
+  // -------------------------------------------------------------------------
+  // 1. NEXT.JS STATIC ASSETS - Cache-First (hashed, imutáveis)
+  // -------------------------------------------------------------------------
   if (url.pathname.startsWith("/_next/static/")) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
+      caches.match(event.request).then(async (cachedResponse) => {
         if (cachedResponse) return cachedResponse;
 
-        return fetch(event.request).then((networkResponse) => {
+        try {
+          const networkResponse = await fetch(event.request);
           if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            await cacheResponse(CACHE_NAME, event.request, networkResponse);
           }
           return networkResponse;
-        });
+        } catch {
+          return new Response("Offline", { status: 503 });
+        }
       })
     );
     return;
   }
 
-  // NAVIGATION (HTML pages) & Next.js Data - Network-First
-  if (
-    event.request.mode === "navigate" ||
-    event.request.headers.get("accept")?.includes("text/html") ||
-    url.pathname.includes("/_next/data/")
-  ) {
+  // -------------------------------------------------------------------------
+  // 2. API REQUESTS - Network-First com cache e timeout
+  // -------------------------------------------------------------------------
+  if (url.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          // Cache successful responses
+      (async () => {
+        const NETWORK_TIMEOUT_MS = 5000; // 5 segundos
+
+        try {
+          // Tenta rede com timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(
+            () => controller.abort(),
+            NETWORK_TIMEOUT_MS
+          );
+
+          const networkResponse = await fetch(event.request, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
           if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            await cacheResponse(API_CACHE_NAME, event.request, networkResponse);
           }
           return networkResponse;
-        })
-        .catch(async () => {
-          // Try cache first
+        } catch {
+          // Fallback para cache
           const cachedResponse = await caches.match(event.request);
           if (cachedResponse) {
+            console.log("Service Worker: Serving API from cache", url.pathname);
             return cachedResponse;
           }
 
-          // Try root page as SPA fallback (only for HTML navigation, avoiding data/json)
-          if (event.request.mode === "navigate") {
-            const rootResponse = await caches.match("/");
-            if (rootResponse) {
-              return rootResponse;
+          return new Response(
+            JSON.stringify({ error: "Offline", cached: false }),
+            {
+              status: 503,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+      })()
+    );
+    return;
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. NAVEGAÇÃO (HTML) - App Shell Strategy
+  // -------------------------------------------------------------------------
+  if (
+    event.request.mode === "navigate" ||
+    event.request.headers.get("accept")?.includes("text/html")
+  ) {
+    event.respondWith(
+      (async () => {
+        const NETWORK_TIMEOUT_MS = 3000; // 3 segundos para navegação
+
+        try {
+          // Tenta rede primeiro com timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(
+            () => controller.abort(),
+            NETWORK_TIMEOUT_MS
+          );
+
+          const networkResponse = await fetch(event.request, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          // Cache a resposta para uso futuro
+          if (networkResponse && networkResponse.status === 200) {
+            // Para rotas dinâmicas, usa cache separado
+            const cacheName = isDynamicRoute(url.pathname)
+              ? DYNAMIC_CACHE_NAME
+              : CACHE_NAME;
+            await cacheResponse(cacheName, event.request, networkResponse);
+          }
+
+          return networkResponse;
+        } catch {
+          // OFFLINE - Aplica estratégia App Shell
+
+          // 1. Tenta cache exato (se a rota foi visitada antes)
+          const exactMatch = await caches.match(event.request);
+          if (exactMatch) {
+            console.log(
+              "Service Worker: Serving from cache (exact)",
+              url.pathname
+            );
+            return exactMatch;
+          }
+
+          // 2. Para rotas dinâmicas, serve o App Shell (/)
+          //    O React Router/Next.js vai extrair o ID e buscar dados do RXDB
+          if (isDynamicRoute(url.pathname)) {
+            console.log(
+              "Service Worker: Dynamic route offline, serving App Shell",
+              url.pathname
+            );
+            const shellResponse = await caches.match("/");
+            if (shellResponse) {
+              return shellResponse;
             }
           }
 
-          // Try cached offline page
+          // 3. Tenta a página raiz como fallback geral
+          const rootResponse = await caches.match("/");
+          if (rootResponse) {
+            console.log(
+              "Service Worker: Serving App Shell as fallback",
+              url.pathname
+            );
+            return rootResponse;
+          }
+
+          // 4. Página offline estática como último recurso
           const offlineResponse = await caches.match("/offline.html");
           if (offlineResponse) {
             return offlineResponse;
           }
 
-          // Last resort: minimal offline response
+          // 5. Resposta inline de emergência
           return new Response(
             `<!DOCTYPE html>
-            <html lang="pt-BR">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Offline - INDI Ouro</title>
-              <style>
-                body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #1162ae; color: white; text-align: center; padding: 20px; }
-                a { display: inline-block; margin-top: 20px; padding: 12px 24px; background: white; color: #1162ae; text-decoration: none; border-radius: 8px; font-weight: 600; }
-              </style>
-            </head>
-            <body>
-              <div>
-                <h1>📴 Offline</h1>
-                <p>Página não disponível offline no momento.</p>
-                <a href="/home">Ir para Início</a>
-              </div>
-            </body>
-            </html>`,
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - INDI Ouro</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1162ae 0%, #0d4d8a 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+    }
+    h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; }
+    a {
+      display: inline-block;
+      padding: 14px 28px;
+      background: white;
+      color: #1162ae;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    a:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📴</h1>
+    <h2>Você está offline</h2>
+    <p>Esta página não está disponível no momento. Verifique sua conexão e tente novamente.</p>
+    <a href="/home">Ir para Início</a>
+  </div>
+</body>
+</html>`,
             {
               status: 503,
               statusText: "Service Unavailable",
@@ -239,71 +439,93 @@ self.addEventListener("fetch", (event: any) => {
               }),
             }
           );
-        })
+        }
+      })()
     );
     return;
   }
 
-  // NETWORK-FIRST strategy for other scripts and non-static JS
+  // -------------------------------------------------------------------------
+  // 4. NEXT.JS DATA (JSON) - Network-First com fallback
+  // -------------------------------------------------------------------------
+  if (url.pathname.includes("/_next/data/")) {
+    event.respondWith(
+      (async () => {
+        try {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse && networkResponse.status === 200) {
+            await cacheResponse(CACHE_NAME, event.request, networkResponse);
+          }
+          return networkResponse;
+        } catch {
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Retorna JSON vazio para não quebrar o app
+          return new Response(JSON.stringify({ pageProps: {} }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      })()
+    );
+    return;
+  }
+
+  // -------------------------------------------------------------------------
+  // 5. SCRIPTS JS - Network-First
+  // -------------------------------------------------------------------------
   if (url.pathname.endsWith(".js")) {
     event.respondWith(
       fetch(event.request)
-        .then((networkResponse) => {
+        .then(async (networkResponse) => {
           if (
             networkResponse &&
             networkResponse.status === 200 &&
             networkResponse.type === "basic"
           ) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+            await cacheResponse(CACHE_NAME, event.request, networkResponse);
           }
           return networkResponse;
         })
-        .catch(() => {
-          return caches.match(event.request).then((cachedResponse) => {
-            return cachedResponse || new Response("Offline", { status: 503 });
-          });
+        .catch(async () => {
+          const cachedResponse = await caches.match(event.request);
+          return cachedResponse || new Response("Offline", { status: 503 });
         })
     );
     return;
   }
 
-  // CACHE-FIRST strategy for other assets (images, fonts, CSS, etc.)
+  // -------------------------------------------------------------------------
+  // 6. OUTROS ASSETS (imagens, fontes, CSS) - Cache-First
+  // -------------------------------------------------------------------------
   event.respondWith(
-    caches.match(event.request).then((response) => {
+    caches.match(event.request).then(async (response) => {
       if (response) {
         return response;
       }
 
-      return fetch(event.request)
-        .then((networkResponse) => {
-          // Check if we received a valid response
-          if (
-            !networkResponse ||
-            networkResponse.status !== 200 ||
-            networkResponse.type !== "basic"
-          ) {
-            return networkResponse;
-          }
-
-          // Clone the response
-          const responseToCache = networkResponse.clone();
-
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return networkResponse;
-        })
-        .catch(() => {
-          // Offline fallback
-          return new Response("Offline", { status: 503 });
-        });
+      try {
+        const networkResponse = await fetch(event.request);
+        if (
+          networkResponse &&
+          networkResponse.status === 200 &&
+          networkResponse.type === "basic"
+        ) {
+          await cacheResponse(CACHE_NAME, event.request, networkResponse);
+        }
+        return networkResponse;
+      } catch {
+        return new Response("Offline", { status: 503 });
+      }
     })
   );
 });
+
+// ============================================================================
+// BACKGROUND SYNC - Fila de requisições offline
+// ============================================================================
 const SYNC_DB_NAME = "offline-sync-queue";
 const SYNC_STORE_NAME = "requests";
 const MAX_RETRIES = 5;
@@ -318,7 +540,6 @@ interface QueuedRequest {
   retries: number;
 }
 
-// Open IndexedDB for sync queue
 async function openSyncDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(SYNC_DB_NAME, 1);
@@ -340,7 +561,6 @@ async function openSyncDb(): Promise<IDBDatabase> {
   });
 }
 
-// Get all pending requests
 async function getPendingRequests(): Promise<QueuedRequest[]> {
   try {
     const db = await openSyncDb();
@@ -359,7 +579,6 @@ async function getPendingRequests(): Promise<QueuedRequest[]> {
   }
 }
 
-// Remove a request from the queue
 async function removeFromQueue(id: string): Promise<void> {
   try {
     const db = await openSyncDb();
@@ -376,7 +595,6 @@ async function removeFromQueue(id: string): Promise<void> {
   }
 }
 
-// Update retry count for a request
 async function updateRetryCount(item: QueuedRequest): Promise<void> {
   try {
     const db = await openSyncDb();
@@ -395,7 +613,6 @@ async function updateRetryCount(item: QueuedRequest): Promise<void> {
   }
 }
 
-// Notify all clients about sync status
 async function notifyClients(message: { type: string; data?: unknown }) {
   const clients = await self.clients.matchAll({ type: "window" });
   clients.forEach((client) => {
@@ -403,7 +620,6 @@ async function notifyClients(message: { type: string; data?: unknown }) {
   });
 }
 
-// Background Sync event
 self.addEventListener("sync", (event: any) => {
   console.log("Service Worker: Sync event fired", event.tag);
   if (event.tag === "sync-data") {
@@ -411,7 +627,6 @@ self.addEventListener("sync", (event: any) => {
   }
 });
 
-// Main sync function
 async function syncData() {
   console.log("Service Worker: Executing background sync...");
 
@@ -436,7 +651,6 @@ async function syncData() {
 
   for (const item of pendingRequests) {
     try {
-      // Skip items that have exceeded max retries
       if (item.retries >= MAX_RETRIES) {
         console.warn(
           `Service Worker: Max retries exceeded for ${item.id}, removing`
@@ -446,7 +660,6 @@ async function syncData() {
         continue;
       }
 
-      // Execute the request
       const response = await fetch(item.url, {
         method: item.method,
         headers: item.headers,
@@ -458,18 +671,15 @@ async function syncData() {
         await removeFromQueue(item.id);
         successCount++;
       } else if (response.status >= 400 && response.status < 500) {
-        // Client error - don't retry
         console.warn(`Service Worker: Client error for ${item.id}, removing`);
         await removeFromQueue(item.id);
         failCount++;
       } else {
-        // Server error - increment retry
         console.warn(`Service Worker: Server error for ${item.id}, will retry`);
         await updateRetryCount(item);
         failCount++;
       }
     } catch (error) {
-      // Network error - increment retry
       console.error(`Service Worker: Network error for ${item.id}`, error);
       await updateRetryCount(item);
       failCount++;
@@ -485,7 +695,7 @@ async function syncData() {
   });
 }
 
-// Periodic sync (if supported)
+// Periodic sync (se suportado pelo browser)
 self.addEventListener("periodicsync", (event: any) => {
   if (event.tag === "sync-data-periodic") {
     console.log("Service Worker: Periodic sync triggered");
@@ -493,9 +703,8 @@ self.addEventListener("periodicsync", (event: any) => {
   }
 });
 
-// Try to sync when coming back online
+// Tenta sincronizar quando volta online
 self.addEventListener("online", () => {
   console.log("Service Worker: Back online, triggering sync");
   syncData();
 });
-

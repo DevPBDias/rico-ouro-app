@@ -4,7 +4,7 @@ import { useAnimalsList } from "@/hooks/db/animals/useAnimalsList";
 import {
   useCacheDynamicRoutes,
   routePatterns,
-} from "@/hooks/useCacheDynamicRoutes";
+} from "@/hooks/sync/useCacheDynamicRoutes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

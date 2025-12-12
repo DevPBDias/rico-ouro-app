@@ -11,7 +11,7 @@ import SearchCard from "../cards/SearchCard";
 import {
   useCacheDynamicRoutes,
   routePatterns,
-} from "@/hooks/useCacheDynamicRoutes";
+} from "@/hooks/sync/useCacheDynamicRoutes";
 
 function SearchMatriz() {
   const { matrizes } = useMatrizes();
