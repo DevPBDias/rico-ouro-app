@@ -106,8 +106,7 @@ function SearchMatriz() {
 
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
           <p className="text-sm text-primary font-semibold">
-            {selectedMatriz.serie_rgd} {selectedMatriz.rgn} -{" "}
-            {selectedMatriz.name || "Sem nome"}
+            {selectedMatriz.serie_rgd} {selectedMatriz.rgn}
           </p>
         </div>
 
