@@ -19,6 +19,7 @@ import { formatDate } from "@/utils/formatDates";
 import Link from "next/link";
 import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { DetailsCircunfList } from "@/components/lists/DetailsCircunfList";
+import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
 
 const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -57,14 +58,7 @@ const DetailsAnimalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }`;
 
   if (isLoading) {
-    return (
-      <main>
-        <Header title="Carregando..." />
-        <div className="p-4 text-center">
-          <p>Carregando dados do animal...</p>
-        </div>
-      </main>
-    );
+    return <DetailsSkeleton />;
   }
 
   if (!animal) {
