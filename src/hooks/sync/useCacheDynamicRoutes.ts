@@ -115,6 +115,6 @@ export function useCacheDynamicRoutes(
 }
 
 export const routePatterns = {
-  boi: (id: string) => [`/bois/${id}`, `/bois/${id}/detalhes`],
-  matriz: (id: string) => [`/matrizes/${id}`, `/matrizes/${id}/detalhes`],
+  animals: (id: string) => [`/animals/${id}`, `/animals/${id}/detalhes`],
+  matrizes: (id: string) => [`/matrizes/${id}`, `/matrizes/${id}/detalhes`],
 };

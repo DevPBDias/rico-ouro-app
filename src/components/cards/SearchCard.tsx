@@ -27,7 +27,7 @@ export default function SearchCard({ animal }: SearchCardProps) {
   const getMonths = calculateAgeInMonths(animal?.born_date);
   const animalAge = getMonths >= 25;
   const isMatriz = animalAge && isFemale;
-  const pathName = isMatriz ? "matrizes" : "bois";
+  const pathName = isMatriz ? "matrizes" : "animals";
 
   return (
     <div className="relative w-full text-left bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/30 transition-all duration-200 group">

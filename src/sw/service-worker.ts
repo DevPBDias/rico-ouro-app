@@ -29,7 +29,7 @@ const APP_SHELL_ASSETS = [
   "/home",
 
   // Main pages (protected) - Estas servem como fallback para rotas dinâmicas
-  "/bois",
+  "/animals",
   "/matrizes",
   "/cadastro",
   "/consulta",
@@ -65,12 +65,12 @@ interface DynamicRoutePattern {
 
 const DYNAMIC_ROUTE_PATTERNS: DynamicRoutePattern[] = [
   {
-    pattern: /^\/bois\/[^/]+\/detalhes\/?$/,
+    pattern: /^\/animals\/[^/]+\/detalhes\/?$/,
     fallbackShell: "/",
     description: "Detalhes do animal (boi)",
   },
   {
-    pattern: /^\/bois\/[^/]+\/?$/,
+    pattern: /^\/animals\/[^/]+\/?$/,
     fallbackShell: "/",
     description: "Animal específico (boi)",
   },

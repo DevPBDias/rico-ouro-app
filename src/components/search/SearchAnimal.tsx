@@ -2,12 +2,16 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Animal } from "@/types/animal.type";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import SearchCard from "../cards/SearchCard";
+import {
+  routePatterns,
+  useCacheDynamicRoutes,
+} from "@/hooks/sync/useCacheDynamicRoutes";
 
 function SearchAnimal() {
   const { animals } = useAnimals();
@@ -16,6 +20,9 @@ function SearchAnimal() {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  const animalIds = useMemo(() => animals.map((a) => a.rgn), [animals]);
+  useCacheDynamicRoutes(animalIds, routePatterns.animals, "animals");
 
   const handleSearch = useCallback(
     async (query: string) => {

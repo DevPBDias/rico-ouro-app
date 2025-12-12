@@ -4,22 +4,22 @@ const detailsAnimalLinks: Links[] = [
   {
     id: 1,
     name: "Detalhes do animal",
-    href: "/bois/:id/detalhes",
+    href: "/animals/:id/detalhes",
   },
   {
     id: 3,
     name: "Pesagem",
-    href: "/bois/:id/pesagem",
+    href: "/animals/:id/pesagem",
   },
   {
     id: 4,
     name: "CE",
-    href: "/bois/:id/ce",
+    href: "/animals/:id/ce",
   },
   {
     id: 2,
     name: "Gráficos",
-    href: "/bois/:id/graficos",
+    href: "/animals/:id/graficos",
   },
 ];
 

@@ -4,7 +4,7 @@ import { useCacheDynamicRoutes, routePatterns } from "./useCacheDynamicRoutes";
 
 export function usePrecacheAnimalDetails(
   animals: Array<{ id?: string; rgn?: string }> | undefined | null,
-  type: "bois" | "matrizes" = "bois"
+  type: "animals" | "matrizes" = "animals"
 ) {
   const ids =
     animals
@@ -12,7 +12,7 @@ export function usePrecacheAnimalDetails(
       .filter((id): id is string => Boolean(id)) || [];
 
   const routePattern =
-    type === "bois" ? routePatterns.boi : routePatterns.matriz;
+    type === "animals" ? routePatterns.animals : routePatterns.matrizes;
 
   return useCacheDynamicRoutes(ids, routePattern, type);
 }

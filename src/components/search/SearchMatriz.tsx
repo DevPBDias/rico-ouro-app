@@ -21,16 +21,8 @@ function SearchMatriz() {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Extract all matriz IDs for proactive caching
   const matrizIds = useMemo(() => matrizes.map((m) => m.rgn), [matrizes]);
-
-  // Proactively cache all matriz detail routes when online
-  // This enables offline access to any matriz's details without visiting each page first
-  useCacheDynamicRoutes(
-    matrizIds,
-    routePatterns.matriz,
-    "matrizes" // Cache key for localStorage tracking
-  );
+  useCacheDynamicRoutes(matrizIds, routePatterns.matrizes, "matrizes");
 
   const handleSearch = useCallback(
     async (query: string) => {

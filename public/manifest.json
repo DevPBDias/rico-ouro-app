@@ -49,7 +49,7 @@
       "name": "Ver Animais",
       "short_name": "Animais",
       "description": "Lista de animais cadastrados",
-      "url": "/bois",
+      "url": "/animals",
       "icons": [{ "src": "/logo.svg", "sizes": "any" }]
     },
     {

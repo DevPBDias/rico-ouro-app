@@ -13,7 +13,7 @@ import { useFarms } from "@/hooks/db/farms/useFarms";
 
 interface AnimalCardProps {
   animal: Animal;
-  type: "bois" | "matrizes";
+  type: "animals" | "matrizes";
 }
 
 export function AnimalCard({ animal, type }: AnimalCardProps) {

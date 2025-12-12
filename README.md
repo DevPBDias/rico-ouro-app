@@ -134,7 +134,7 @@ O aplicativo pode ser instalado como Progressive Web App:
 rico-ouro-app/
 ├── src/
 │   ├── app/                 # Páginas e rotas (App Router)
-│   │   ├── bois/           # Gestão de animais individuais
+│   │   ├── animals/           # Gestão de animais individuais
 │   │   ├── consulta/       # Busca de animais
 │   │   ├── geral/          # Dados gerais do rebanho
 │   │   ├── nascimentos/    # Registro de nascimentos

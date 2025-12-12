@@ -1,17 +1,12 @@
 "use client";
 
 import { useAnimalsList } from "@/hooks/db/animals/useAnimalsList";
-import {
-  useCacheDynamicRoutes,
-  routePatterns,
-} from "@/hooks/sync/useCacheDynamicRoutes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Search, Trash2, Eye } from "lucide-react";
 import Header from "@/components/layout/Header";
-import { useMemo } from "react";
 
 export default function AnimalsList() {
   const {
@@ -30,17 +25,6 @@ export default function AnimalsList() {
     setParentQuery,
     isLoading,
   } = useAnimalsList({ itemsPerPage: 10 });
-
-  // Extract all animal IDs for proactive caching
-  const animalIds = useMemo(() => filtered.map((a) => a.rgn), [filtered]);
-
-  // Proactively cache all animal detail routes when online
-  // This enables offline access to any animal's details without visiting each page first
-  useCacheDynamicRoutes(
-    animalIds,
-    routePatterns.boi,
-    "bois" // Cache key for localStorage tracking
-  );
 
   if (isLoading) {
     return (
@@ -172,7 +156,7 @@ export default function AnimalsList() {
                     </td>
                     <td className="px-4 py-3 text-sm flex items-center gap-2">
                       <Link
-                        href={`/bois/${animal.rgn}`}
+                        href={`/animals/${animal.rgn}`}
                         prefetch
                         className="inline-flex items-center justify-center px-2 py-1 text-sm border rounded-md text-blue-600 border-blue-200 hover:bg-blue-50"
                       >
