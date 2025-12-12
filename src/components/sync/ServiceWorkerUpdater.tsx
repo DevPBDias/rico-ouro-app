@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+const DISMISS_KEY = "sw-update-dismissed";
 
 export default function ServiceWorkerUpdater() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
+    // Check if already dismissed this session
+    if (typeof window !== "undefined" && sessionStorage.getItem(DISMISS_KEY)) {
+      setDismissed(true);
+      return;
+    }
+
     if (typeof window === "undefined" || !("serviceWorker" in navigator))
       return;
 
@@ -40,14 +50,29 @@ export default function ServiceWorkerUpdater() {
         onControllerChange
       );
     };
+  }, [dismissed]);
+
+  const update = useCallback(() => {
+    if (!waiting) return;
+
+    setIsUpdating(true);
+    waiting.postMessage({ type: "SKIP_WAITING" });
+
+    // Fallback: force reload after 2 seconds if controllerchange doesn't fire
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  }, [waiting]);
+
+  const dismiss = useCallback(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(DISMISS_KEY, "true");
+    }
+    setDismissed(true);
+    setWaiting(null);
   }, []);
 
-  const update = () => {
-    if (!waiting) return;
-    waiting.postMessage({ type: "SKIP_WAITING" });
-  };
-
-  if (!waiting) return null;
+  if (!waiting || dismissed) return null;
 
   return (
     <div
@@ -65,19 +90,59 @@ export default function ServiceWorkerUpdater() {
         alignItems: "center",
         gap: 12,
         boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
-        zIndex: 50,
+        zIndex: 9999,
       }}
     >
-      <span>Nova versão disponível.</span>
+      <span>{isUpdating ? "Atualizando..." : "Nova versão disponível."}</span>
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={() => setWaiting(null)}>Depois</button>
-        <button
-          onClick={update}
-          style={{ background: "#2563eb", color: "#fff" }}
-        >
-          Atualizar
-        </button>
+        {!isUpdating && (
+          <>
+            <button
+              onClick={dismiss}
+              style={{
+                background: "transparent",
+                color: "#9CA3AF",
+                border: "1px solid #4B5563",
+                padding: "6px 12px",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Depois
+            </button>
+            <button
+              onClick={update}
+              style={{
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Atualizar
+            </button>
+          </>
+        )}
+        {isUpdating && (
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              border: "2px solid #fff",
+              borderTopColor: "transparent",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+        )}
       </div>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
