@@ -2,12 +2,16 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { Animal } from "@/types/animal.type";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
 import SearchCard from "../cards/SearchCard";
+import {
+  useCacheDynamicRoutes,
+  routePatterns,
+} from "@/hooks/useCacheDynamicRoutes";
 
 function SearchMatriz() {
   const { matrizes } = useMatrizes();
@@ -16,6 +20,17 @@ function SearchMatriz() {
   const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Extract all matriz IDs for proactive caching
+  const matrizIds = useMemo(() => matrizes.map((m) => m.rgn), [matrizes]);
+
+  // Proactively cache all matriz detail routes when online
+  // This enables offline access to any matriz's details without visiting each page first
+  useCacheDynamicRoutes(
+    matrizIds,
+    routePatterns.matriz,
+    "matrizes" // Cache key for localStorage tracking
+  );
 
   const handleSearch = useCallback(
     async (query: string) => {

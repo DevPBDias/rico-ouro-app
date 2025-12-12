@@ -1,47 +1,19 @@
-"use strict";(()=>{var c="rico-ouro-cache-v18",s=["/","/manifest.webmanifest"];self.addEventListener("install",e=>{console.log("Service Worker: Installing..."),e.waitUntil(caches.open(c).then(async r=>{console.log("Service Worker: Caching App Shell");let t=s.map(async a=>{try{await r.add(a),console.log(`Service Worker: Cached ${a}`)}catch(n){console.warn(`Service Worker: Failed to cache ${a}`,n)}});await Promise.all(t)})),self.skipWaiting()});self.addEventListener("activate",e=>{console.log("Service Worker: Activating..."),e.waitUntil(caches.keys().then(r=>Promise.all(r.map(t=>{if(t!==c)return console.log("Service Worker: Removing old cache",t),caches.delete(t)})))),self.clients.claim()});self.addEventListener("fetch",e=>{if(e.request.method!=="GET"||e.request.url.startsWith("chrome-extension"))return;let r=new URL(e.request.url);if(e.request.mode==="navigate"||e.request.headers.get("accept")?.includes("text/html")){e.respondWith(fetch(e.request).then(t=>{if(t&&t.status===200){let a=t.clone();caches.open(c).then(n=>{n.put(e.request,a)})}return t}).catch(()=>caches.match(e.request).then(t=>t||caches.match("/").then(a=>a||new Response(`
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                  <meta charset="UTF-8">
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <title>Offline - INDI Ouro</title>
-                  <style>
-                    body {
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      min-height: 100vh;
-                      margin: 0;
-                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                      color: white;
-                      text-align: center;
-                      padding: 20px;
-                    }
-                    .container {
-                      max-width: 400px;
-                    }
-                    h1 { font-size: 48px; margin: 0 0 20px 0; }
-                    p { font-size 18px; line-height: 1.6; }
-                    a {
-                      display: inline-block;
-                      margin-top: 20px;
-                      padding: 12px 24px;
-                      background: white;
-                      color: #667eea;
-                      text-decoration: none;
-                      border-radius: 8px;
-                      font-weight: 600;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <div class="container">
-                    <h1>\u{1F4F4}</h1>
-                    <h2>Voc\xEA est\xE1 offline</h2>
-                    <p>Esta p\xE1gina n\xE3o est\xE1 dispon\xEDvel no cache. Por favor, conecte-se \xE0 internet e tente novamente.</p>
-                    <a href="/">Voltar para Home</a>
-                  </div>
-                </body>
-                </html>
-                `,{status:503,statusText:"Service Unavailable",headers:new Headers({"Content-Type":"text/html; charset=utf-8"})})))));return}if(e.request.url.includes("/_next/")||r.pathname.endsWith(".js")){e.respondWith(fetch(e.request).then(t=>{if(t&&t.status===200&&t.type==="basic"){let a=t.clone();caches.open(c).then(n=>{n.put(e.request,a)})}return t}).catch(()=>caches.match(e.request).then(t=>t||new Response("Offline",{status:503}))));return}e.respondWith(caches.match(e.request).then(t=>t||fetch(e.request).then(a=>{if(!a||a.status!==200||a.type!=="basic")return a;let n=a.clone();return caches.open(c).then(i=>{i.put(e.request,n)}),a}).catch(()=>new Response("Offline",{status:503}))))});self.addEventListener("sync",e=>{console.log("Service Worker: Sync event fired",e.tag),e.tag==="sync-data"&&e.waitUntil(o())});async function o(){console.log("Service Worker: Executing background sync...")}})();
+"use strict";(()=>{var i="rico-ouro-cache-v21",p=["/","/manifest.json","/offline.html","/logo.svg","/icon-192.png","/icon-512.png","/icon-maskable-192.png","/icon-maskable-512.png","/apple-touch-icon.png","/splash.png","/login","/home","/bois","/matrizes","/cadastro","/consulta","/reproducao","/vacinas","/nascimentos","/pesagem-ce","/importar","/importar/planilhas","/gerenciar","/gerenciar/fazendas","/gerenciar/classe","/gerenciar/status","/geral","/geral/bois","/geral/relatorios","/geral/relatorios/pdf","/geral/relatorios/planilhas"],m={"/bois/":"/bois","/matrizes/":"/matrizes"};function y(e){for(let[n,t]of Object.entries(m))if(e.startsWith(n))return t;return null}async function S(e){let n=await caches.open(i);for(let t of e)try{if(!await n.match(t)){let o=await fetch(t);o&&o.status===200&&(await n.put(t,o),console.log(`Service Worker: Proactively cached ${t}`))}}catch(r){console.warn(`Service Worker: Failed to proactively cache ${t}`,r)}}self.addEventListener("install",e=>{console.log("Service Worker: Installing..."),e.waitUntil(caches.open(i).then(async n=>{console.log("Service Worker: Caching App Shell");let t=p.map(async r=>{try{await n.add(r),console.log(`Service Worker: Cached ${r}`)}catch(o){console.warn(`Service Worker: Failed to cache ${r}`,o)}});await Promise.all(t)})),self.skipWaiting()});self.addEventListener("activate",e=>{console.log("Service Worker: Activating..."),e.waitUntil(caches.keys().then(n=>Promise.all(n.map(t=>{if(t!==i)return console.log("Service Worker: Removing old cache",t),caches.delete(t)})))),self.clients.claim()});self.addEventListener("message",e=>{if(e.data&&e.data.type==="CACHE_DYNAMIC_ROUTES"){let n=e.data.urls;console.log(`Service Worker: Received request to cache ${n.length} dynamic routes`),e.waitUntil(S(n))}e.data&&e.data.type==="SKIP_WAITING"&&self.skipWaiting()});self.addEventListener("fetch",e=>{if(e.request.method!=="GET"||e.request.url.startsWith("chrome-extension"))return;let n=new URL(e.request.url);if(e.request.mode==="navigate"||e.request.headers.get("accept")?.includes("text/html")){e.respondWith(fetch(e.request).then(t=>{if(t&&t.status===200){let r=t.clone();caches.open(i).then(o=>{o.put(e.request,r)})}return t}).catch(async()=>{let t=await caches.match(e.request);if(t)return t;let r=y(n.pathname);if(r){let c=await caches.match(r);if(c)return console.log(`Service Worker: Serving fallback ${r} for ${n.pathname}`),c}let o=await caches.match("/");if(o)return o;let a=await caches.match("/offline.html");return a||new Response(`<!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Offline - INDI Ouro</title>
+              <style>
+                body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #1162ae; color: white; text-align: center; padding: 20px; }
+                a { display: inline-block; margin-top: 20px; padding: 12px 24px; background: white; color: #1162ae; text-decoration: none; border-radius: 8px; font-weight: 600; }
+              </style>
+            </head>
+            <body>
+              <div>
+                <h1>\u{1F4F4} Offline</h1>
+                <p>P\xE1gina n\xE3o dispon\xEDvel. Conecte-se \xE0 internet.</p>
+                <a href="/">Tentar novamente</a>
+              </div>
+            </body>
+            </html>`,{status:503,statusText:"Service Unavailable",headers:new Headers({"Content-Type":"text/html; charset=utf-8"})})}));return}if(e.request.url.includes("/_next/")||n.pathname.endsWith(".js")){e.respondWith(fetch(e.request).then(t=>{if(t&&t.status===200&&t.type==="basic"){let r=t.clone();caches.open(i).then(o=>{o.put(e.request,r)})}return t}).catch(()=>caches.match(e.request).then(t=>t||new Response("Offline",{status:503}))));return}e.respondWith(caches.match(e.request).then(t=>t||fetch(e.request).then(r=>{if(!r||r.status!==200||r.type!=="basic")return r;let o=r.clone();return caches.open(i).then(a=>{a.put(e.request,o)}),r}).catch(()=>new Response("Offline",{status:503}))))});var w="offline-sync-queue",s="requests",b=5;async function u(){return new Promise((e,n)=>{let t=indexedDB.open(w,1);t.onupgradeneeded=r=>{let o=r.target.result;o.objectStoreNames.contains(s)||o.createObjectStore(s,{keyPath:"id"})},t.onsuccess=r=>{e(r.target.result)},t.onerror=()=>{n(new Error("Failed to open sync database"))}})}async function v(){try{let t=(await u()).transaction(s,"readonly").objectStore(s);return new Promise((r,o)=>{let a=t.getAll();a.onsuccess=()=>r(a.result||[]),a.onerror=()=>o(new Error("Failed to get pending requests"))})}catch(e){return console.warn("Service Worker: Could not access sync queue",e),[]}}async function l(e){try{let r=(await u()).transaction(s,"readwrite").objectStore(s);return new Promise((o,a)=>{let c=r.delete(e);c.onsuccess=()=>o(),c.onerror=()=>a(new Error(`Failed to remove ${e}`))})}catch(n){console.warn("Service Worker: Could not remove from queue",n)}}async function g(e){try{let r=(await u()).transaction(s,"readwrite").objectStore(s),o={...e,retries:e.retries+1};return new Promise((a,c)=>{let f=r.put(o);f.onsuccess=()=>a(),f.onerror=()=>c(new Error(`Failed to update ${e.id}`))})}catch(n){console.warn("Service Worker: Could not update retry count",n)}}async function d(e){(await self.clients.matchAll({type:"window"})).forEach(t=>{t.postMessage(e)})}self.addEventListener("sync",e=>{console.log("Service Worker: Sync event fired",e.tag),e.tag==="sync-data"&&e.waitUntil(h())});async function h(){console.log("Service Worker: Executing background sync...");let e=await v();if(e.length===0){console.log("Service Worker: No pending requests to sync"),d({type:"SYNC_COMPLETE",data:{synced:0}});return}console.log(`Service Worker: Found ${e.length} pending requests`),d({type:"SYNC_STARTED",data:{pending:e.length}});let n=0,t=0;for(let r of e)try{if(r.retries>=b){console.warn(`Service Worker: Max retries exceeded for ${r.id}, removing`),await l(r.id),t++;continue}let o=await fetch(r.url,{method:r.method,headers:r.headers,body:r.body?JSON.stringify(r.body):void 0});o.ok?(console.log(`Service Worker: Successfully synced ${r.id}`),await l(r.id),n++):o.status>=400&&o.status<500?(console.warn(`Service Worker: Client error for ${r.id}, removing`),await l(r.id),t++):(console.warn(`Service Worker: Server error for ${r.id}, will retry`),await g(r),t++)}catch(o){console.error(`Service Worker: Network error for ${r.id}`,o),await g(r),t++}console.log(`Service Worker: Sync complete. Success: ${n}, Failed: ${t}`),d({type:"SYNC_COMPLETE",data:{synced:n,failed:t,remaining:t}})}self.addEventListener("periodicsync",e=>{e.tag==="sync-data-periodic"&&(console.log("Service Worker: Periodic sync triggered"),e.waitUntil(h()))});self.addEventListener("online",()=>{console.log("Service Worker: Back online, triggering sync"),h()});})();

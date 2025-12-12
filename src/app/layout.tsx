@@ -1,26 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 import { LocalFirstProvider } from "@/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "INDI Ouro",
   description:
     "Gerencie o rebanho, pesos e vacinas da fazenda — mesmo offline.",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -28,8 +19,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon-192x192.png", type: "image/png", sizes: "192x192" },
-      { url: "/icon-512x512.png", type: "image/png", sizes: "512x512" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
       { url: "/logo.svg", type: "image/svg+xml" },
     ],
     apple: [
@@ -57,7 +48,7 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="INDI Ouro" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon-192x192.png" type="image/png" />
+        <link rel="icon" href="/icon-192.png" type="image/png" />
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -108,7 +99,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
       >
         <LocalFirstProvider>
           <RegisterSW />

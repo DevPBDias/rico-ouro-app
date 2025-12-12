@@ -8,6 +8,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import loginImg from "@/assets/images/login-page.png";
 import logoImg from "@/assets/icons/logo-hor-indiouro.png";
+import { hasCachedAuth } from "@/lib/auth/offlineAuthCache";
 
 export default function LoginPage() {
   const { signIn, user, loading } = useAuth();
@@ -16,12 +17,39 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loadingLocal, setLoadingLocal] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
 
+  // Track online status
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    setIsOnline(navigator.onLine);
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Redirect if user is authenticated (or has cached auth when offline)
   useEffect(() => {
     if (!loading && user) {
       router.push("/home");
     }
-  }, [user, loading, router]);
+
+    // If offline but has cached auth, redirect to home
+    // The WrapperAuth will handle showing offline mode
+    if (!loading && !user && !isOnline && hasCachedAuth()) {
+      console.log("[Login] Offline with cached auth - redirecting to home");
+      router.push("/home");
+    }
+  }, [user, loading, router, isOnline]);
 
   if (loading || user) {
     return null;
@@ -116,13 +144,38 @@ export default function LoginPage() {
           />
         </div>
 
-        {err && <div className="text-red-600">{err}</div>}
+        {err && (
+          <div className="text-red-600 bg-red-100 p-2 rounded">{err}</div>
+        )}
+
+        {/* Offline warning */}
+        {!isOnline && (
+          <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 p-3 rounded-lg text-sm">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 5.636a9 9 0 010 12.728m-3.536-3.536a5 5 0 010-7.072M13 12a1 1 0 11-2 0 1 1 0 012 0z"
+              />
+            </svg>
+            <span>
+              Você está offline. Conecte-se à internet para fazer login.
+            </span>
+          </div>
+        )}
+
         <Button
-          disabled={loadingLocal}
+          disabled={loadingLocal || !isOnline}
           type="submit"
           className="uppercase text-sm font-bold mt-4"
         >
-          {loadingLocal ? "Entrando..." : "Entrar"}
+          {loadingLocal ? "Entrando..." : !isOnline ? "Sem conexão" : "Entrar"}
         </Button>
       </form>
     </motion.main>

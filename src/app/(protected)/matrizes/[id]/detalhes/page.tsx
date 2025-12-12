@@ -192,6 +192,14 @@ const DetailsMatrizPage = ({ params }: { params: Promise<{ id: string }> }) => {
                           {getAgeRange(getMonths)}
                         </span>
                       </div>
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Sexo
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {matriz?.sex}
+                        </span>
+                      </div>
                       <div className="flex justify-between items-center pt-0.5">
                         <span className="text-[11px] text-gray-500 uppercase">
                           Condição gestacional
