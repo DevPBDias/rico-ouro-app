@@ -7,6 +7,7 @@ import { replicateAnimalMetricWeight } from "./replications/animal_metric_weight
 import { replicateAnimalMetricCE } from "./replications/animal_metric_ce.replication";
 import { replicateAnimalVaccines } from "./replications/animal_vaccine.replication";
 import { replicateReproductionEvents } from "./replications/reproduction_event.replication";
+import { replicateAnimalStatuses } from "./replications/animal_status.replication";
 
 /**
  * Validate and get Supabase configuration
@@ -146,6 +147,13 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY
     );
 
+    // Replicate animal statuses
+    const animalStatusesReplication = await replicateAnimalStatuses(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
     // Store replications on database instance
     (db as any).replications = {
       animals: animalsReplication,
@@ -155,6 +163,7 @@ export async function setupReplication(db: MyDatabase) {
       animal_metrics_ce: animalMetricsCEReplication,
       animal_vaccines: animalVaccinesReplication,
       reproduction_events: reproductionEventsReplication,
+      animal_statuses: animalStatusesReplication,
     };
 
     console.log("✅ Replication setup complete");
@@ -179,6 +188,7 @@ export async function setupReplication(db: MyDatabase) {
         animalMetricsCEReplication.reSync();
         animalVaccinesReplication.reSync();
         reproductionEventsReplication.reSync();
+        animalStatusesReplication.reSync();
       });
     }
 

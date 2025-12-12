@@ -151,15 +151,36 @@ self.addEventListener("fetch", (event: any) => {
 
   const url = new URL(event.request.url);
 
-  // NAVIGATION (HTML pages) - Network-First with smart offline fallback
+  // CACHE-FIRST strategy for Next.js static assets (hashed files)
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
+
+  // NAVIGATION (HTML pages) & Next.js Data - Network-First
   if (
     event.request.mode === "navigate" ||
-    event.request.headers.get("accept")?.includes("text/html")
+    event.request.headers.get("accept")?.includes("text/html") ||
+    url.pathname.includes("/_next/data/")
   ) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          // Cache successful navigation responses
+          // Cache successful responses
           if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -175,23 +196,12 @@ self.addEventListener("fetch", (event: any) => {
             return cachedResponse;
           }
 
-          // For dynamic routes, try to serve the parent page as fallback
-          // This allows Next.js to handle client-side routing with RxDB data
-          const fallbackRoute = getFallbackRoute(url.pathname);
-          if (fallbackRoute) {
-            const fallbackResponse = await caches.match(fallbackRoute);
-            if (fallbackResponse) {
-              console.log(
-                `Service Worker: Serving fallback ${fallbackRoute} for ${url.pathname}`
-              );
-              return fallbackResponse;
+          // Try root page as SPA fallback (only for HTML navigation, avoiding data/json)
+          if (event.request.mode === "navigate") {
+            const rootResponse = await caches.match("/");
+            if (rootResponse) {
+              return rootResponse;
             }
-          }
-
-          // Try root page as last SPA fallback
-          const rootResponse = await caches.match("/");
-          if (rootResponse) {
-            return rootResponse;
           }
 
           // Try cached offline page
@@ -216,8 +226,8 @@ self.addEventListener("fetch", (event: any) => {
             <body>
               <div>
                 <h1>📴 Offline</h1>
-                <p>Página não disponível. Conecte-se à internet.</p>
-                <a href="/">Tentar novamente</a>
+                <p>Página não disponível offline no momento.</p>
+                <a href="/home">Ir para Início</a>
               </div>
             </body>
             </html>`,
@@ -234,12 +244,11 @@ self.addEventListener("fetch", (event: any) => {
     return;
   }
 
-  // NETWORK-FIRST strategy for JavaScript files to ensure fresh code
-  if (event.request.url.includes("/_next/") || url.pathname.endsWith(".js")) {
+  // NETWORK-FIRST strategy for other scripts and non-static JS
+  if (url.pathname.endsWith(".js")) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          // Cache the fresh response
           if (
             networkResponse &&
             networkResponse.status === 200 &&
@@ -253,7 +262,6 @@ self.addEventListener("fetch", (event: any) => {
           return networkResponse;
         })
         .catch(() => {
-          // Fallback to cache if network fails
           return caches.match(event.request).then((cachedResponse) => {
             return cachedResponse || new Response("Offline", { status: 503 });
           });
@@ -296,8 +304,6 @@ self.addEventListener("fetch", (event: any) => {
     })
   );
 });
-
-// Background Sync Configuration
 const SYNC_DB_NAME = "offline-sync-queue";
 const SYNC_STORE_NAME = "requests";
 const MAX_RETRIES = 5;

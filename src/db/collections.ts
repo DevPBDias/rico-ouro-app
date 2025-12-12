@@ -7,6 +7,7 @@ export type AnimalMetricWeightCollection = RxCollection<AnimalMetric>;
 export type AnimalMetricCECollection = RxCollection<AnimalMetric>;
 export type AnimalVaccineCollection = RxCollection<AnimalVaccine>;
 export type ReproductionCollection = RxCollection<ReproductionEvent>;
+export type AnimalStatusCollection = RxCollection<AnimalStatus>;
 
 export type MyDatabaseCollections = {
   animals: AnimalCollection;
@@ -16,6 +17,7 @@ export type MyDatabaseCollections = {
   animal_metrics_ce: AnimalMetricCECollection;
   animal_vaccines: AnimalVaccineCollection;
   reproduction_events: ReproductionCollection;
+  animal_statuses: AnimalStatusCollection;
 };
 
 import { RxReplicationState } from "rxdb/plugins/replication";
@@ -24,6 +26,7 @@ import { Animal } from "@/types/animal.type";
 import { AnimalVaccine, Vaccine } from "@/types/vaccine.type";
 import { Farm } from "@/types/farm.type";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
+import { AnimalStatus } from "@/types/status.type";
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
   replications?: {
@@ -34,5 +37,7 @@ export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
     animal_metrics_ce: RxReplicationState<AnimalMetric, any>;
     animal_vaccines: RxReplicationState<AnimalVaccine, any>;
     reproduction_events: RxReplicationState<ReproductionEvent, any>;
+    animal_statuses: RxReplicationState<AnimalStatus, any>;
   };
 };
+

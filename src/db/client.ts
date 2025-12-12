@@ -16,6 +16,7 @@ import { animalMetricCESchema } from "./schemas/animal_metric_ce.schema";
 import { animalMetricWeightSchema } from "./schemas/animal_metric_weigth.schema";
 import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
+import { animalStatusSchema } from "./schemas/animal_status.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -107,6 +108,9 @@ async function createDatabase(): Promise<MyDatabase> {
           1: (doc: any) => doc,
           2: (doc: any) => doc,
         },
+      },
+      animal_statuses: {
+        schema: animalStatusSchema,
       },
     });
     setupReplication(db).catch((err: Error) => {});

@@ -2,35 +2,38 @@
 
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { StatusRadioList } from "@/components/status/StatusRadioList";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { StatusSuccessModal } from "@/components/modals/status/StatusSuccessModal";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
-import type { IStatus } from "@/types/status.type";
+import {
+  useStatuses,
+  useCreateStatus,
+  useDeleteStatus,
+} from "@/hooks/db/statuses";
+import { StatusSelector } from "@/components/status/StatusSelector";
+import { AddStatusModal } from "@/components/modals/status/AddStatusModal";
+import { DeleteStatusModal } from "@/components/modals/status/DeleteStatusModal";
 
 const StatusPage = () => {
   const router = useRouter();
   const { animals } = useAnimals();
   const { updateAnimal } = useUpdateAnimal();
+  const { statuses, isLoading: statusesLoading } = useStatuses();
+  const { createStatus } = useCreateStatus();
+  const { deleteStatus } = useDeleteStatus();
+
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     rgn: "",
-    status: null as IStatus | null,
+    status: null as string | null,
   });
-
-  const availableStatuses: IStatus[] = [
-    "Descarte",
-    "RGD",
-    "RGN",
-    "Vendido",
-    "Troca",
-    "SRGN",
-    "Morte",
-  ];
 
   const rgnOptions = useMemo(() => {
     return animals
@@ -98,10 +101,37 @@ const StatusPage = () => {
     });
   };
 
-  const handleSelectStatus = (status: IStatus | null) => {
+  const handleCreateStatus = async (name: string) => {
+    try {
+      await createStatus({ status_name: name });
+    } catch (error) {
+      console.error("Erro ao criar status:", error);
+      setError("Erro ao criar status");
+    }
+  };
+
+  const handleDeleteStatus = async (id: string) => {
+    try {
+      await deleteStatus(id);
+
+      // If the deleted status was selected, clear it
+      const status = statuses.find((s) => s.id === id);
+      if (status && formData.status === status.status_name) {
+        setFormData((prev) => ({
+          ...prev,
+          status: null,
+        }));
+      }
+    } catch (error) {
+      console.error("Erro ao deletar status:", error);
+      setError("Erro ao deletar status");
+    }
+  };
+
+  const toggleStatus = (statusName: string | null) => {
     setFormData((prev) => ({
       ...prev,
-      status,
+      status: statusName,
     }));
   };
 
@@ -131,20 +161,14 @@ const StatusPage = () => {
 
         {formData.rgn && (
           <>
-            <div className="flex flex-col justify-start items-start w-full gap-2">
-              <label
-                htmlFor="status"
-                className="text-primary font-bold text-sm uppercase w-full text-left"
-              >
-                Status:
-              </label>
-              <StatusRadioList
-                statuses={availableStatuses}
-                loading={false}
-                selected={formData.status}
-                onSelect={handleSelectStatus}
-              />
-            </div>
+            <StatusSelector
+              statuses={statuses}
+              loading={statusesLoading}
+              selectedStatusName={formData.status}
+              onToggle={toggleStatus}
+              onAddClick={() => setAddModalOpen(true)}
+              onDeleteClick={() => setDeleteModalOpen(true)}
+            />
             <Button
               variant="default"
               type="submit"
@@ -163,6 +187,19 @@ const StatusPage = () => {
           handleCloseModal();
           router.push("/home");
         }}
+      />
+
+      <AddStatusModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onAdd={handleCreateStatus}
+      />
+
+      <DeleteStatusModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        statuses={statuses}
+        onDelete={handleDeleteStatus}
       />
     </main>
   );
