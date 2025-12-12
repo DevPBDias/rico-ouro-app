@@ -30,17 +30,17 @@ export function SyncStatusIndicator() {
   const getStatusIcon = () => {
     switch (status) {
       case "synced":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle size={14} className="text-green-500" />;
       case "syncing":
-        return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+        return <RefreshCw size={14} className="text-blue-500 animate-spin" />;
       case "offline":
-        return <WifiOff className="w-4 h-4 text-yellow-500" />;
+        return <WifiOff size={14} className="text-yellow-500" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-orange-500" />;
+        return <Clock size={14} className="text-orange-500" />;
       case "error":
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle size={14} className="text-red-500" />;
       default:
-        return <Wifi className="w-4 h-4 text-gray-400" />;
+        return <Wifi size={14} className="text-gray-400" />;
     }
   };
 
@@ -87,14 +87,14 @@ export function SyncStatusIndicator() {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 right-2 z-90">
       {/* Compact indicator (always visible) */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg border border-gray-200 hover:bg-white transition-colors"
+        className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 py-1 shadow-lg border border-gray-200 hover:bg-white transition-colors"
       >
         {getStatusIcon()}
-        <span className="text-xs font-medium text-gray-700">
+        <span className="text-[10.5px] font-medium text-white">
           {getStatusText()}
         </span>
         {hasPending && !isSyncing && (
@@ -107,7 +107,7 @@ export function SyncStatusIndicator() {
 
       {/* Expanded panel */}
       {isExpanded && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-64 z-90 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
           <div className="p-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

@@ -13,6 +13,9 @@ export default function ExcelExport() {
   const [isExporting, setIsExporting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [exportedFileName, setExportedFileName] = useState("");
+  const [successMethod, setSuccessMethod] = useState<
+    "share" | "save-picker" | "download"
+  >("download");
   const { animals: dados } = useAnimals();
   const router = useRouter();
 
@@ -24,54 +27,76 @@ export default function ExcelExport() {
 
     setIsExporting(true);
 
-    const flattenedData = dados.map((item: Animal) => ({
-      "Nome Animal":
-        item.name || `${item.serie_rgd || ""} ${item.rgn || ""}`.trim() || "-",
-      RGN: item.rgn || "-",
-      "Série/RGD": item.serie_rgd || "-",
-      Sexo: item.sex === "M" ? "Macho" : item.sex === "F" ? "Fêmea" : "-",
-      Nascimento: item.born_date || "-",
-      "Cor ao Nascer": item.born_color || "-",
-      iABCz: item.iabcgz || "-",
-      Deca: item.deca || "-",
-      "P%": item.p || "-",
-      "F%": item.f || "-",
-      Pai: item.father_name || "-",
-      "Mãe Série/RGD": item.mother_serie_rgd || "-",
-      "Mãe RGN": item.mother_rgn || "-",
-      "Avô Materno": item.maternal_grandfather_name || "-",
-      Status: item.status || "-",
-      "Fazenda ID": item.farm_id || "-",
-    }));
+    try {
+      const flattenedData = dados.map((item: Animal) => ({
+        "Nome Animal":
+          item.name ||
+          `${item.serie_rgd || ""} ${item.rgn || ""}`.trim() ||
+          "-",
+        RGN: item.rgn || "-",
+        "Série/RGD": item.serie_rgd || "-",
+        Sexo: item.sex === "M" ? "Macho" : item.sex === "F" ? "Fêmea" : "-",
+        Nascimento: item.born_date || "-",
+        "Cor ao Nascer": item.born_color || "-",
+        iABCz: item.iabcgz || "-",
+        Deca: item.deca || "-",
+        "P%": item.p || "-",
+        "F%": item.f || "-",
+        Pai: item.father_name || "-",
+        "Mãe Série/RGD": item.mother_serie_rgd || "-",
+        "Mãe RGN": item.mother_rgn || "-",
+        "Avô Materno": item.maternal_grandfather_name || "-",
+        Status: item.status || "-",
+        "Fazenda ID": item.farm_id || "-",
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Animais");
+      const worksheet = XLSX.utils.json_to_sheet(flattenedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Animais");
 
-    const range = XLSX.utils.decode_range(worksheet["!ref"]!);
-    worksheet["!autofilter"] = { ref: XLSX.utils.encode_range(range) };
+      const range = XLSX.utils.decode_range(worksheet["!ref"]!);
+      worksheet["!autofilter"] = { ref: XLSX.utils.encode_range(range) };
 
-    const colWidths = Object.keys(flattenedData[0]).map((key) => {
-      const maxLength = Math.max(
-        key.length,
-        ...flattenedData.map(
-          (row) => String(row[key as keyof typeof row] || "").length
-        )
-      );
-      return { wch: maxLength + 2 };
-    });
-    worksheet["!cols"] = colWidths;
+      const colWidths = Object.keys(flattenedData[0]).map((key) => {
+        const maxLength = Math.max(
+          key.length,
+          ...flattenedData.map(
+            (row) => String(row[key as keyof typeof row] || "").length
+          )
+        );
+        return { wch: maxLength + 2 };
+      });
+      worksheet["!cols"] = colWidths;
 
-    const date = new Date();
-    const fileName = `Exportacao_Nelore_${date.getFullYear()}${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}.xlsx`;
+      const date = new Date();
+      const fileName = `Exportacao_Nelore_${date.getFullYear()}${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}.xlsx`;
 
-    XLSX.writeFile(workbook, fileName);
+      // Generate blob for Web Share API
+      const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
 
-    setExportedFileName(fileName);
-    setIsExporting(false);
-    setShowSuccessModal(true);
+      // Import and use saveBlobAsFile
+      const { saveBlobAsFile } = await import("@/utils/saveBlobFile");
+      const result = await saveBlobAsFile(blob, fileName, {
+        shareTitle: "📊 Planilha de Animais",
+        shareText: `Planilha com ${dados.length} animais - INDI Ouro`,
+      });
+
+      if (result.success) {
+        setExportedFileName(fileName);
+        setShowSuccessModal(true);
+        setSuccessMethod(result.method);
+      }
+    } catch (error) {
+      console.error("Erro ao exportar:", error);
+      alert("Erro ao exportar arquivo.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -138,14 +163,36 @@ export default function ExcelExport() {
             <div className="flex flex-col items-center space-y-4 text-center">
               <CheckCircle2 className="h-12 w-12 text-green-600" />
               <h2 className="text-xl font-semibold text-primary">
-                Exportação Concluída
+                {successMethod === "share"
+                  ? "Arquivo Compartilhado!"
+                  : "Exportação Concluída"}
               </h2>
               <p className="text-muted-foreground">
-                O arquivo{" "}
-                <span className="font-medium text-foreground">
-                  {exportedFileName}
-                </span>{" "}
-                foi exportado com sucesso!
+                {successMethod === "share" ? (
+                  <>
+                    Arquivo{" "}
+                    <span className="font-medium text-foreground">
+                      {exportedFileName}
+                    </span>{" "}
+                    compartilhado com sucesso! 📤
+                  </>
+                ) : successMethod === "save-picker" ? (
+                  <>
+                    Arquivo{" "}
+                    <span className="font-medium text-foreground">
+                      {exportedFileName}
+                    </span>{" "}
+                    salvo com sucesso! 💾
+                  </>
+                ) : (
+                  <>
+                    Arquivo{" "}
+                    <span className="font-medium text-foreground">
+                      {exportedFileName}
+                    </span>{" "}
+                    baixado! ⬇️ Verifique a pasta Downloads do seu dispositivo.
+                  </>
+                )}
               </p>
               <div className="grid w-full grid-cols-2 gap-4 pt-4">
                 <Button variant="outline" onClick={handleCloseModal}>

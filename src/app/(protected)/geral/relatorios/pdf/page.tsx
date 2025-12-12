@@ -83,7 +83,7 @@ export default function RelatoriosPage() {
     }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     try {
       if (!dados || dados.length === 0) {
         setModalState({
@@ -108,11 +108,35 @@ export default function RelatoriosPage() {
         return;
       }
 
-      generateAnimalReportPDF(dados, selectedItems);
+      const result = await generateAnimalReportPDF(dados, selectedItems);
+
+      if (!result) {
+        setModalState({
+          isOpen: true,
+          title: "Erro",
+          message: "Não foi possível gerar o relatório",
+          type: "error",
+        });
+        return;
+      }
+
+      if (!result.success) {
+        // User cancelled
+        return;
+      }
+
+      // Show appropriate message based on method
+      const messages = {
+        share: "Relatório compartilhado com sucesso! 📤",
+        "save-picker": "Relatório salvo com sucesso! 💾",
+        download:
+          "Relatório baixado! Verifique a pasta Downloads do seu dispositivo. ⬇️",
+      };
+
       setModalState({
         isOpen: true,
         title: "Sucesso",
-        message: "Relatório gerado com sucesso!",
+        message: messages[result.method],
         type: "success",
       });
     } catch (error) {

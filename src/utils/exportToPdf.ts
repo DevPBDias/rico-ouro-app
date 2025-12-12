@@ -8,10 +8,13 @@ import { fieldMap } from "@/constants/dynamicFields";
 export async function generateAnimalReportPDF(
   data: Animal[],
   selectedFields: SelectedReportFields
-): Promise<void> {
+): Promise<{
+  success: boolean;
+  method: "share" | "save-picker" | "download";
+} | null> {
   if (!data || data.length === 0) {
     alert("Nenhum dado disponível para gerar o relatório!");
-    return;
+    return null;
   }
 
   const doc = new jsPDF({ orientation: "landscape" });
@@ -141,5 +144,9 @@ export async function generateAnimalReportPDF(
 
   const pdfBlob = doc.output("blob");
   const fileName = `relatorio_animais_${Date.now()}.pdf`;
-  await saveBlobAsFile(pdfBlob, fileName);
+
+  return await saveBlobAsFile(pdfBlob, fileName, {
+    shareTitle: "📊 Relatório de Animais",
+    shareText: `Relatório com ${data.length} animais - INDI Ouro`,
+  });
 }
