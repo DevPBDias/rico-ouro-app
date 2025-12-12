@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useMatrizById } from "@/hooks/matrizes/useMatrizById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import { useFarms } from "@/hooks/db/farms/useFarms";
+import { useDeleteAnimalVaccine } from "@/hooks/db/animal_vaccines/useDeleteAnimalVaccine";
+import { Trash2, Syringe, Calendar, AlertCircle } from "lucide-react";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
@@ -29,6 +31,8 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { matriz, isLoading: matrizLoading } = useMatrizById(rgn);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(rgn);
   const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
+  const { deleteAnimalVaccine, isLoading: isDeleting } =
+    useDeleteAnimalVaccine();
   const isLoading = matrizLoading || vaccinesLoading || allVaccinesLoading;
   const { farms } = useFarms();
   const getMonths = getAgeMonths(matriz?.born_date);
@@ -37,6 +41,17 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   );
   const { events: reproductionEvents, isLoading: reproductionLoading } =
     useReproductionEvents(rgn);
+
+  const [vaccineToDelete, setVaccineToDelete] = useState<string | null>(null);
+
+  const handleDeleteVaccine = async (vaccineId: string) => {
+    try {
+      await deleteAnimalVaccine(Number(vaccineId));
+      setVaccineToDelete(null);
+    } catch (error) {
+      console.error("Erro ao deletar vacina:", error);
+    }
+  };
 
   // Transformar dados para o formato do gráfico
   const weightData = (weights || []).map((w) => ({
@@ -319,41 +334,93 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                 value="vaccines"
                 className="mt-0 animate-in fade-in-0 duration-200"
               >
-                <div className="md:col-span-3 mt-2">
-                  <ul className="list-disc list-inside mt-1">
-                    {(() => {
-                      const vaccineMap = new Map(
-                        vaccines.map((v) => [v.id, v.vaccine_name])
-                      );
+                <div className="space-y-3">
+                  {(() => {
+                    const vaccineMap = new Map(
+                      vaccines.map((v) => [v.id, v.vaccine_name])
+                    );
 
-                      const vaccinesWithNames = animalVaccines
-                        .map((av) => ({
-                          ...av,
-                          name: vaccineMap.get(av.vaccine_id),
-                        }))
-                        .filter((av) => av.name);
+                    const vaccinesWithNames = animalVaccines
+                      .map((av) => ({
+                        ...av,
+                        name: vaccineMap.get(av.vaccine_id),
+                      }))
+                      .filter((av) => av.name);
 
-                      return vaccinesWithNames.length > 0 ? (
-                        vaccinesWithNames.map((vaccine) => (
-                          <li
-                            className="font-bold uppercase text-[#1162AE]"
+                    return vaccinesWithNames.length > 0 ? (
+                      <div className="space-y-2">
+                        {vaccinesWithNames.map((vaccine) => (
+                          <div
                             key={vaccine.id}
+                            className="bg-card border border-border rounded-lg p-3 flex items-center justify-between gap-3 hover:border-primary/30 transition-colors"
                           >
-                            {vaccine.name} -{" "}
-                            {vaccine.date ? formatDate(vaccine.date) : "-"}
-                          </li>
-                        ))
-                      ) : (
-                        <InfoSection title="Vacinação">
-                          <div className="px-4 py-3 bg-warning/10 border border-warning/30 rounded-lg">
-                            <p className="text-sm font-semibold text-red-500">
-                              ⚠️ SEM VACINAS ANOTADAS
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Syringe className="w-4 h-4 text-primary" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate uppercase">
+                                  {vaccine.name}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <Calendar className="w-3 h-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">
+                                    {vaccine.date
+                                      ? formatDate(vaccine.date)
+                                      : "Data não informada"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {vaccineToDelete === vaccine.id ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    handleDeleteVaccine(vaccine.id)
+                                  }
+                                  disabled={isDeleting}
+                                  className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition-colors disabled:opacity-50"
+                                >
+                                  {isDeleting ? "..." : "Confirmar"}
+                                </button>
+                                <button
+                                  onClick={() => setVaccineToDelete(null)}
+                                  className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground text-xs font-medium rounded-md transition-colors"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setVaccineToDelete(vaccine.id)}
+                                className="flex-shrink-0 p-2 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                                title="Excluir vacina"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-card border border-border rounded-lg p-6 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              Nenhuma vacina registrada
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Adicione vacinas para manter o histórico do animal
                             </p>
                           </div>
-                        </InfoSection>
-                      );
-                    })()}
-                  </ul>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </TabsContent>
 

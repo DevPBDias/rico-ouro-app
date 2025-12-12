@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
-import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js";
+import { useEffect, useState, useCallback, useRef } from "react";
+import type {
+  User,
+  Session,
+  AuthChangeEvent,
+  SupabaseClient,
+} from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase/client";
 import {
   cacheAuth,
   getCachedAuth,
   clearAuthCache,
 } from "@/lib/auth/offlineAuthCache";
-
-const supabase = getSupabase();
 
 /**
  * Enhanced authentication hook with offline support.
@@ -19,9 +22,31 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOfflineAuth, setIsOfflineAuth] = useState(false);
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+
+  // Initialize supabase client only on client side
+  const getClient = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    if (!supabaseRef.current) {
+      supabaseRef.current = getSupabase();
+    }
+    return supabaseRef.current;
+  }, []);
 
   useEffect(() => {
     let mounted = true;
+    const supabase = getClient();
+
+    if (!supabase) {
+      // SSR or no client - check cached auth and finish
+      const cachedUser = typeof window !== "undefined" ? getCachedAuth() : null;
+      if (cachedUser) {
+        setUser(cachedUser);
+        setIsOfflineAuth(true);
+      }
+      setLoading(false);
+      return;
+    }
 
     const initAuth = async () => {
       try {
@@ -140,44 +165,55 @@ export function useAuth() {
         window.removeEventListener("offline", handleOffline);
       }
     };
-  }, []);
+  }, [getClient]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    // Check if online
-    if (!navigator.onLine) {
-      throw new Error(
-        "Você precisa estar online para fazer login. Conecte-se à internet e tente novamente."
-      );
-    }
-
-    setLoading(true);
-    try {
-      const res = await supabase.auth.signInWithPassword({ email, password });
-      if (res.error) throw res.error;
-
-      // Cache the auth for offline use
-      if (res.data.user) {
-        cacheAuth(res.data.user);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const supabase = getClient();
+      if (!supabase) {
+        throw new Error("Client não inicializado");
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
+      // Check if online
+      if (!navigator.onLine) {
+        throw new Error(
+          "Você precisa estar online para fazer login. Conecte-se à internet e tente novamente."
+        );
+      }
+
+      setLoading(true);
+      try {
+        const res = await supabase.auth.signInWithPassword({ email, password });
+        if (res.error) throw res.error;
+
+        // Cache the auth for offline use
+        if (res.data.user) {
+          cacheAuth(res.data.user);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getClient]
+  );
 
   const signOut = useCallback(async () => {
     // Clear cached auth first
     clearAuthCache();
 
     // Try to sign out from Supabase (may fail if offline)
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.warn("[Auth] Supabase signOut failed (may be offline):", error);
+    const supabase = getClient();
+    if (supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.warn("[Auth] Supabase signOut failed (may be offline):", error);
+      }
     }
 
     setUser(null);
     setIsOfflineAuth(false);
-  }, []);
+  }, [getClient]);
 
   return {
     user,
