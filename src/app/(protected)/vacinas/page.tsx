@@ -9,10 +9,11 @@ import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCreateAnimalVaccine } from "@/hooks/db/animal_vaccines/useCreateAnimalVaccine";
+import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
 import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
 import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
 import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, Syringe, AlertTriangle } from "lucide-react";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useCreateVaccine } from "@/hooks/db/vaccines/useCreateVaccine";
 import { useDeleteVaccine } from "@/hooks/db/vaccines/useDeleteVaccine";
@@ -34,6 +35,44 @@ const VaccinesPage = () => {
     vacinas: [] as string[],
     data: "",
   });
+
+  // Buscar vacinas já registradas para o animal selecionado
+  const { animalVaccines, isLoading: loadingAnimalVaccines } =
+    useAnimalVaccines(formData.rgn || undefined);
+
+  // Mapear vacinas do animal com nomes
+  const existingVaccinesWithNames = useMemo(() => {
+    if (!animalVaccines || animalVaccines.length === 0) return [];
+
+    return animalVaccines
+      .map((av) => {
+        const vaccine = vaccines.find((v) => v.id === av.vaccine_id);
+        return {
+          id: av.id,
+          name: vaccine?.vaccine_name || "Vacina desconhecida",
+          date: av.date,
+        };
+      })
+      .sort((a, b) => {
+        // Ordenar por data mais recente
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+  }, [animalVaccines, vaccines]);
+
+  // Verificar se alguma vacina selecionada já foi aplicada
+  const duplicateWarnings = useMemo(() => {
+    if (!formData.vacinas.length || !existingVaccinesWithNames.length)
+      return [];
+
+    return formData.vacinas.filter((selectedVaccine) =>
+      existingVaccinesWithNames.some(
+        (existing) =>
+          existing.name.toLowerCase() === selectedVaccine.toLowerCase()
+      )
+    );
+  }, [formData.vacinas, existingVaccinesWithNames]);
 
   const rgnOptions = useMemo(() => {
     return animals
@@ -142,6 +181,15 @@ const VaccinesPage = () => {
     }));
   };
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "Data não informada";
+    try {
+      return new Date(dateStr).toLocaleDateString("pt-BR");
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <main className="min-h-screen">
       <Header title="Vacinação" />
@@ -197,6 +245,66 @@ const VaccinesPage = () => {
             value={formData.rgn}
             onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
           />
+
+          {/* Mostrar vacinas já registradas para o animal */}
+          {formData.rgn && (
+            <div className="w-full mt-3">
+              {loadingAnimalVaccines ? (
+                <div className="text-sm text-muted-foreground animate-pulse">
+                  Carregando vacinas do animal...
+                </div>
+              ) : existingVaccinesWithNames.length > 0 ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Syringe size={18} className="text-blue-600" />
+                    <span className="text-sm font-semibold text-blue-800">
+                      Vacinas já registradas para {formData.rgn}:
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {existingVaccinesWithNames.map((vaccine) => (
+                      <div
+                        key={vaccine.id}
+                        className="flex items-center justify-between bg-white rounded-md px-3 py-2 text-sm"
+                      >
+                        <span className="font-medium text-gray-700">
+                          {vaccine.name}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {formatDate(vaccine.date)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground italic">
+                  Nenhuma vacina registrada para este animal.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Alerta de duplicação */}
+          {duplicateWarnings.length > 0 && (
+            <div className="w-full mt-3 bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle
+                  size={18}
+                  className="text-amber-600 mt-0.5 flex-shrink-0"
+                />
+                <div>
+                  <span className="text-sm font-semibold text-amber-800 block mb-1">
+                    Atenção: Possível duplicação
+                  </span>
+                  <span className="text-sm text-amber-700">
+                    As seguintes vacinas já foram aplicadas neste animal:{" "}
+                    <strong>{duplicateWarnings.join(", ")}</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col justify-start items-start w-full gap-2">

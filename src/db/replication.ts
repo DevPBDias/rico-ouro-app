@@ -167,17 +167,7 @@ export async function setupReplication(db: MyDatabase) {
     };
 
     console.log("✅ Replication setup complete");
-    console.log("📊 Replication states:", {
-      animals: animalsReplication.isStopped(),
-      vaccines: vaccinesReplication.isStopped(),
-      farms: farmsReplication.isStopped(),
-      animal_metrics_weight: animalMetricsWeightReplication.isStopped(),
-      animal_metrics_ce: animalMetricsCEReplication.isStopped(),
-      animal_vaccines: animalVaccinesReplication.isStopped(),
-      reproduction_events: reproductionEventsReplication.isStopped(),
-    });
 
-    // Setup auto-reconnect listeners
     if (typeof window !== "undefined") {
       window.addEventListener("online", () => {
         console.log("🌐 Online detected - forcing replication retry");
@@ -192,9 +182,8 @@ export async function setupReplication(db: MyDatabase) {
       });
     }
 
-    // Subscribe to replication events for debugging
     let animalsErrorCount = 0;
-    const MAX_ERRORS = 5; // Increased tolerance
+    const MAX_ERRORS = 5;
 
     animalsReplication.error$.subscribe((error) => {
       if (error) {
@@ -204,12 +193,10 @@ export async function setupReplication(db: MyDatabase) {
           error
         );
 
-        // Only stop if errors persist excessively
         if (animalsErrorCount >= MAX_ERRORS) {
           console.warn(
             "⚠️ [Animals] High error rate, but keeping replication alive for retry."
           );
-          // animalsReplication.cancel(); // Don't cancel, let it retry
         }
       }
     });
