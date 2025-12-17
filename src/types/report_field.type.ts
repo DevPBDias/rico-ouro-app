@@ -16,6 +16,8 @@ export interface SelectedReportFields {
   mother_serie_rgd: boolean;
   mother_rgn: boolean;
   maternal_grandfather_name: boolean;
+  paternal_grandfather_name: boolean;
+  partnership: boolean;
   status: boolean;
   farm_name: boolean;
   daily_gain: boolean;

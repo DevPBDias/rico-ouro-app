@@ -22,6 +22,8 @@ export const fieldMap: Record<
   mother_serie_rgd: ["Mãe Série/RGD", "mother_serie_rgd"],
   mother_rgn: ["Mãe RGN", "mother_rgn"],
   maternal_grandfather_name: ["Avô Materno", "maternal_grandfather_name"],
+  paternal_grandfather_name: ["Avô Paterno", "paternal_grandfather_name"],
+  partnership: ["Sociedade", "partnership"],
   status: ["Status", "status"],
   farm_name: ["Fazenda", "farm_id"],
   daily_gain: ["GMD", "daily_gain"],

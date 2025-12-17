@@ -1,5 +1,4 @@
 import { MyDatabase } from "./collections";
-import { replicateRxCollection } from "rxdb/plugins/replication";
 import { replicateAnimals } from "./replications/animal.replication";
 import { replicateVaccines } from "./replications/vaccine.replication";
 import { replicateFarms } from "./replications/farm.replication";
@@ -9,9 +8,6 @@ import { replicateAnimalVaccines } from "./replications/animal_vaccine.replicati
 import { replicateReproductionEvents } from "./replications/reproduction_event.replication";
 import { replicateAnimalStatuses } from "./replications/animal_status.replication";
 
-/**
- * Validate and get Supabase configuration
- */
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

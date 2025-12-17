@@ -41,20 +41,17 @@ function SearchAnimal() {
 
       const queryLower = query.toLowerCase().trim();
 
-      // Verificar match exato de RGN
       const exactMatch = animals.find(
         (animal) => animal.rgn?.toLowerCase() === queryLower
       );
 
       if (exactMatch) {
-        // Se encontrou match exato, mostra apenas esse animal
         setSearchResults([exactMatch]);
         setIsSearching(false);
         setHasSearched(true);
         return;
       }
 
-      // Busca parcial em RGN, nome e série
       const results = animals.filter((animal) => {
         const rgn = animal.rgn?.toString().toLowerCase() || "";
         const name = animal.name?.toLowerCase() || "";
@@ -92,7 +89,6 @@ function SearchAnimal() {
     setSelectedAnimal(null);
   };
 
-  // MODO DETALHES - Search some, mostra apenas os detalhes
   if (showDetails && selectedAnimal) {
     return (
       <section className="px-4 py-4">
@@ -115,7 +111,6 @@ function SearchAnimal() {
     );
   }
 
-  // MODO BUSCA - Campo de busca e resultados
   return (
     <section className="px-4">
       <div className="py-3 border-b border-border">
