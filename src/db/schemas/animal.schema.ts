@@ -34,6 +34,8 @@ export const animalSchema: RxJsonSchema<Animal> = {
     mother_serie_rgd: { type: "string" },
     mother_rgn: { type: "string" },
     maternal_grandfather_name: { type: "string" },
+    paternal_grandfather_name: { type: "string" },
+    partnership: { type: "string" },
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },

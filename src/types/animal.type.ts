@@ -25,6 +25,8 @@ export interface Animal {
   mother_rgn?: string;
   mother_serie_rgd?: string;
   maternal_grandfather_name?: string;
+  paternal_grandfather_name?: string;
+  partnership?: string;
   updated_at?: string;
   _deleted?: boolean;
 }

@@ -90,6 +90,8 @@ export async function replicateAnimals(
             mother_serie_rgd: doc.mother_serie_rgd ?? null,
             mother_rgn: doc.mother_rgn ?? null,
             maternal_grandfather_name: doc.maternal_grandfather_name ?? null,
+            paternal_grandfather_name: doc.paternal_grandfather_name ?? null,
+            partnership: doc.partnership ?? null,
             updated_at: doc.updated_at,
             _deleted: doc._deleted ?? false,
           };
