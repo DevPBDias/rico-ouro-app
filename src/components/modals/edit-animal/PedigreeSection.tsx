@@ -56,11 +56,22 @@ const GenealogiaSection = ({ formData, handleChange, isSaving }: Props) => {
         </div>
         <div className="col-span-2">
           <Label className="text-xs uppercase font-semibold text-gray-600 flex items-center gap-1 mb-1">
-            Avo materno
+            Avô materno
           </Label>
           <Input
             name="maternal_grandfather_name"
             value={formData.maternal_grandfather_name ?? ""}
+            onChange={handleChange}
+            disabled={isSaving}
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs uppercase font-semibold text-gray-600 flex items-center gap-1 mb-1">
+            Avô paterno
+          </Label>
+          <Input
+            name="paternal_grandfather_name"
+            value={formData.paternal_grandfather_name ?? ""}
             onChange={handleChange}
             disabled={isSaving}
           />

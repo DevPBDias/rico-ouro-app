@@ -165,7 +165,6 @@ const SearchCsvFile = () => {
         }
       }
 
-      setDuplicates([]);
       await processAnimals(extractedData);
     } catch (error) {
       setIsProcessing(false);

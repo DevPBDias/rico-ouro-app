@@ -21,6 +21,7 @@ export function exportToExcel(
     "Série/RGD da Mãe": item.mother_serie_rgd || "",
     "RGN da Mãe": item.mother_rgn || "",
     "Avô Materno": item.maternal_grandfather_name || "",
+    "Avô Paterno": item.paternal_grandfather_name || "",
     Status: item.status || "",
     "Farm ID": item.farm_id || "",
     Classe: item.classification || "",
@@ -48,6 +49,7 @@ export function exportToExcel(
     { wch: 15 }, // Série/RGD da Mãe
     { wch: 15 }, // RGN da Mãe
     { wch: 20 }, // Avô Materno
+    { wch: 20 }, // Avô Paterno
     { wch: 12 }, // Status
     { wch: 10 }, // Farm ID
     { wch: 10 }, // Classe

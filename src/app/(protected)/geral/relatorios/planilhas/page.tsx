@@ -46,6 +46,8 @@ export default function ExcelExport() {
         "Mãe Série/RGD": item.mother_serie_rgd || "-",
         "Mãe RGN": item.mother_rgn || "-",
         "Avô Materno": item.maternal_grandfather_name || "-",
+        "Avô Paterno": item.paternal_grandfather_name || "-",
+        Parceria: item.partnership || "-",
         Status: item.status || "-",
         "Fazenda ID": item.farm_id || "-",
       }));

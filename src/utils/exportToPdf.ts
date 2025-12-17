@@ -46,25 +46,28 @@ export async function generateAnimalReportPDF(
   });
 
   type ReportRow = {
-    nomeAnimal: string;
+    name: string;
     rgn: string;
-    serieRGD: string;
-    sexo: string;
-    nasc: string;
-    corNascimento: string;
+    serie_rgd: string;
+    sex: string;
+    born_date: string;
+    born_color: string;
     iabcgz: string;
     deca: string;
     p: string;
     f: string;
-    paiNome: string;
-    maeSerieRGD: string;
-    maeRGN: string;
-    pesosMedidos: string;
-    vacinas: string;
-    circunferenciaEscrotal: string;
+    father_name: string;
+    mother_serie_rgd: string;
+    mother_rgn: string;
+    maternal_grandfather_name: string;
+    paternal_grandfather_name: string;
+    partnership: string;
+    animal_metrics_weight: string;
+    vaccines: string;
+    animal_metrics_ce: string;
     status: string;
-    farm: string;
-    ganhoDiario: string;
+    farm_id: string;
+    daily_gain: string;
   };
 
   const body: ReportRow[] = sortedData.map((animal) => {
@@ -76,25 +79,28 @@ export async function generateAnimalReportPDF(
       d ? new Date(d).toLocaleDateString("pt-BR") : "-";
 
     return {
-      nomeAnimal: nome || "-",
+      name: nome || "-",
       rgn: animal.rgn || "-",
-      serieRGD: animal.serie_rgd || "-",
-      sexo: animal.sex || "-",
-      nasc: formatDate(animal.born_date),
-      corNascimento: animal.born_color || "-",
+      serie_rgd: animal.serie_rgd || "-",
+      sex: animal.sex || "-",
+      born_date: formatDate(animal.born_date),
+      born_color: animal.born_color || "-",
       iabcgz: animal.iabcgz || "-",
       deca: animal.deca || "-",
       p: animal.p || "-",
       f: animal.f || "-",
-      paiNome: animal.father_name || "-",
-      maeSerieRGD: animal.mother_serie_rgd || "-",
-      maeRGN: animal.mother_rgn || "-",
-      pesosMedidos: "-", // Dados agora vêm de animal_metrics_weight
-      vacinas: "-", // Dados agora vêm de animal_vaccines
-      circunferenciaEscrotal: "-", // Dados agora vêm de animal_metrics_ce
+      father_name: animal.father_name || "-",
+      mother_serie_rgd: animal.mother_serie_rgd || "-",
+      mother_rgn: animal.mother_rgn || "-",
+      maternal_grandfather_name: animal.maternal_grandfather_name || "-",
+      paternal_grandfather_name: animal.paternal_grandfather_name || "-",
+      partnership: animal.partnership || "-",
+      animal_metrics_weight: "-", // Dados agora vêm de animal_metrics_weight
+      vaccines: "-", // Dados agora vêm de animal_vaccines
+      animal_metrics_ce: "-", // Dados agora vêm de animal_metrics_ce
       status: animal.status || "-",
-      farm: animal.farm_id?.toString() || "-",
-      ganhoDiario: "-", // Pode ser calculado a partir dos pesos
+      farm_id: animal.farm_id?.toString() || "-",
+      daily_gain: "-", // Pode ser calculado a partir dos pesos
     };
   });
 

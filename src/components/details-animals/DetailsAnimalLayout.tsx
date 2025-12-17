@@ -15,7 +15,6 @@ import {
 import { ChartLineLabel } from "@/components/charts/BoiCharts";
 import { useAnimalWeights } from "@/hooks/db/animal_weights";
 import { useAnimalCE } from "@/hooks/db/animal_ce";
-import InfoSection from "@/components/layout/InfoSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/utils/formatDates";
 import Link from "next/link";
@@ -245,12 +244,20 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                           {mother_name}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center pt-0.5">
+                      <div className="flex justify-between items-center border-b border-border py-0.5">
                         <span className="text-[11px] text-gray-500 uppercase">
                           Avô Materno
                         </span>
                         <span className="text-sm font-semibold text-primary">
                           {animal?.maternal_grandfather_name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-0.5">
+                        <span className="text-[11px] text-gray-500 uppercase">
+                          Avô Paterno
+                        </span>
+                        <span className="text-sm font-semibold text-primary">
+                          {animal?.paternal_grandfather_name}
                         </span>
                       </div>
                     </div>
@@ -284,6 +291,14 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                             </span>
                             <span className="text-sm font-semibold text-primary">
                               {animal?.type || "-"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col justify-start items-start">
+                            <span className="text-[10px] text-gray-500 uppercase">
+                              Sociedade
+                            </span>
+                            <span className="text-sm font-semibold text-primary">
+                              {animal?.partnership || "-"}
                             </span>
                           </div>
                         </div>

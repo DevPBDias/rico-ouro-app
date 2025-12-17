@@ -4,11 +4,8 @@ import { Animal } from "@/types/animal.type";
 function convertDateToISO(dateValue: unknown): string | undefined {
   if (dateValue === null || dateValue === undefined) return undefined;
 
-  // Handle Excel serial number (days since 1900-01-01, with Excel bug for 1900 leap year)
   if (typeof dateValue === "number") {
-    // Excel serial date to JavaScript Date
-    // Excel incorrectly considers 1900 a leap year, so we need to adjust
-    const excelEpoch = new Date(1899, 11, 30); // Dec 30, 1899
+    const excelEpoch = new Date(1899, 11, 30);
     const jsDate = new Date(
       excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000
     );
@@ -21,7 +18,6 @@ function convertDateToISO(dateValue: unknown): string | undefined {
     return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
 
-  // Handle string format DD/MM/YYYY
   const dateStr = String(dateValue).trim();
   if (dateStr === "") return undefined;
 
@@ -65,7 +61,8 @@ export async function extractDataFromExcel(file: File): Promise<Animal[]> {
         const animalStart = findBlockStart(blockHeader, "ANIMAL");
         const paiStart = findBlockStart(blockHeader, "PAI");
         const maeStart = findBlockStart(blockHeader, "MÃE");
-        const avoStart = findBlockStart(blockHeader, "AVÔ MATERNO");
+        const avoMaternoStart = findBlockStart(blockHeader, "AVÔ MATERNO");
+        const avoPaternoStart = findBlockStart(blockHeader, "AVÔ PATERNO");
 
         const genotypingStart = findBlockStart(colHeader, "GENOTIPADO");
         const classificationStart = findBlockStart(colHeader, "CLASSE");
@@ -74,7 +71,8 @@ export async function extractDataFromExcel(file: File): Promise<Animal[]> {
           animalStart,
           paiStart,
           maeStart,
-          avoStart,
+          avoMaternoStart,
+          avoPaternoStart,
         });
 
         if (animalStart === -1) throw new Error("Bloco ANIMAL não encontrado.");
@@ -114,7 +112,13 @@ export async function extractDataFromExcel(file: File): Promise<Animal[]> {
                   ? cleanStringValue(row[maeStart + 2])
                   : undefined,
               maternal_grandfather_name:
-                avoStart !== -1 ? cleanStringValue(row[avoStart]) : undefined,
+                avoMaternoStart !== -1
+                  ? cleanStringValue(row[avoMaternoStart])
+                  : undefined,
+              paternal_grandfather_name:
+                avoPaternoStart !== -1
+                  ? cleanStringValue(row[avoPaternoStart])
+                  : undefined,
               status: "-",
               farm_id: undefined,
             } as Animal;

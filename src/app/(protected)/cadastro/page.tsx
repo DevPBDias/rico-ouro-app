@@ -91,6 +91,7 @@ export default function CadastroPage() {
         mother_serie_rgd: "-",
         mother_rgn: "-",
         maternal_grandfather_name: "-",
+        paternal_grandfather_name: "-",
       };
 
       await createAnimal(newAnimal);

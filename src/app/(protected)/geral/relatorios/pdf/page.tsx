@@ -37,6 +37,7 @@ const REPORT_OPTIONS: ReportOption[] = [
   { key: "mother_serie_rgd", label: "Mãe - RGD" },
   { key: "mother_rgn", label: "Mãe - RGN" },
   { key: "maternal_grandfather_name", label: "Avô Materno" },
+  { key: "paternal_grandfather_name", label: "Avô Paterno" },
 ];
 
 export default function RelatoriosPage() {
@@ -71,6 +72,8 @@ export default function RelatoriosPage() {
     mother_serie_rgd: false,
     mother_rgn: false,
     maternal_grandfather_name: false,
+    paternal_grandfather_name: false,
+    partnership: false,
     status: false,
     farm_name: false,
     daily_gain: false,
