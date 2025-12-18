@@ -6,10 +6,9 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v22"; // App Shell + Dynamic Routes Offline Support
+const SCHEMA_VERSION = "v23"; // Updated App Shell and removed dynamic routes
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
-const DYNAMIC_CACHE_NAME = `rico-ouro-dynamic-${SCHEMA_VERSION}`;
 
 // ============================================================================
 // APP SHELL - Assets essenciais que DEVEM estar disponíveis offline
@@ -44,6 +43,7 @@ const APP_SHELL_ASSETS = [
   "/gerenciar",
   "/gerenciar/fazendas",
   "/gerenciar/classe",
+  "/gerenciar/sociedade",
   "/gerenciar/status",
 
   // Geral / Relatórios
@@ -55,55 +55,8 @@ const APP_SHELL_ASSETS = [
 ];
 
 // ============================================================================
-// PADRÕES DE ROTAS DINÂMICAS - Mapeamento para fallback
-// ============================================================================
-interface DynamicRoutePattern {
-  pattern: RegExp;
-  fallbackShell: string;
-  description: string;
-}
-
-const DYNAMIC_ROUTE_PATTERNS: DynamicRoutePattern[] = [
-  {
-    pattern: /^\/animals\/[^/]+\/detalhes\/?$/,
-    fallbackShell: "/",
-    description: "Detalhes do animal (boi)",
-  },
-  {
-    pattern: /^\/animals\/[^/]+\/?$/,
-    fallbackShell: "/",
-    description: "Animal específico (boi)",
-  },
-  {
-    pattern: /^\/matrizes\/[^/]+\/detalhes\/?$/,
-    fallbackShell: "/",
-    description: "Detalhes da matriz",
-  },
-  {
-    pattern: /^\/matrizes\/[^/]+\/?$/,
-    fallbackShell: "/",
-    description: "Matriz específica",
-  },
-];
-
-// ============================================================================
 // FUNÇÕES AUXILIARES
 // ============================================================================
-
-/**
- * Verifica se uma URL corresponde a uma rota dinâmica conhecida
- */
-function isDynamicRoute(pathname: string): boolean {
-  return DYNAMIC_ROUTE_PATTERNS.some((route) => route.pattern.test(pathname));
-}
-
-/**
- * Encontra o shell de fallback apropriado para uma rota dinâmica
- */
-function getFallbackShell(pathname: string): string {
-  const route = DYNAMIC_ROUTE_PATTERNS.find((r) => r.pattern.test(pathname));
-  return route?.fallbackShell || "/";
-}
 
 /**
  * Tenta clonar e cachear uma resposta de forma segura
@@ -124,10 +77,10 @@ async function cacheResponse(
 }
 
 /**
- * Cache proativo de rotas dinâmicas (chamado pelo app quando carrega listas)
+ * Cache proativo (chamado pelo app quando carrega listas)
  */
-async function cacheDynamicRoutes(urls: string[]): Promise<void> {
-  const cache = await caches.open(DYNAMIC_CACHE_NAME);
+async function cacheUrls(urls: string[]): Promise<void> {
+  const cache = await caches.open(CACHE_NAME);
 
   for (const url of urls) {
     try {
@@ -149,7 +102,7 @@ async function cacheDynamicRoutes(urls: string[]): Promise<void> {
 // INSTALAÇÃO - Pré-cache do App Shell
 // ============================================================================
 self.addEventListener("install", (event: ExtendableEvent) => {
-  console.log("Service Worker: Installing v22 (App Shell + Dynamic Routes)...");
+  console.log("Service Worker: Installing v23 (App Shell)...");
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -209,9 +162,9 @@ self.addEventListener("message", (event: ExtendableMessageEvent) => {
   if (event.data && event.data.type === "CACHE_DYNAMIC_ROUTES") {
     const urls = event.data.urls as string[];
     console.log(
-      `Service Worker: Received request to cache ${urls.length} dynamic routes`
+      `Service Worker: Received request to cache ${urls.length} routes`
     );
-    event.waitUntil(cacheDynamicRoutes(urls));
+    event.waitUntil(cacheUrls(urls));
   }
 
   if (event.data && event.data.type === "SKIP_WAITING") {
@@ -333,11 +286,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 
           // Cache a resposta para uso futuro
           if (networkResponse && networkResponse.status === 200) {
-            // Para rotas dinâmicas, usa cache separado
-            const cacheName = isDynamicRoute(url.pathname)
-              ? DYNAMIC_CACHE_NAME
-              : CACHE_NAME;
-            await cacheResponse(cacheName, event.request, networkResponse);
+            await cacheResponse(CACHE_NAME, event.request, networkResponse);
           }
 
           return networkResponse;
@@ -354,20 +303,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
             return exactMatch;
           }
 
-          // 2. Para rotas dinâmicas, serve o App Shell (/)
-          //    O React Router/Next.js vai extrair o ID e buscar dados do RXDB
-          if (isDynamicRoute(url.pathname)) {
-            console.log(
-              "Service Worker: Dynamic route offline, serving App Shell",
-              url.pathname
-            );
-            const shellResponse = await caches.match("/");
-            if (shellResponse) {
-              return shellResponse;
-            }
-          }
-
-          // 3. Tenta a página raiz como fallback geral
+          // 2. Tenta a página raiz como fallback geral (App Shell)
           const rootResponse = await caches.match("/");
           if (rootResponse) {
             console.log(
@@ -377,13 +313,13 @@ self.addEventListener("fetch", (event: FetchEvent) => {
             return rootResponse;
           }
 
-          // 4. Página offline estática como último recurso
+          // 3. Página offline estática como último recurso
           const offlineResponse = await caches.match("/offline.html");
           if (offlineResponse) {
             return offlineResponse;
           }
 
-          // 5. Resposta inline de emergência
+          // 4. Resposta inline de emergência
           return new Response(
             `<!DOCTYPE html>
 <html lang="pt-BR">

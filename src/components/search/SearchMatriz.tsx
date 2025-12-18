@@ -8,10 +8,6 @@ import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
 import SearchCard from "../cards/SearchCard";
-import {
-  useCacheDynamicRoutes,
-  routePatterns,
-} from "@/hooks/sync/useCacheDynamicRoutes";
 import DetailsMatrizLayout from "../details-animals/DetailsMatrizLayout";
 
 function SearchMatriz() {
@@ -22,9 +18,6 @@ function SearchMatriz() {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-
-  const matrizIds = useMemo(() => matrizes.map((m) => m.rgn), [matrizes]);
-  useCacheDynamicRoutes(matrizIds, routePatterns.matrizes, "matrizes");
 
   const handleSearch = useCallback(
     async (query: string) => {
@@ -41,20 +34,17 @@ function SearchMatriz() {
 
       const queryLower = query.toLowerCase().trim();
 
-      // Verificar match exato de RGN
       const exactMatch = matrizes.find(
         (matriz) => matriz.rgn?.toLowerCase() === queryLower
       );
 
       if (exactMatch) {
-        // Se encontrou match exato, mostra apenas essa matriz
         setSearchResults([exactMatch]);
         setIsSearching(false);
         setHasSearched(true);
         return;
       }
 
-      // Busca parcial em RGN, nome e série
       const results = matrizes.filter((matriz) => {
         const rgn = matriz.rgn?.toString().toLowerCase() || "";
         const name = matriz.name?.toLowerCase() || "";
@@ -92,7 +82,6 @@ function SearchMatriz() {
     setSelectedMatriz(null);
   };
 
-  // MODO DETALHES - Search some, mostra apenas os detalhes
   if (showDetails && selectedMatriz) {
     return (
       <section className="px-4 py-4">
@@ -115,7 +104,6 @@ function SearchMatriz() {
     );
   }
 
-  // MODO BUSCA - Campo de busca e resultados
   return (
     <section className="px-4">
       <div className="py-3 border-b border-border">

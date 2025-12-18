@@ -8,10 +8,6 @@ import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import SearchCard from "../cards/SearchCard";
-import {
-  routePatterns,
-  useCacheDynamicRoutes,
-} from "@/hooks/sync/useCacheDynamicRoutes";
 import DetailsAnimalLayout from "../details-animals/DetailsAnimalLayout";
 
 function SearchAnimal() {
@@ -22,9 +18,6 @@ function SearchAnimal() {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-
-  const animalIds = useMemo(() => animals.map((a) => a.rgn), [animals]);
-  useCacheDynamicRoutes(animalIds, routePatterns.animals, "animals");
 
   const handleSearch = useCallback(
     async (query: string) => {

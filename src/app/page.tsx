@@ -12,17 +12,14 @@ export default function OpeningPage() {
   const [isExiting, setIsExiting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Ensure we're mounted on client
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Handle redirect after animation
   useEffect(() => {
     if (!isMounted) return;
 
-    // Wait for image to load or timeout after 2 seconds
-    const minWait = 2000;
+    const minWait = 3000;
     const startTime = Date.now();
 
     const checkAndRedirect = () => {
@@ -31,18 +28,15 @@ export default function OpeningPage() {
 
       setTimeout(() => {
         setIsExiting(true);
-        // Wait for exit animation then redirect
         setTimeout(() => {
           router.push("/login");
         }, 800);
       }, remaining);
     };
 
-    // If image loaded, proceed
     if (imageLoaded) {
       checkAndRedirect();
     } else {
-      // Fallback: proceed anyway after timeout
       const fallbackTimer = setTimeout(() => {
         checkAndRedirect();
       }, minWait);
@@ -51,7 +45,6 @@ export default function OpeningPage() {
     }
   }, [isMounted, imageLoaded, router]);
 
-  // Show nothing during SSR, then immediately show styled container
   if (!isMounted) {
     return (
       <main className="relative top-0 left-0 h-dvh w-full overflow-hidden bg-[#1162ae]" />
