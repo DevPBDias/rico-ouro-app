@@ -7,7 +7,7 @@ interface PartnershipSelectorProps {
   onToggle: (name: string) => void;
 }
 
-const PARTNERSHIP_OPTIONS = ["Alex", "Fátima", "Jacir"];
+const PARTNERSHIP_OPTIONS = ["Alex", "Fátima", "Jacir", "Ricardo"];
 
 export function PartnershipSelector({
   selectedPartnershipNames,

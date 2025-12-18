@@ -5,7 +5,7 @@ import campaignLinks from "@/constants/campaignLinks";
 const ReportPage = () => {
   return (
     <main>
-      <Header title="Gerenciar" />
+      <Header title="Rebanhos e Fazendas" />
       <RedirectButtons data={campaignLinks} />
     </main>
   );

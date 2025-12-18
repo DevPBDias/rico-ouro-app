@@ -11,19 +11,16 @@ import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { PartnershipSuccessModal } from "@/components/modals/sociedade/PartnershipSuccessModal";
 
 const PARTNERSHIPS = [
-  { name: "Alex", initial: "A" },
-  { name: "Fátima", initial: "F" },
-  { name: "Jacir", initial: "J" },
+  { name: "Alex", initial: "Alex" },
+  { name: "Fátima", initial: "Fat" },
+  { name: "Jacir", initial: "Jac" },
+  { name: "Ricardo", initial: "Ric" },
 ];
 
 const getPartnershipString = (names: string[]) => {
-  let result = "R";
-  PARTNERSHIPS.forEach((p) => {
-    if (names.includes(p.name)) {
-      result += "/" + p.initial;
-    }
-  });
-  return result;
+  return PARTNERSHIPS.filter((p) => names.includes(p.name))
+    .map((p) => p.initial)
+    .join("/");
 };
 
 const getSelectedNames = (str: string | null | undefined) => {
@@ -130,7 +127,7 @@ const PartnershipPage = () => {
 
   return (
     <main className="min-h-screen">
-      <Header title="Sociedades" />
+      <Header title="Sociedade" />
       <form onSubmit={handleSubmit} className="flex flex-col gap-8 px-6 py-8">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
@@ -158,7 +155,7 @@ const PartnershipPage = () => {
               <div className="flex flex-row justify-between items-end gap-4 w-full">
                 <div className="p-4 flex-1 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase text-primary/60">
-                    Sociedade Atual:
+                    Vínculos:
                   </span>
                   <span className="text-lg font-black text-primary Capitalize">
                     {selectedAnimal.partnership || "Nenhuma"}
