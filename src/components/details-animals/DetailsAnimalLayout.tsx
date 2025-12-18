@@ -267,7 +267,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                           Classificação
                         </h3>
-                        <div className="grid grid-cols-3 justify-between items-center w-full">
+                        <div className="grid grid-cols-4 justify-between items-center w-full">
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[11px] text-gray-500 uppercase block">
                               Classe
