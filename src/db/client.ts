@@ -1,6 +1,11 @@
 "use client";
 
-import { createRxDatabase, addRxPlugin, RxStorage } from "rxdb";
+import {
+  createRxDatabase,
+  addRxPlugin,
+  RxStorage,
+  removeRxDatabase,
+} from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
@@ -37,7 +42,8 @@ async function loadDevModePlugin(): Promise<void> {
   } catch (err) {}
 }
 
-const DB_NAME = "indi_ouro_db";
+const DB_VERSION = "v3"; // Bumping this forces a full database reset on update
+const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let dbInstance: MyDatabase | null = null;
 let dbPromise: Promise<MyDatabase> | null = null;
@@ -60,63 +66,83 @@ async function createDatabase(): Promise<MyDatabase> {
       multiInstance: true,
       eventReduce: true,
     });
-    await db.addCollections({
-      animals: {
-        schema: animalSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
+
+    try {
+      await db.addCollections({
+        animals: {
+          schema: animalSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+          },
         },
-      },
-      vaccines: {
-        schema: vaccineSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        vaccines: {
+          schema: vaccineSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      farms: {
-        schema: farmSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        farms: {
+          schema: farmSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      animal_metrics_ce: {
-        schema: animalMetricCESchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        animal_metrics_ce: {
+          schema: animalMetricCESchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      animal_metrics_weight: {
-        schema: animalMetricWeightSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        animal_metrics_weight: {
+          schema: animalMetricWeightSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      animal_vaccines: {
-        schema: animalVaccineSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        animal_vaccines: {
+          schema: animalVaccineSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      reproduction_events: {
-        schema: reproductionEventSchema,
-        migrationStrategies: {
-          1: (doc: any) => doc,
-          2: (doc: any) => doc,
+        reproduction_events: {
+          schema: reproductionEventSchema,
+          migrationStrategies: {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+          },
         },
-      },
-      animal_statuses: {
-        schema: animalStatusSchema,
-      },
+        animal_statuses: {
+          schema: animalStatusSchema,
+        },
+      });
+    } catch (err: any) {
+      // If adding collections fails (usually due to schema change without version bump)
+      // we log it and in development we might want to know, but in production
+      // a failed collection add usually means the app is broken.
+      console.error("[RxDB] Failed to add collections:", err);
+
+      // Check if it's a schema mismatch error
+      if (err.message?.includes("schema") || err.name === "RxError") {
+        console.warn(
+          "[RxDB] Schema mismatch detected. You might need to increment collection version or DB_VERSION."
+        );
+      }
+      throw err;
+    }
+
+    setupReplication(db).catch((err: Error) => {
+      console.error("[RxDB] Replication setup failed:", err);
     });
-    setupReplication(db).catch((err: Error) => {});
 
     return db;
   } catch (err) {
+    console.error("[RxDB] Error creating database:", err);
     throw err;
   }
 }
@@ -139,12 +165,75 @@ export async function getDatabase(): Promise<MyDatabase> {
       dbInstance = db;
       return db;
     })
-    .catch((error) => {
-      console.log(error);
+    .catch(async (error) => {
+      console.error("[RxDB] Critical initialization error:", error);
+
+      // Fallback: If the database is completely broken (usually schema mismatch)
+      // we might want to offer a way to reset it automatically.
+      // For now we just rethrow so the UI can show the error state.
       throw error;
     });
 
   return dbPromise as Promise<MyDatabase>;
+}
+
+/**
+ * Removes all IndexedDB databases related to this app.
+ * This is useful to prevent storage bloat when database names change across versions.
+ */
+export async function clearAllDatabases(): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  const storage = getRxStorageDexie();
+
+  // 1. Close current instance if exists
+  if (dbInstance) {
+    try {
+      await (dbInstance as any).destroy();
+      dbInstance = null;
+      dbPromise = null;
+    } catch (err) {
+      console.error("[RxDB] Error destroying current instance:", err);
+    }
+  }
+
+  // 2. Try to list and delete all databases starting with our prefix
+  // Note: window.indexedDB.databases() is not available in all browsers,
+  // so we also try common legacy names.
+  try {
+    if (window.indexedDB && (window.indexedDB as any).databases) {
+      const dbs = await (window.indexedDB as any).databases();
+      for (const dbInfo of dbs) {
+        if (
+          dbInfo.name &&
+          (dbInfo.name.includes("indi_ouro_db") ||
+            dbInfo.name.includes("rxdb-dexie-indi_ouro_db"))
+        ) {
+          console.log(`[RxDB] Removing legacy database: ${dbInfo.name}`);
+          try {
+            await removeRxDatabase(dbInfo.name, storage);
+          } catch (e) {
+            // Fallback for non-RxDB or locked databases
+            window.indexedDB.deleteDatabase(dbInfo.name);
+          }
+        }
+      }
+    } else {
+      // Fallback: Delete known names if databases() is not supported
+      const legacyNames = [
+        "indi_ouro_db",
+        "indi_ouro_db_v1",
+        "indi_ouro_db_v2",
+        "indi_ouro_db_v3",
+      ];
+      for (const name of legacyNames) {
+        await removeRxDatabase(name, storage).catch(() => {});
+        window.indexedDB.deleteDatabase(name);
+      }
+    }
+  } catch (err) {
+    console.error("[RxDB] Error during database cleanup:", err);
+  }
 }
 
 export function isDatabaseReady(): boolean {

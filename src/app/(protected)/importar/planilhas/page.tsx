@@ -7,6 +7,8 @@ import { Trash2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { getSupabase } from "@/lib/supabase/client";
 
+import { clearAllDatabases } from "@/db/client";
+
 const ImportCsvFilesPage = () => {
   const db = useRxDatabase();
   const [isCleaning, setIsCleaning] = useState(false);
@@ -15,12 +17,10 @@ const ImportCsvFilesPage = () => {
   const handleResetLocalDatabase = async () => {
     setIsCleaning(true);
     try {
-      if (db) {
-        console.log("Destruindo banco local...");
-        await db.remove(); // Apaga dados e metadados locais
-        console.log("Banco destruído. Recarregando...");
-        window.location.reload();
-      }
+      console.log("Destruindo todos os bancos locais...");
+      await clearAllDatabases();
+      console.log("Bancos destruídos. Recarregando...");
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao resetar banco:", error);
       alert(
