@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { PartnershipSuccessModal } from "@/components/modals/sociedade/PartnershipSuccessModal";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 
 const PARTNERSHIPS = [
   { name: "Alex", initial: "Alex" },
@@ -37,6 +38,7 @@ const PartnershipPage = () => {
   const { updateAnimal } = useUpdateAnimal();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     rgn: "",
@@ -102,10 +104,23 @@ const PartnershipPage = () => {
   };
 
   const handleClear = () => {
-    setFormData((prev) => ({
-      ...prev,
-      partnership: [],
-    }));
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmClear = async () => {
+    if (!selectedAnimal) return;
+    try {
+      await updateAnimal(selectedAnimal.rgn, {
+        partnership: "",
+      });
+      setFormData((prev) => ({
+        ...prev,
+        partnership: [],
+      }));
+    } catch (error) {
+      console.error("Erro ao limpar sociedade:", error);
+      setError("Erro ao limpar sociedade");
+    }
   };
 
   const handleCloseModal = () => {
@@ -195,6 +210,14 @@ const PartnershipPage = () => {
           handleCloseModal();
           router.push("/home");
         }}
+      />
+
+      <ConfirmActionModal
+        open={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={handleConfirmClear}
+        title="Limpar Sociedade"
+        description="Tem certeza que deseja remover todos os vínculos de sociedade deste animal?"
       />
     </main>
   );

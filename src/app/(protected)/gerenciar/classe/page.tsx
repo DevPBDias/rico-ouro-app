@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { ClassificationSuccessModal } from "@/components/modals/classe/ClassificationSuccessModal";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 
 const ClassificationPage = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ const ClassificationPage = () => {
   const { updateAnimal } = useUpdateAnimal();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     rgn: "",
@@ -79,10 +81,23 @@ const ClassificationPage = () => {
   };
 
   const handleClear = () => {
-    setFormData((prev) => ({
-      ...prev,
-      classification: null,
-    }));
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmClear = async () => {
+    if (!selectedAnimal) return;
+    try {
+      await updateAnimal(selectedAnimal.rgn, {
+        classification: "-",
+      });
+      setFormData((prev) => ({
+        ...prev,
+        classification: null,
+      }));
+    } catch (error) {
+      console.error("Erro ao limpar classificação:", error);
+      setError("Erro ao limpar classificação");
+    }
   };
 
   const handleCloseModal = () => {
@@ -170,6 +185,14 @@ const ClassificationPage = () => {
           handleCloseModal();
           router.push("/home");
         }}
+      />
+
+      <ConfirmActionModal
+        open={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={handleConfirmClear}
+        title="Limpar Classificação"
+        description="Tem certeza que deseja remover a classificação deste animal?"
       />
     </main>
   );
