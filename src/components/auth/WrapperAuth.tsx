@@ -21,17 +21,5 @@ export default function ProtectedClient({
 
   if (!user) return null;
 
-  return (
-    <>
-      {/* Offline auth indicator */}
-      {isOfflineAuth && (
-        <div className="fixed top-0 left-0 right-0 bg-yellow-500 text-white text-center text-xs py-1 z-[100]">
-          📴 Modo offline — dados salvos localmente serão sincronizados quando
-          voltar online
-        </div>
-      )}
-      {/* Add top padding when offline banner is visible */}
-      <div className={isOfflineAuth ? "pt-6" : ""}>{children}</div>
-    </>
-  );
+  return <div>{children}</div>;
 }

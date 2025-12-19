@@ -22,6 +22,7 @@ import { animalMetricWeightSchema } from "./schemas/animal_metric_weigth.schema"
 import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
 import { animalStatusSchema } from "./schemas/animal_status.schema";
+import { semenDoseSchema } from "./schemas/semen_dose.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -42,7 +43,7 @@ async function loadDevModePlugin(): Promise<void> {
   } catch (err) {}
 }
 
-const DB_VERSION = "v3"; // Bumping this forces a full database reset on update
+const DB_VERSION = "v5";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let dbInstance: MyDatabase | null = null;
@@ -120,14 +121,13 @@ async function createDatabase(): Promise<MyDatabase> {
         animal_statuses: {
           schema: animalStatusSchema,
         },
+        semen_doses: {
+          schema: semenDoseSchema,
+        },
       });
     } catch (err: any) {
-      // If adding collections fails (usually due to schema change without version bump)
-      // we log it and in development we might want to know, but in production
-      // a failed collection add usually means the app is broken.
       console.error("[RxDB] Failed to add collections:", err);
 
-      // Check if it's a schema mismatch error
       if (err.message?.includes("schema") || err.name === "RxError") {
         console.warn(
           "[RxDB] Schema mismatch detected. You might need to increment collection version or DB_VERSION."
@@ -168,25 +168,17 @@ export async function getDatabase(): Promise<MyDatabase> {
     .catch(async (error) => {
       console.error("[RxDB] Critical initialization error:", error);
 
-      // Fallback: If the database is completely broken (usually schema mismatch)
-      // we might want to offer a way to reset it automatically.
-      // For now we just rethrow so the UI can show the error state.
       throw error;
     });
 
   return dbPromise as Promise<MyDatabase>;
 }
 
-/**
- * Removes all IndexedDB databases related to this app.
- * This is useful to prevent storage bloat when database names change across versions.
- */
 export async function clearAllDatabases(): Promise<void> {
   if (typeof window === "undefined") return;
 
   const storage = getRxStorageDexie();
 
-  // 1. Close current instance if exists
   if (dbInstance) {
     try {
       await (dbInstance as any).destroy();
@@ -197,9 +189,6 @@ export async function clearAllDatabases(): Promise<void> {
     }
   }
 
-  // 2. Try to list and delete all databases starting with our prefix
-  // Note: window.indexedDB.databases() is not available in all browsers,
-  // so we also try common legacy names.
   try {
     if (window.indexedDB && (window.indexedDB as any).databases) {
       const dbs = await (window.indexedDB as any).databases();
@@ -213,18 +202,18 @@ export async function clearAllDatabases(): Promise<void> {
           try {
             await removeRxDatabase(dbInfo.name, storage);
           } catch (e) {
-            // Fallback for non-RxDB or locked databases
             window.indexedDB.deleteDatabase(dbInfo.name);
           }
         }
       }
     } else {
-      // Fallback: Delete known names if databases() is not supported
       const legacyNames = [
         "indi_ouro_db",
         "indi_ouro_db_v1",
         "indi_ouro_db_v2",
         "indi_ouro_db_v3",
+        "indi_ouro_db_v4",
+        "indi_ouro_db_v5",
       ];
       for (const name of legacyNames) {
         await removeRxDatabase(name, storage).catch(() => {});

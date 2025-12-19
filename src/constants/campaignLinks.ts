@@ -26,6 +26,11 @@ const campaignLinks: Links[] = [
     name: "Sociedade",
     href: "/gerenciar/sociedade",
   },
+  {
+    id: 6,
+    name: "Estoque de sêmen",
+    href: "/gerenciar/doses-semen",
+  },
 ];
 
 export default campaignLinks;

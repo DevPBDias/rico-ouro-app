@@ -7,17 +7,16 @@ import { replicateAnimalMetricCE } from "./replications/animal_metric_ce.replica
 import { replicateAnimalVaccines } from "./replications/animal_vaccine.replication";
 import { replicateReproductionEvents } from "./replications/reproduction_event.replication";
 import { replicateAnimalStatuses } from "./replications/animal_status.replication";
+import { replicateSemenDoses } from "./replications/semen_dose.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Strict validation - no placeholders allowed
   if (!url || !key || url.includes("placeholder") || key === "placeholder") {
     return null;
   }
 
-  // Validate URL format
   try {
     const parsedUrl = new URL(url);
     if (!parsedUrl.hostname.includes("supabase")) {
@@ -32,9 +31,6 @@ function getSupabaseConfig() {
   return { url, key };
 }
 
-/**
- * Check if Supabase is accessible
- */
 async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
   try {
     console.log("🏥 Checking Supabase health...");
@@ -45,10 +41,10 @@ async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
         apikey: key,
         Authorization: `Bearer ${key}`,
       },
-      signal: AbortSignal.timeout(5000), // 5 second timeout
+      signal: AbortSignal.timeout(5000),
     });
 
-    const isHealthy = response.ok || response.status === 404; // 404 is ok for root endpoint
+    const isHealthy = response.ok || response.status === 404;
     console.log(
       `🏥 Supabase health check: ${isHealthy ? "✅ OK" : "❌ FAILED"}`
     );
@@ -60,13 +56,9 @@ async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
   }
 }
 
-/**
- * Setup replication for all collections
- */
 export async function setupReplication(db: MyDatabase) {
   console.log("🔄 Setting up replication...");
 
-  // Validate Supabase configuration
   const config = getSupabaseConfig();
 
   if (!config) {
@@ -81,7 +73,6 @@ export async function setupReplication(db: MyDatabase) {
 
   const { url: SUPABASE_URL, key: SUPABASE_KEY } = config;
 
-  // Initial health check (non-blocking)
   checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY).then((isHealthy) => {
     if (!isHealthy) {
       console.warn(
@@ -91,7 +82,6 @@ export async function setupReplication(db: MyDatabase) {
   });
 
   try {
-    // Replicate animals
     const animalsCount = await db.animals.count().exec();
     console.log(`📊 [Animals] Local count before sync: ${animalsCount}`);
 
@@ -101,56 +91,54 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY
     );
 
-    // Replicate vaccines
     const vaccinesReplication = await replicateVaccines(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate farms
     const farmsReplication = await replicateFarms(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate animal metrics weight
     const animalMetricsWeightReplication = await replicateAnimalMetricWeight(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate animal metrics CE
     const animalMetricsCEReplication = await replicateAnimalMetricCE(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate animal vaccines
     const animalVaccinesReplication = await replicateAnimalVaccines(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate reproduction events
     const reproductionEventsReplication = await replicateReproductionEvents(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Replicate animal statuses
     const animalStatusesReplication = await replicateAnimalStatuses(
       db,
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    // Store replications on database instance
+    const semenDosesReplication = await replicateSemenDoses(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
     (db as any).replications = {
       animals: animalsReplication,
       vaccines: vaccinesReplication,
@@ -160,6 +148,7 @@ export async function setupReplication(db: MyDatabase) {
       animal_vaccines: animalVaccinesReplication,
       reproduction_events: reproductionEventsReplication,
       animal_statuses: animalStatusesReplication,
+      semen_doses: semenDosesReplication,
     };
 
     console.log("✅ Replication setup complete");
@@ -175,6 +164,7 @@ export async function setupReplication(db: MyDatabase) {
         animalVaccinesReplication.reSync();
         reproductionEventsReplication.reSync();
         animalStatusesReplication.reSync();
+        semenDosesReplication.reSync();
       });
     }
 
