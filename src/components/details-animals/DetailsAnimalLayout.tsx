@@ -123,7 +123,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
               >
                 <div className="grid grid-cols-1 gap-y-1.5 w-full">
                   <div className="space-y-1 w-full">
-                    <div className="bg-card border border-border rounded-lg p-3 w-full">
+                    <div className="bg-card border border-border rounded-lg px-3 py-2 w-full">
                       <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                         Dados Básicos
                       </h3>
@@ -140,7 +140,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                           Nascimento
                         </span>
                         <span className="text-sm font-semibold text-primary">
-                          {animal?.born_date}
+                          {formatDate(animal?.born_date)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center border-b border-border py-0.5">
@@ -170,6 +170,16 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                           {animal?.sex}
                         </span>
                       </div>
+                      {animal?.sex === "F" && (
+                        <div className="flex justify-between items-center pt-0.5 border-b border-border">
+                          <span className="text-[11px] text-gray-500 uppercase">
+                            Tipo
+                          </span>
+                          <span className="text-sm font-semibold text-primary">
+                            {animal?.type || "-"}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center pt-0.5">
                         <span className="text-[11px] text-gray-500 uppercase">
                           genotipagem
@@ -182,7 +192,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   </div>
 
                   <div className="space-y-1 grid grid-cols-1 gap-x-4">
-                    <div className="bg-card border border-border rounded-lg p-3">
+                    <div className="bg-card border border-border rounded-lg px-3 py-1.5">
                       <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                         Índices Genéticos
                       </h3>
@@ -224,7 +234,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   </div>
 
                   <div className="space-y-1 w-full">
-                    <div className="bg-card border border-border rounded-lg p-3">
+                    <div className="bg-card border border-border rounded-lg px-3 py-2">
                       <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                         Genealogia
                       </h3>
@@ -263,7 +273,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                     </div>
 
                     <div className="space-y-1 grid grid-cols-1 gap-x-4 w-full">
-                      <div className="bg-card border border-border rounded-lg p-3 w-full">
+                      <div className="bg-card border border-border rounded-lg px-3 py-2 w-full">
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                           Classificação
                         </h3>
@@ -287,7 +297,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                           </div>
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[10px] text-gray-500 uppercase">
-                              Tipo
+                              DNA
                             </span>
                             <span className="text-sm font-semibold text-primary">
                               {animal?.type || "-"}
