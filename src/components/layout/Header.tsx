@@ -12,7 +12,7 @@ function Header({ title }: HeaderProps) {
   const router = useRouter();
 
   return (
-    <header className="w-full p-4 bg-[#1162AE] text-white flex flex-col items-center gap-5">
+    <header className="sticky top-0 z-50 w-full p-4 bg-[#1162AE] text-white flex flex-col items-center gap-5">
       <div className="flex items-center justify-center">
         <Image src={logo} alt="Logo" width={113} height={36} />
       </div>

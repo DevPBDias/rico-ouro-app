@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 const ShortHeader = ({ title }: { title: string }) => {
   const router = useRouter();
   return (
-    <div className="bg-primary text-primary-foreground px-4 py-3.5 shadow-lg sticky top-0 z-20">
+    <div className="sticky top-0 z-50 bg-primary text-primary-foreground px-4 py-3.5 shadow-lg">
       <div className="flex items-center justify-start gap-20">
         <button
           onClick={() => router.back()}
