@@ -2,7 +2,7 @@ import type { RxJsonSchema } from "rxdb";
 import type { SemenDose } from "@/types/semen_dose.type";
 
 export const semenDoseSchema: RxJsonSchema<SemenDose> = {
-  version: 0,
+  version: 1,
   primaryKey: "id",
   type: "object",
   properties: {
@@ -10,7 +10,25 @@ export const semenDoseSchema: RxJsonSchema<SemenDose> = {
       type: "string",
       maxLength: 100,
     },
-    animalName: {
+    animal_name: {
+      type: "string",
+    },
+    animal_image: {
+      type: "string",
+    },
+    father_name: {
+      type: "string",
+    },
+    maternal_grandfather_name: {
+      type: "string",
+    },
+    iabcz: {
+      type: "string",
+    },
+    registration: {
+      type: "string",
+    },
+    center_name: {
       type: "string",
     },
     breed: {
@@ -26,5 +44,5 @@ export const semenDoseSchema: RxJsonSchema<SemenDose> = {
       type: "boolean",
     },
   },
-  required: ["id", "animalName", "breed", "quantity"],
+  required: ["id", "animal_name", "breed", "quantity"],
 };

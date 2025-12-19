@@ -14,14 +14,16 @@ import {
   SaveBar,
   FilterBottomSheet,
   AddDoseModal,
+  EditDoseModal,
   type SortOption,
 } from "@/components/doses";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { SemenDose } from "@/types/semen_dose.type";
 
 export default function DosesSemenPage() {
   const { doses, isLoading } = useSemenDoses();
   const { createDose } = useCreateDose();
-  const { updateQuantity } = useUpdateDose();
+  const { updateDose, updateQuantity } = useUpdateDose();
   const { deleteDose } = useDeleteDose();
 
   const localState = useDoseLocalState(doses);
@@ -31,6 +33,7 @@ export default function DosesSemenPage() {
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editModalDoseId, setEditModalDoseId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -41,6 +44,13 @@ export default function DosesSemenPage() {
     return localState.displayDoses.find((d) => d.id === deleteConfirmId);
   }, [deleteConfirmId, localState.displayDoses]);
 
+  const doseToEdit = useMemo(() => {
+    if (!editModalDoseId) return null;
+    return (
+      localState.displayDoses.find((d) => d.id === editModalDoseId) || null
+    );
+  }, [editModalDoseId, localState.displayDoses]);
+
   const filteredDoses = useMemo(() => {
     let result = [...localState.displayDoses];
 
@@ -49,15 +59,17 @@ export default function DosesSemenPage() {
     }
 
     result.sort((a, b) => {
+      const nameA = a.animal_name ?? "";
+      const nameB = b.animal_name ?? "";
       switch (sortBy) {
         case "name-asc":
-          return a.animalName.localeCompare(b.animalName);
+          return nameA.localeCompare(nameB);
         case "name-desc":
-          return b.animalName.localeCompare(a.animalName);
+          return nameB.localeCompare(nameA);
         case "qty-asc":
-          return a.quantity - b.quantity;
+          return (a.quantity ?? 0) - (b.quantity ?? 0);
         case "qty-desc":
-          return b.quantity - a.quantity;
+          return (b.quantity ?? 0) - (a.quantity ?? 0);
         default:
           return 0;
       }
@@ -87,7 +99,7 @@ export default function DosesSemenPage() {
       const changes = localState.getChanges();
 
       for (const update of changes.updates) {
-        await updateQuantity(update.id, update.quantity);
+        await updateDose(update.id, update);
       }
 
       for (const id of changes.deletions) {
@@ -96,9 +108,15 @@ export default function DosesSemenPage() {
 
       for (const dose of changes.creations) {
         await createDose({
-          animalName: dose.animalName,
+          animal_name: dose.animal_name,
           breed: dose.breed,
           quantity: dose.quantity,
+          animal_image: dose.animal_image,
+          father_name: dose.father_name,
+          maternal_grandfather_name: dose.maternal_grandfather_name,
+          iabcz: dose.iabcz,
+          registration: dose.registration,
+          center_name: dose.center_name,
         });
       }
 
@@ -119,11 +137,22 @@ export default function DosesSemenPage() {
   };
 
   const handleAddDose = (data: {
-    animalName: string;
+    animal_name: string;
     breed: string;
     quantity: number;
+    animal_image?: string;
+    father_name?: string;
+    maternal_grandfather_name?: string;
+    iabcz?: string;
+    registration?: string;
+    center_name?: string;
   }) => {
     localState.addLocalDose(data);
+  };
+
+  const handleEditDose = (data: Partial<SemenDose>) => {
+    if (!editModalDoseId) return;
+    localState.updateLocalDose(editModalDoseId, data);
   };
 
   return (
@@ -166,8 +195,7 @@ export default function DosesSemenPage() {
       <DosesList
         groupedDoses={groupedByBreed}
         isLoading={isLoading}
-        onIncrement={localState.incrementQuantity}
-        onDecrement={localState.decrementQuantity}
+        onEdit={(id) => setEditModalDoseId(id)}
         onDelete={(id) => setDeleteConfirmId(id)}
         selectedBreed={selectedBreed}
       />
@@ -198,6 +226,14 @@ export default function DosesSemenPage() {
         existingBreeds={breeds}
       />
 
+      <EditDoseModal
+        open={!!editModalDoseId}
+        onClose={() => setEditModalDoseId(null)}
+        dose={doseToEdit}
+        onSave={handleEditDose}
+        existingBreeds={breeds}
+      />
+
       <ConfirmActionModal
         open={!!deleteConfirmId}
         onClose={() => setDeleteConfirmId(null)}
@@ -205,7 +241,7 @@ export default function DosesSemenPage() {
         title="Excluir Animal"
         description={
           doseToDelete
-            ? `Tem certeza que deseja remover "${doseToDelete.animalName}" da lista? Esta ação será aplicada ao salvar.`
+            ? `Tem certeza que deseja remover "${doseToDelete.animal_name}" da lista? Esta ação será aplicada ao salvar.`
             : "Tem certeza que deseja remover este animal?"
         }
       />

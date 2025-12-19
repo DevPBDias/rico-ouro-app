@@ -68,7 +68,11 @@ async function cacheResponse(
   response: Response
 ): Promise<void> {
   try {
-    if (response && response.status === 200 && response.type === "basic") {
+    if (
+      response &&
+      response.status === 200 &&
+      (response.type === "basic" || response.type === "cors")
+    ) {
       const cache = await caches.open(cacheName);
       await cache.put(request, response.clone());
     }
@@ -420,7 +424,8 @@ self.addEventListener("fetch", (event: FetchEvent) => {
           if (
             networkResponse &&
             networkResponse.status === 200 &&
-            networkResponse.type === "basic"
+            (networkResponse.type === "basic" ||
+              networkResponse.type === "cors")
           ) {
             await cacheResponse(CACHE_NAME, event.request, networkResponse);
           }
@@ -430,6 +435,33 @@ self.addEventListener("fetch", (event: FetchEvent) => {
           const cachedResponse = await caches.match(event.request);
           return cachedResponse || new Response("Offline", { status: 503 });
         })
+    );
+    return;
+  }
+
+  // -------------------------------------------------------------------------
+  // 5.5 IMAGENS DO SUPABASE - Cache-First (Prioriza offline)
+  // -------------------------------------------------------------------------
+  if (
+    url.hostname.includes("supabase.co") &&
+    url.pathname.includes("/storage/")
+  ) {
+    event.respondWith(
+      caches.match(event.request).then(async (cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        try {
+          const networkResponse = await fetch(event.request);
+          if (networkResponse && networkResponse.status === 200) {
+            await cacheResponse(CACHE_NAME, event.request, networkResponse);
+          }
+          return networkResponse;
+        } catch {
+          return new Response("Offline", { status: 503 });
+        }
+      })
     );
     return;
   }
@@ -448,7 +480,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
         if (
           networkResponse &&
           networkResponse.status === 200 &&
-          networkResponse.type === "basic"
+          (networkResponse.type === "basic" || networkResponse.type === "cors")
         ) {
           await cacheResponse(CACHE_NAME, event.request, networkResponse);
         }

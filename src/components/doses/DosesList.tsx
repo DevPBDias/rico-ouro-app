@@ -4,14 +4,13 @@ import { SemenDose } from "@/types/semen_dose.type";
 import { DoseCard } from "./DoseCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EmptyDosesState } from "./EmptyDosesState";
 
 interface DosesListProps {
   groupedDoses: Map<string, SemenDose[]>;
   isLoading: boolean;
-  onIncrement: (id: string, currentQty: number) => void;
-  onDecrement: (id: string, currentQty: number) => void;
+  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   selectedBreed: string | null;
 }
@@ -19,14 +18,12 @@ interface DosesListProps {
 function BreedGroup({
   breed,
   doses,
-  onIncrement,
-  onDecrement,
+  onEdit,
   onDelete,
 }: {
   breed: string;
   doses: SemenDose[];
-  onIncrement: (id: string, currentQty: number) => void;
-  onDecrement: (id: string, currentQty: number) => void;
+  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -66,8 +63,7 @@ function BreedGroup({
             <DoseCard
               key={dose.id}
               dose={dose}
-              onIncrement={() => onIncrement(dose.id, dose.quantity)}
-              onDecrement={() => onDecrement(dose.id, dose.quantity)}
+              onEdit={() => onEdit(dose.id)}
               onDelete={() => onDelete(dose.id)}
             />
           ))}
@@ -95,11 +91,44 @@ function LoadingSkeleton() {
 export function DosesList({
   groupedDoses,
   isLoading,
-  onIncrement,
-  onDecrement,
+  onEdit,
   onDelete,
   selectedBreed,
 }: DosesListProps) {
+  useEffect(() => {
+    if (
+      !isLoading &&
+      groupedDoses.size > 0 &&
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator
+    ) {
+      const imageUrls = Array.from(groupedDoses.values())
+        .flat()
+        .map((dose) => dose.animal_image)
+        .filter((url): url is string => !!url);
+
+      if (imageUrls.length > 0) {
+        const sendToSW = (sw: ServiceWorker) => {
+          sw.postMessage({
+            type: "CACHE_DYNAMIC_ROUTES",
+            urls: imageUrls,
+          });
+          console.log(
+            `[DosesList] Solicitado pré-cache de ${imageUrls.length} imagens`
+          );
+        };
+
+        if (navigator.serviceWorker.controller) {
+          sendToSW(navigator.serviceWorker.controller);
+        } else {
+          navigator.serviceWorker.ready.then((registration) => {
+            if (registration.active) sendToSW(registration.active);
+          });
+        }
+      }
+    }
+  }, [isLoading, groupedDoses]);
+
   if (isLoading) {
     return <LoadingSkeleton />;
   }
@@ -122,8 +151,7 @@ export function DosesList({
           key={breed}
           breed={breed}
           doses={groupedDoses.get(breed) || []}
-          onIncrement={onIncrement}
-          onDecrement={onDecrement}
+          onEdit={onEdit}
           onDelete={onDelete}
         />
       ))}

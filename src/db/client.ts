@@ -43,7 +43,7 @@ async function loadDevModePlugin(): Promise<void> {
   } catch (err) {}
 }
 
-const DB_VERSION = "v5";
+const DB_VERSION = "v6";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let dbInstance: MyDatabase | null = null;
@@ -123,6 +123,22 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         semen_doses: {
           schema: semenDoseSchema,
+          migrationStrategies: {
+            1: (oldDoc: any) => {
+              const { animalName, ...rest } = oldDoc;
+              return {
+                ...rest,
+                animal_name: animalName || oldDoc.animal_name || "",
+                animal_image: oldDoc.animal_image || "",
+                father_name: oldDoc.father_name || "",
+                maternal_grandfather_name:
+                  oldDoc.maternal_grandfather_name || "",
+                iabcz: oldDoc.iabcz || "",
+                registration: oldDoc.registration || "",
+                center_name: oldDoc.center_name || "",
+              };
+            },
+          },
         },
       });
     } catch (err: any) {

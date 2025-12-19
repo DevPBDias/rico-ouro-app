@@ -5,42 +5,52 @@ import { SemenDose } from "@/types/semen_dose.type";
 import { v4 as uuidv4 } from "uuid";
 
 interface DoseLocalState {
-  editedQuantities: Map<string, number>;
+  editedDoses: Map<string, Partial<SemenDose>>;
   pendingDeletions: Set<string>;
   newDoses: SemenDose[];
 }
 
 interface DoseChanges {
-  updates: { id: string; quantity: number }[];
+  updates: (Partial<SemenDose> & { id: string })[];
   deletions: string[];
   creations: SemenDose[];
 }
 
 export function useDoseLocalState(persistedDoses: SemenDose[]) {
   const [state, setState] = useState<DoseLocalState>({
-    editedQuantities: new Map(),
+    editedDoses: new Map(),
     pendingDeletions: new Set(),
     newDoses: [],
   });
 
   const displayDoses = useMemo(() => {
+    // 1. Filter out deleted doses
     const filtered = persistedDoses.filter(
       (dose) => !state.pendingDeletions.has(dose.id)
     );
 
-    const merged = filtered.map((dose) => ({
-      ...dose,
-      quantity: state.editedQuantities.has(dose.id)
-        ? state.editedQuantities.get(dose.id)!
-        : dose.quantity,
-    }));
+    // 2. Apply local edits to persisted doses
+    const merged = filtered.map((dose) => {
+      if (state.editedDoses.has(dose.id)) {
+        return {
+          ...dose,
+          ...state.editedDoses.get(dose.id)!,
+        };
+      }
+      return dose;
+    });
 
-    return [...merged, ...state.newDoses];
+    // 3. Add brand new doses (and filter out if they were deleted/removed)
+    const newDosesFiltered = state.newDoses.filter(
+      (dose) => !state.pendingDeletions.has(dose.id)
+    );
+
+    return [...merged, ...newDosesFiltered];
   }, [persistedDoses, state]);
 
   const hasChanges = useMemo(() => {
     return (
-      state.editedQuantities.size > 0 ||
+      state.editedDoses.size > 0 ||
       state.pendingDeletions.size > 0 ||
       state.newDoses.length > 0
     );
@@ -48,7 +58,7 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
   const changeCount = useMemo(() => {
     return (
-      state.editedQuantities.size +
+      state.editedDoses.size +
       state.pendingDeletions.size +
       state.newDoses.length
     );
@@ -56,47 +66,78 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
   const updateQuantity = useCallback((id: string, newQuantity: number) => {
     setState((prev) => {
-      const updated = new Map(prev.editedQuantities);
-      updated.set(id, Math.max(0, newQuantity));
-      return { ...prev, editedQuantities: updated };
+      // Check if it's a new dose
+      const newDoseIdx = prev.newDoses.findIndex((d) => d.id === id);
+      if (newDoseIdx !== -1) {
+        const updatedNewDoses = [...prev.newDoses];
+        updatedNewDoses[newDoseIdx] = {
+          ...updatedNewDoses[newDoseIdx],
+          quantity: Math.max(0, newQuantity),
+          updated_at: new Date().toISOString(),
+        };
+        return { ...prev, newDoses: updatedNewDoses };
+      }
+
+      // It's a persisted dose
+      const updated = new Map(prev.editedDoses);
+      const existingEdit = updated.get(id) || {};
+      updated.set(id, { ...existingEdit, quantity: Math.max(0, newQuantity) });
+      return { ...prev, editedDoses: updated };
     });
   }, []);
 
-  const incrementQuantity = useCallback((id: string, currentQty: number) => {
-    setState((prev) => {
-      const updated = new Map(prev.editedQuantities);
-      const currentValue = updated.get(id) ?? currentQty;
-      updated.set(id, currentValue + 1);
-      return { ...prev, editedQuantities: updated };
-    });
-  }, []);
+  const updateLocalDose = useCallback(
+    (id: string, data: Partial<SemenDose>) => {
+      setState((prev) => {
+        // Check if it's a new dose
+        const newDoseIdx = prev.newDoses.findIndex((d) => d.id === id);
+        if (newDoseIdx !== -1) {
+          const updatedNewDoses = [...prev.newDoses];
+          updatedNewDoses[newDoseIdx] = {
+            ...updatedNewDoses[newDoseIdx],
+            ...data,
+            updated_at: new Date().toISOString(),
+          };
+          return { ...prev, newDoses: updatedNewDoses };
+        }
 
-  const decrementQuantity = useCallback((id: string, currentQty: number) => {
-    setState((prev) => {
-      const updated = new Map(prev.editedQuantities);
-      const currentValue = updated.get(id) ?? currentQty;
-      updated.set(id, Math.max(0, currentValue - 1));
-      return { ...prev, editedQuantities: updated };
-    });
-  }, []);
+        // It's a persisted dose
+        const updated = new Map(prev.editedDoses);
+        const existingEdit = updated.get(id) || {};
+        updated.set(id, { ...existingEdit, ...data });
+        return { ...prev, editedDoses: updated };
+      });
+    },
+    []
+  );
 
-  const incrementBy5 = useCallback((id: string, currentQty: number) => {
-    setState((prev) => {
-      const updated = new Map(prev.editedQuantities);
-      const currentValue = updated.get(id) ?? currentQty;
-      updated.set(id, currentValue + 5);
-      return { ...prev, editedQuantities: updated };
-    });
-  }, []);
+  const incrementQuantity = useCallback(
+    (id: string, currentQty: number) => {
+      updateQuantity(id, currentQty + 1);
+    },
+    [updateQuantity]
+  );
 
-  const decrementBy5 = useCallback((id: string, currentQty: number) => {
-    setState((prev) => {
-      const updated = new Map(prev.editedQuantities);
-      const currentValue = updated.get(id) ?? currentQty;
-      updated.set(id, Math.max(0, currentValue - 5));
-      return { ...prev, editedQuantities: updated };
-    });
-  }, []);
+  const decrementQuantity = useCallback(
+    (id: string, currentQty: number) => {
+      updateQuantity(id, Math.max(0, currentQty - 1));
+    },
+    [updateQuantity]
+  );
+
+  const incrementBy5 = useCallback(
+    (id: string, currentQty: number) => {
+      updateQuantity(id, currentQty + 5);
+    },
+    [updateQuantity]
+  );
+
+  const decrementBy5 = useCallback(
+    (id: string, currentQty: number) => {
+      updateQuantity(id, Math.max(0, currentQty - 5));
+    },
+    [updateQuantity]
+  );
 
   const markForDeletion = useCallback((id: string) => {
     setState((prev) => {
@@ -112,13 +153,13 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
       const newDeletions = new Set(prev.pendingDeletions);
       newDeletions.add(id);
 
-      const newEdits = new Map(prev.editedQuantities);
+      const newEdits = new Map(prev.editedDoses);
       newEdits.delete(id);
 
       return {
         ...prev,
         pendingDeletions: newDeletions,
-        editedQuantities: newEdits,
+        editedDoses: newEdits,
       };
     });
   }, []);
@@ -152,7 +193,7 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
   const revert = useCallback(() => {
     setState({
-      editedQuantities: new Map(),
+      editedDoses: new Map(),
       pendingDeletions: new Set(),
       newDoses: [],
     });
@@ -160,12 +201,10 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
   const getChanges = useCallback((): DoseChanges => {
     return {
-      updates: Array.from(state.editedQuantities.entries()).map(
-        ([id, qty]) => ({
-          id,
-          quantity: qty,
-        })
-      ),
+      updates: Array.from(state.editedDoses.entries()).map(([id, data]) => ({
+        ...data,
+        id,
+      })),
       deletions: Array.from(state.pendingDeletions),
       creations: state.newDoses,
     };
@@ -173,7 +212,7 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
   const clearAfterSave = useCallback(() => {
     setState({
-      editedQuantities: new Map(),
+      editedDoses: new Map(),
       pendingDeletions: new Set(),
       newDoses: [],
     });
@@ -184,6 +223,7 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
     hasChanges,
     changeCount,
     updateQuantity,
+    updateLocalDose,
     incrementQuantity,
     decrementQuantity,
     incrementBy5,

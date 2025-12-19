@@ -11,7 +11,7 @@ export async function replicateSemenDoses(
   supabaseKey: string
 ) {
   const collection = db.semen_doses;
-  const replicationIdentifier = "semen-doses-replication";
+  const replicationIdentifier = "semen-doses-replication-v3";
 
   const replication = replicateRxCollection({
     collection,
@@ -69,11 +69,17 @@ export async function replicateSemenDoses(
           const doc = row.newDocumentState as any;
           return {
             id: doc.id,
-            animalName: doc.animalName ?? null,
-            breed: doc.breed ?? null,
-            quantity: doc.quantity ?? 0,
+            animal_name: doc.animal_name,
+            animal_image: doc.animal_image,
+            father_name: doc.father_name,
+            maternal_grandfather_name: doc.maternal_grandfather_name,
+            iabcz: doc.iabcz,
+            registration: doc.registration,
+            center_name: doc.center_name,
+            breed: doc.breed,
+            quantity: doc.quantity,
             updated_at: doc.updated_at,
-            _deleted: doc._deleted ?? false,
+            _deleted: doc._deleted,
           };
         });
 
