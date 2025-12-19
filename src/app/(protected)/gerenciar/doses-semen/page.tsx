@@ -168,8 +168,6 @@ export default function DosesSemenPage() {
         isLoading={isLoading}
         onIncrement={localState.incrementQuantity}
         onDecrement={localState.decrementQuantity}
-        onIncrementBy5={localState.incrementBy5}
-        onDecrementBy5={localState.decrementBy5}
         onDelete={(id) => setDeleteConfirmId(id)}
         selectedBreed={selectedBreed}
       />

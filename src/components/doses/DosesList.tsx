@@ -12,8 +12,6 @@ interface DosesListProps {
   isLoading: boolean;
   onIncrement: (id: string, currentQty: number) => void;
   onDecrement: (id: string, currentQty: number) => void;
-  onIncrementBy5: (id: string, currentQty: number) => void;
-  onDecrementBy5: (id: string, currentQty: number) => void;
   onDelete: (id: string) => void;
   selectedBreed: string | null;
 }
@@ -23,16 +21,12 @@ function BreedGroup({
   doses,
   onIncrement,
   onDecrement,
-  onIncrementBy5,
-  onDecrementBy5,
   onDelete,
 }: {
   breed: string;
   doses: SemenDose[];
   onIncrement: (id: string, currentQty: number) => void;
   onDecrement: (id: string, currentQty: number) => void;
-  onIncrementBy5: (id: string, currentQty: number) => void;
-  onDecrementBy5: (id: string, currentQty: number) => void;
   onDelete: (id: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -74,8 +68,6 @@ function BreedGroup({
               dose={dose}
               onIncrement={() => onIncrement(dose.id, dose.quantity)}
               onDecrement={() => onDecrement(dose.id, dose.quantity)}
-              onIncrementBy5={() => onIncrementBy5(dose.id, dose.quantity)}
-              onDecrementBy5={() => onDecrementBy5(dose.id, dose.quantity)}
               onDelete={() => onDelete(dose.id)}
             />
           ))}
@@ -105,8 +97,6 @@ export function DosesList({
   isLoading,
   onIncrement,
   onDecrement,
-  onIncrementBy5,
-  onDecrementBy5,
   onDelete,
   selectedBreed,
 }: DosesListProps) {
@@ -134,8 +124,6 @@ export function DosesList({
           doses={groupedDoses.get(breed) || []}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
-          onIncrementBy5={onIncrementBy5}
-          onDecrementBy5={onDecrementBy5}
           onDelete={onDelete}
         />
       ))}

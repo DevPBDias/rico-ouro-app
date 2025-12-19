@@ -8,8 +8,6 @@ interface DoseCardProps {
   dose: SemenDose;
   onIncrement: () => void;
   onDecrement: () => void;
-  onIncrementBy5: () => void;
-  onDecrementBy5: () => void;
   onDelete: () => void;
 }
 
@@ -17,8 +15,6 @@ export function DoseCard({
   dose,
   onIncrement,
   onDecrement,
-  onIncrementBy5,
-  onDecrementBy5,
   onDelete,
 }: DoseCardProps) {
   const isLowStock = dose.quantity > 0 && dose.quantity <= 3;
@@ -34,7 +30,7 @@ export function DoseCard({
         ${!isZero && !isLowStock ? "bg-white border-gray-100" : ""}
       `}
     >
-      <span className="font-bold text-primary text-xs truncate max-w-[100px]">
+      <span className="font-bold text-primary text-xs truncate max-w-[120px]">
         {dose.animalName}
       </span>
 
@@ -44,26 +40,16 @@ export function DoseCard({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7 rounded-md hover:bg-white bg-muted text-xs font-bold"
-            onClick={onDecrementBy5}
-            disabled={dose.quantity < 5}
-          >
-            -5
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-md hover:bg-white bg-muted"
+            className="h-8 w-8 rounded-md hover:bg-white bg-muted"
             onClick={onDecrement}
             disabled={dose.quantity <= 0}
           >
-            <Minus className="h-3 w-3" />
+            <Minus className="h-4 w-4" />
           </Button>
 
           <span
             className={`
-              w-8 h-8 flex items-center justify-center font-bold tabular-nums
+              w-10 h-8 flex items-center justify-center font-bold tabular-nums
               ${isZero ? "text-red-500" : "text-primary"}
             `}
           >
@@ -74,19 +60,10 @@ export function DoseCard({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7 rounded-md hover:bg-white bg-muted"
+            className="h-8 w-8 rounded-md hover:bg-white bg-muted"
             onClick={onIncrement}
           >
-            <Plus className="h-3 w-3" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 rounded-md hover:bg-white bg-muted text-xs font-bold"
-            onClick={onIncrementBy5}
-          >
-            +5
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
 
@@ -103,3 +80,4 @@ export function DoseCard({
     </div>
   );
 }
+

@@ -152,7 +152,17 @@ export function AddDoseModal({
             <label className="text-xs font-bold uppercase text-muted-foreground">
               Quantidade Inicial
             </label>
-            <div className="flex items-center justify-center gap-4 bg-muted p-3 rounded-lg">
+            <div className="flex items-center justify-center gap-2 bg-muted p-3 rounded-lg">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 text-xs font-bold"
+                onClick={() => setQuantity(Math.max(0, quantity - 5))}
+                disabled={quantity < 5}
+              >
+                -5
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -162,7 +172,7 @@ export function AddDoseModal({
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="text-2xl font-bold text-primary w-16 text-center tabular-nums">
+              <span className="text-2xl font-bold text-primary w-14 text-center tabular-nums">
                 {quantity}
               </span>
               <Button
@@ -172,6 +182,15 @@ export function AddDoseModal({
                 onClick={() => setQuantity(quantity + 1)}
               >
                 <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 text-xs font-bold"
+                onClick={() => setQuantity(quantity + 5)}
+              >
+                +5
               </Button>
             </div>
           </div>

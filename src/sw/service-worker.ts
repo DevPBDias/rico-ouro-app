@@ -6,7 +6,7 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v23"; // Updated App Shell and removed dynamic routes
+const SCHEMA_VERSION = "v24"; // Added doses-semen route
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
 
@@ -45,6 +45,7 @@ const APP_SHELL_ASSETS = [
   "/gerenciar/classe",
   "/gerenciar/sociedade",
   "/gerenciar/status",
+  "/gerenciar/doses-semen",
 
   // Geral / Relatórios
   "/geral",
@@ -102,7 +103,7 @@ async function cacheUrls(urls: string[]): Promise<void> {
 // INSTALAÇÃO - Pré-cache do App Shell
 // ============================================================================
 self.addEventListener("install", (event: ExtendableEvent) => {
-  console.log("Service Worker: Installing v23 (App Shell)...");
+  console.log("Service Worker: Installing v24 (App Shell)...");
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
