@@ -34,22 +34,22 @@ function BreedGroup({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-colors gap-2 min-w-0"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-primary" />
+            <ChevronDown className="h-4 w-4 text-primary flex-shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-primary" />
+            <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
           )}
-          <span className="font-bold text-primary uppercase text-sm">
+          <span className="font-bold text-primary uppercase text-sm truncate">
             {breed}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
             ({doses.length} {doses.length === 1 ? "animal" : "animais"})
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-muted-foreground">Total:</span>
           <span className="font-bold text-primary tabular-nums">
             {totalQuantity}

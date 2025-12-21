@@ -4,7 +4,6 @@ export interface SelectedReportFields {
   serie_rgd: boolean;
   sex: boolean;
   born_date: boolean;
-  born_color: boolean;
   iabcgz: boolean;
   deca: boolean;
   p: boolean;
@@ -21,4 +20,8 @@ export interface SelectedReportFields {
   status: boolean;
   farm_name: boolean;
   daily_gain: boolean;
+  classification: boolean;
+  type: boolean;
+  genotyping: boolean;
+  condition: boolean;
 }

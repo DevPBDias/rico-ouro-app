@@ -141,7 +141,7 @@ export async function replicateAnimals(
     },
     live: true,
     retryTime: 5000,
-    autoStart: true,
+    autoStart: false, // Não inicia automaticamente - será iniciado manualmente após verificar dados locais
   });
 
   return replication;

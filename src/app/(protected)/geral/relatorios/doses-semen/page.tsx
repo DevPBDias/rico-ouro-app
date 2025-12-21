@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { generateAnimalReportPDF } from "@/utils/exportToPdf";
+import { generateDoseReportPDF } from "@/utils/exportDoseToPdf";
 import {
   Dialog,
   DialogContent,
@@ -23,70 +23,39 @@ import {
   CheckSquare,
   Square,
 } from "lucide-react";
-import { SelectedReportFields } from "@/types/report_field.type";
-import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { SelectedDoseReportFields } from "@/types/dose_report_field.type";
+import { useSemenDoses } from "@/hooks/db/doses";
 
-const REPORT_OPTIONS_GROUPED: { category: string; options: ReportOption[] }[] =
-  [
-    {
-      category: "Identificação",
-      options: [
-        { key: "name", label: "Nome Animal" },
-        { key: "rgn", label: "RGN" },
-        { key: "serie_rgd", label: "Série RGD" },
-        { key: "sex", label: "Sexo" },
-        { key: "born_date", label: "Data" },
-      ],
-    },
-    {
-      category: "Genética",
-      options: [
-        { key: "iabcgz", label: "iABCGz" },
-        { key: "deca", label: "DECA" },
-        { key: "p", label: "P%" },
-        { key: "f", label: "F%" },
-        { key: "genotyping", label: "Genotipagem" },
-      ],
-    },
-    {
-      category: "Classificação",
-      options: [
-        { key: "classification", label: "Classificação" },
-        { key: "type", label: "Tipo" },
-        { key: "condition", label: "Condição" },
-        { key: "status", label: "Status" },
-        { key: "farm_name", label: "Fazenda" },
-        { key: "partnership", label: "Sociedade" },
-      ],
-    },
-    {
-      category: "Parentesco",
-      options: [
-        { key: "father_name", label: "Nome Pai" },
-        { key: "mother_serie_rgd", label: "Mãe - RGD" },
-        { key: "mother_rgn", label: "Mãe - RGN" },
-        { key: "maternal_grandfather_name", label: "Avô Materno" },
-        { key: "paternal_grandfather_name", label: "Avô Paterno" },
-      ],
-    },
-    {
-      category: "Métricas",
-      options: [
-        { key: "animal_metrics_weight", label: "Pesos" },
-        { key: "animal_metrics_ce", label: "Circunferência" },
-        { key: "daily_gain", label: "GMD" },
-        { key: "vaccines", label: "Vacinas" },
-      ],
-    },
-  ];
+const DOSE_REPORT_OPTIONS_GROUPED: {
+  category: string;
+  options: ReportOption[];
+}[] = [
+  {
+    category: "Animal",
+    options: [
+      { key: "animal_name", label: "Nome" },
+      { key: "breed", label: "Raça" },
+      { key: "father_name", label: "Nome Pai" },
+      { key: "maternal_grandfather_name", label: "Avô Materno" },
+    ],
+  },
+  {
+    category: "Dados",
+    options: [
+      { key: "quantity", label: "Quantidade" },
+      { key: "iabcz", label: "iABCZ" },
+      { key: "registration", label: "Registro" },
+      { key: "center_name", label: "Central" },
+    ],
+  },
+];
 
-const ALL_REPORT_OPTIONS: ReportOption[] = REPORT_OPTIONS_GROUPED.flatMap(
-  (group) => group.options
-);
+const ALL_DOSE_REPORT_OPTIONS: ReportOption[] =
+  DOSE_REPORT_OPTIONS_GROUPED.flatMap((group) => group.options);
 
-export default function RelatoriosPage() {
+export default function DosesSemenReportPage() {
   const router = useRouter();
-  const { animals: dados } = useAnimals();
+  const { doses: dados } = useSemenDoses();
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     title: string;
@@ -98,38 +67,21 @@ export default function RelatoriosPage() {
     message: "",
     type: "error",
   });
-  const [selectedItems, setSelectedItems] = useState<SelectedReportFields>({
-    name: false,
-    rgn: false,
-    serie_rgd: false,
-    sex: false,
-    born_date: false,
-    iabcgz: false,
-    deca: false,
-    p: false,
-    f: false,
-    animal_metrics_weight: false,
-    animal_metrics_ce: false,
-    vaccines: false,
+  const [selectedItems, setSelectedItems] = useState<SelectedDoseReportFields>({
+    animal_name: false,
+    breed: false,
+    quantity: false,
     father_name: false,
-    mother_serie_rgd: false,
-    mother_rgn: false,
     maternal_grandfather_name: false,
-    paternal_grandfather_name: false,
-    partnership: false,
-    status: false,
-    farm_name: false,
-    daily_gain: false,
-    classification: false,
-    type: false,
-    genotyping: false,
-    condition: false,
+    iabcz: false,
+    registration: false,
+    center_name: false,
   });
 
   const handleCheckboxChange = (key: string) => {
     setSelectedItems((prev) => ({
       ...prev,
-      [key]: !prev[key as keyof SelectedReportFields],
+      [key]: !prev[key as keyof SelectedDoseReportFields],
     }));
   };
 
@@ -137,20 +89,22 @@ export default function RelatoriosPage() {
     return Object.values(selectedItems).filter(Boolean).length;
   }, [selectedItems]);
 
-  const totalFields = ALL_REPORT_OPTIONS.length;
+  const totalFields = ALL_DOSE_REPORT_OPTIONS.length;
 
   const handleSelectAll = () => {
-    const allSelected: SelectedReportFields = {} as SelectedReportFields;
-    ALL_REPORT_OPTIONS.forEach((option) => {
-      (allSelected as unknown as Record<string, boolean>)[option.key] = true;
+    const allSelected: SelectedDoseReportFields =
+      {} as SelectedDoseReportFields;
+    ALL_DOSE_REPORT_OPTIONS.forEach((option) => {
+      allSelected[option.key as keyof SelectedDoseReportFields] = true;
     });
     setSelectedItems(allSelected);
   };
 
   const handleDeselectAll = () => {
-    const allDeselected: SelectedReportFields = {} as SelectedReportFields;
-    ALL_REPORT_OPTIONS.forEach((option) => {
-      (allDeselected as unknown as Record<string, boolean>)[option.key] = false;
+    const allDeselected: SelectedDoseReportFields =
+      {} as SelectedDoseReportFields;
+    ALL_DOSE_REPORT_OPTIONS.forEach((option) => {
+      allDeselected[option.key as keyof SelectedDoseReportFields] = false;
     });
     setSelectedItems(allDeselected);
   };
@@ -180,7 +134,7 @@ export default function RelatoriosPage() {
         return;
       }
 
-      const result = await generateAnimalReportPDF(dados, selectedItems);
+      const result = await generateDoseReportPDF(dados, selectedItems);
 
       if (!result) {
         setModalState({
@@ -228,7 +182,7 @@ export default function RelatoriosPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <Header title="Relatórios PDF" />
+      <Header title="Relatório de Doses" />
 
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
         {/* Card de informações */}
@@ -279,7 +233,7 @@ export default function RelatoriosPage() {
 
         {/* Formulário agrupado */}
         <div className="grid grid-cols-2 gap-2">
-          {REPORT_OPTIONS_GROUPED.map((group) => (
+          {DOSE_REPORT_OPTIONS_GROUPED.map((group) => (
             <div
               key={group.category}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-2"

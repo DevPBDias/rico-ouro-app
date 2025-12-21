@@ -16,7 +16,7 @@ export const fieldMap: Record<
   p: ["P%", "p"],
   f: ["F%", "f"],
   animal_metrics_weight: ["Pesos", "animal_metrics_weight"],
-  animal_metrics_ce: ["CE", "animal_metrics_ce"],
+  animal_metrics_ce: ["Circunferência", "animal_metrics_ce"],
   vaccines: ["Vacinas", "vaccines"],
   father_name: ["Pai", "father_name"],
   mother_serie_rgd: ["Mãe Série/RGD", "mother_serie_rgd"],
@@ -27,4 +27,8 @@ export const fieldMap: Record<
   status: ["Status", "status"],
   farm_name: ["Fazenda", "farm_id"],
   daily_gain: ["GMD", "daily_gain"],
+  classification: ["Classificação", "classification"],
+  type: ["Tipo", "type"],
+  genotyping: ["Genotipagem", "genotyping"],
+  condition: ["Condição", "condition"],
 };

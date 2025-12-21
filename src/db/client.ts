@@ -120,6 +120,7 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         animal_statuses: {
           schema: animalStatusSchema,
+          // Versão 0 não precisa de migration strategies
         },
         semen_doses: {
           schema: semenDoseSchema,

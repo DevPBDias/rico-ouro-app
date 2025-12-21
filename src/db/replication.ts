@@ -73,6 +73,9 @@ export async function setupReplication(db: MyDatabase) {
 
   const { url: SUPABASE_URL, key: SUPABASE_KEY } = config;
 
+  // Aguarda um pouco para garantir que o banco local esteja totalmente inicializado
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY).then((isHealthy) => {
     if (!isHealthy) {
       console.warn(
@@ -82,8 +85,21 @@ export async function setupReplication(db: MyDatabase) {
   });
 
   try {
+    // Verifica quantos dados locais existem antes de iniciar a replicação
     const animalsCount = await db.animals.count().exec();
-    console.log(`📊 [Animals] Local count before sync: ${animalsCount}`);
+    const vaccinesCount = await db.vaccines.count().exec();
+    const farmsCount = await db.farms.count().exec();
+    
+    console.log(`📊 [Local DB] Data counts before sync:`, {
+      animals: animalsCount,
+      vaccines: vaccinesCount,
+      farms: farmsCount,
+    });
+    
+    // Se há dados locais, prioriza o uso do banco local
+    if (animalsCount > 0 || vaccinesCount > 0 || farmsCount > 0) {
+      console.log("✅ [Local DB] Local data detected. Replication will merge with local data.");
+    }
 
     const animalsReplication = await replicateAnimals(
       db,
@@ -152,6 +168,30 @@ export async function setupReplication(db: MyDatabase) {
     };
 
     console.log("✅ Replication setup complete");
+
+    // Inicia a replicação manualmente após um delay para garantir que o banco local esteja pronto
+    // Se houver dados locais, a replicação fará merge, não sobrescreverá
+    setTimeout(() => {
+      console.log("🔄 Starting replication after delay to ensure local DB is ready...");
+      
+      // Verifica novamente os dados locais antes de iniciar
+      db.animals.count().exec().then((count) => {
+        console.log(`📊 [Animals] Local count before starting replication: ${count}`);
+      });
+      
+      // Inicia todas as replicações
+      animalsReplication.start();
+      vaccinesReplication.start();
+      farmsReplication.start();
+      animalMetricsWeightReplication.start();
+      animalMetricsCEReplication.start();
+      animalVaccinesReplication.start();
+      reproductionEventsReplication.start();
+      animalStatusesReplication.start();
+      semenDosesReplication.start();
+      
+      console.log("✅ All replications started");
+    }, 2000); // Aguarda 2 segundos antes de iniciar
 
     if (typeof window !== "undefined") {
       window.addEventListener("online", () => {

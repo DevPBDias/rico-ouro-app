@@ -1,15 +1,14 @@
-import { SelectedReportFields } from "@/types/report_field.type";
 import { ReportCheckboxItem } from "./ReportCheckboxItem";
 
 export interface ReportOption {
-  key: keyof SelectedReportFields;
+  key: string;
   label: string;
 }
 
 interface ReportOptionsFormProps {
   options: ReportOption[];
-  selectedItems: SelectedReportFields;
-  onCheckboxChange: (key: keyof SelectedReportFields) => void;
+  selectedItems: Record<string, boolean>;
+  onCheckboxChange: (key: string) => void;
 }
 
 export function ReportOptionsForm({
@@ -18,7 +17,7 @@ export function ReportOptionsForm({
   onCheckboxChange,
 }: ReportOptionsFormProps) {
   return (
-    <div className="space-y-3 grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 gap-2">
       {options.map((option) => (
         <ReportCheckboxItem
           key={option.key}

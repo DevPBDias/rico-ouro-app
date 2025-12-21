@@ -15,13 +15,13 @@ export function DoseCard({ dose, onEdit, onDelete }: DoseCardProps) {
   const isBullNelore = dose.breed === "NELORE" || dose.breed === "Nelore";
 
   return (
-    <div className="flex items-stretch gap-3 py-2 px-3 rounded-xl border shadow-sm w-full uppercase">
-      <div className="flex flex-col justify-start items-start w-full gap-2.5">
-        <div className="flex flex-row justify-between items-end w-full">
-          <h3 className="font-bold text-primary text-sm truncate">
+    <div className="flex items-stretch gap-3 py-2 px-3 rounded-xl border shadow-sm w-full uppercase overflow-hidden">
+      <div className="flex flex-col justify-start items-start w-full gap-2.5 min-w-0">
+        <div className="flex flex-row justify-between items-center w-full gap-2">
+          <h3 className="font-bold text-primary text-base truncate flex-1 min-w-0">
             {dose.animal_name}
           </h3>
-          <p className="text-lg px-2 py-0.5 border border-primary font-bold text-primary rounded-md">
+          <p className="text-base px-2 py-0.5 border border-primary font-bold text-primary rounded-md whitespace-nowrap flex-shrink-0">
             {dose.quantity}{" "}
             <span className="text-xs lowercase font-medium text-muted-foreground">
               doses
@@ -36,54 +36,64 @@ export function DoseCard({ dose, onEdit, onDelete }: DoseCardProps) {
               alt={dose.animal_name || "Animal"}
               width={160}
               height={112}
-              className="object-cover w-40 h-28 rounded-lg"
+              className="object-cover w-40 h-27 rounded-lg flex-shrink-0"
               unoptimized
               crossOrigin="anonymous"
             />
           ) : (
-            <div className="w-40 h-28 flex items-center justify-center bg-muted rounded-lg">
-              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+            <div className="w-40 h-28 flex items-center justify-center bg-muted rounded-lg flex-shrink-0">
+              <ImageIcon className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
             </div>
           )}
 
           <div className="flex flex-col justify-start items-start gap-1">
-            <p className="flex flex-col justify-start items-start gap-0.5 text-xs text-primary truncate font-bold">
+            <p className="flex flex-col justify-start items-start gap-0.5 text-xs text-primary font-bold w-full min-w-0">
               <span className="font-bold text-[10px] text-muted-foreground">
                 Pai:
-              </span>{" "}
-              {dose.father_name || "Sem pai"}
+              </span>
+              <span className="truncate w-full">
+                {dose.father_name || "Sem pai"}
+              </span>
             </p>
-            <p className="flex flex-col justify-start text-xs items-start gap-0.5 text-primary truncate font-bold">
+            <p className="flex flex-col justify-start text-xs items-start gap-0.5 text-primary font-bold w-full min-w-0">
               <span className="font-bold text-[10px] text-muted-foreground">
                 Avô materno:
-              </span>{" "}
-              {dose.maternal_grandfather_name || "Sem avô"}
+              </span>
+              <span className="truncate w-full">
+                {dose.maternal_grandfather_name || "Sem avô"}
+              </span>
             </p>
-            <p className="text-xs text-primary truncate font-bold">
+            <p className="flex flex-row items-end gap-1 justify-start text-xs text-primary font-bold w-full min-w-0">
               <span className="font-bold text-[10px] text-muted-foreground">
                 Registro:
               </span>{" "}
-              {dose.registration || "Sem registro"}
+              <span className="truncate inline-block w-full">
+                {dose.registration || "Sem registro"}
+              </span>
             </p>
-            <p className="text-xs text-primary truncate font-bold">
+            <p className="flex flex-row items-end gap-1 justify-start text-xs text-primary font-bold w-full min-w-0">
               <span className="font-bold text-[10px] text-muted-foreground">
                 Central:
               </span>{" "}
-              {dose.center_name || "Sem centro"}
+              <span className="truncate inline-block w-full">
+                {dose.center_name || "Sem centro"}
+              </span>
             </p>
           </div>
         </div>
 
         <div className="flex flex-row items-center justify-between gap-1 w-full">
           {isBullNelore && (
-            <p className="text-xs text-primary truncate font-bold">
+            <p className="flex flex-row items-end gap-1 justify-start w-full min-w-0 text-xs text-primary font-bold">
               <span className="font-bold text-[10px] text-muted-foreground">
                 iABCZ:
               </span>{" "}
-              {dose.iabcz || "Sem indice"}
+              <span className="truncate inline-block">
+                {dose.iabcz || "Sem indice"}
+              </span>
             </p>
           )}
-          <div className="flex items-center justify-start gap-2 ml-auto">
+          <div className="flex items-center justify-start gap-2 ml-auto flex-shrink-0">
             <Button
               type="button"
               variant="ghost"
@@ -105,8 +115,6 @@ export function DoseCard({ dose, onEdit, onDelete }: DoseCardProps) {
           </div>
         </div>
       </div>
-
-      {/* Info */}
     </div>
   );
 }

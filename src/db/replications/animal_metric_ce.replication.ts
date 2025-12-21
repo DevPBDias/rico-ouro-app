@@ -79,7 +79,7 @@ export async function replicateAnimalMetricCE(
     },
     live: true,
     retryTime: 5000,
-    autoStart: true,
+    autoStart: false, // Será iniciado manualmente após verificar dados locais
   });
 
   return replication;

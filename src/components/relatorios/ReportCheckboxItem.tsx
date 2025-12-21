@@ -14,19 +14,28 @@ export function ReportCheckboxItem({
   onCheckedChange,
 }: ReportCheckboxItemProps) {
   return (
-    <div className="flex items-center justify-between gap-2 bg-[#F5F5F5] rounded-xs px-2 py-1">
-      <label
-        htmlFor={id}
-        className="text-xs uppercase font-medium text-gray-900 cursor-pointer flex-1"
-      >
-        {label}
-      </label>
+    <div
+      className={`flex flex-row items-start justify-start gap-3 p-2 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+        checked
+          ? "bg-primary/5 border-primary shadow-sm"
+          : "bg-gray-50 border-gray-200 hover:border-primary/30"
+      }`}
+      onClick={onCheckedChange}
+    >
       <Checkbox
         id={id}
         checked={checked}
         onCheckedChange={onCheckedChange}
-        className="h-5 w-5 rounded border-2 border-gray-300 data-[state=checked]:bg-[#1976D2] data-[state=checked]:border-[#1976D2]"
+        className="h-5 w-5 rounded border-2 border-gray-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary flex-shrink-0"
       />
+      <label
+        htmlFor={id}
+        className={`text-sm font-medium cursor-pointer flex-1 ${
+          checked ? "text-primary" : "text-gray-700"
+        }`}
+      >
+        {label}
+      </label>
     </div>
   );
 }
