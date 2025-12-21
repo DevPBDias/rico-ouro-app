@@ -11,7 +11,7 @@ export async function replicateAnimalStatuses(
   supabaseKey: string
 ) {
   const collection = db.animal_statuses;
-  const replicationIdentifier = "animal-statuses-replication";
+  const replicationIdentifier = "animal-statuses-replication-v1";
 
   const replication = replicateRxCollection({
     collection,

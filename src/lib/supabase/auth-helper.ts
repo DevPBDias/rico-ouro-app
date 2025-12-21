@@ -18,14 +18,22 @@ export async function getAuthToken(): Promise<string> {
 }
 
 export async function getAuthHeaders(): Promise<Record<string, string>> {
-  const token = await getAuthToken();
+  const supabase = getSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-  return {
+  const headers: Record<string, string> = {
     apikey: anonKey,
-    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
+
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
+
+  return headers;
 }
 
 export function cleanSupabaseDocument<T extends Record<string, any>>(

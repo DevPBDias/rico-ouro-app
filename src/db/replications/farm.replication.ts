@@ -11,7 +11,7 @@ export async function replicateFarms(
   supabaseKey: string
 ) {
   const collection = db.farms;
-  const replicationIdentifier = "farms-replication";
+  const replicationIdentifier = "farms-replication-v1";
 
   const replication = replicateRxCollection({
     collection,
@@ -34,12 +34,13 @@ export async function replicateFarms(
         }
 
         const data = await response.json();
-        const documents = Array.isArray(data) ? data : [];
+        const rawDocuments = Array.isArray(data) ? data : [];
+        const documents = cleanSupabaseDocuments(rawDocuments);
 
         const newCheckpoint = {
           updated_at:
-            documents.length > 0
-              ? documents[documents.length - 1].updated_at
+            rawDocuments.length > 0
+              ? rawDocuments[rawDocuments.length - 1].updated_at
               : lastModified,
         };
 

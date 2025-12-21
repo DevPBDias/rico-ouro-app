@@ -11,7 +11,7 @@ export async function replicateAnimals(
   supabaseKey: string
 ) {
   const collection = db.animals;
-  const replicationIdentifier = "animals-replication";
+  const replicationIdentifier = "animals-replication-v1";
 
   const replication = replicateRxCollection({
     collection,
@@ -28,6 +28,13 @@ export async function replicateAnimals(
         });
 
         const headers = await getAuthHeaders();
+
+        if (!headers.Authorization) {
+          console.warn(
+            "⚠️ [Animals] No auth token available. Skipping pull to prevent checkpoint contamination."
+          );
+          throw new Error("Authentication required for sync");
+        }
 
         const encodedDate = encodeURIComponent(lastModified);
         const response = await fetch(

@@ -11,7 +11,7 @@ export async function replicateSemenDoses(
   supabaseKey: string
 ) {
   const collection = db.semen_doses;
-  const replicationIdentifier = "semen-doses-replication-v3";
+  const replicationIdentifier = "semen-doses-replication-v4";
 
   const replication = replicateRxCollection({
     collection,
@@ -28,6 +28,13 @@ export async function replicateSemenDoses(
         });
 
         const headers = await getAuthHeaders();
+
+        if (!headers.Authorization) {
+          console.warn(
+            "⚠️ [SemenDoses] No auth token available. Skipping pull to prevent checkpoint contamination."
+          );
+          throw new Error("Authentication required for sync");
+        }
 
         const encodedDate = encodeURIComponent(lastModified);
         const response = await fetch(
