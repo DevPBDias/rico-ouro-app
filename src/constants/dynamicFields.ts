@@ -10,7 +10,6 @@ export const fieldMap: Record<
   serie_rgd: ["Série/RGD", "serie_rgd"],
   sex: ["Sexo", "sex"],
   born_date: ["Nascimento", "born_date"],
-  born_color: ["Cor ao nascer", "born_color"],
   iabcgz: ["iABCz", "iabcgz"],
   deca: ["Deca", "deca"],
   p: ["P%", "p"],

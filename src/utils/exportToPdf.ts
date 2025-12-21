@@ -82,6 +82,7 @@ export async function generateAnimalReportPDF(
   let weightsMap: Map<string, AnimalMetric[]> = new Map();
   let ceMap: Map<string, AnimalMetric[]> = new Map();
   let vaccinesMap: Map<string, AnimalVaccine[]> = new Map();
+  let vaccineNamesMap: Map<string, string> = new Map();
 
   try {
     const db = await getDatabase();
@@ -110,12 +111,21 @@ export async function generateAnimalReportPDF(
         });
       }
 
-      // Buscar vacinas
+      // Buscar vacinas e criar mapa de nomes
       if (selectedFields.vaccines) {
-        const vaccines = await db.animal_vaccines
+        // Buscar todas as vacinas para mapear IDs para nomes
+        const allVaccines = await db.vaccines
           .find({ selector: { _deleted: { $eq: false } } })
           .exec();
-        vaccines.forEach((v) => {
+        allVaccines.forEach((v) => {
+          vaccineNamesMap.set(v.id, v.vaccine_name);
+        });
+
+        // Buscar vacinas dos animais
+        const animalVaccines = await db.animal_vaccines
+          .find({ selector: { _deleted: { $eq: false } } })
+          .exec();
+        animalVaccines.forEach((v) => {
           const rgn = v.rgn;
           if (!vaccinesMap.has(rgn)) vaccinesMap.set(rgn, []);
           vaccinesMap.get(rgn)!.push(v.toJSON() as AnimalVaccine);
@@ -214,7 +224,7 @@ export async function generateAnimalReportPDF(
         ? animalVaccines
             .slice(0, 5)
             .map((v) => {
-              const vaccineName = v.vaccine_name || "Vacina";
+              const vaccineName = vaccineNamesMap.get(v.vaccine_id) || "Vacina";
               return `${vaccineName} (${formatDate(v.date)})`;
             })
             .join("; ")
@@ -240,7 +250,11 @@ export async function generateAnimalReportPDF(
       animal_metrics_weight: weightsStr,
       vaccines: vaccinesStr,
       animal_metrics_ce: ceStr,
-      status: typeof animal.status === "string" ? animal.status : animal.status?.status_name || "",
+      status: typeof animal.status === "string" 
+        ? animal.status 
+        : (animal.status && typeof animal.status === "object" && "status_name" in animal.status)
+          ? (animal.status as { status_name: string }).status_name
+          : "",
       farm_id: animal.farm_id?.toString() || "",
       daily_gain: calculateGMD(animalWeights),
       classification: animal.classification || "",
@@ -353,9 +367,11 @@ export async function generateAnimalReportPDF(
     }, {} as Record<number, any>),
     didDrawPage: (data) => {
       // Adicionar linha separadora após o header em cada página
-      doc.setDrawColor(...primaryColor);
-      doc.setLineWidth(0.3);
-      doc.line(5, data.cursor.y, pageWidth - 5, data.cursor.y);
+      if (data.cursor) {
+        doc.setDrawColor(...primaryColor);
+        doc.setLineWidth(0.3);
+        doc.line(5, data.cursor.y, pageWidth - 5, data.cursor.y);
+      }
     },
     // Evitar quebra de página no meio de uma linha
     rowPageBreak: "avoid",

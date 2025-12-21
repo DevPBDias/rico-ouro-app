@@ -199,9 +199,11 @@ export async function generateDoseReportPDF(
       return acc;
     }, {} as Record<number, any>),
     didDrawPage: (data) => {
-      doc.setDrawColor(...primaryColor);
-      doc.setLineWidth(0.3);
-      doc.line(5, data.cursor.y, pageWidth - 5, data.cursor.y);
+      if (data.cursor) {
+        doc.setDrawColor(...primaryColor);
+        doc.setLineWidth(0.3);
+        doc.line(5, data.cursor.y, pageWidth - 5, data.cursor.y);
+      }
     },
     rowPageBreak: "avoid",
   });
