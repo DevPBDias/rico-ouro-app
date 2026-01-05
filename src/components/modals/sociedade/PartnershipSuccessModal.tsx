@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 interface PartnershipSuccessModalProps {
   open: boolean;
   onClose: () => void;
-  onNavigateHome: () => void;
+  onNavigateHome?: () => void;
 }
 
 export function PartnershipSuccessModal({
@@ -33,12 +33,14 @@ export function PartnershipSuccessModal({
           </div>
 
           <div className="flex flex-col gap-3 w-full mt-2">
-            <Button
-              onClick={onNavigateHome}
-              className="w-full py-6 rounded-xl font-bold text-base shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-[0.98]"
-            >
-              IR PARA HOME
-            </Button>
+            {onNavigateHome && (
+              <Button
+                onClick={onNavigateHome}
+                className="w-full py-6 rounded-xl font-bold text-base shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-[0.98]"
+              >
+                IR PARA HOME
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={onClose}

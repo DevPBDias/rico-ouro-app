@@ -59,7 +59,7 @@ const HomePage = () => {
               alt="ABCZ"
               width={28}
               height={28}
-              className="object-contain"
+              className="object-cover"
             />
             <div className="h-8 w-[1px] bg-slate-400"></div>
             <Image
@@ -67,7 +67,7 @@ const HomePage = () => {
               alt="PMGZ"
               width={26}
               height={26}
-              className="object-contain"
+              className="object-cover"
             />
           </div>
         </div>

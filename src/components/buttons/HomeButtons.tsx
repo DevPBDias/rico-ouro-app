@@ -8,23 +8,29 @@ interface RedirectButtonsProps {
 
 const HomeButtons = ({ data }: RedirectButtonsProps) => {
   return (
-    <section className="grid w-full grid-cols-4 gap-1.5 px-2.5">
+    <section className="grid w-full grid-cols-5 gap-1.5 px-2.5">
       {data.map((link: Links) => (
         <Link
           key={link.id}
           href={link.href}
-          className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-lg border border-primary bg-white p-2 text-center shadow-sm"
+          className="flex aspect-[1/1.5] w-full flex-col items-center justify-center gap-2 rounded-lg bg-white p-1 text-center shadow-xl active:scale-95 transition-all uuration-300"
         >
-          {link.iconSrc && (
-            <Image
-              src={link.iconSrc}
-              alt={link.name}
-              width={32}
-              height={32}
-              className={link.className}
-            />
-          )}
-          <span className="text-[10px] font-bold uppercase leading-tight text-primary">
+          <div className="flex items-center justify-center h-14 w-full">
+            {link.icon ? (
+              typeof link.icon === "string" ? (
+                <span className="text-2xl">{link.icon}</span>
+              ) : (
+                <link.icon className="h-8 w-8 text-primary" />
+              )
+            ) : link.iconSrc ? (
+              <Image
+                src={link.iconSrc}
+                alt={link.name}
+                className={link.className}
+              />
+            ) : null}
+          </div>
+          <span className="text-[10px] font-black uppercase text-primary px-0.5">
             {link.name}
           </span>
         </Link>
