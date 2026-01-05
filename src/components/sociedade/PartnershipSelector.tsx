@@ -18,7 +18,7 @@ export function PartnershipSelector({
       <label className="text-primary font-bold text-sm uppercase w-full text-left">
         Sociedades:
       </label>
-      <div className="grid grid-cols-1 gap-3 w-full">
+      <div className="grid grid-cols-1 gap-2 w-full">
         {PARTNERSHIP_OPTIONS.map((name) => {
           const isSelected = selectedPartnershipNames.includes(name);
 
@@ -27,7 +27,7 @@ export function PartnershipSelector({
               key={name}
               type="button"
               onClick={() => onToggle(name)}
-              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.01] active:scale-[0.99] ${
+              className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.01] active:scale-[0.99] ${
                 isSelected
                   ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                   : "border-border bg-card hover:border-primary/40"

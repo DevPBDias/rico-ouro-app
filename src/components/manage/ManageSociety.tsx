@@ -100,17 +100,19 @@ export const ManageSociety = ({ selectedAnimal, onSuccess }: ManageSocietyProps)
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-xs">
             {error}
           </div>
         )}
 
-        <div className="flex flex-row justify-between items-end gap-4 w-full">
-          <div className="p-4 flex-1 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
-            <span className="text-[10px] font-bold uppercase text-primary/60 tracking-wider">Vínculos Atuais:</span>
-            <span className="text-lg font-black text-primary uppercase">
+        <div className="flex flex-row justify-between items-end gap-2 w-full">
+          <div className="p-3 flex-1 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-0.5">
+            <span className="text-[9px] font-bold uppercase text-primary/60 tracking-wider">
+              Vínculos Atuais:
+            </span>
+            <span className="text-base font-black text-primary uppercase">
               {selectedAnimal.partnership || "Nenhuma"}
             </span>
           </div>
@@ -118,7 +120,7 @@ export const ManageSociety = ({ selectedAnimal, onSuccess }: ManageSocietyProps)
             type="button"
             variant="ghost"
             onClick={() => setConfirmModalOpen(true)}
-            className="px-3 h-auto py-2 text-[10px] font-bold uppercase text-destructive hover:bg-destructive/10 rounded-xl border-2 border-destructive/20 active:scale-95 transition-all"
+            className="px-2 h-auto py-1.5 text-[9px] font-bold uppercase text-destructive hover:bg-destructive/10 rounded-lg border-2 border-destructive/20 active:scale-95 transition-all"
           >
             Limpar
           </Button>
@@ -132,7 +134,7 @@ export const ManageSociety = ({ selectedAnimal, onSuccess }: ManageSocietyProps)
         <Button
           variant="default"
           type="submit"
-          className="w-full text-base font-bold py-6 rounded-xl mt-4 uppercase shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
+          className="w-full text-sm font-bold py-4 rounded-xl mt-2 uppercase shadow-lg shadow-primary/10 active:scale-[0.98] transition-all"
         >
           Confirmar Alteração
         </Button>

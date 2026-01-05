@@ -84,16 +84,18 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 pt-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-xs">
             {error}
           </div>
         )}
 
-        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase text-primary/60 tracking-wider">Status Atual:</span>
-          <span className="text-lg font-black text-primary uppercase">
+        <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col gap-0.5">
+          <span className="text-[9px] font-bold uppercase text-primary/60 tracking-wider">
+            Status Atual:
+          </span>
+          <span className="text-base font-black text-primary uppercase">
             {selectedAnimal.status || "Nenhum"}
           </span>
         </div>
@@ -110,7 +112,7 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
         <Button
           variant="default"
           type="submit"
-          className="w-full text-base font-bold py-6 rounded-xl mt-4 uppercase shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
+          className="w-full text-sm font-bold py-4 rounded-xl mt-2 uppercase shadow-lg shadow-primary/10 active:scale-[0.98] transition-all"
         >
           Confirmar Alteração
         </Button>

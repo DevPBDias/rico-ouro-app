@@ -43,14 +43,14 @@ const GerenciarPage = () => {
     <main className="min-h-screen bg-background pb-10">
       <Header title="Gerenciamento" />
 
-      <div className="px-6 py-6 space-y-8">
+      <div className="p-4 space-y-4">
         {/* Selector Section */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {!selectedAnimal ? (
-            <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="animate-in fade-in slide-in-from-top-2 duration-700 ease-in-out">
               <label
                 htmlFor="rgn"
-                className="text-primary font-bold text-sm uppercase block mb-2"
+                className="text-primary font-bold text-xs uppercase block mb-2"
               >
                 Buscar Animal (RGN):
               </label>
@@ -61,31 +61,24 @@ const GerenciarPage = () => {
                   onSelect={setSelectedRgn}
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
-                <Info className="w-3 h-3" />
-                Selecione um animal para habilitar as opções de gerenciamento.
-              </p>
             </div>
           ) : (
-            <div className="bg-primary/5 border border-primary/20 p-5 rounded-3xl flex justify-between items-center animate-in zoom-in-95 duration-300 shadow-sm">
+            <div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl flex justify-between items-center animate-in zoom-in-95 duration-300 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
+                <span className="text-[10px] font-bold text-foreground/50 uppercase mb-0.5">
                   Animal Selecionado
                 </span>
-                <p className="text-2xl font-black text-foreground leading-none">
+                <p className="text-xl font-black text-primary leading-none">
                   {selectedAnimal.rgn}
-                </p>
-                <p className="text-sm font-semibold text-muted-foreground mt-1.5 italic">
-                  {selectedAnimal.name || "Sem nome informado"}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClearSelection}
-                className="text-primary hover:text-white hover:bg-destructive h-12 w-12 p-0 rounded-2xl transition-all group border border-primary/10"
+                className="text-destructive/70 hover:text-white hover:bg-destructive h-10 w-10 p-0 rounded-xl transition-all group border border-destructive/10"
               >
-                <X className="w-6 h-6 group-hover:scale-110" />
+                <X className="w-5 h-5 group-hover:scale-110" />
               </Button>
             </div>
           )}
@@ -93,43 +86,43 @@ const GerenciarPage = () => {
 
         {/* Tabs Section */}
         {selectedAnimal && (
-          <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+          <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <Tabs
               defaultValue="fazenda"
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
-                <TabsList className="flex w-max min-w-full bg-muted/30 rounded-2xl p-1.5 mb-2 h-auto gap-1 border border-border shadow-inner">
+              <div className="overflow-x-auto pb-1 -mx-2 px-2 scrollbar-hide">
+                <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-0.5 border border-border">
                   <TabsTrigger
                     value="fazenda"
-                    className="flex-1 min-w-[80px] py-3.5 px-3 text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl transition-all rounded-xl"
+                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
                   >
                     Fazenda
                   </TabsTrigger>
                   <TabsTrigger
                     value="status"
-                    className="flex-1 min-w-[80px] py-3.5 px-3 text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl transition-all rounded-xl"
+                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
                   >
                     Status
                   </TabsTrigger>
                   <TabsTrigger
                     value="classe"
-                    className="flex-1 min-w-[80px] py-3.5 px-3 text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl transition-all rounded-xl"
+                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
                   >
                     Classe
                   </TabsTrigger>
                   <TabsTrigger
                     value="sociedade"
-                    className="flex-1 min-w-[80px] py-3.5 px-3 text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl transition-all rounded-xl"
+                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
                   >
-                    Sócios
+                    Sociedade
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-2">
                 <TabsContent
                   value="fazenda"
                   className="mt-0 ring-offset-background focus-visible:outline-none"

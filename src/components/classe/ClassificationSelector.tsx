@@ -27,7 +27,7 @@ export function ClassificationSelector({
               key={name}
               type="button"
               onClick={() => onToggle(isSelected ? null : name)}
-              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.01] active:scale-[0.99] ${
+              className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200 text-left hover:scale-[1.01] active:scale-[0.99] ${
                 isSelected
                   ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                   : "border-border bg-card hover:border-primary/40"
