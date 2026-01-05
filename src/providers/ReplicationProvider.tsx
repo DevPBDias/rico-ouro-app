@@ -9,7 +9,8 @@ import React, {
 } from "react";
 import { useRxDB } from "./RxDBProvider";
 import { RxReplicationState } from "rxdb/plugins/replication";
-import { combineLatest } from "rxjs";
+import { combineLatest, of } from "rxjs";
+import { startWith } from "rxjs/operators";
 
 interface ReplicationContextType {
   isSyncing: boolean;
@@ -47,15 +48,11 @@ export function ReplicationProvider({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     setOnline(navigator.onLine);
-
     const handleOnline = () => setOnline(true);
     const handleOffline = () => setOnline(false);
-
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -63,14 +60,32 @@ export function ReplicationProvider({
   }, []);
 
   useEffect(() => {
-    if (!isLoading && db && db.replications) {
-      const replicationEntries = Object.entries(db.replications);
+    if (!isLoading && db && (db as any).replications) {
+      const replicationsMap = (db as any).replications;
+      const replicationEntries = Object.entries(replicationsMap);
+
+      console.log(
+        `📡 [ReplicationProvider] Tracking ${replicationEntries.length} entities:`,
+        Object.keys(replicationsMap)
+      );
+
       if (replicationEntries.length === 0) return;
+
+      // Inicializa o estado com as entidades conhecidas
+      setEntityStatus((prev) => {
+        const next = { ...prev };
+        replicationEntries.forEach(([name]) => {
+          if (!next[name]) next[name] = { isSyncing: false, error: null };
+        });
+        return next;
+      });
 
       const subscriptions: any[] = [];
 
       replicationEntries.forEach(([name, rep]: [string, any]) => {
-        // Track activity
+        if (!rep) return;
+
+        // Track activity (active$)
         subscriptions.push(
           rep.active$.subscribe((isActive: boolean) => {
             setEntityStatus((prev) => ({
@@ -80,9 +95,10 @@ export function ReplicationProvider({
           })
         );
 
-        // Track errors
+        // Track errors (error$)
         subscriptions.push(
           rep.error$.subscribe((error: Error | null) => {
+            if (error) console.error(`❌ [Sync Error] ${name}:`, error);
             setEntityStatus((prev) => ({
               ...prev,
               [name]: { ...prev[name], error },
@@ -91,23 +107,27 @@ export function ReplicationProvider({
         );
       });
 
-      // Global sync status
-      const globalActiveSub = combineLatest(
-        replicationEntries.map(([_, rep]: [string, any]) => rep.active$)
-      ).subscribe((actives) => {
-        setIsSyncing(actives.some((isActive) => isActive));
-        if (actives.every((isActive) => !isActive)) {
-          setLastSyncedAt(new Date());
+      // Global sync status logic
+      const activeObservables = replicationEntries.map(
+        ([_, rep]: [string, any]) => rep.active$
+      );
+      const globalActiveSub = combineLatest(activeObservables).subscribe(
+        (actives) => {
+          const currentlySyncing = actives.some((a) => a === true);
+          setIsSyncing(currentlySyncing);
+          if (!currentlySyncing) setLastSyncedAt(new Date());
         }
-      });
+      );
 
-      // Global error status
-      const globalErrorSub = combineLatest(
-        replicationEntries.map(([_, rep]: [string, any]) => rep.error$)
-      ).subscribe((errors) => {
-        const activeErrors = errors.filter((err) => err !== null) as Error[];
-        setReplicationErrors(activeErrors);
-      });
+      const errorObservables = replicationEntries.map(
+        ([_, rep]: [string, any]) => rep.error$
+      );
+      const globalErrorSub = combineLatest(errorObservables).subscribe(
+        (errors) => {
+          const activeErrors = errors.filter((err) => err !== null) as Error[];
+          setReplicationErrors(activeErrors);
+        }
+      );
 
       subscriptions.push(globalActiveSub, globalErrorSub);
 
@@ -115,17 +135,12 @@ export function ReplicationProvider({
         subscriptions.forEach((sub) => sub.unsubscribe());
       };
     }
-  }, [isLoading, db]);
+  }, [isLoading, db, (db as any)?.replications]); // Adicionado replications como dependência "fake"
 
   const triggerSync = useCallback(() => {
-    if (!db || !db.replications) return;
-    console.log(
-      "[RxDB] Manually triggering synchronization for all collections..."
-    );
-    Object.values(db.replications).forEach((rep) => {
-      if (rep && typeof rep.reSync === "function") {
-        rep.reSync();
-      }
+    if (!db || !(db as any).replications) return;
+    Object.values((db as any).replications).forEach((rep: any) => {
+      if (rep && typeof rep.reSync === "function") rep.reSync();
     });
   }, [db]);
 

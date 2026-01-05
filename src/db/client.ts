@@ -65,6 +65,7 @@ async function createDatabase(): Promise<MyDatabase> {
       name: DB_NAME,
       storage: storage as any,
       multiInstance: true,
+      ignoreDuplicate: true,
       eventReduce: true,
     });
 
@@ -194,11 +195,12 @@ export async function getDatabase(): Promise<MyDatabase> {
 export async function clearAllDatabases(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  const storage = getRxStorageDexie();
+  console.log("[RxDB] Starting full local database purge...");
 
+  // 1. Destruir a instância ativa se existir
   if (dbInstance) {
     try {
-      await (dbInstance as any).destroy();
+      await dbInstance.close();
       dbInstance = null;
       dbPromise = null;
     } catch (err) {
@@ -206,39 +208,50 @@ export async function clearAllDatabases(): Promise<void> {
     }
   }
 
+  // 2. Limpar localStorage (pode conter metadados e tokens)
+  try {
+    localStorage.clear();
+    console.log("[RxDB] LocalStorage cleared");
+  } catch (e) {}
+
+  // 3. Força Bruta no IndexedDB
   try {
     if (window.indexedDB && (window.indexedDB as any).databases) {
       const dbs = await (window.indexedDB as any).databases();
+
       for (const dbInfo of dbs) {
-        if (
-          dbInfo.name &&
-          (dbInfo.name.includes("indi_ouro_db") ||
-            dbInfo.name.includes("rxdb-dexie-indi_ouro_db"))
-        ) {
-          console.log(`[RxDB] Removing legacy database: ${dbInfo.name}`);
-          try {
-            await removeRxDatabase(dbInfo.name, storage);
-          } catch (e) {
-            window.indexedDB.deleteDatabase(dbInfo.name);
-          }
+        const name = dbInfo.name;
+        if (!name) continue;
+
+        // Padrões de nomes que queremos deletar (abrange RxDB, Dexie e filas antigas)
+        const shouldDelete =
+          name.includes("indi_ouro") ||
+          name.includes("rxdb") ||
+          name.includes("dexie") ||
+          name.includes("offline-sync");
+
+        if (shouldDelete) {
+          console.log(`[RxDB] Purging IndexedDB: ${name}`);
+          window.indexedDB.deleteDatabase(name);
         }
       }
     } else {
-      const legacyNames = [
+      // Fallback para navegadores antigos
+      const commonNames = [
         "indi_ouro_db",
         "indi_ouro_db_v1",
         "indi_ouro_db_v2",
         "indi_ouro_db_v3",
         "indi_ouro_db_v4",
         "indi_ouro_db_v5",
+        "indi_ouro_db_v6",
+        "offline-sync-queue",
       ];
-      for (const name of legacyNames) {
-        await removeRxDatabase(name, storage).catch(() => {});
-        window.indexedDB.deleteDatabase(name);
-      }
+      commonNames.forEach((name) => window.indexedDB.deleteDatabase(name));
     }
+    console.log("[RxDB] Full purge complete.");
   } catch (err) {
-    console.error("[RxDB] Error during database cleanup:", err);
+    console.error("[RxDB] Critical error during database cleanup:", err);
   }
 }
 
