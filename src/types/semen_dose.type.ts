@@ -9,6 +9,6 @@ export interface SemenDose {
   center_name?: string;
   breed: string;
   quantity: number;
-  updated_at?: string;
-  _deleted?: boolean;
+  updated_at: string;
+  _deleted: boolean;
 }

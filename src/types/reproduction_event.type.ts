@@ -12,6 +12,6 @@ export interface ReproductionEvent {
   expected_sex?: "M" | "F";
   expected_birth_date_270?: string;
   expected_birth_date_305?: string;
-  updated_at?: string;
-  _deleted?: boolean;
+  updated_at: string;
+  _deleted: boolean;
 }

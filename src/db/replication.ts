@@ -1,13 +1,13 @@
 import { MyDatabase } from "./collections";
-import { replicateAnimals } from "./replications/animal.replication";
-import { replicateVaccines } from "./replications/vaccine.replication";
-import { replicateFarms } from "./replications/farm.replication";
-import { replicateAnimalMetricWeight } from "./replications/animal_metric_weight.replication";
-import { replicateAnimalMetricCE } from "./replications/animal_metric_ce.replication";
-import { replicateAnimalVaccines } from "./replications/animal_vaccine.replication";
-import { replicateReproductionEvents } from "./replications/reproduction_event.replication";
-import { replicateAnimalStatuses } from "./replications/animal_status.replication";
-import { replicateSemenDoses } from "./replications/semen_dose.replication";
+import { replicateAnimalsNew as replicateAnimals } from "./replication/animal.replication";
+import { replicateSemenDosesNew as replicateSemenDoses } from "./replication/semenDose.replication";
+import { replicateFarmsNew as replicateFarms } from "./replication/farm.replication";
+import { replicateVaccinesNew as replicateVaccines } from "./replication/vaccine.replication";
+import { replicateAnimalMetricWeightNew as replicateAnimalMetricWeight } from "./replication/metric.replication";
+import { replicateAnimalMetricCENew as replicateAnimalMetricCE } from "./replication/metric.replication";
+import { replicateAnimalVaccinesNew as replicateAnimalVaccines } from "./replication/animalVaccine.replication";
+import { replicateReproductionEventsNew as replicateReproductionEvents } from "./replication/reproduction.replication";
+import { replicateAnimalStatusesNew as replicateAnimalStatuses } from "./replication/status.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
