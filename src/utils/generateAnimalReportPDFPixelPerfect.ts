@@ -3,6 +3,7 @@ import autoTable, { RowInput } from "jspdf-autotable";
 import { Animal } from "@/types/animal.type";
 import { SelectedReportFields } from "@/types/report_field.type";
 import { fieldMap } from "@/constants/dynamicFields";
+import { Farm } from "@/types/farm.type";
 import { saveBlobAsFile } from "./saveBlobFile";
 import { logoPdf } from "@/assets/icons/logo_pdf";
 
@@ -73,7 +74,8 @@ function formatDateBR(dateStr?: string): string {
 
 export async function generateAnimalReportPDFPixelPerfect(
   data: Animal[],
-  selectedFields: SelectedReportFields
+  selectedFields: SelectedReportFields,
+  farms: Farm[] = []
 ): Promise<{
   success: boolean;
   method: "share" | "save-picker" | "download";
@@ -189,6 +191,9 @@ export async function generateAnimalReportPDFPixelPerfect(
   allColumns.push(...dynamicCols);
 
   // 3. Mapeamento de Dados
+  // Cria mapa de fazendas para busca rápida por ID
+  const farmMap = new Map(farms.map((farm) => [farm.id, farm.farm_name]));
+
   const tableBody: any[] = sortedData.map((animal) => {
     const rowData: any = {};
 
@@ -204,6 +209,11 @@ export async function generateAnimalReportPDFPixelPerfect(
         // Formatações específicas para manter fidelidade
         if (key === "born_date") val = formatDateBR(val as string);
         if (key === "sex") val = val === "M" ? "M" : val === "F" ? "F" : val;
+
+        // Converte farm_id para o nome da fazenda
+        if (key === "farm_name" && animal.farm_id) {
+          val = farmMap.get(animal.farm_id) || "";
+        }
 
         rowData[key] = formatValue(val);
       }

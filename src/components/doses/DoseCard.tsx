@@ -14,7 +14,7 @@ interface DoseCardProps {
 export function DoseCard({ dose, onEdit, onDelete }: DoseCardProps) {
   const isBullNelore =
     dose.breed.toLowerCase() === "nelore" ||
-    dose.breed.toLowerCase() === "nelore pintando";
+    dose.breed.toLowerCase() === "nelore pintado";
 
   return (
     <div className="flex items-stretch gap-3 py-2 px-3 rounded-xl border shadow-sm w-full uppercase overflow-hidden">

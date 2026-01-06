@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { SelectedReportFields } from "@/types/report_field.type";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useFarms } from "@/hooks/db/farms/useFarms";
 import generateAnimalReportPDFPixelPerfect from "@/utils/generateAnimalReportPDFPixelPerfect";
 
 const REPORT_OPTIONS_GROUPED: { category: string; options: ReportOption[] }[] =
@@ -70,6 +71,7 @@ const ALL_REPORT_OPTIONS: ReportOption[] = REPORT_OPTIONS_GROUPED.flatMap(
 export default function RelatoriosPage() {
   const router = useRouter();
   const { animals: dados } = useAnimals();
+  const { farms } = useFarms();
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     title: string;
@@ -160,7 +162,8 @@ export default function RelatoriosPage() {
 
       const result = await generateAnimalReportPDFPixelPerfect(
         dados,
-        selectedItems
+        selectedItems,
+        farms
       );
 
       if (!result) {
