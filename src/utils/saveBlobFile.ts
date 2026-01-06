@@ -78,17 +78,32 @@ function getFileTypeConfig(fileName: string): {
 
 /**
  * Check if device is mobile
+ * Uses user agent and screen size as signals
  */
 function isMobileDevice(): boolean {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
+  if (typeof window === "undefined") return false;
+
+  const ua = navigator.userAgent;
+  const isMobileUA =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+      ua
+    );
+
+  // Se a tela for maior que 1024px, tratamos como desktop (mesmo se o User Agent disser mobile, como no DevTools)
+  if (window.innerWidth > 1024) return false;
+
+  return isMobileUA;
 }
 
 /**
  * Check if Web Share API is available and supports files
  */
 async function canShareFile(): Promise<boolean> {
+  // Never use share on desktop - always use download
+  if (isDesktopDevice()) {
+    return false;
+  }
+
   if (!navigator.share || !navigator.canShare) {
     return false;
   }
@@ -105,50 +120,32 @@ async function canShareFile(): Promise<boolean> {
 }
 
 /**
- * Save blob as file with mobile-friendly sharing options
+ * Check if device is desktop
+ */
+function isDesktopDevice(): boolean {
+  return !isMobileDevice();
+}
+
+/**
+ * Save blob as file with platform-optimized handling
  *
- * On mobile: Uses Web Share API (native share sheet)
- * On desktop with File System Access: Uses native save dialog
- * Fallback: Direct download
+ * 1. On desktop (Chrome/Edge/Opera): Uses native save dialog
+ * 2. Fallback: Direct download via browser
  */
 export async function saveBlobAsFile(
   blob: Blob,
   fileName: string,
   options?: {
-    /** Show share dialog on mobile instead of direct download */
-    preferShare?: boolean;
-    /** Custom share title */
-    shareTitle?: string;
-    /** Custom share text */
-    shareText?: string;
+    /** Force direct download without picker */
+    forceDownload?: boolean;
+    // Removidas opções de share
   }
-): Promise<{ success: boolean; method: "share" | "save-picker" | "download" }> {
-  const { preferShare = true, shareTitle, shareText } = options || {};
+): Promise<{ success: boolean; method: "save-picker" | "download" }> {
+  const { forceDownload = false } = options || {};
 
-  // On mobile, prefer Web Share API for better UX
-  if (isMobileDevice() && preferShare && (await canShareFile())) {
-    try {
-      const file = new File([blob], fileName, { type: getMimeType(fileName) });
-
-      await navigator.share({
-        title: shareTitle || `📄 ${fileName}`,
-        text: shareText || "Relatório gerado pelo INDI Ouro",
-        files: [file],
-      });
-
-      return { success: true, method: "share" };
-    } catch (err) {
-      // User cancelled or share failed, fall through to other methods
-      if ((err as Error).name === "AbortError") {
-        // User cancelled share dialog
-        return { success: false, method: "share" };
-      }
-    }
-  }
-
-  // Try File System Access API (desktop Chrome)
+  // 1. TENTAR SALVAR VIA NATIVE PICKER (Desktop Chrome/Edge/Opera)
   const windowWithFS = window as WindowWithFileSystemAccess;
-  if (windowWithFS.showSaveFilePicker) {
+  if (windowWithFS.showSaveFilePicker && !forceDownload) {
     try {
       const handle = await windowWithFS.showSaveFilePicker({
         suggestedName: fileName,
@@ -159,14 +156,23 @@ export async function saveBlobAsFile(
       await writable.close();
       return { success: true, method: "save-picker" };
     } catch (err) {
-      // User cancelled or not supported
       if ((err as Error).name === "AbortError") {
         return { success: false, method: "save-picker" };
       }
     }
   }
 
-  // Fallback: Direct download
+  // 2. DOWNLOAD DIRETO (Fallback ou se forçado)
+  return downloadBlobDirectly(blob, fileName);
+}
+
+/**
+ * Direct download using anchor element
+ */
+function downloadBlobDirectly(
+  blob: Blob,
+  fileName: string
+): { success: boolean; method: "download" } {
   const blobUrl = URL.createObjectURL(blob);
 
   try {
@@ -174,20 +180,35 @@ export async function saveBlobAsFile(
     a.href = blobUrl;
     a.download = fileName;
     a.style.display = "none";
+
+    // Ensure the element is in the DOM before clicking
     document.body.appendChild(a);
-    a.click();
 
-    // Cleanup after a short delay
+    // Use a small timeout to ensure browser processes the appendChild
     setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    }, 100);
+      a.click();
+
+      // Cleanup after download starts
+      setTimeout(() => {
+        if (a.parentNode) {
+          document.body.removeChild(a);
+        }
+        URL.revokeObjectURL(blobUrl);
+      }, 200);
+    }, 0);
 
     return { success: true, method: "download" };
-  } catch {
+  } catch (error) {
+    console.error("[saveBlobAsFile] Download failed:", error);
+
     // Last resort: open in new tab
-    window.open(blobUrl, "_blank");
-    return { success: true, method: "download" };
+    try {
+      window.open(blobUrl, "_blank");
+      return { success: true, method: "download" };
+    } catch {
+      URL.revokeObjectURL(blobUrl);
+      return { success: false, method: "download" };
+    }
   }
 }
 
@@ -195,7 +216,7 @@ export async function saveBlobAsFile(
  * Show a toast/notification after file operation
  */
 export function showFileNotification(
-  method: "share" | "save-picker" | "download",
+  method: "save-picker" | "download",
   fileName: string,
   success: boolean
 ): void {
@@ -206,9 +227,6 @@ export function showFileNotification(
   }
 
   switch (method) {
-    case "share":
-      console.log(`📤 ${fileName} compartilhado com sucesso!`);
-      break;
     case "save-picker":
       console.log(`💾 ${fileName} salvo com sucesso!`);
       break;

@@ -25,22 +25,14 @@ import {
 } from "lucide-react";
 import { SelectedReportFields } from "@/types/report_field.type";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import generateAnimalReportPDFPixelPerfect from "@/utils/generateAnimalReportPDFPixelPerfect";
 
 const REPORT_OPTIONS_GROUPED: { category: string; options: ReportOption[] }[] =
   [
     {
-      category: "Identificação",
-      options: [
-        { key: "name", label: "Nome Animal" },
-        { key: "rgn", label: "RGN" },
-        { key: "serie_rgd", label: "Série RGD" },
-        { key: "sex", label: "Sexo" },
-        { key: "born_date", label: "Data" },
-      ],
-    },
-    {
       category: "Genética",
       options: [
+        { key: "born_date", label: "Data" },
         { key: "iabcgz", label: "iABCGz" },
         { key: "deca", label: "DECA" },
         { key: "p", label: "P%" },
@@ -69,15 +61,6 @@ const REPORT_OPTIONS_GROUPED: { category: string; options: ReportOption[] }[] =
         { key: "paternal_grandfather_name", label: "Avô Paterno" },
       ],
     },
-    {
-      category: "Métricas",
-      options: [
-        { key: "animal_metrics_weight", label: "Pesos" },
-        { key: "animal_metrics_ce", label: "Circunferência" },
-        { key: "daily_gain", label: "GMD" },
-        { key: "vaccines", label: "Vacinas" },
-      ],
-    },
   ];
 
 const ALL_REPORT_OPTIONS: ReportOption[] = REPORT_OPTIONS_GROUPED.flatMap(
@@ -99,18 +82,11 @@ export default function RelatoriosPage() {
     type: "error",
   });
   const [selectedItems, setSelectedItems] = useState<SelectedReportFields>({
-    name: false,
-    rgn: false,
-    serie_rgd: false,
-    sex: false,
     born_date: false,
     iabcgz: false,
     deca: false,
     p: false,
     f: false,
-    animal_metrics_weight: false,
-    animal_metrics_ce: false,
-    vaccines: false,
     father_name: false,
     mother_serie_rgd: false,
     mother_rgn: false,
@@ -119,7 +95,6 @@ export default function RelatoriosPage() {
     partnership: false,
     status: false,
     farm_name: false,
-    daily_gain: false,
     classification: false,
     type: false,
     genotyping: false,
@@ -127,25 +102,28 @@ export default function RelatoriosPage() {
   });
 
   const handleCheckboxChange = (key: string) => {
-    setSelectedItems((prev) => ({
-      ...prev,
-      [key]: !prev[key as keyof SelectedReportFields],
-    }));
+    setSelectedItems((prev) => {
+      const isCurrentlySelected = prev[key as keyof SelectedReportFields];
+
+      // Calcula o count real baseado no estado atual (prev) para evitar closures obsoletas
+      const currentCount = Object.values(prev).filter(Boolean).length;
+
+      if (!isCurrentlySelected && currentCount >= 7) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [key]: !isCurrentlySelected,
+      };
+    });
   };
 
   const selectedCount = useMemo(() => {
     return Object.values(selectedItems).filter(Boolean).length;
   }, [selectedItems]);
 
-  const totalFields = ALL_REPORT_OPTIONS.length;
-
-  const handleSelectAll = () => {
-    const allSelected: SelectedReportFields = {} as SelectedReportFields;
-    ALL_REPORT_OPTIONS.forEach((option) => {
-      (allSelected as unknown as Record<string, boolean>)[option.key] = true;
-    });
-    setSelectedItems(allSelected);
-  };
+  const maxFields = 7;
 
   const handleDeselectAll = () => {
     const allDeselected: SelectedReportFields = {} as SelectedReportFields;
@@ -180,7 +158,10 @@ export default function RelatoriosPage() {
         return;
       }
 
-      const result = await generateAnimalReportPDF(dados, selectedItems);
+      const result = await generateAnimalReportPDFPixelPerfect(
+        dados,
+        selectedItems
+      );
 
       if (!result) {
         setModalState({
@@ -243,21 +224,11 @@ export default function RelatoriosPage() {
                   Campos Selecionados
                 </h2>
                 <p className="text-sm text-gray-600">
-                  {selectedCount} de {totalFields} campos selecionados
+                  {selectedCount} de {maxFields} campos permitidos
                 </p>
               </div>
             </div>
             <div className="flex flex-row items-end justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                className="gap-2"
-                disabled={selectedCount === totalFields}
-              >
-                <CheckSquare className="h-4 w-4" />
-                Selecionar Todos
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -266,13 +237,22 @@ export default function RelatoriosPage() {
                 disabled={selectedCount === 0}
               >
                 <Square className="h-4 w-4" />
-                Limpar
+                Limpar Tudo
               </Button>
             </div>
           </div>
-          {selectedCount === 0 && (
+          {selectedCount === 0 ? (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-              ⚠️ Selecione pelo menos um campo para gerar o relatório
+              ⚠️ Selecione até 7 campos para gerar o relatório
+            </div>
+          ) : selectedCount >= 7 ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+              ℹ️ Limite máximo de {maxFields} campos atingido
+            </div>
+          ) : (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+              ✅ Você pode selecionar mais {maxFields - selectedCount} campo
+              {maxFields - selectedCount !== 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -292,6 +272,7 @@ export default function RelatoriosPage() {
                 selectedItems={
                   selectedItems as unknown as Record<string, boolean>
                 }
+                maxReached={selectedCount >= 7}
                 onCheckboxChange={handleCheckboxChange}
               />
             </div>
