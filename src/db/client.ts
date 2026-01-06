@@ -43,7 +43,7 @@ async function loadDevModePlugin(): Promise<void> {
   } catch (err) {}
 }
 
-const DB_VERSION = "v6";
+const DB_VERSION = "v7";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let dbInstance: MyDatabase | null = null;
@@ -185,7 +185,9 @@ export async function getDatabase(): Promise<MyDatabase> {
     })
     .catch(async (error) => {
       console.error("[RxDB] Critical initialization error:", error);
-
+      // Reset promises to allow retry
+      dbPromise = null;
+      dbInstance = null;
       throw error;
     });
 
