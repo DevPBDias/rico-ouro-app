@@ -32,7 +32,7 @@ addRxPlugin(RxDBMigrationPlugin);
 let devModeLoaded = false;
 
 async function loadDevModePlugin(): Promise<void> {
-  if (devModeLoaded || process.env.NODE_ENV === "production") {
+  if (devModeLoaded) {
     return;
   }
 
@@ -40,11 +40,27 @@ async function loadDevModePlugin(): Promise<void> {
     const { RxDBDevModePlugin } = await import("rxdb/plugins/dev-mode");
     addRxPlugin(RxDBDevModePlugin);
     devModeLoaded = true;
-  } catch (err) {}
+  } catch (err) {
+    console.warn("[RxDB] Failed to load dev-mode plugin", err);
+  }
 }
 
-const DB_VERSION = "v7";
+const DB_VERSION = "v8";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
+
+let storageInstance: RxStorage<any, any> | null = null;
+
+function getStorage() {
+  if (!storageInstance) {
+    storageInstance = getRxStorageDexie();
+    if (process.env.NODE_ENV === "development") {
+      storageInstance = wrappedValidateAjvStorage({
+        storage: storageInstance,
+      });
+    }
+  }
+  return storageInstance;
+}
 
 let dbInstance: MyDatabase | null = null;
 let dbPromise: Promise<MyDatabase> | null = null;
@@ -52,18 +68,12 @@ let dbPromise: Promise<MyDatabase> | null = null;
 async function createDatabase(): Promise<MyDatabase> {
   await loadDevModePlugin();
 
-  let storage: RxStorage<any, any> = getRxStorageDexie();
-
-  if (process.env.NODE_ENV === "development") {
-    storage = wrappedValidateAjvStorage({
-      storage: storage,
-    });
-  }
+  const storage = getStorage();
 
   try {
     const db = await createRxDatabase<MyDatabaseCollections>({
       name: DB_NAME,
-      storage: storage as any,
+      storage: storage,
       multiInstance: true,
       ignoreDuplicate: true,
       eventReduce: true,
@@ -145,6 +155,17 @@ async function createDatabase(): Promise<MyDatabase> {
       });
     } catch (err: any) {
       console.error("[RxDB] Failed to add collections:", err);
+
+      // Limpeza crítica: Se as coleções falharem, fechamos a instância do banco
+      // para evitar o erro DB9 (já aberto) em tentativas subsequentes no mesmo processo.
+      try {
+        await db.close();
+      } catch (closeErr) {
+        console.error(
+          "[RxDB] Failed to close db after collection error",
+          closeErr
+        );
+      }
 
       if (err.message?.includes("schema") || err.name === "RxError") {
         console.warn(
