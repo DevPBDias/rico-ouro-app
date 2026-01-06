@@ -79,6 +79,15 @@ async function createDatabase(): Promise<MyDatabase> {
       eventReduce: true,
     });
 
+    // Se o banco foi retornado de uma chamada anterior (ignoreDuplicate),
+    // ele pode já ter as coleções. Verificamos uma para decidir.
+    if (db.collections.animals) {
+      console.log(
+        "[RxDB] Collections already initialized, skipping addCollections"
+      );
+      return db;
+    }
+
     try {
       await db.addCollections({
         animals: {

@@ -48,13 +48,14 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   const initDatabase = useCallback(async () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || db || !isLoading) return;
 
-    setIsLoading(true);
     setError(null);
 
     try {
       const database = await getDatabase();
+      if (!database) return;
+
       setDb(database);
       setIsReady(true);
       setIsLoading(false);
@@ -70,7 +71,7 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       setIsReady(false);
     }
-  }, []);
+  }, [db, isLoading]);
 
   const retryConnection = useCallback(() => {
     console.log("[RxDB] Retrying database connection...");
