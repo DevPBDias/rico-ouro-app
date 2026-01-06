@@ -32,7 +32,7 @@ addRxPlugin(RxDBMigrationPlugin);
 let devModeLoaded = false;
 
 async function loadDevModePlugin(): Promise<void> {
-  if (devModeLoaded) {
+  if (devModeLoaded || process.env.NODE_ENV !== "development") {
     return;
   }
 
@@ -40,6 +40,7 @@ async function loadDevModePlugin(): Promise<void> {
     const { RxDBDevModePlugin } = await import("rxdb/plugins/dev-mode");
     addRxPlugin(RxDBDevModePlugin);
     devModeLoaded = true;
+    console.log("[RxDB] Dev-mode plugin loaded");
   } catch (err) {
     console.warn("[RxDB] Failed to load dev-mode plugin", err);
   }
