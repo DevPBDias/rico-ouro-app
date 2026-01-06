@@ -76,7 +76,8 @@ async function createDatabase(): Promise<MyDatabase> {
       name: DB_NAME,
       storage: storage,
       multiInstance: true,
-      ignoreDuplicate: true,
+      // ignoreDuplicate só é permitido em dev-mode (erro DB9 em produção)
+      ignoreDuplicate: process.env.NODE_ENV === "development",
       eventReduce: true,
     });
 
