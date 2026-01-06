@@ -46,7 +46,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v8";
+const DB_VERSION = "v9";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;

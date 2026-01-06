@@ -47,35 +47,42 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  const initDatabase = useCallback(async () => {
-    if (typeof window === "undefined" || db || !isLoading) return;
+  const initDatabase = useCallback(
+    async (force = false) => {
+      if (typeof window === "undefined" || (db && !force)) return;
 
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const database = await getDatabase();
-      if (!database) return;
+      try {
+        const database = await getDatabase();
+        if (!database) {
+          setIsLoading(false);
+          return;
+        }
 
-      setDb(database);
-      setIsReady(true);
-      setIsLoading(false);
+        setDb(database);
+        setIsReady(true);
+        setIsLoading(false);
 
-      window.dispatchEvent(
-        new CustomEvent("rxdb-ready", { detail: { database } })
-      );
+        window.dispatchEvent(
+          new CustomEvent("rxdb-ready", { detail: { database } })
+        );
 
-      console.log("[RxDB] Database ready for offline operations");
-    } catch (err) {
-      console.error("[RxDB] Failed to initialize database:", err);
-      setError(err as Error);
-      setIsLoading(false);
-      setIsReady(false);
-    }
-  }, [db, isLoading]);
+        console.log("[RxDB] Database ready for offline operations");
+      } catch (err) {
+        console.error("[RxDB] Failed to initialize database:", err);
+        setError(err as Error);
+        setIsLoading(false);
+        setIsReady(false);
+      }
+    },
+    [db]
+  );
 
   const retryConnection = useCallback(() => {
     console.log("[RxDB] Retrying database connection...");
-    initDatabase();
+    initDatabase(true);
   }, [initDatabase]);
 
   useEffect(() => {
