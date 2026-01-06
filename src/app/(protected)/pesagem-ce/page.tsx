@@ -8,6 +8,7 @@ import { WeightList } from "@/components/lists/WeightList";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
 import { Animal } from "@/types/animal.type";
+import { AnimalMetric } from "@/types/animal_metrics.type";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useAnimalWeights } from "@/hooks/db/animal_weights/useAnimalWeights";
 import { useCreateAnimalWeight } from "@/hooks/db/animal_weights/useCreateAnimalWeight";
@@ -61,21 +62,35 @@ const PesagemPage = () => {
     setSelectedAnimal(a ?? null);
   }, [formData.rgn, dados]);
 
-  const getPesosWithDefault = () => {
+  const getPesosWithDefault = (): AnimalMetric[] => {
     if (!pesosMedidos || pesosMedidos.length === 0) {
       const nascimento = selectedAnimal?.born_date || new Date().toISOString();
       return [
-        { id: "0", rgn: selectedAnimal?.rgn || "", date: nascimento, value: 0 },
+        {
+          id: "0",
+          rgn: selectedAnimal?.rgn || "",
+          date: nascimento,
+          value: 0,
+          updated_at: nascimento,
+          _deleted: false,
+        },
       ];
     }
     return pesosMedidos;
   };
 
-  const getCircWithDefault = () => {
+  const getCircWithDefault = (): AnimalMetric[] => {
     if (!circunferenciaEscrotal || circunferenciaEscrotal.length === 0) {
       const nascimento = selectedAnimal?.born_date || new Date().toISOString();
       return [
-        { id: "0", rgn: selectedAnimal?.rgn || "", date: nascimento, value: 0 },
+        {
+          id: "0",
+          rgn: selectedAnimal?.rgn || "",
+          date: nascimento,
+          value: 0,
+          updated_at: nascimento,
+          _deleted: false,
+        },
       ];
     }
     return circunferenciaEscrotal;

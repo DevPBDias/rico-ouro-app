@@ -1,8 +1,3 @@
-/**
- * Enhanced file saving utility for mobile PWAs
- * Uses Web Share API for better mobile experience
- */
-
 interface WindowWithFileSystemAccess extends Window {
   showSaveFilePicker?: (options?: {
     suggestedName?: string;
@@ -22,9 +17,6 @@ interface FileSystemWritableFileStream {
   close: () => Promise<void>;
 }
 
-/**
- * Get MIME type based on file extension
- */
 function getMimeType(fileName: string): string {
   const ext = fileName.split(".").pop()?.toLowerCase();
   const mimeTypes: Record<string, string> = {
@@ -37,9 +29,6 @@ function getMimeType(fileName: string): string {
   return mimeTypes[ext || ""] || "application/octet-stream";
 }
 
-/**
- * Get file type description for save picker
- */
 function getFileTypeConfig(fileName: string): {
   description: string;
   accept: Record<string, string[]>;
@@ -76,10 +65,6 @@ function getFileTypeConfig(fileName: string): {
   }
 }
 
-/**
- * Check if device is mobile
- * Uses user agent and screen size as signals
- */
 function isMobileDevice(): boolean {
   if (typeof window === "undefined") return false;
 
@@ -89,17 +74,12 @@ function isMobileDevice(): boolean {
       ua
     );
 
-  // Se a tela for maior que 1024px, tratamos como desktop (mesmo se o User Agent disser mobile, como no DevTools)
   if (window.innerWidth > 1024) return false;
 
   return isMobileUA;
 }
 
-/**
- * Check if Web Share API is available and supports files
- */
 async function canShareFile(): Promise<boolean> {
-  // Never use share on desktop - always use download
   if (isDesktopDevice()) {
     return false;
   }
@@ -108,7 +88,6 @@ async function canShareFile(): Promise<boolean> {
     return false;
   }
 
-  // Test if file sharing is supported
   try {
     const testFile = new File(["test"], "test.pdf", {
       type: "application/pdf",
@@ -119,31 +98,50 @@ async function canShareFile(): Promise<boolean> {
   }
 }
 
-/**
- * Check if device is desktop
- */
 function isDesktopDevice(): boolean {
   return !isMobileDevice();
 }
 
-/**
- * Save blob as file with platform-optimized handling
- *
- * 1. On desktop (Chrome/Edge/Opera): Uses native save dialog
- * 2. Fallback: Direct download via browser
- */
 export async function saveBlobAsFile(
   blob: Blob,
   fileName: string,
   options?: {
-    /** Force direct download without picker */
     forceDownload?: boolean;
-    // Removidas opções de share
+    shareTitle?: string;
+    shareText?: string;
   }
-): Promise<{ success: boolean; method: "save-picker" | "download" }> {
-  const { forceDownload = false } = options || {};
+): Promise<{
+  success: boolean;
+  method: "share" | "save-picker" | "download";
+}> {
+  const { forceDownload = false, shareTitle, shareText } = options || {};
 
-  // 1. TENTAR SALVAR VIA NATIVE PICKER (Desktop Chrome/Edge/Opera)
+  if (isMobileDevice() && !forceDownload) {
+    const canShare = await canShareFile();
+    if (canShare && navigator.share) {
+      try {
+        const file = new File([blob], fileName, {
+          type: getMimeType(fileName),
+        });
+        await navigator.share({
+          files: [file],
+          title: shareTitle || fileName,
+          text: shareText || "",
+        });
+        return { success: true, method: "share" };
+      } catch (err) {
+        // Se o usuário cancelar ou houver erro, continuamos para download
+        if ((err as Error).name !== "AbortError") {
+          console.error("[saveBlobAsFile] Share failed:", err);
+        } else {
+          // Usuário cancelou o share
+          return { success: false, method: "share" };
+        }
+      }
+    }
+  }
+
+  // 2. TENTAR SALVAR VIA NATIVE PICKER (Desktop Chrome/Edge/Opera)
   const windowWithFS = window as WindowWithFileSystemAccess;
   if (windowWithFS.showSaveFilePicker && !forceDownload) {
     try {
@@ -159,16 +157,14 @@ export async function saveBlobAsFile(
       if ((err as Error).name === "AbortError") {
         return { success: false, method: "save-picker" };
       }
+      console.error("[saveBlobAsFile] Picker failed:", err);
     }
   }
 
-  // 2. DOWNLOAD DIRETO (Fallback ou se forçado)
+  // 3. DOWNLOAD DIRETO (Fallback ou se forçado)
   return downloadBlobDirectly(blob, fileName);
 }
 
-/**
- * Direct download using anchor element
- */
 function downloadBlobDirectly(
   blob: Blob,
   fileName: string
@@ -212,9 +208,6 @@ function downloadBlobDirectly(
   }
 }
 
-/**
- * Show a toast/notification after file operation
- */
 export function showFileNotification(
   method: "save-picker" | "download",
   fileName: string,

@@ -74,7 +74,10 @@ function formatDateBR(dateStr?: string): string {
 export async function generateAnimalReportPDFPixelPerfect(
   data: Animal[],
   selectedFields: SelectedReportFields
-): Promise<{ success: boolean; method: "save-picker" | "download" } | null> {
+): Promise<{
+  success: boolean;
+  method: "share" | "save-picker" | "download";
+} | null> {
   if (!data || data.length === 0) return null;
 
   // 1. Ordenação obrigatória por RGN decrescente
