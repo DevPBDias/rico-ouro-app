@@ -279,6 +279,9 @@ export async function clearAllDatabases(): Promise<void> {
         "indi_ouro_db_v4",
         "indi_ouro_db_v5",
         "indi_ouro_db_v6",
+        "indi_ouro_db_v7",
+        "indi_ouro_db_v8",
+        "indi_ouro_db_v9",
         "offline-sync-queue",
       ];
       commonNames.forEach((name) => window.indexedDB.deleteDatabase(name));
