@@ -3,7 +3,7 @@ import { RxJsonSchema } from "rxdb";
 
 export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
   title: "reproduction schema",
-  version: 3,
+  version: 0,
   primaryKey: "event_id",
   type: "object",
   properties: {

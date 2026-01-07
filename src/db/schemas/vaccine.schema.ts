@@ -3,7 +3,7 @@ import { RxJsonSchema } from "rxdb";
 
 export const vaccineSchema: RxJsonSchema<Vaccine> = {
   title: "vaccines",
-  version: 2,
+  version: 0,
   primaryKey: "id",
   type: "object",
   properties: {

@@ -3,7 +3,7 @@ import { RxJsonSchema } from "rxdb";
 
 export const animalMetricCESchema: RxJsonSchema<AnimalMetric> = {
   title: "animal_ce",
-  version: 2,
+  version: 0,
   primaryKey: "id",
   type: "object",
   properties: {

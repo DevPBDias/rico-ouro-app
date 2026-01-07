@@ -46,7 +46,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v10";
+const DB_VERSION = "v0";
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -94,115 +94,30 @@ async function createDatabase(): Promise<MyDatabase> {
       await db.addCollections({
         animals: {
           schema: animalSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-          },
         },
         vaccines: {
           schema: vaccineSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-          },
         },
         farms: {
           schema: farmSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-          },
         },
         animal_metrics_ce: {
           schema: animalMetricCESchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-          },
         },
         animal_metrics_weight: {
           schema: animalMetricWeightSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-          },
         },
         animal_vaccines: {
           schema: animalVaccineSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-          },
         },
         reproduction_events: {
           schema: reproductionEventSchema,
-          migrationStrategies: {
-            1: (doc: any) => doc,
-            2: (doc: any) => doc,
-            3: (oldDoc: any) => {
-              return {
-                event_id: oldDoc.id || oldDoc.event_id,
-                rgn: oldDoc.rgn,
-                event_type: oldDoc.event_type || oldDoc.type || "IATF",
-                productive_status:
-                  oldDoc.status_produtivo || oldDoc.productive_status,
-                age: oldDoc.idade_meses || oldDoc.age,
-                genotyping: oldDoc.genotipagem || oldDoc.genotyping,
-                evaluation_date:
-                  oldDoc.evaluation_date || oldDoc.avaliacao_data,
-                body_score: oldDoc.score_corporal || oldDoc.body_score,
-                gestational_condition:
-                  oldDoc.condicao_gestacional || oldDoc.gestational_condition,
-                ovary_size: oldDoc.ovarios_tamanho || oldDoc.ovary_size,
-                ovary_structure:
-                  oldDoc.ovarios_estrutura || oldDoc.ovary_structure,
-                cycle_stage: oldDoc.estagio_ciclo || oldDoc.cycle_stage,
-                protocol_name: oldDoc.protocolo_nome || oldDoc.protocol_name,
-                bull_name: oldDoc.touro_nome || oldDoc.bull_name,
-                d0_date:
-                  oldDoc.date || oldDoc.d0_date || new Date().toISOString(),
-                diagnostic_d30: oldDoc.diagnostico_d30 || oldDoc.diagnostic_d30,
-                resync_bull: oldDoc.touro_resync || oldDoc.resync_bull,
-                calving_start_date:
-                  oldDoc.previsao_parto_inicio || oldDoc.calving_start_date,
-                calving_end_date:
-                  oldDoc.previsao_parto_fim || oldDoc.calving_end_date,
-                natural_mating_d35_entry:
-                  oldDoc.monta_d35_entrada || oldDoc.natural_mating_d35_entry,
-                natural_mating_bull:
-                  oldDoc.touro_monta_natural || oldDoc.natural_mating_bull,
-                natural_mating_d80_exit:
-                  oldDoc.monta_d80_saida || oldDoc.natural_mating_d80_exit,
-                final_diagnostic:
-                  oldDoc.diagnostico_final || oldDoc.final_diagnostic,
-                created_at: oldDoc.created_at,
-                updated_at: oldDoc.updated_at || new Date().toISOString(),
-                _deleted: oldDoc._deleted ?? false,
-              };
-            },
-          },
         },
         animal_statuses: {
           schema: animalStatusSchema,
-          // Versão 0 não precisa de migration strategies
         },
         semen_doses: {
           schema: semenDoseSchema,
-          migrationStrategies: {
-            1: (oldDoc: any) => {
-              const { animalName, ...rest } = oldDoc;
-              return {
-                ...rest,
-                animal_name: animalName || oldDoc.animal_name || "",
-                animal_image: oldDoc.animal_image || "",
-                father_name: oldDoc.father_name || "",
-                maternal_grandfather_name:
-                  oldDoc.maternal_grandfather_name || "",
-                iabcz: oldDoc.iabcz || "",
-                registration: oldDoc.registration || "",
-                center_name: oldDoc.center_name || "",
-              };
-            },
-          },
         },
       });
     } catch (err: any) {

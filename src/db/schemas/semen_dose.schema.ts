@@ -2,7 +2,7 @@ import type { RxJsonSchema } from "rxdb";
 import type { SemenDose } from "@/types/semen_dose.type";
 
 export const semenDoseSchema: RxJsonSchema<SemenDose> = {
-  version: 1,
+  version: 0,
   primaryKey: "id",
   type: "object",
   properties: {
