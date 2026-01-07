@@ -8,9 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import { useRxDB } from "./RxDBProvider";
-import { RxReplicationState } from "rxdb/plugins/replication";
-import { combineLatest, of } from "rxjs";
-import { startWith } from "rxjs/operators";
+import { useSupabaseRealtimeSync } from "@/hooks/sync/useSupabaseRealtimeSync";
+import { combineLatest } from "rxjs";
 
 interface ReplicationContextType {
   isSyncing: boolean;
@@ -45,6 +44,9 @@ export function ReplicationProvider({
   const [entityStatus, setEntityStatus] = useState<
     Record<string, { isSyncing: boolean; error: Error | null }>
   >({});
+
+  // Ativa o listener de Realtime do Supabase
+  useSupabaseRealtimeSync(db);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
