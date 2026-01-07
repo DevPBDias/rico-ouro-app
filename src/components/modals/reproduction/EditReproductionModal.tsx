@@ -27,7 +27,7 @@ export function EditReproductionModal({
 
   const handleSubmit = async (data: Partial<ReproductionEvent>) => {
     try {
-      await updateEvent(event.id, {
+      await updateEvent(event.event_id, {
         ...data,
         updated_at: new Date().toISOString(),
       });

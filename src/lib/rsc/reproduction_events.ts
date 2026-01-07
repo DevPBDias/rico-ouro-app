@@ -1,6 +1,5 @@
 import { getDatabase } from "@/db/client";
-import { ReproductionEvent } from "@/types/reproduction_event.type";
-
+import { ReproductionEvent, EventType } from "@/types/reproduction_event.type";
 
 export async function getReproductionEventsRSC(): Promise<ReproductionEvent[]> {
   const db = await getDatabase();
@@ -10,7 +9,7 @@ export async function getReproductionEventsRSC(): Promise<ReproductionEvent[]> {
       selector: {
         _deleted: { $eq: false },
       },
-      sort: [{ date: "desc" as const }],
+      sort: [{ d0_date: "desc" as const }],
     })
     .exec();
 
@@ -18,11 +17,11 @@ export async function getReproductionEventsRSC(): Promise<ReproductionEvent[]> {
 }
 
 export async function getReproductionEventRSC(
-  id: number
+  eventId: string
 ): Promise<ReproductionEvent | null> {
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
-  const doc = await db.reproduction_events.findOne(id.toString()).exec();
+  const doc = await db.reproduction_events.findOne(eventId).exec();
   return doc ? (doc.toJSON() as ReproductionEvent) : null;
 }
 
@@ -37,7 +36,7 @@ export async function getReproductionEventsByRgnRSC(
         _deleted: { $eq: false },
         rgn: { $eq: rgn },
       },
-      sort: [{ date: "desc" as const }],
+      sort: [{ d0_date: "desc" as const }],
     })
     .exec();
 
@@ -45,7 +44,7 @@ export async function getReproductionEventsByRgnRSC(
 }
 
 export async function getReproductionEventsByTypeRSC(
-  type: "IATF" | "MONTA NATURAL" | "FIV-TETF"
+  eventType: EventType
 ): Promise<ReproductionEvent[]> {
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
@@ -53,9 +52,9 @@ export async function getReproductionEventsByTypeRSC(
     .find({
       selector: {
         _deleted: { $eq: false },
-        type: { $eq: type },
+        event_type: { $eq: eventType },
       },
-      sort: [{ date: "desc" as const }],
+      sort: [{ d0_date: "desc" as const }],
     })
     .exec();
 
@@ -73,3 +72,4 @@ export async function countReproductionEventsRSC(): Promise<number> {
     })
     .exec();
 }
+

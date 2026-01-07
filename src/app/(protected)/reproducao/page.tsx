@@ -213,23 +213,27 @@ export default function ReproducaoPage() {
                 <Accordion type="single" collapsible className="space-y-3">
                   {reproductionEvents.map((event) => {
                     const isPrenha =
-                      event.gestation_diagnostic_type === "Prenha";
-                    const hasResult = !!event.gestation_diagnostic_type;
+                      event.diagnostic_d30 === "prenha" ||
+                      event.final_diagnostic === "prenha";
+                    const hasResult =
+                      !!event.diagnostic_d30 || !!event.final_diagnostic;
+                    const diagnosticResult =
+                      event.final_diagnostic || event.diagnostic_d30;
 
                     return (
                       <AccordionItem
-                        key={event.id}
-                        value={event.id}
+                        key={event.event_id}
+                        value={event.event_id}
                         className="bg-card border border-border rounded-lg overflow-hidden"
                       >
                         <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 transition-colors">
                           <div className="flex items-center justify-between w-full pr-2">
                             <div className="flex items-center gap-3">
                               <span className="text-primary font-bold text-sm uppercase">
-                                {event.type}
+                                {event.event_type}
                               </span>
                               <span className="text-muted-foreground text-xs">
-                                {event.date && formatDate(event.date)}
+                                {event.d0_date && formatDate(event.d0_date)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -241,7 +245,7 @@ export default function ReproducaoPage() {
                                       : "bg-red-100 text-red-700"
                                   }`}
                                 >
-                                  {event.gestation_diagnostic_type}
+                                  {diagnosticResult}
                                 </span>
                               )}
                               {/* Botão de Edição Inline */}
@@ -270,18 +274,18 @@ export default function ReproducaoPage() {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <span className="text-[10px] uppercase text-muted-foreground block">
-                                  Data
+                                  Data D0
                                 </span>
                                 <span className="font-medium">
-                                  {formatDate(event.date)}
+                                  {formatDate(event.d0_date)}
                                 </span>
                               </div>
                               <div>
                                 <span className="text-[10px] uppercase text-muted-foreground block">
-                                  Peso
+                                  Protocolo
                                 </span>
                                 <span className="font-medium">
-                                  {event.weight ? `${event.weight} kg` : "-"}
+                                  {event.protocol_name || "-"}
                                 </span>
                               </div>
                               <div>
@@ -289,23 +293,20 @@ export default function ReproducaoPage() {
                                   Touro
                                 </span>
                                 <span className="font-medium">
-                                  {event.bull || "-"}
+                                  {event.bull_name || "-"}
                                 </span>
                               </div>
-                              {event.donor && (
-                                <div>
-                                  <span className="text-[10px] uppercase text-muted-foreground block">
-                                    Doadora
-                                  </span>
-                                  <span className="font-medium">
-                                    {event.donor}
-                                  </span>
-                                </div>
-                              )}
+                              <div>
+                                <span className="text-[10px] uppercase text-muted-foreground block">
+                                  Status
+                                </span>
+                                <span className="font-medium">
+                                  {event.productive_status || "-"}
+                                </span>
+                              </div>
                             </div>
 
-                            {(event.gestation_diagnostic_date ||
-                              event.gestation_diagnostic_type) && (
+                            {hasResult && (
                               <div className="border-t border-border pt-3">
                                 <span className="text-[10px] font-bold uppercase text-muted-foreground block mb-2">
                                   Diagnóstico
@@ -313,35 +314,39 @@ export default function ReproducaoPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <span className="text-[10px] uppercase text-muted-foreground block">
-                                      Data
+                                      Data D30
                                     </span>
                                     <span className="font-medium">
-                                      {formatDate(
-                                        event.gestation_diagnostic_date
-                                      )}
+                                      {formatDate(event.d30_date)}
                                     </span>
                                   </div>
                                   <div>
                                     <span className="text-[10px] uppercase text-muted-foreground block">
-                                      Resultado
+                                      Resultado D30
                                     </span>
                                     <span
                                       className={`font-bold ${
-                                        isPrenha
+                                        event.diagnostic_d30 === "prenha"
                                           ? "text-green-600"
                                           : "text-red-600"
                                       }`}
                                     >
-                                      {event.gestation_diagnostic_type || "-"}
+                                      {event.diagnostic_d30 || "-"}
                                     </span>
                                   </div>
-                                  {isPrenha && (
+                                  {event.final_diagnostic && (
                                     <div>
                                       <span className="text-[10px] uppercase text-muted-foreground block">
-                                        Sexo
+                                        Diagnóstico Final
                                       </span>
-                                      <span className="font-medium">
-                                        {event.expected_sex || "-"}
+                                      <span
+                                        className={`font-bold ${
+                                          event.final_diagnostic === "prenha"
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                        }`}
+                                      >
+                                        {event.final_diagnostic}
                                       </span>
                                     </div>
                                   )}

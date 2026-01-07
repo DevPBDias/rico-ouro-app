@@ -10,7 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ReproductionEvent } from "@/types/reproduction_event.type";
+import {
+  ReproductionEvent,
+  EventType,
+  ReproductionStatus,
+  GestationalStatus,
+  OvarySize,
+  OvaryStructure,
+  CycleStage,
+  Diagnostic,
+} from "@/types/reproduction_event.type";
 import { Loader2 } from "lucide-react";
 
 interface ReproductionFormProps {
@@ -29,17 +38,10 @@ export function ReproductionForm({
   onCancel,
 }: ReproductionFormProps) {
   const [formData, setFormData] = useState<Partial<ReproductionEvent>>({
-    type: "IATF",
-    date: "",
-    weight: "",
-    bull: "",
-    rgn_bull: "",
-    donor: "",
-    gestation_diagnostic_date: "",
-    gestation_diagnostic_type: undefined,
-    expected_sex: undefined,
-    expected_birth_date_270: "",
-    expected_birth_date_305: "",
+    event_type: "IATF",
+    d0_date: "",
+    bull_name: "",
+    protocol_name: "",
     ...initialData,
   });
 
@@ -53,7 +55,7 @@ export function ReproductionForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const calculateBirthDates = (date: string) => {
+  const calculateCalvingDates = (date: string) => {
     if (!date) return;
     const initialDate = new Date(date);
 
@@ -63,21 +65,12 @@ export function ReproductionForm({
     const date305 = new Date(initialDate);
     date305.setDate(date305.getDate() + 305);
 
-    handleChange(
-      "expected_birth_date_270",
-      date270.toISOString().split("T")[0]
-    );
-    handleChange(
-      "expected_birth_date_305",
-      date305.toISOString().split("T")[0]
-    );
+    handleChange("calving_start_date", date270.toISOString().split("T")[0]);
+    handleChange("calving_end_date", date305.toISOString().split("T")[0]);
   };
 
-  const handleTypeChange = (value: string) => {
-    handleChange("type", value);
-    if (value !== "FIV-TETF") {
-      handleChange("donor", "");
-    }
+  const handleTypeChange = (value: EventType) => {
+    handleChange("event_type", value);
   };
 
   const cleanData = (data: Partial<ReproductionEvent>) => {
@@ -109,27 +102,29 @@ export function ReproductionForm({
             <label className="text-xs font-bold text-primary uppercase">
               Tipo
             </label>
-            <Select value={formData.type} onValueChange={handleTypeChange}>
+            <Select
+              value={formData.event_type}
+              onValueChange={(v) => handleTypeChange(v as EventType)}
+            >
               <SelectTrigger className="bg-muted border-0">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="IATF">IATF</SelectItem>
-                <SelectItem value="MONTA NATURAL">Monta Natural</SelectItem>
-                <SelectItem value="FIV-TETF">FIV-TETF</SelectItem>
+                <SelectItem value="FIV">FIV</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Data
+              Data D0 (Inseminação)
             </label>
             <Input
               type="date"
-              value={formData.date || ""}
+              value={formData.d0_date || ""}
               onChange={(e) => {
-                handleChange("date", e.target.value);
+                handleChange("d0_date", e.target.value);
               }}
               className="bg-muted border-0"
               required
@@ -140,14 +135,33 @@ export function ReproductionForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Peso (kg)
+              Status Produtivo
+            </label>
+            <Select
+              value={formData.productive_status || ""}
+              onValueChange={(v) =>
+                handleChange("productive_status", v as ReproductionStatus)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="parida">Parida</SelectItem>
+                <SelectItem value="solteira">Solteira</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Idade
             </label>
             <Input
-              type="number"
-              step="0.01"
-              value={formData.weight || ""}
-              onChange={(e) => handleChange("weight", e.target.value)}
+              value={formData.age || ""}
+              onChange={(e) => handleChange("age", e.target.value)}
               className="bg-muted border-0"
+              placeholder="Ex: 36 meses"
             />
           </div>
         </div>
@@ -158,35 +172,149 @@ export function ReproductionForm({
               Touro
             </label>
             <Input
-              value={formData.bull || ""}
-              onChange={(e) => handleChange("bull", e.target.value)}
+              value={formData.bull_name || ""}
+              onChange={(e) => handleChange("bull_name", e.target.value)}
               className="bg-muted border-0"
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              RGN Touro
+              Protocolo
             </label>
             <Input
-              value={formData.rgn_bull || ""}
-              onChange={(e) => handleChange("rgn_bull", e.target.value)}
+              value={formData.protocol_name || ""}
+              onChange={(e) => handleChange("protocol_name", e.target.value)}
               className="bg-muted border-0"
             />
           </div>
         </div>
+      </div>
 
-        {formData.type === "FIV-TETF" && (
+      {/* Seção Avaliação Produtiva */}
+      <div className="space-y-4 pt-4">
+        <h3 className="font-semibold text-sm uppercase text-gray-500 border-b pb-1">
+          Avaliação Produtiva
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Doadora
+              Data Avaliação
             </label>
             <Input
-              value={formData.donor || ""}
-              onChange={(e) => handleChange("donor", e.target.value)}
+              type="date"
+              value={formData.evaluation_date || ""}
+              onChange={(e) => handleChange("evaluation_date", e.target.value)}
               className="bg-muted border-0"
             />
           </div>
-        )}
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Score Corporal
+            </label>
+            <Select
+              value={formData.body_score?.toString() || ""}
+              onValueChange={(v) =>
+                handleChange("body_score", parseInt(v) as 1 | 2 | 3 | 4 | 5)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((score) => (
+                  <SelectItem key={score} value={score.toString()}>
+                    {score}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Condição Gestacional
+            </label>
+            <Select
+              value={formData.gestational_condition || ""}
+              onValueChange={(v) =>
+                handleChange("gestational_condition", v as GestationalStatus)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prenha">Prenha</SelectItem>
+                <SelectItem value="vazia">Vazia</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Tamanho Ovários
+            </label>
+            <Select
+              value={formData.ovary_size || ""}
+              onValueChange={(v) => handleChange("ovary_size", v as OvarySize)}
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="pequeno">Pequeno</SelectItem>
+                <SelectItem value="grande">Grande</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Estrutura Ovários
+            </label>
+            <Select
+              value={formData.ovary_structure || ""}
+              onValueChange={(v) =>
+                handleChange("ovary_structure", v as OvaryStructure)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="foliculo">Folículo</SelectItem>
+                <SelectItem value="corpo_luteo">Corpo Lúteo</SelectItem>
+                <SelectItem value="cisto">Cisto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Estágio do Ciclo
+            </label>
+            <Select
+              value={formData.cycle_stage || ""}
+              onValueChange={(v) =>
+                handleChange("cycle_stage", v as CycleStage)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="estro">Estro</SelectItem>
+                <SelectItem value="anestro 1">Anestro 1</SelectItem>
+                <SelectItem value="anestro 2">Anestro 2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Seção Diagnóstico */}
@@ -198,16 +326,15 @@ export function ReproductionForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Data Diagnóstico
+              Data D30
             </label>
             <Input
               type="date"
-              value={formData.gestation_diagnostic_date || ""}
+              value={formData.d30_date || ""}
               onChange={(e) => {
-                handleChange("gestation_diagnostic_date", e.target.value);
-                // Se já estiver prenha, recalcula as datas baseado na nova data de diagnóstico
-                if (formData.gestation_diagnostic_type === "Prenha") {
-                  calculateBirthDates(e.target.value);
+                handleChange("d30_date", e.target.value);
+                if (formData.diagnostic_d30 === "prenha") {
+                  calculateCalvingDates(e.target.value);
                 }
               }}
               className="bg-muted border-0"
@@ -215,20 +342,18 @@ export function ReproductionForm({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Resultado
+              Diagnóstico D30
             </label>
             <Select
-              value={formData.gestation_diagnostic_type || ""}
+              value={formData.diagnostic_d30 || ""}
               onValueChange={(val) => {
-                handleChange("gestation_diagnostic_type", val);
-                if (val === "Prenha") {
-                  // Usa data de diagnóstico preferencialmente, ou data do evento
-                  const baseDate =
-                    formData.gestation_diagnostic_date || formData.date || "";
-                  calculateBirthDates(baseDate);
-                } else if (val === "Vazia") {
-                  handleChange("expected_birth_date_270", undefined);
-                  handleChange("expected_birth_date_305", undefined);
+                handleChange("diagnostic_d30", val as Diagnostic);
+                if (val === "prenha") {
+                  const baseDate = formData.d30_date || formData.d0_date || "";
+                  calculateCalvingDates(baseDate);
+                } else if (val === "vazia") {
+                  handleChange("calving_start_date", undefined);
+                  handleChange("calving_end_date", undefined);
                 }
               }}
             >
@@ -236,63 +361,65 @@ export function ReproductionForm({
                 <SelectValue placeholder="Pendente" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Prenha">Prenha</SelectItem>
-                <SelectItem value="Vazia">Vazia</SelectItem>
+                <SelectItem value="prenha">Prenha</SelectItem>
+                <SelectItem value="vazia">Vazia</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {formData.gestation_diagnostic_type === "Prenha" && (
-          <>
+        {formData.diagnostic_d30 === "prenha" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-dashed">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-primary uppercase">
-                Sexo Esperado
+              <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                Prev. Parto (270d)
               </label>
-              <Select
-                value={formData.expected_sex || ""}
-                onValueChange={(val) => handleChange("expected_sex", val)}
-              >
-                <SelectTrigger className="bg-muted border-0">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">Macho</SelectItem>
-                  <SelectItem value="F">Fêmea</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                type="date"
+                value={formData.calving_start_date || ""}
+                onChange={(e) =>
+                  handleChange("calving_start_date", e.target.value)
+                }
+                className="bg-white h-8 text-xs"
+              />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-dashed">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">
-                  Prev. Parto (270d)
-                </label>
-                <Input
-                  type="date"
-                  value={formData.expected_birth_date_270 || ""}
-                  onChange={(e) =>
-                    handleChange("expected_birth_date_270", e.target.value)
-                  }
-                  className="bg-white h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">
-                  Prev. Parto (305d)
-                </label>
-                <Input
-                  type="date"
-                  value={formData.expected_birth_date_305 || ""}
-                  onChange={(e) =>
-                    handleChange("expected_birth_date_305", e.target.value)
-                  }
-                  className="bg-white h-8 text-xs"
-                />
-              </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase">
+                Prev. Parto (305d)
+              </label>
+              <Input
+                type="date"
+                value={formData.calving_end_date || ""}
+                onChange={(e) =>
+                  handleChange("calving_end_date", e.target.value)
+                }
+                className="bg-white h-8 text-xs"
+              />
             </div>
-          </>
+          </div>
         )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Diagnóstico Final
+            </label>
+            <Select
+              value={formData.final_diagnostic || ""}
+              onValueChange={(val) =>
+                handleChange("final_diagnostic", val as Diagnostic)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0">
+                <SelectValue placeholder="Pendente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prenha">Prenha</SelectItem>
+                <SelectItem value="vazia">Vazia</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-3 pt-4">
@@ -316,3 +443,4 @@ export function ReproductionForm({
     </form>
   );
 }
+

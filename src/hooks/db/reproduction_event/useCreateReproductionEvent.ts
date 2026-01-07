@@ -15,7 +15,9 @@ export function useCreateReproductionEvent() {
   ): Promise<ReproductionEvent> => {
     const eventData = {
       ...data,
-      id: data.id || uuidv4(),
+      event_id: data.event_id || uuidv4(),
+      updated_at: data.updated_at || new Date().toISOString(),
+      _deleted: data._deleted ?? false,
     };
     return await create(eventData);
   };
@@ -26,3 +28,4 @@ export function useCreateReproductionEvent() {
     error,
   };
 }
+

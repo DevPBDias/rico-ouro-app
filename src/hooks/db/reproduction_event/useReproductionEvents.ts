@@ -23,7 +23,7 @@ export function useReproductionEvents(rgn?: string) {
         _deleted: { $eq: false },
         ...(rgn ? { rgn: { $eq: rgn } } : {}),
       },
-      sort: [{ date: "desc" }],
+      sort: [{ d0_date: "desc" }],
     });
 
     const subscription = query.$.subscribe({

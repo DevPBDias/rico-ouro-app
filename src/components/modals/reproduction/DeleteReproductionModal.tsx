@@ -31,7 +31,7 @@ export function DeleteReproductionModal({
 
   const handleDelete = async () => {
     try {
-      await deleteEvent(event.id);
+      await deleteEvent(event.event_id);
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -57,14 +57,16 @@ export function DeleteReproductionModal({
             <span className="font-bold text-muted-foreground uppercase text-xs">
               Tipo
             </span>
-            <span className="font-semibold text-foreground">{event.type}</span>
+            <span className="font-semibold text-foreground">
+              {event.event_type}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="font-bold text-muted-foreground uppercase text-xs">
-              Data
+              Data D0
             </span>
             <span className="font-semibold text-foreground">
-              {event.date && formatDate(event.date)}
+              {event.d0_date && formatDate(event.d0_date)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -72,7 +74,7 @@ export function DeleteReproductionModal({
               Touro
             </span>
             <span className="font-semibold text-foreground">
-              {event.bull || "-"}
+              {event.bull_name || "-"}
             </span>
           </div>
         </div>
@@ -103,3 +105,4 @@ export function DeleteReproductionModal({
     </Dialog>
   );
 }
+
