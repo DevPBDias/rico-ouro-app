@@ -77,7 +77,6 @@ async function generateAnimalByFarmReport(
       ? [...filters.selectedColumns]
       : [...DEFAULT_SELECTED_COLUMNS];
 
-  // Se o filtro for "Ambos", garantir que a coluna SEXO apareça se não estiver selecionada
   if (
     filters.sex === "Ambos" &&
     !selectedColumns.some((c) => c.dataKey === "sex")

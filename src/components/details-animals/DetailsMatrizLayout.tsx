@@ -507,26 +507,26 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                 {reproductionEvents.length > 0 ? (
                   <Accordion type="single" collapsible className="space-y-3">
                     {reproductionEvents.map((event, index) => {
-                      const isPrenha =
-                        event.gestation_diagnostic_type === "Prenha";
-                      const isVazia =
-                        event.gestation_diagnostic_type === "Vazia";
+                      const diagnosticResult =
+                        event.final_diagnostic || event.diagnostic_d30;
+                      const isPrenha = diagnosticResult === "prenha";
+                      const isVazia = diagnosticResult === "vazia";
                       const hasResult = isPrenha || isVazia;
 
                       return (
                         <AccordionItem
-                          key={event.id}
-                          value={event.id}
+                          key={event.event_id}
+                          value={event.event_id}
                           className="border border-border rounded-lg overflow-hidden bg-card"
                         >
                           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 transition-colors">
                             <div className="flex items-center justify-between w-full pr-2">
                               <div className="flex items-center gap-3">
                                 <span className="text-primary font-bold text-sm uppercase">
-                                  {event.type}
+                                  {event.event_type}
                                 </span>
                                 <span className="text-muted-foreground text-xs">
-                                  {event.date && formatDate(event.date)}
+                                  {event.d0_date && formatDate(event.d0_date)}
                                 </span>
                               </div>
                               {hasResult && (
@@ -537,7 +537,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                                       : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                                   }`}
                                 >
-                                  {event.gestation_diagnostic_type}
+                                  {diagnosticResult}
                                 </span>
                               )}
                             </div>
@@ -548,65 +548,50 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                               <div className="grid grid-cols-2 gap-3 pt-2">
                                 <div>
                                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Data
+                                    Data D0
                                   </span>
                                   <span className="text-sm font-medium text-foreground">
-                                    {event.date ? formatDate(event.date) : "-"}
+                                    {event.d0_date
+                                      ? formatDate(event.d0_date)
+                                      : "-"}
                                   </span>
                                 </div>
                                 <div>
                                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Peso
+                                    Status
                                   </span>
                                   <span className="text-sm font-medium text-foreground">
-                                    {event.weight ? `${event.weight} kg` : "-"}
+                                    {event.productive_status || "-"}
                                   </span>
                                 </div>
                               </div>
 
-                              {event.bull && (
+                              {event.bull_name && (
                                 <div className="border-t border-border pt-3">
                                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
                                     Touro
                                   </span>
                                   <span className="text-sm font-medium text-primary">
-                                    {event.bull}
-                                    {event.rgn_bull && (
-                                      <span className="text-muted-foreground font-normal ml-2">
-                                        (RGN {event.rgn_bull})
-                                      </span>
-                                    )}
+                                    {event.bull_name}
                                   </span>
                                 </div>
                               )}
 
-                              {event.donor && (
-                                <div className="border-t border-border pt-3">
-                                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Doadora
-                                  </span>
-                                  <span className="text-sm font-medium text-primary">
-                                    {event.donor}
-                                  </span>
-                                </div>
-                              )}
-
-                              {(event.gestation_diagnostic_date ||
-                                event.gestation_diagnostic_type) && (
+                              {(event.d30_date ||
+                                event.final_diagnostic ||
+                                event.diagnostic_d30) && (
                                 <div className="border-t border-border pt-3">
                                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-2">
                                     Diagnóstico Gestacional
                                   </span>
-                                  <div className="grid grid-cols-3 gap-3">
+                                  <div className="grid grid-cols-2 gap-3">
                                     <div>
                                       <span className="text-[10px] text-muted-foreground block">
-                                        Data
+                                        Data D30
                                       </span>
                                       <span className="text-xs font-medium">
-                                        {event.gestation_diagnostic_date
-                                          ? formatDate(
-                                              event.gestation_diagnostic_date
-                                            )
+                                        {event.d30_date
+                                          ? formatDate(event.d30_date)
                                           : "-"}
                                       </span>
                                     </div>
@@ -621,19 +606,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                                             : "text-red-600 dark:text-red-400"
                                         }`}
                                       >
-                                        {event.gestation_diagnostic_type || "-"}
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <span className="text-[10px] text-muted-foreground block">
-                                        Sexo Esperado
-                                      </span>
-                                      <span className="text-xs font-medium">
-                                        {event.expected_sex === "M"
-                                          ? "Macho"
-                                          : event.expected_sex === "F"
-                                          ? "Fêmea"
-                                          : "-"}
+                                        {diagnosticResult || "-"}
                                       </span>
                                     </div>
                                   </div>
@@ -641,8 +614,8 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                               )}
 
                               {isPrenha &&
-                                (event.expected_birth_date_270 ||
-                                  event.expected_birth_date_305) && (
+                                (event.calving_start_date ||
+                                  event.calving_end_date) && (
                                   <div className="border-t border-border pt-3">
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-2">
                                       Previsão de Parto
@@ -653,9 +626,9 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                                           270 dias
                                         </span>
                                         <span className="text-sm font-semibold text-foreground">
-                                          {event.expected_birth_date_270
+                                          {event.calving_start_date
                                             ? formatDate(
-                                                event.expected_birth_date_270
+                                                event.calving_start_date
                                               )
                                             : "-"}
                                         </span>
@@ -665,10 +638,8 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                                           305 dias
                                         </span>
                                         <span className="text-sm font-semibold text-foreground">
-                                          {event.expected_birth_date_305
-                                            ? formatDate(
-                                                event.expected_birth_date_305
-                                              )
+                                          {event.calving_end_date
+                                            ? formatDate(event.calving_end_date)
                                             : "-"}
                                         </span>
                                       </div>
