@@ -1,0 +1,124 @@
+/**
+ * Report Definition: Reproduction (Reprodução - Manejo)
+ *
+ * This report lists reproduction management events for animals
+ * in a farm within a specified date range.
+ *
+ * Required Filters: farm, dateRange
+ * Allows Column Selection: No (fixed columns)
+ */
+
+import { getDatabase } from "@/db/client";
+import { Animal } from "@/types/animal.type";
+import { ReproductionEvent } from "@/types/reproduction_event.type";
+import { ReportDefinition, ReportGeneratorParams } from "./types";
+import { generateReproductionPDF } from "../generators/reproduction";
+
+/**
+ * Fetches reproduction data and generates the PDF report.
+ *
+ * @param params - Filters from the context
+ */
+async function generateReproductionReport(
+  params: ReportGeneratorParams
+): Promise<void> {
+  const { filters } = params;
+
+  const db = await getDatabase();
+  if (!db) throw new Error("Database not initialized");
+
+  // Fetch animals from the selected farm
+  const animalDocs = await db.animals
+    .find({
+      selector: {
+        _deleted: { $eq: false },
+        farm_id: { $eq: filters.farmId },
+        // Only female animals for reproduction
+        sex: { $eq: "F" },
+      },
+    })
+    .exec();
+
+  const animals = animalDocs.map((doc) => doc.toJSON() as Animal);
+  const animalRgns = animals.map((a) => a.rgn);
+
+  // Fetch reproduction events within date range
+  const eventDocs = await db.reproduction_events
+    .find({
+      selector: {
+        _deleted: { $eq: false },
+        rgn: { $in: animalRgns },
+        d0_date: {
+          $gte: filters.startDate || "",
+          $lte: filters.endDate || new Date().toISOString().split("T")[0],
+        },
+      },
+      sort: [{ d0_date: "desc" as const }],
+    })
+    .exec();
+
+  const events = eventDocs.map((doc) => doc.toJSON() as ReproductionEvent);
+
+  // Create animal lookup map
+  const animalMap = new Map(animals.map((a) => [a.rgn, a]));
+
+  // Transform data for report
+  const reportData = {
+    farmName: filters.farmName || "Fazenda",
+    managementDate: filters.startDate
+      ? new Date(filters.startDate).toLocaleDateString("pt-BR")
+      : new Date().toLocaleDateString("pt-BR"),
+    data: events.map((event) => {
+      const animal = animalMap.get(event.rgn);
+      return {
+        rgd: animal?.serie_rgd || "",
+        rgn: event.rgn || "",
+        animalName: animal?.name || "---",
+        managementType: formatEventType(event),
+        date: event.d0_date
+          ? new Date(event.d0_date).toLocaleDateString("pt-BR")
+          : "---",
+        observations: event.bull_name ? `Touro: ${event.bull_name}` : "---",
+      };
+    }),
+    reportDate: new Date().toLocaleDateString("pt-BR"),
+    systemName: "Rico Ouro",
+  };
+
+  await generateReproductionPDF(reportData);
+}
+
+/**
+ * Format event type for display
+ */
+function formatEventType(event: ReproductionEvent): string {
+  const type = event.event_type === "IATF" ? "IATF" : "FIV";
+
+  if (event.final_diagnostic) {
+    return `${type} - ${
+      event.final_diagnostic === "prenha" ? "Prenha" : "Vazia"
+    }`;
+  }
+
+  if (event.diagnostic_d30) {
+    return `${type} - DG30: ${
+      event.diagnostic_d30 === "prenha" ? "Prenha" : "Vazia"
+    }`;
+  }
+
+  return type;
+}
+
+/**
+ * Report definition for "Reproduction"
+ */
+export const reproductionDefinition: ReportDefinition = {
+  id: "reproduction",
+  title: "Reprodução (Manejo)",
+  description:
+    "Lista os eventos de manejo reprodutivo dos animais em um período",
+  icon: "Heart",
+  requiredFilters: ["farm", "dateRange"],
+  allowColumnSelection: false,
+  generate: generateReproductionReport,
+};

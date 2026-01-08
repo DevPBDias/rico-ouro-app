@@ -17,7 +17,7 @@ export function ReportCheckboxItem({
 }: ReportCheckboxItemProps) {
   return (
     <div
-      className={`flex flex-row items-start justify-start gap-3 p-2 rounded-lg border-2 transition-all ${
+      className={`w-full flex flex-row items-center justify-center gap-2 px-2 py-1.5 rounded-lg border-2 transition-all ${
         disabled
           ? "bg-gray-100 border-gray-200 opacity-50 cursor-not-allowed"
           : "cursor-pointer hover:shadow-md " +
@@ -35,7 +35,7 @@ export function ReportCheckboxItem({
       />
       <label
         htmlFor={id}
-        className={`text-sm font-medium flex-1 ${
+        className={`text-xs font-medium flex-1 ${
           disabled ? "cursor-not-allowed" : "cursor-pointer"
         } ${checked ? "text-primary" : "text-gray-700"}`}
       >
