@@ -62,19 +62,30 @@ export const drawHeader = (doc: jsPDF, options: BrandingOptions) => {
     });
 
     doc.setFontSize(LAYOUT_CONFIG.sizes.headerDept);
-    doc.text(`Fazenda: ${options.farmName.toUpperCase()}`, centerX, 14, {
-      align: "center",
-    });
+    doc.text(
+      `${
+        options.farmName !== "GERAL"
+          ? "Fazenda: " + options.farmName.toUpperCase()
+          : "Geral"
+      }`,
+      centerX,
+      14,
+      {
+        align: "center",
+      }
+    );
 
     doc.setFontSize(LAYOUT_CONFIG.sizes.infoValue);
 
     let genderLabel = options.gender || "";
     if (genderLabel === "M") genderLabel = "Machos";
     else if (genderLabel === "F") genderLabel = "Fêmeas";
-    else if (genderLabel === "Ambos") genderLabel = "Animais";
+    else if (genderLabel === "Ambos") {
+      genderLabel = options.reportName.includes("SÊMEN") ? "Touros" : "Animais";
+    }
 
     doc.text(
-      `Quantidade: ${options.totalItems} ${genderLabel.toLowerCase}`,
+      `Quantidade: ${options.totalItems} ${genderLabel.toLowerCase()}`,
       centerX,
       19,
       {

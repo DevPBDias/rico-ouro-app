@@ -52,6 +52,20 @@ export interface ReproductionReportData extends ReportBaseData {
   }>;
 }
 
+export interface SemenDoseReportData extends ReportBaseData {
+  totalItems: number;
+  data: Array<{
+    animal_name: string;
+    breed: string;
+    quantity: number;
+    father_name?: string;
+    maternal_grandfather_name?: string;
+    iabcz?: string;
+    registration?: string;
+    center_name?: string;
+  }>;
+}
+
 export interface TableColumn {
   header: string;
   dataKey: string;

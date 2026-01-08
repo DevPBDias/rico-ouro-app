@@ -36,7 +36,7 @@ export function ReportCard({ report, onSelect }: ReportCardProps) {
 
   return (
     <Card
-      className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
+      className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group flex flex-col justify-between"
       onClick={onSelect}
     >
       <CardHeader className="pb-3">

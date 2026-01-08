@@ -20,7 +20,7 @@ export function ReportsPage() {
     <div className="space-y-6">
       <Header title="Relatórios" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4">
+      <div className="grid grid-cols-2 gap-4 px-4">
         {AVAILABLE_REPORTS.map((report) => (
           <ReportCard
             key={report.id}

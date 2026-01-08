@@ -39,7 +39,7 @@ async function generateAnimalByFarmReport(
 
   // Transform data for report
   const reportData = {
-    farmName: filters.farmName || "Fazenda",
+    farmName: filters.farmName || "Geral",
     gender: filters.sex || "Ambos",
     totalItems: animals.length,
     data: animals.map((animal) => ({
