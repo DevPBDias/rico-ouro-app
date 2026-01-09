@@ -80,7 +80,7 @@ export const drawHeader = (doc: jsPDF, options: BrandingOptions) => {
     let genderLabel = options.gender || "";
     if (genderLabel === "M") genderLabel = "Machos";
     else if (genderLabel === "F") genderLabel = "Fêmeas";
-    else if (genderLabel === "Ambos") {
+    else if (genderLabel === "Ambos" || genderLabel === "Machos e Fêmeas") {
       genderLabel = options.reportName.includes("SÊMEN") ? "Touros" : "Animais";
     }
 

@@ -1,24 +1,9 @@
-/**
- * Report Definition: Reproduction (Reprodução - Manejo)
- *
- * This report lists reproduction management events for animals
- * in a farm within a specified date range.
- *
- * Required Filters: farm, dateRange
- * Allows Column Selection: No (fixed columns)
- */
-
 import { getDatabase } from "@/db/client";
 import { Animal } from "@/types/animal.type";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { ReportDefinition, ReportGeneratorParams } from "./types";
 import { generateReproductionPDF } from "../generators/reproduction";
 
-/**
- * Fetches reproduction data and generates the PDF report.
- *
- * @param params - Filters from the context
- */
 async function generateReproductionReport(
   params: ReportGeneratorParams
 ): Promise<void> {
@@ -88,9 +73,6 @@ async function generateReproductionReport(
   await generateReproductionPDF(reportData);
 }
 
-/**
- * Format event type for display
- */
 function formatEventType(event: ReproductionEvent): string {
   const type = event.event_type === "IATF" ? "IATF" : "FIV";
 
@@ -109,12 +91,9 @@ function formatEventType(event: ReproductionEvent): string {
   return type;
 }
 
-/**
- * Report definition for "Reproduction"
- */
 export const reproductionDefinition: ReportDefinition = {
   id: "reproduction",
-  title: "Reprodução (Manejo)",
+  title: "Reprodução",
   description:
     "Lista os eventos de manejo reprodutivo dos animais em um período",
   icon: "Heart",

@@ -113,7 +113,7 @@ async function generateWeightReport(
  */
 export const weightPerformanceDefinition: ReportDefinition = {
   id: "weight-performance",
-  title: "Desempenho (Pesagens)",
+  title: "Desempenho Pesagens",
   description:
     "Mostra as últimas pesagens e o GMD (ganho médio diário) dos animais",
   icon: "Scale",

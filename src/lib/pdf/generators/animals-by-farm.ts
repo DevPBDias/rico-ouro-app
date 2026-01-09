@@ -14,11 +14,21 @@ export const generateAnimalsByFarmPDF = async (
     format: "a4",
   });
 
+  const genderFormat = (gender: string) => {
+    switch (gender) {
+      case "M":
+        return "MACHOs";
+      case "F":
+        return "FEMEAs";
+      default:
+        return "animais";
+    }
+  };
+
   const brandingOptions = {
     reportName: "RELATÓRIO DE ANIMAIS POR FAZENDA",
     farmName: reportData.farmName,
-    gender:
-      reportData.gender === "Ambos" ? "Machos e Fêmeas" : reportData.gender,
+    gender: genderFormat(reportData.gender),
     totalItems: reportData.totalItems,
     systemName: reportData.systemName,
     reportDate: reportData.reportDate,
@@ -58,21 +68,21 @@ export const generateAnimalsByFarmPDF = async (
     columns: columns,
     body: rows,
     columnStyles: {
-      rgdn: { cellWidth: 20 },
-      birthDate: { cellWidth: 20 },
+      rgdn: { cellWidth: 23 },
+      birthDate: { cellWidth: 22 },
       age: { cellWidth: 14 },
-      fatherRgd: { cellWidth: 32 },
-      motherRgd: { cellWidth: 20 },
-      iabcgz: { cellWidth: 14 },
-      deca: { cellWidth: 9 },
-      maternal_grandfather_name: { cellWidth: 32 },
-      paternal_grandfather_name: { cellWidth: 32 },
-      p: { cellWidth: 9 },
-      f: { cellWidth: 9 },
-      classification: { cellWidth: 14 },
-      status: { cellWidth: 14 },
-      society: { cellWidth: 18 },
-      sex: { cellWidth: 12 },
+      fatherRgd: { cellWidth: 35 },
+      motherRgd: { cellWidth: 22 },
+      iabcgz: { cellWidth: 16 },
+      deca: { cellWidth: 15 },
+      maternal_grandfather_name: { cellWidth: 40 },
+      paternal_grandfather_name: { cellWidth: 40 },
+      p: { cellWidth: 10 },
+      f: { cellWidth: 10 },
+      classification: { cellWidth: 20 },
+      status: { cellWidth: 20 },
+      society: { cellWidth: 30 },
+      sex: { cellWidth: 15 },
       observations: { cellWidth: "auto" },
     },
     didDrawPage: (data) => {},

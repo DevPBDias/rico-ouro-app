@@ -103,7 +103,7 @@ async function generateSanitaryReport(
  */
 export const sanitaryByFarmDefinition: ReportDefinition = {
   id: "sanitary-by-farm",
-  title: "Sanitário (Vacinas)",
+  title: "Sanitário Vacinas",
   description: "Lista todas as aplicações de vacinas em um período específico",
   icon: "Syringe",
   requiredFilters: ["farm", "dateRange"],

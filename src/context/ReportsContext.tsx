@@ -14,6 +14,7 @@ import {
   validateRequiredFilters,
   GenderFilterValue,
 } from "@/lib/pdf/definitions/types";
+import { animalByFarmDefinition } from "@/lib/pdf/definitions/animalByFarm.definition";
 import { TableColumn } from "@/lib/pdf/types";
 
 interface ReportsContextState {
@@ -21,7 +22,6 @@ interface ReportsContextState {
   filters: ReportFilters;
   isGenerating: boolean;
   validationErrors: FilterValidationError[];
-  isModalOpen: boolean;
 }
 
 interface ReportsContextActions {
@@ -35,7 +35,6 @@ interface ReportsContextActions {
   validateFilters: () => boolean;
   generateReport: () => Promise<boolean>;
   reset: () => void;
-  closeModal: () => void;
 }
 
 type ReportsContextType = ReportsContextState & ReportsContextActions;
@@ -50,11 +49,10 @@ const initialFilters: ReportFilters = {
 };
 
 const initialState: ReportsContextState = {
-  selectedReport: null,
+  selectedReport: animalByFarmDefinition,
   filters: initialFilters,
   isGenerating: false,
   validationErrors: [],
-  isModalOpen: false,
 };
 
 const ReportsContext = createContext<ReportsContextType | null>(null);
@@ -73,20 +71,18 @@ interface ReportsProviderProps {
 
 export function ReportsProvider({ children }: ReportsProviderProps) {
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(
-    null
+    animalByFarmDefinition
   );
   const [filters, setFilters] = useState<ReportFilters>(initialFilters);
   const [isGenerating, setIsGenerating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<
     FilterValidationError[]
   >([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const selectReport = useCallback((report: ReportDefinition) => {
     setSelectedReport(report);
     setFilters(initialFilters); // Reset filters when selecting new report
     setValidationErrors([]);
-    setIsModalOpen(true);
   }, []);
 
   const updateFilter = useCallback(
@@ -149,9 +145,6 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       // Call the report's generate function with filters
       await selectedReport.generate({ filters });
 
-      // Close modal on success
-      setIsModalOpen(false);
-
       return true;
     } catch (error) {
       console.error("[ReportsContext] Error generating report:", error);
@@ -162,16 +155,10 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
   }, [selectedReport, filters, validateFilters]);
 
   const reset = useCallback(() => {
-    setSelectedReport(null);
+    setSelectedReport(animalByFarmDefinition);
     setFilters(initialFilters);
     setValidationErrors([]);
     setIsGenerating(false);
-    setIsModalOpen(false);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setIsModalOpen(false);
-    setValidationErrors([]);
   }, []);
 
   const value = useMemo<ReportsContextType>(
@@ -180,7 +167,6 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       filters,
       isGenerating,
       validationErrors,
-      isModalOpen,
       selectReport,
       updateFilter,
       updateFilters,
@@ -188,14 +174,12 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       validateFilters,
       generateReport,
       reset,
-      closeModal,
     }),
     [
       selectedReport,
       filters,
       isGenerating,
       validationErrors,
-      isModalOpen,
       selectReport,
       updateFilter,
       updateFilters,
@@ -203,7 +187,6 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       validateFilters,
       generateReport,
       reset,
-      closeModal,
     ]
   );
 
