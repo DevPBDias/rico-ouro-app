@@ -80,7 +80,7 @@ export function ReportForm() {
       </div>
 
       <div className="space-y-2 w-full ">
-        <div className="flex flex-row justify-between items-center gap-4 w-full ">
+        <div className="flex flex-row justify-between items-start gap-4 w-full ">
           {/* Farm Filter */}
           {requiresFilter("farm") && (
             <div
@@ -262,7 +262,7 @@ export function ReportForm() {
         <Button
           onClick={generateReport}
           disabled={isGenerating}
-          className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto"
+          className="h-10 px-8 uppercase rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto"
         >
           {isGenerating ? (
             <>
@@ -270,7 +270,7 @@ export function ReportForm() {
               Gerando Relatório...
             </>
           ) : (
-            "Gerar PDF do Relatório"
+            "Gerar Relatório"
           )}
         </Button>
       </div>

@@ -11,11 +11,6 @@ const reportLinks: Links[] = [
     name: "Planilhas",
     href: "/geral/relatorios/planilhas",
   },
-  {
-    id: 3,
-    name: "Doses de Sêmen",
-    href: "/geral/relatorios/doses-semen",
-  },
 ];
 
 export default reportLinks;

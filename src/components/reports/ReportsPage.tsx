@@ -35,7 +35,7 @@ export function ReportsPage() {
               <TabsTrigger
                 key={report.id}
                 value={report.id}
-                className="w-[82px] flex-none py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
+                className="min-w-[82px] max-w-[96px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
               >
                 {report.title.split(" ").pop()}
               </TabsTrigger>
