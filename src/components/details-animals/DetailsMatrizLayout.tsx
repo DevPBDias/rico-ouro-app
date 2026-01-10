@@ -545,107 +545,182 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
 
                           <AccordionContent>
                             <div className="px-4 pb-4 space-y-4">
-                              <div className="grid grid-cols-2 gap-3 pt-2">
-                                <div>
-                                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Data D0
-                                  </span>
-                                  <span className="text-sm font-medium text-foreground">
-                                    {event.d0_date
-                                      ? formatDate(event.d0_date)
-                                      : "-"}
-                                  </span>
+                              <div className="p-3 border rounded-xl bg-card/50 space-y-3 mt-2">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
+                                      Inseminação
+                                    </span>
+                                    <span className="text-sm font-medium">
+                                      {formatDate(event.d0_date)}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
+                                      Touro/Sêmen
+                                    </span>
+                                    <span className="text-sm font-bold text-primary">
+                                      {event.bull_name || "-"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
+                                      Protocolo
+                                    </span>
+                                    <span className="text-xs">
+                                      {event.protocol_name || "-"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
+                                      Status Prod.
+                                    </span>
+                                    <span className="text-xs uppercase">
+                                      {event.productive_status || "-"}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div>
-                                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Status
-                                  </span>
-                                  <span className="text-sm font-medium text-foreground">
-                                    {event.productive_status || "-"}
-                                  </span>
-                                </div>
-                              </div>
 
-                              {event.bull_name && (
-                                <div className="border-t border-border pt-3">
-                                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-0.5">
-                                    Touro
-                                  </span>
-                                  <span className="text-sm font-medium text-primary">
-                                    {event.bull_name}
-                                  </span>
-                                </div>
-                              )}
-
-                              {(event.d30_date ||
-                                event.final_diagnostic ||
-                                event.diagnostic_d30) && (
-                                <div className="border-t border-border pt-3">
-                                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-2">
-                                    Diagnóstico Gestacional
-                                  </span>
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                      <span className="text-[10px] text-muted-foreground block">
-                                        Data D30
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-muted/20 p-2 rounded-lg border border-dashed">
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block">
+                                      D8 / D10
+                                    </span>
+                                    <span className="text-[10px] font-medium">
+                                      {event.d8_date
+                                        ? formatDate(event.d8_date)
+                                        : "-"}{" "}
+                                      /{" "}
+                                      {event.d10_date
+                                        ? formatDate(event.d10_date)
+                                        : "-"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block">
+                                      D22 Resinc
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="text-[10px] font-medium">
+                                        {event.d22_date
+                                          ? formatDate(event.d22_date)
+                                          : "-"}
                                       </span>
-                                      <span className="text-xs font-medium">
-                                        {event.d30_date
-                                          ? formatDate(event.d30_date)
+                                      <span className="text-[9px] text-primary italic font-bold">
+                                        {event.resync_bull || ""}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block">
+                                      D32 Resinc
+                                    </span>
+                                    <span className="text-[10px] font-medium">
+                                      {event.d32_date
+                                        ? formatDate(event.d32_date)
+                                        : "-"}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block">
+                                      D30 Diag.
+                                    </span>
+                                    <span
+                                      className={`text-[10px] font-bold uppercase ${
+                                        event.diagnostic_d30 === "prenha"
+                                          ? "text-green-600"
+                                          : event.diagnostic_d30 === "vazia"
+                                          ? "text-red-600"
+                                          : ""
+                                      }`}
+                                    >
+                                      {event.diagnostic_d30 || "Pendente"}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 border-t border-border pt-3">
+                                  <div>
+                                    <span className="text-[10px] uppercase text-amber-600 block font-bold">
+                                      Repasse (D35-D80)
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="text-[10px] font-medium">
+                                        {event.natural_mating_d35_entry
+                                          ? formatDate(
+                                              event.natural_mating_d35_entry
+                                            )
+                                          : "-"}{" "}
+                                        →{" "}
+                                        {event.natural_mating_d80_exit
+                                          ? formatDate(
+                                              event.natural_mating_d80_exit
+                                            )
+                                          : "-"}
+                                      </span>
+                                      <span className="text-[9px] text-amber-700 italic font-bold">
+                                        {event.natural_mating_bull || ""}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-primary block font-bold">
+                                      Diag. Final (D110)
+                                    </span>
+                                    <div className="flex flex-col">
+                                      <span className="text-[10px] font-medium">
+                                        {event.d110_date
+                                          ? formatDate(event.d110_date)
+                                          : "-"}
+                                      </span>
+                                      <span
+                                        className={`text-[10px] font-bold uppercase ${
+                                          event.final_diagnostic === "prenha"
+                                            ? "text-green-600"
+                                            : event.final_diagnostic === "vazia"
+                                            ? "text-red-600"
+                                            : ""
+                                        }`}
+                                      >
+                                        {event.final_diagnostic || "Pendente"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
+                                      ECC / Ovários
+                                    </span>
+                                    <span className="text-[10px] font-medium">
+                                      ECC: {event.body_score || "-"} |{" "}
+                                      {event.ovary_size || "-"} (
+                                      {event.ovary_structure || "-"})
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {isPrenha && (
+                                  <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+                                    <span className="text-[10px] uppercase text-primary font-bold block mb-1">
+                                      Previsão de Parto (Base D0)
+                                    </span>
+                                    <div className="flex justify-between items-center text-xs font-bold text-primary">
+                                      <span>
+                                        {event.calving_start_date
+                                          ? formatDate(event.calving_start_date)
+                                          : "-"}
+                                      </span>
+                                      <span className="text-muted-foreground font-normal lowercase">
+                                        até
+                                      </span>
+                                      <span>
+                                        {event.calving_end_date
+                                          ? formatDate(event.calving_end_date)
                                           : "-"}
                                       </span>
                                     </div>
-                                    <div>
-                                      <span className="text-[10px] text-muted-foreground block">
-                                        Resultado
-                                      </span>
-                                      <span
-                                        className={`text-xs font-semibold ${
-                                          isPrenha
-                                            ? "text-green-600 dark:text-green-400"
-                                            : "text-red-600 dark:text-red-400"
-                                        }`}
-                                      >
-                                        {diagnosticResult || "-"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {isPrenha &&
-                                (event.calving_start_date ||
-                                  event.calving_end_date) && (
-                                  <div className="border-t border-border pt-3">
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide block mb-2">
-                                      Previsão de Parto
-                                    </span>
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <div className="bg-muted/50 rounded-md p-2.5 text-center">
-                                        <span className="text-[10px] text-muted-foreground block mb-0.5">
-                                          270 dias
-                                        </span>
-                                        <span className="text-sm font-semibold text-foreground">
-                                          {event.calving_start_date
-                                            ? formatDate(
-                                                event.calving_start_date
-                                              )
-                                            : "-"}
-                                        </span>
-                                      </div>
-                                      <div className="bg-muted/50 rounded-md p-2.5 text-center">
-                                        <span className="text-[10px] text-muted-foreground block mb-0.5">
-                                          305 dias
-                                        </span>
-                                        <span className="text-sm font-semibold text-foreground">
-                                          {event.calving_end_date
-                                            ? formatDate(event.calving_end_date)
-                                            : "-"}
-                                        </span>
-                                      </div>
-                                    </div>
                                   </div>
                                 )}
+                              </div>
                             </div>
                           </AccordionContent>
                         </AccordionItem>

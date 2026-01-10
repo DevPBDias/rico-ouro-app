@@ -51,13 +51,9 @@ export function ReproductionForm({
     }
   }, [initialData]);
 
-  const handleChange = (field: keyof ReproductionEvent, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const calculateCalvingDates = (date: string) => {
-    if (!date) return;
-    const initialDate = new Date(date);
+  const calculateCalvingDates = (d0Date: string) => {
+    if (!d0Date) return {};
+    const initialDate = new Date(d0Date);
 
     const date270 = new Date(initialDate);
     date270.setDate(date270.getDate() + 270);
@@ -65,8 +61,47 @@ export function ReproductionForm({
     const date305 = new Date(initialDate);
     date305.setDate(date305.getDate() + 305);
 
-    handleChange("calving_start_date", date270.toISOString().split("T")[0]);
-    handleChange("calving_end_date", date305.toISOString().split("T")[0]);
+    return {
+      calving_start_date: date270.toISOString().split("T")[0],
+      calving_end_date: date305.toISOString().split("T")[0],
+    };
+  };
+
+  const calculateDServices = (d0Date: string) => {
+    if (!d0Date) return {};
+    const base = new Date(d0Date);
+
+    const addDays = (days: number) => {
+      const d = new Date(base);
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split("T")[0];
+    };
+
+    return {
+      d8_date: addDays(8),
+      d10_date: addDays(10),
+      d22_date: addDays(22),
+      d30_date: addDays(30),
+      d32_date: addDays(32),
+      natural_mating_d35_entry: addDays(35),
+      natural_mating_d80_exit: addDays(80),
+      d110_date: addDays(110),
+    };
+  };
+
+  const handleChange = (field: keyof ReproductionEvent, value: any) => {
+    if (field === "d0_date" && value) {
+      const dServices = calculateDServices(value);
+      const calving = calculateCalvingDates(value);
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+        ...dServices,
+        ...calving,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleTypeChange = (value: EventType) => {
@@ -75,6 +110,12 @@ export function ReproductionForm({
 
   const cleanData = (data: Partial<ReproductionEvent>) => {
     const cleaned = { ...data };
+    // Remove ghost properties for RxDB validation
+    // @ts-ignore
+    delete cleaned.d35_date;
+    // @ts-ignore
+    delete cleaned.d80_date;
+
     (Object.keys(cleaned) as Array<keyof ReproductionEvent>).forEach((key) => {
       if (cleaned[key] === "") {
         // @ts-ignore
@@ -97,7 +138,7 @@ export function ReproductionForm({
           Dados do Evento
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
               Tipo
@@ -132,10 +173,10 @@ export function ReproductionForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
             <label className="text-xs font-bold text-primary uppercase">
-              Status Produtivo
+              Status Reprodutivo
             </label>
             <Select
               value={formData.productive_status || ""}
@@ -143,8 +184,8 @@ export function ReproductionForm({
                 handleChange("productive_status", v as ReproductionStatus)
               }
             >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
+              <SelectTrigger className="bg-muted border-0 w-full">
+                <SelectValue placeholder="(Parida/Solteira)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="parida">Parida</SelectItem>
@@ -152,39 +193,64 @@ export function ReproductionForm({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-1">
+          <div className="space-y-1 w-full">
             <label className="text-xs font-bold text-primary uppercase">
-              Idade
+              Protocolo
             </label>
-            <Input
-              value={formData.age || ""}
-              onChange={(e) => handleChange("age", e.target.value)}
-              className="bg-muted border-0"
-              placeholder="Ex: 36 meses"
-            />
+            <Select
+              value={formData.protocol_name || ""}
+              onValueChange={(v) =>
+                handleChange("protocol_name", v as ReproductionStatus)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0 w-full">
+                <SelectValue placeholder="Tipo de Protocolo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="parida">Protocolo D10</SelectItem>
+                <SelectItem value="solteira">Protocolo D11</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="font-semibold text-sm uppercase text-gray-500 border-b pb-1">
+            Touros
+          </h3>
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Touro
+              Touro D0
             </label>
             <Input
               value={formData.bull_name || ""}
               onChange={(e) => handleChange("bull_name", e.target.value)}
               className="bg-muted border-0"
+              placeholder="Nome do Touro"
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary uppercase">
-              Protocolo
+              Touro Resync (D22)
             </label>
             <Input
-              value={formData.protocol_name || ""}
-              onChange={(e) => handleChange("protocol_name", e.target.value)}
+              value={formData.resync_bull || ""}
+              onChange={(e) => handleChange("resync_bull", e.target.value)}
               className="bg-muted border-0"
+              placeholder="Nome do Touro de Repasse"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Touro Monta Natural
+            </label>
+            <Input
+              value={formData.natural_mating_bull || ""}
+              onChange={(e) =>
+                handleChange("natural_mating_bull", e.target.value)
+              }
+              className="bg-muted border-0"
+              placeholder="Touro do Campo"
             />
           </div>
         </div>
@@ -208,111 +274,95 @@ export function ReproductionForm({
               className="bg-muted border-0"
             />
           </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Score Corporal
-            </label>
-            <Select
-              value={formData.body_score?.toString() || ""}
-              onValueChange={(v) =>
-                handleChange("body_score", parseInt(v) as 1 | 2 | 3 | 4 | 5)
-              }
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <SelectItem key={score} value={score.toString()}>
-                    {score}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Condição Gestacional
-            </label>
-            <Select
-              value={formData.gestational_condition || ""}
-              onValueChange={(v) =>
-                handleChange("gestational_condition", v as GestationalStatus)
-              }
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prenha">Prenha</SelectItem>
-                <SelectItem value="vazia">Vazia</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1 w-full">
+              <label className="text-xs font-bold text-primary uppercase">
+                Score Corporal
+              </label>
+              <Select
+                value={formData.body_score?.toString() || ""}
+                onValueChange={(v) =>
+                  handleChange("body_score", parseInt(v) as 1 | 2 | 3 | 4 | 5)
+                }
+              >
+                <SelectTrigger className="bg-muted border-0 w-2/3">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5].map((score) => (
+                    <SelectItem key={score} value={score.toString()}>
+                      {score}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1 w-full">
+              <label className="text-xs font-bold text-primary uppercase">
+                Estágio do Ciclo
+              </label>
+              <Select
+                value={formData.cycle_stage || ""}
+                onValueChange={(v) =>
+                  handleChange("cycle_stage", v as CycleStage)
+                }
+              >
+                <SelectTrigger className="bg-muted border-0 w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="estro">Estro</SelectItem>
+                  <SelectItem value="anestro 1">Anestro 1</SelectItem>
+                  <SelectItem value="anestro 2">Anestro 2</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Tamanho Ovários
-            </label>
-            <Select
-              value={formData.ovary_size || ""}
-              onValueChange={(v) => handleChange("ovary_size", v as OvarySize)}
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="pequeno">Pequeno</SelectItem>
-                <SelectItem value="grande">Grande</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid grid-cols-2 gap-4 w-full">
+            <div className="space-y-1 w-full">
+              <label className="text-xs font-bold text-primary uppercase">
+                Tamanho Ovários
+              </label>
+              <Select
+                value={formData.ovary_size || ""}
+                onValueChange={(v) =>
+                  handleChange("ovary_size", v as OvarySize)
+                }
+              >
+                <SelectTrigger className="bg-muted border-0 w-3/4">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="pequeno">Pequeno</SelectItem>
+                  <SelectItem value="grande">Grande</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Estrutura Ovários
-            </label>
-            <Select
-              value={formData.ovary_structure || ""}
-              onValueChange={(v) =>
-                handleChange("ovary_structure", v as OvaryStructure)
-              }
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="foliculo">Folículo</SelectItem>
-                <SelectItem value="corpo_luteo">Corpo Lúteo</SelectItem>
-                <SelectItem value="cisto">Cisto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Estágio do Ciclo
-            </label>
-            <Select
-              value={formData.cycle_stage || ""}
-              onValueChange={(v) =>
-                handleChange("cycle_stage", v as CycleStage)
-              }
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="estro">Estro</SelectItem>
-                <SelectItem value="anestro 1">Anestro 1</SelectItem>
-                <SelectItem value="anestro 2">Anestro 2</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-1 w-full">
+              <label className="text-xs font-bold text-primary uppercase">
+                Estrutura Ovários
+              </label>
+              <Select
+                value={formData.ovary_structure || ""}
+                onValueChange={(v) =>
+                  handleChange("ovary_structure", v as OvaryStructure)
+                }
+              >
+                <SelectTrigger className="bg-muted border-0 w-3/4">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="foliculo">Folículo</SelectItem>
+                  <SelectItem value="corpo_luteo">Corpo Lúteo</SelectItem>
+                  <SelectItem value="cisto">Cisto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
@@ -320,44 +370,39 @@ export function ReproductionForm({
       {/* Seção Diagnóstico */}
       <div className="space-y-4 pt-4">
         <h3 className="font-semibold text-sm uppercase text-gray-500 border-b pb-1">
-          Diagnóstico e Previsão
+          Diagnósticos
         </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Data D30
-            </label>
-            <Input
-              type="date"
-              value={formData.d30_date || ""}
-              onChange={(e) => {
-                handleChange("d30_date", e.target.value);
-                if (formData.diagnostic_d30 === "prenha") {
-                  calculateCalvingDates(e.target.value);
-                }
-              }}
-              className="bg-muted border-0"
-            />
-          </div>
-          <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
             <label className="text-xs font-bold text-primary uppercase">
               Diagnóstico D30
             </label>
             <Select
               value={formData.diagnostic_d30 || ""}
-              onValueChange={(val) => {
-                handleChange("diagnostic_d30", val as Diagnostic);
-                if (val === "prenha") {
-                  const baseDate = formData.d30_date || formData.d0_date || "";
-                  calculateCalvingDates(baseDate);
-                } else if (val === "vazia") {
-                  handleChange("calving_start_date", undefined);
-                  handleChange("calving_end_date", undefined);
-                }
-              }}
+              onValueChange={(val) =>
+                handleChange("diagnostic_d30", val as Diagnostic)
+              }
             >
-              <SelectTrigger className="bg-muted border-0">
+              <SelectTrigger className="bg-muted border-0 h-10 w-full">
+                <SelectValue placeholder="Pendente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prenha">Prenha</SelectItem>
+                <SelectItem value="vazia">Vazia</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1 w-full">
+            <label className="text-xs font-bold text-primary uppercase">
+              Diagnóstico Final (D110)
+            </label>
+            <Select
+              value={formData.final_diagnostic || ""}
+              onValueChange={(val) =>
+                handleChange("final_diagnostic", val as Diagnostic)
+              }
+            >
+              <SelectTrigger className="bg-muted border-0 h-10 w-full">
                 <SelectValue placeholder="Pendente" />
               </SelectTrigger>
               <SelectContent>
@@ -368,10 +413,13 @@ export function ReproductionForm({
           </div>
         </div>
 
-        {formData.diagnostic_d30 === "prenha" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-dashed">
+        {/* Previsão de Parto */}
+        {(formData.diagnostic_d30 === "prenha" ||
+          formData.final_diagnostic === "prenha" ||
+          formData.gestational_condition === "prenha") && (
+          <div className="grid grid-cols-2 gap-4 bg-primary/5 p-3 rounded-lg border border-primary/20">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase">
+              <label className="text-[10px] font-bold text-primary uppercase">
                 Prev. Parto (270d)
               </label>
               <Input
@@ -380,11 +428,11 @@ export function ReproductionForm({
                 onChange={(e) =>
                   handleChange("calving_start_date", e.target.value)
                 }
-                className="bg-white h-8 text-xs"
+                className="bg-white h-9 text-sm font-bold text-primary"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase">
+              <label className="text-[10px] font-bold text-primary uppercase">
                 Prev. Parto (305d)
               </label>
               <Input
@@ -393,33 +441,11 @@ export function ReproductionForm({
                 onChange={(e) =>
                   handleChange("calving_end_date", e.target.value)
                 }
-                className="bg-white h-8 text-xs"
+                className="bg-white h-9 text-sm font-bold text-primary"
               />
             </div>
           </div>
         )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-primary uppercase">
-              Diagnóstico Final
-            </label>
-            <Select
-              value={formData.final_diagnostic || ""}
-              onValueChange={(val) =>
-                handleChange("final_diagnostic", val as Diagnostic)
-              }
-            >
-              <SelectTrigger className="bg-muted border-0">
-                <SelectValue placeholder="Pendente" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prenha">Prenha</SelectItem>
-                <SelectItem value="vazia">Vazia</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
       </div>
 
       <div className="flex gap-3 pt-4">
