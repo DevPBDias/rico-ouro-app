@@ -28,5 +28,5 @@ export interface Animal {
   paternal_grandfather_name?: string;
   partnership?: string;
   updated_at?: string;
-  _deleted?: boolean;
+  _deleted: boolean;
 }

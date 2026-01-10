@@ -29,7 +29,6 @@ export function EditReproductionModal({
     try {
       await updateEvent(event.event_id, {
         ...data,
-        updated_at: new Date().toISOString(),
       });
       onSuccess?.();
       onClose();

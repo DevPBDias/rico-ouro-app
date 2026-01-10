@@ -58,7 +58,6 @@ export default function NascimentosPage() {
       value: Number(formData.peso.replace(",", ".")),
       born_metric: true,
       date: formData.data,
-      updated_at: new Date().toISOString(),
       _deleted: false,
     };
 

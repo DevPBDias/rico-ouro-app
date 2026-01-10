@@ -54,6 +54,16 @@ export default function ReproducaoPage() {
   const { events: reproductionEvents, isLoading: eventsLoading } =
     useReproductionEvents(selectedMatriz?.rgn);
 
+  useEffect(() => {
+    if (selectedMatriz) {
+      console.log(`🔍 [Page] Selected Matriz RGN: "${selectedMatriz.rgn}"`);
+      console.log(
+        `📊 [Page] Events count in state:`,
+        reproductionEvents.length
+      );
+    }
+  }, [selectedMatriz, reproductionEvents]);
+
   // Lógica de Busca
   const handleSearch = useCallback(
     (query: string) => {
@@ -393,8 +403,8 @@ export default function ReproducaoPage() {
                                       : "-"}
                                   </span>
                                 </div>
-                                <div>
-                                  <span className="text-[10px] uppercase text-muted-foreground block font-bold text-primary">
+                                <div key="d110">
+                                  <span className="text-[10px] uppercase block font-bold text-primary">
                                     Diag. Final (D110)
                                   </span>
                                   <div className="flex flex-col">

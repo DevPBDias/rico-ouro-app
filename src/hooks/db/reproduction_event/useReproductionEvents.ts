@@ -28,6 +28,10 @@ export function useReproductionEvents(rgn?: string) {
 
     const subscription = query.$.subscribe({
       next: (docs) => {
+        console.log(`📦 [RxDB] Events for RGN ${rgn}:`, docs.length);
+        if (docs.length > 0) {
+          console.log(`📄 Sample Event RGN: "${docs[0].rgn}"`);
+        }
         const data = docs.map((doc) => doc.toJSON() as ReproductionEvent);
         setEvents(data);
         setIsLoading(false);

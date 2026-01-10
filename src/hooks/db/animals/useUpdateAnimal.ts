@@ -12,7 +12,6 @@ export function useUpdateAnimal() {
   ): Promise<void> => {
     const updateData: Partial<Animal> = {
       ...data,
-      updated_at: new Date().toISOString(),
     };
 
     await update(rgn, updateData);

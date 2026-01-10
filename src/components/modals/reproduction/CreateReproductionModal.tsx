@@ -31,7 +31,6 @@ export function CreateReproductionModal({
         ...data,
         rgn, // Garante o RGN da matriz
         _deleted: false,
-        updated_at: new Date().toISOString(),
       });
       onSuccess?.();
       onClose();

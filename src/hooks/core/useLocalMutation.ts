@@ -26,7 +26,6 @@ export function useLocalMutation<
 
         const documentData = {
           ...data,
-          updated_at: new Date().toISOString(),
           _deleted: false,
         };
 
@@ -60,7 +59,6 @@ export function useLocalMutation<
 
         const documentData = {
           ...data,
-          updated_at: new Date().toISOString(),
           _deleted: false,
         };
 
@@ -99,7 +97,6 @@ export function useLocalMutation<
 
         const updateData = {
           ...data,
-          updated_at: new Date().toISOString(),
         };
 
         if (typeof (doc as any).update === "function") {
@@ -177,10 +174,8 @@ export function useLocalMutation<
           throw new Error(`Collection ${collectionName} not found`);
         }
 
-        const now = new Date().toISOString();
         const documentsWithMeta = documents.map((doc) => ({
           ...doc,
-          updated_at: now,
           _deleted: false,
         }));
 

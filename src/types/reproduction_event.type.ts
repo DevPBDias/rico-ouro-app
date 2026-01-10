@@ -62,6 +62,6 @@ export interface ReproductionEvent {
 
   /** Audit */
   created_at?: string; // ISO DateTime
-  updated_at: string;
+  updated_at?: string;
   _deleted: boolean;
 }

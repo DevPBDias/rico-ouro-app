@@ -11,7 +11,6 @@ export function useCreateDose() {
     const newDose: Partial<SemenDose> = {
       id: uuidv4(),
       ...data,
-      updated_at: new Date().toISOString(),
       _deleted: false,
     };
 

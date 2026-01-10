@@ -15,21 +15,29 @@ export function lastWriteWins<T extends ReplicableEntity>(
   localDoc: T,
   remoteDoc: T
 ): T {
-  const localTime = new Date(localDoc.updated_at).getTime();
-  const remoteTime = new Date(remoteDoc.updated_at).getTime();
+  const localTime = new Date(
+    localDoc.updated_at || "1970-01-01T00:00:00.000Z"
+  ).getTime();
+  const remoteTime = new Date(
+    remoteDoc.updated_at || "1970-01-01T00:00:00.000Z"
+  ).getTime();
 
   if (localTime > remoteTime) {
-    console.log(`🔀 [Conflict] Local wins (${localDoc.updated_at} > ${remoteDoc.updated_at})`);
+    console.log(
+      `🔀 [Conflict] Local wins (${localDoc.updated_at} > ${remoteDoc.updated_at})`
+    );
     return localDoc;
   } else {
-    console.log(`🔀 [Conflict] Remote wins (${remoteDoc.updated_at} >= ${localDoc.updated_at})`);
+    console.log(
+      `🔀 [Conflict] Remote wins (${remoteDoc.updated_at} >= ${localDoc.updated_at})`
+    );
     return remoteDoc;
   }
 }
 
 /**
  * Estratégia de conflito: Server Wins
- * 
+ *
  * O documento remoto (servidor) sempre vence.
  * Use para dados onde o servidor é a fonte de verdade (ex: configurações).
  */
@@ -43,7 +51,7 @@ export function serverWins<T extends ReplicableEntity>(
 
 /**
  * Estratégia de conflito: Client Wins
- * 
+ *
  * O documento local (cliente) sempre vence.
  * Use para dados onde o cliente é a fonte de verdade (ex: rascunhos).
  */
@@ -57,19 +65,23 @@ export function clientWins<T extends ReplicableEntity>(
 
 /**
  * Estratégia de conflito: Merge Fields
- * 
+ *
  * Faz merge dos campos, priorizando valores não-nulos do documento mais recente.
  * Use quando você quer preservar dados de ambos os lados.
- * 
+ *
  * @param priorityFields Campos que sempre vêm do documento mais recente
  */
 export function mergeFields<T extends ReplicableEntity>(
   priorityFields: (keyof T)[] = []
 ): ConflictResolver<T> {
   return (localDoc: T, remoteDoc: T): T => {
-    const localTime = new Date(localDoc.updated_at).getTime();
-    const remoteTime = new Date(remoteDoc.updated_at).getTime();
-    
+    const localTime = new Date(
+      localDoc.updated_at || "1970-01-01T00:00:00.000Z"
+    ).getTime();
+    const remoteTime = new Date(
+      remoteDoc.updated_at || "1970-01-01T00:00:00.000Z"
+    ).getTime();
+
     const winner = localTime > remoteTime ? localDoc : remoteDoc;
     const loser = localTime > remoteTime ? remoteDoc : localDoc;
 
@@ -80,7 +92,11 @@ export function mergeFields<T extends ReplicableEntity>(
       (merged as Record<string, unknown>)[field as string] = winner[field];
     }
 
-    console.log(`🔀 [Conflict] Merged fields (winner: ${winner === localDoc ? 'local' : 'remote'})`);
+    console.log(
+      `🔀 [Conflict] Merged fields (winner: ${
+        winner === localDoc ? "local" : "remote"
+      })`
+    );
     return merged;
   };
 }

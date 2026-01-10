@@ -16,7 +16,6 @@ export function useCreateReproductionEvent() {
     const eventData = {
       ...data,
       event_id: data.event_id || uuidv4(),
-      updated_at: data.updated_at || new Date().toISOString(),
       _deleted: data._deleted ?? false,
     };
     return await create(eventData);

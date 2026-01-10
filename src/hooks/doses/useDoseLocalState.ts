@@ -73,7 +73,6 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
         updatedNewDoses[newDoseIdx] = {
           ...updatedNewDoses[newDoseIdx],
           quantity: Math.max(0, newQuantity),
-          updated_at: new Date().toISOString(),
         };
         return { ...prev, newDoses: updatedNewDoses };
       }
@@ -96,7 +95,6 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
           updatedNewDoses[newDoseIdx] = {
             ...updatedNewDoses[newDoseIdx],
             ...data,
-            updated_at: new Date().toISOString(),
           };
           return { ...prev, newDoses: updatedNewDoses };
         }
@@ -177,7 +175,6 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
       const newDose: SemenDose = {
         id: uuidv4(),
         ...doseData,
-        updated_at: new Date().toISOString(),
         _deleted: false,
       };
 

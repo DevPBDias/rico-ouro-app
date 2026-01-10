@@ -12,7 +12,6 @@ export function useUpdateDose() {
   ): Promise<void> => {
     const updateData: Partial<SemenDose> = {
       ...data,
-      updated_at: new Date().toISOString(),
     };
 
     await update(id, updateData);

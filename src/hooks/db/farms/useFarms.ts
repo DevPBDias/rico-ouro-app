@@ -47,7 +47,6 @@ export function useFarms() {
     const newFarm: Farm = {
       id: uuidv4(),
       farm_name: farmName,
-      updated_at: new Date().toISOString(),
       _deleted: false,
     };
 
@@ -64,7 +63,6 @@ export function useFarms() {
     await doc.update({
       $set: {
         farm_name: farmName,
-        updated_at: new Date().toISOString(),
       },
     });
   };
@@ -78,7 +76,6 @@ export function useFarms() {
     await doc.update({
       $set: {
         _deleted: true,
-        updated_at: new Date().toISOString(),
       },
     });
   };

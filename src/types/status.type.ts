@@ -1,7 +1,7 @@
 export interface AnimalStatus {
   id: string;
   status_name: string;
-  updated_at: string;
+  updated_at?: string;
   _deleted: boolean;
 }
 

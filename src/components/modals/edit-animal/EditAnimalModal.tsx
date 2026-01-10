@@ -72,7 +72,6 @@ export function EditAnimalModal({
     try {
       const updatedData: Animal = {
         ...formData,
-        updated_at: new Date().toISOString(),
       };
 
       await onSave(updatedData);

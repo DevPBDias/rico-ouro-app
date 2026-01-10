@@ -11,7 +11,6 @@ export function useCreateStatus() {
     const statusData = {
       ...data,
       id: data.id || uuidv4(),
-      updated_at: new Date().toISOString(),
       _deleted: false,
     };
     return await create(statusData);

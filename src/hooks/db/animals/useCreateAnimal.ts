@@ -10,7 +10,6 @@ export function useCreateAnimal() {
   const createAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
       ...data,
-      updated_at: data.updated_at || new Date().toISOString(),
       _deleted: false,
     } as Animal;
 
@@ -21,7 +20,6 @@ export function useCreateAnimal() {
   const saveAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
       ...data,
-      updated_at: data.updated_at || new Date().toISOString(),
       _deleted: false,
     } as Animal;
 

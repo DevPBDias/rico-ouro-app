@@ -47,7 +47,6 @@ export function useVaccines() {
     const newVaccine: Vaccine = {
       id: uuidv4(),
       vaccine_name: vaccineName,
-      updated_at: new Date().toISOString(),
       _deleted: false,
     };
 
@@ -64,7 +63,6 @@ export function useVaccines() {
     await doc.update({
       $set: {
         vaccine_name: vaccineName,
-        updated_at: new Date().toISOString(),
       },
     });
   };
@@ -78,7 +76,6 @@ export function useVaccines() {
     await doc.update({
       $set: {
         _deleted: true,
-        updated_at: new Date().toISOString(),
       },
     });
   };

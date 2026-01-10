@@ -71,7 +71,6 @@ const PesagemPage = () => {
           rgn: selectedAnimal?.rgn || "",
           date: nascimento,
           value: 0,
-          updated_at: nascimento,
           _deleted: false,
         },
       ];
@@ -88,7 +87,6 @@ const PesagemPage = () => {
           rgn: selectedAnimal?.rgn || "",
           date: nascimento,
           value: 0,
-          updated_at: nascimento,
           _deleted: false,
         },
       ];

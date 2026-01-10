@@ -46,7 +46,6 @@ export function useAnimals() {
 
     const newAnimal: Animal = {
       uuid: uuidv4(),
-      updated_at: new Date().toISOString(),
       _deleted: false,
       ...data,
     } as Animal;
@@ -64,7 +63,6 @@ export function useAnimals() {
     await doc.update({
       $set: {
         ...data,
-        updated_at: new Date().toISOString(),
       },
     });
   };
@@ -78,7 +76,6 @@ export function useAnimals() {
     await doc.update({
       $set: {
         _deleted: true,
-        updated_at: new Date().toISOString(),
       },
     });
   };
