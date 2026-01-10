@@ -198,16 +198,17 @@ export function createReplication<T extends ReplicableEntity>(
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`❌ [${String(collectionName)}] Push failed:`, {
+            console.error(`❌ [${String(collectionName)}] PUSH FAILED:`, {
               status: response.status,
               statusText: response.statusText,
-              body: errorText,
+              error: errorText,
+              documentsSent: documents.length,
             });
             throw new Error(`Push failed: ${response.status} - ${errorText}`);
           }
 
           console.log(
-            `✅ [${String(collectionName)}] Successfully pushed ${
+            `✅ [${String(collectionName)}] SUCCESSFULLY PUSHED ${
               documents.length
             } documents`
           );
@@ -222,6 +223,10 @@ export function createReplication<T extends ReplicableEntity>(
       live,
       retryTime,
       autoStart,
+    });
+
+    replication.error$.subscribe((err) => {
+      console.error(`❌ [Replication Error] ${String(collectionName)}:`, err);
     });
 
     return replication;

@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { Vaccine } from "@/types/vaccine.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Replicação de Tipos de Vacinas usando o template padronizado.
@@ -15,6 +16,10 @@ export const vaccineReplication = createReplication<Vaccine>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as Vaccine;
+  },
 });
 
 /**

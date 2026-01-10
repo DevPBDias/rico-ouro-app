@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { SemenDose } from "@/types/semen_dose.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Replicação de Doses de Sêmen usando o template padronizado.
@@ -29,6 +30,10 @@ export const semenDoseReplication = createReplication<SemenDose>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as SemenDose;
+  },
 
   // Configurações padrão
   pullBatchSize: 1000,

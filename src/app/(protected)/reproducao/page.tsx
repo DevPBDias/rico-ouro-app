@@ -54,16 +54,6 @@ export default function ReproducaoPage() {
   const { events: reproductionEvents, isLoading: eventsLoading } =
     useReproductionEvents(selectedMatriz?.rgn);
 
-  useEffect(() => {
-    if (selectedMatriz) {
-      console.log(`🔍 [Page] Selected Matriz RGN: "${selectedMatriz.rgn}"`);
-      console.log(
-        `📊 [Page] Events count in state:`,
-        reproductionEvents.length
-      );
-    }
-  }, [selectedMatriz, reproductionEvents]);
-
   // Lógica de Busca
   const handleSearch = useCallback(
     (query: string) => {

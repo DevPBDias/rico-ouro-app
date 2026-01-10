@@ -1,48 +1,35 @@
 export const formatDate = (dateString: string | undefined) => {
   if (!dateString || typeof dateString !== "string") return "";
 
-  const normalized = dateString.replace(/[./]/g, "-");
-  const parts = normalized.split("-").map((p) => p.trim());
-
-  if (parts.length !== 3) return dateString;
-
-  const [a, b, c] = parts;
-
-  let year = "";
-  let month = "";
-  let day = "";
-
-  if (a.length === 4) {
-    year = a;
-    month = b;
-    day = c;
-  } else if (c.length === 4) {
-    day = a;
-    month = b;
-    year = c;
-  } else {
-    if (parseInt(b) > 12) {
-      if (a.length === 4) {
-        year = a;
-        day = b;
-        month = c;
-      } else {
-        day = a;
-        month = c;
-        year = b.length === 4 ? b : `20${b}`;
-      }
-    } else {
-      day = a;
-      month = b;
-      year = c.length === 4 ? c : `20${c}`;
+  try {
+    // Se já estiver no formato DD/MM/YYYY, retorna como está
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+      return dateString;
     }
+
+    // Normaliza separadores
+    const normalized = dateString.split("T")[0].replace(/[./]/g, "-");
+    const parts = normalized.split("-");
+
+    if (parts.length === 3) {
+      let year, month, day;
+      if (parts[0].length === 4) {
+        [year, month, day] = parts;
+      } else {
+        [day, month, year] = parts;
+      }
+
+      // Adiciona segurança de meio-dia para evitar shifts de fuso horário
+      const date = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T12:00:00`
+      );
+      return date.toLocaleDateString("pt-BR");
+    }
+
+    return dateString;
+  } catch (e) {
+    return dateString;
   }
-
-  const formattedDay = day.padStart(2, "0");
-  const formattedMonth = month.padStart(2, "0");
-  const formattedYear = year.padStart(4, "0").slice(-4);
-
-  return `${formattedDay}/${formattedMonth}/${formattedYear}`;
 };
 
 export const getTodayFormatted = () => {

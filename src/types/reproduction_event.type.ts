@@ -16,12 +16,10 @@ export interface ReproductionEvent {
   /** Identification */
   event_id: string; // UUID
   rgn: string;
-  age?: string;
 
   /** Type and Status */
   event_type: EventType;
   productive_status?: ReproductionStatus;
-  genotyping?: string;
 
   /** Productive evaluation */
   evaluation_date?: string; // ISO Date (YYYY-MM-DD)

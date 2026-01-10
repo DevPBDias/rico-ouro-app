@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { Farm } from "@/types/farm.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Replicação de Fazendas usando o template padronizado.
@@ -15,6 +16,10 @@ export const farmReplication = createReplication<Farm>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as Farm;
+  },
 });
 
 /**

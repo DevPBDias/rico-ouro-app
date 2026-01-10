@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { AnimalMetric } from "@/types/animal_metrics.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Replicação de Pesagens de Animais usando o template padronizado.
@@ -18,6 +19,10 @@ export const animalMetricWeightReplication = createReplication<AnimalMetric>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as AnimalMetric;
+  },
 });
 
 /**
@@ -48,6 +53,10 @@ export const animalMetricCEReplication = createReplication<AnimalMetric>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as AnimalMetric;
+  },
 });
 
 /**

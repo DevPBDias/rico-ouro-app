@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 export const reproductionEventReplication =
   createReplication<ReproductionEvent>({
@@ -12,8 +13,6 @@ export const reproductionEventReplication =
       rgn: doc.rgn,
       event_type: doc.event_type,
       productive_status: doc.productive_status ?? null,
-      age: doc.age ?? null,
-      genotyping: doc.genotyping ?? null,
       evaluation_date: doc.evaluation_date ?? null,
       body_score: doc.body_score ?? null,
       gestational_condition: doc.gestational_condition ?? null,
@@ -41,6 +40,12 @@ export const reproductionEventReplication =
       updated_at: doc.updated_at,
       _deleted: doc._deleted,
     }),
+
+    mapFromSupabase: (doc) => {
+      const cleaned = cleanSupabaseDocument(doc);
+      delete cleaned.id; // Remove Supabase-specific ID as we use event_id
+      return cleaned as unknown as ReproductionEvent;
+    },
   });
 
 export async function replicateReproductionEventsNew(

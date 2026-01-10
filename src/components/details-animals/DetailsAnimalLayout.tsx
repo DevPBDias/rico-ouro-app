@@ -42,7 +42,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
 
   const handleDeleteVaccine = async (vaccineId: string) => {
     try {
-      await deleteAnimalVaccine(Number(vaccineId));
+      await deleteAnimalVaccine(vaccineId);
       setVaccineToDelete(null);
     } catch (error) {
       console.error("Erro ao deletar vacina:", error);

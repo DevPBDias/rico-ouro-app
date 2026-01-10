@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { Animal } from "@/types/animal.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Interface estendida de Animal que garante campos de replicação.
@@ -60,6 +61,12 @@ export const animalReplication = createReplication<ReplicableAnimal>({
   retryTime: 5000,
   live: true,
   autoStart: false,
+
+  mapFromSupabase: (doc) => {
+    const cleaned = cleanSupabaseDocument(doc);
+    delete cleaned.id; // Remove Supabase-specific ID as we use rgn
+    return cleaned as unknown as ReplicableAnimal;
+  },
 });
 
 /**

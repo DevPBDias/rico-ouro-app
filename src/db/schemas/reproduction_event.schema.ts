@@ -11,8 +11,6 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     rgn: { type: "string", maxLength: 10 },
     event_type: { type: "string", maxLength: 10 },
     productive_status: { type: "string", maxLength: 20 },
-    age: { type: "string" },
-    genotyping: { type: "string" },
     evaluation_date: { type: "string", format: "date" },
     body_score: { type: "integer", minimum: 1, maximum: 5 },
     gestational_condition: { type: "string", maxLength: 20 },

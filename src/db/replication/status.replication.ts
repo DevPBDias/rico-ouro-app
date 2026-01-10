@@ -1,5 +1,6 @@
 import { createReplication } from "./base";
 import { AnimalStatus } from "@/types/status.type";
+import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
  * Replicação de Status de Animais usando o template padronizado.
@@ -15,6 +16,10 @@ export const animalStatusReplication = createReplication<AnimalStatus>({
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
+
+  mapFromSupabase: (doc) => {
+    return cleanSupabaseDocument(doc) as unknown as AnimalStatus;
+  },
 });
 
 /**

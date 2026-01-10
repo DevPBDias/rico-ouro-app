@@ -18,6 +18,7 @@ import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useCreateVaccine } from "@/hooks/db/vaccines/useCreateVaccine";
 import { useDeleteVaccine } from "@/hooks/db/vaccines/useDeleteVaccine";
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
+import { formatDate } from "@/utils/formatDates";
 
 const VaccinesPage = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const VaccinesPage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     rgn: "",
     vacinas: [] as string[],
@@ -85,7 +87,10 @@ const VaccinesPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setError(null);
+    setIsSubmitting(true);
 
     try {
       if (!formData.rgn || formData.vacinas.length === 0 || !formData.data) {
@@ -122,6 +127,8 @@ const VaccinesPage = () => {
     } catch (error) {
       console.error("Erro ao registrar vacina:", error);
       setError("Erro ao registrar vacina");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -136,8 +143,26 @@ const VaccinesPage = () => {
 
   const handleCreateVaccine = async (name: string) => {
     try {
+      const normalizedName = name.trim();
+      const existing = vaccines.find(
+        (v) => v.vaccine_name.toLowerCase() === normalizedName.toLowerCase()
+      );
+
+      if (existing) {
+        setFormData((prev) => ({
+          ...prev,
+          vacinas: prev.vacinas.some(
+            (v) => v.toLowerCase() === normalizedName.toLowerCase()
+          )
+            ? prev.vacinas
+            : [...prev.vacinas, existing.vaccine_name],
+        }));
+        setAddModalOpen(false);
+        return;
+      }
+
       await createVaccine({
-        vaccine_name: name,
+        vaccine_name: normalizedName,
       });
 
       setFormData((prev) => ({
@@ -179,15 +204,6 @@ const VaccinesPage = () => {
         ? [...prev.vacinas, name]
         : prev.vacinas.filter((v) => v !== name),
     }));
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "Data não informada";
-    try {
-      return new Date(dateStr).toLocaleDateString("pt-BR");
-    } catch {
-      return dateStr;
-    }
   };
 
   return (
@@ -331,8 +347,9 @@ const VaccinesPage = () => {
           variant="default"
           type="submit"
           className="w-full text-sm font-semibold py-5 rounded-lg mt-8 uppercase "
+          disabled={isSubmitting}
         >
-          Registrar vacina(s)
+          {isSubmitting ? "Registrando..." : "Registrar vacina(s)"}
         </Button>
       </form>
 

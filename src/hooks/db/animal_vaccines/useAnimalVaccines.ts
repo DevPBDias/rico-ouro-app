@@ -16,12 +16,18 @@ export function useAnimalVaccines(rgn?: string) {
       return;
     }
 
+    if (!rgn) {
+      setAnimalVaccines([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
 
     const query = db.animal_vaccines.find({
       selector: {
         _deleted: { $eq: false },
-        ...(rgn ? { rgn: { $eq: rgn } } : {}),
+        rgn: { $eq: rgn || "__NON_EXISTENT_RGN__" },
       },
       sort: [{ date: "desc" }],
     });

@@ -34,6 +34,10 @@ export function useLocalMutation<
         setIsLoading(false);
         return doc.toJSON() as T;
       } catch (err) {
+        console.error(
+          `❌ [useLocalMutation] CREATE ERROR in ${collectionName}:`,
+          err
+        );
         const errorObj =
           err instanceof Error ? err : new Error("Failed to create document");
         setError(errorObj);
@@ -143,7 +147,10 @@ export function useLocalMutation<
           throw new Error(`Document ${id} not found in ${collectionName}`);
         }
 
-        await doc.remove();
+        await doc.patch({
+          _deleted: true,
+          updated_at: new Date().toISOString(),
+        } as any);
 
         setIsLoading(false);
       } catch (err) {
@@ -212,7 +219,22 @@ export function useLocalMutation<
           throw new Error(`Collection ${collectionName} not found`);
         }
 
-        await collection.bulkRemove(ids);
+        const primaryKey =
+          (collection as any).schema.jsonSchema.primaryKey || "id";
+        const query = collection.find({
+          selector: {
+            [primaryKey]: { $in: ids },
+          } as any,
+        });
+        const docs = await query.exec();
+        await Promise.all(
+          docs.map((doc: any) =>
+            doc.patch({
+              _deleted: true,
+              updated_at: new Date().toISOString(),
+            } as any)
+          )
+        );
 
         setIsLoading(false);
       } catch (err) {
