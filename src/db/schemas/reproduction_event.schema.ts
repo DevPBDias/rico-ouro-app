@@ -34,6 +34,7 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     natural_mating_d80_exit: { type: "string", format: "date" },
     d110_date: { type: "string", format: "date" },
     final_diagnostic: { type: "string", maxLength: 20 },
+    pregnancy_origin: { type: "string", maxLength: 20 },
     created_at: { type: "string" },
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },

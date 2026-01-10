@@ -25,6 +25,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
+import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
+import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
+import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
+import { ReproductionEvent } from "@/types/reproduction_event.type";
 
 const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { matriz, isLoading: matrizLoading } = useMatrizById(rgn);
@@ -41,7 +45,29 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { events: reproductionEvents, isLoading: reproductionLoading } =
     useReproductionEvents(rgn);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<ReproductionEvent | null>(
+    null
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<ReproductionEvent | null>(
+    null
+  );
+
   const [vaccineToDelete, setVaccineToDelete] = useState<string | null>(null);
+
+  const handleEditReproduction = (event: ReproductionEvent) => {
+    setEventToEdit(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteReproduction = (eventId: string) => {
+    const event = reproductionEvents.find((e) => e.event_id === eventId);
+    if (event) {
+      setEventToDelete(event);
+      setIsDeleteModalOpen(true);
+    }
+  };
 
   const handleDeleteVaccine = async (vaccineId: string) => {
     try {
@@ -117,7 +143,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   return (
     <main>
       <div className="flex-1 overflow-y-auto w-full">
-        <div className="space-y-3 mt-2 w-full">
+        <div className="space-y-3 w-full">
           <div>
             <Tabs defaultValue="dados" className="w-full">
               <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-2 h-auto gap-1 shadow-sm">
@@ -506,226 +532,14 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
               >
                 {reproductionEvents.length > 0 ? (
                   <Accordion type="single" collapsible className="space-y-3">
-                    {reproductionEvents.map((event, index) => {
-                      const diagnosticResult =
-                        event.final_diagnostic || event.diagnostic_d30;
-                      const isPrenha = diagnosticResult === "prenha";
-                      const isVazia = diagnosticResult === "vazia";
-                      const hasResult = isPrenha || isVazia;
-
-                      return (
-                        <AccordionItem
-                          key={event.event_id}
-                          value={event.event_id}
-                          className="border border-border rounded-lg overflow-hidden bg-card"
-                        >
-                          <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 transition-colors">
-                            <div className="flex items-center justify-between w-full pr-2">
-                              <div className="flex items-center gap-3">
-                                <span className="text-primary font-bold text-sm uppercase">
-                                  {event.event_type}
-                                </span>
-                                <span className="text-muted-foreground text-xs">
-                                  {event.d0_date && formatDate(event.d0_date)}
-                                </span>
-                              </div>
-                              {hasResult && (
-                                <span
-                                  className={`px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase ${
-                                    isPrenha
-                                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                                  }`}
-                                >
-                                  {diagnosticResult}
-                                </span>
-                              )}
-                            </div>
-                          </AccordionTrigger>
-
-                          <AccordionContent>
-                            <div className="px-4 pb-4 space-y-4">
-                              <div className="p-3 border rounded-xl bg-card/50 space-y-3 mt-2">
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
-                                      Inseminação
-                                    </span>
-                                    <span className="text-sm font-medium">
-                                      {formatDate(event.d0_date)}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
-                                      Touro/Sêmen
-                                    </span>
-                                    <span className="text-sm font-bold text-primary">
-                                      {event.bull_name || "-"}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
-                                      Protocolo
-                                    </span>
-                                    <span className="text-xs">
-                                      {event.protocol_name || "-"}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
-                                      Status Prod.
-                                    </span>
-                                    <span className="text-xs uppercase">
-                                      {event.productive_status || "-"}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-muted/20 p-2 rounded-lg border border-dashed">
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block">
-                                      D8 / D10
-                                    </span>
-                                    <span className="text-[10px] font-medium">
-                                      {event.d8_date
-                                        ? formatDate(event.d8_date)
-                                        : "-"}{" "}
-                                      /{" "}
-                                      {event.d10_date
-                                        ? formatDate(event.d10_date)
-                                        : "-"}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block">
-                                      D22 Resinc
-                                    </span>
-                                    <div className="flex flex-col">
-                                      <span className="text-[10px] font-medium">
-                                        {event.d22_date
-                                          ? formatDate(event.d22_date)
-                                          : "-"}
-                                      </span>
-                                      <span className="text-[9px] text-primary italic font-bold">
-                                        {event.resync_bull || ""}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block">
-                                      D32 Resinc
-                                    </span>
-                                    <span className="text-[10px] font-medium">
-                                      {event.d32_date
-                                        ? formatDate(event.d32_date)
-                                        : "-"}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block">
-                                      D30 Diag.
-                                    </span>
-                                    <span
-                                      className={`text-[10px] font-bold uppercase ${
-                                        event.diagnostic_d30 === "prenha"
-                                          ? "text-green-600"
-                                          : event.diagnostic_d30 === "vazia"
-                                          ? "text-red-600"
-                                          : ""
-                                      }`}
-                                    >
-                                      {event.diagnostic_d30 || "Pendente"}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 border-t border-border pt-3">
-                                  <div>
-                                    <span className="text-[10px] uppercase text-amber-600 block font-bold">
-                                      Repasse (D35-D80)
-                                    </span>
-                                    <div className="flex flex-col">
-                                      <span className="text-[10px] font-medium">
-                                        {event.natural_mating_d35_entry
-                                          ? formatDate(
-                                              event.natural_mating_d35_entry
-                                            )
-                                          : "-"}{" "}
-                                        →{" "}
-                                        {event.natural_mating_d80_exit
-                                          ? formatDate(
-                                              event.natural_mating_d80_exit
-                                            )
-                                          : "-"}
-                                      </span>
-                                      <span className="text-[9px] text-amber-700 italic font-bold">
-                                        {event.natural_mating_bull || ""}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-primary block font-bold">
-                                      Diag. Final (D110)
-                                    </span>
-                                    <div className="flex flex-col">
-                                      <span className="text-[10px] font-medium">
-                                        {event.d110_date
-                                          ? formatDate(event.d110_date)
-                                          : "-"}
-                                      </span>
-                                      <span
-                                        className={`text-[10px] font-bold uppercase ${
-                                          event.final_diagnostic === "prenha"
-                                            ? "text-green-600"
-                                            : event.final_diagnostic === "vazia"
-                                            ? "text-red-600"
-                                            : ""
-                                        }`}
-                                      >
-                                        {event.final_diagnostic || "Pendente"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] uppercase text-muted-foreground block font-bold">
-                                      ECC / Ovários
-                                    </span>
-                                    <span className="text-[10px] font-medium">
-                                      ECC: {event.body_score || "-"} |{" "}
-                                      {event.ovary_size || "-"} (
-                                      {event.ovary_structure || "-"})
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {isPrenha && (
-                                  <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
-                                    <span className="text-[10px] uppercase text-primary font-bold block mb-1">
-                                      Previsão de Parto (Base D0)
-                                    </span>
-                                    <div className="flex justify-between items-center text-xs font-bold text-primary">
-                                      <span>
-                                        {event.calving_start_date
-                                          ? formatDate(event.calving_start_date)
-                                          : "-"}
-                                      </span>
-                                      <span className="text-muted-foreground font-normal lowercase">
-                                        até
-                                      </span>
-                                      <span>
-                                        {event.calving_end_date
-                                          ? formatDate(event.calving_end_date)
-                                          : "-"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      );
-                    })}
+                    {reproductionEvents.map((event) => (
+                      <ReproductionEventCard
+                        key={event.event_id}
+                        event={event}
+                        onEdit={handleEditReproduction}
+                        onDelete={handleDeleteReproduction}
+                      />
+                    ))}
                   </Accordion>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
@@ -745,6 +559,28 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
           </div>
         </div>
       </div>
+
+      {eventToEdit && (
+        <EditReproductionModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEventToEdit(null);
+          }}
+          event={eventToEdit}
+        />
+      )}
+
+      {eventToDelete && (
+        <DeleteReproductionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setEventToDelete(null);
+          }}
+          event={eventToDelete}
+        />
+      )}
     </main>
   );
 };

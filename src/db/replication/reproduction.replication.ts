@@ -35,6 +35,7 @@ export const reproductionEventReplication = createReplication<ReproductionEvent>
     natural_mating_d80_exit: doc.natural_mating_d80_exit ?? null,
     d110_date: doc.d110_date ?? null,
     final_diagnostic: doc.final_diagnostic ?? null,
+    pregnancy_origin: doc.pregnancy_origin ?? null,
     created_at: doc.created_at ?? null,
     _deleted: doc._deleted,
   }),

@@ -19,6 +19,7 @@ import {
   OvaryStructure,
   CycleStage,
   Diagnostic,
+  PregnancyOrigin,
 } from "@/types/reproduction_event.type";
 import { Loader2 } from "lucide-react";
 
@@ -51,19 +52,46 @@ export function ReproductionForm({
     }
   }, [initialData]);
 
-  const calculateCalvingDates = (d0Date: string) => {
-    if (!d0Date) return {};
-    const initialDate = new Date(d0Date);
+  const calculateCalvingDates = (
+    origin: PregnancyOrigin,
+    dates: Partial<ReproductionEvent>
+  ) => {
+    let startBase: string | undefined;
+    let endBase: string | undefined;
 
-    const date270 = new Date(initialDate);
+    switch (origin) {
+      case "d0":
+        startBase = endBase = dates.d0_date;
+        break;
+      case "resync":
+        startBase = endBase = dates.d32_date;
+        break;
+      case "natural_mating":
+        startBase = dates.natural_mating_d35_entry;
+        endBase = dates.natural_mating_d80_exit;
+        break;
+    }
+
+    if (!startBase || !endBase) return {};
+
+    const startDate = new Date(startBase);
+    const endDate = new Date(endBase);
+
+    const date270 = new Date(startDate);
     date270.setDate(date270.getDate() + 270);
 
-    const date305 = new Date(initialDate);
-    date305.setDate(date305.getDate() + 305);
+    // Natural mating uses +270 for both ends (as per user requested range)
+    // Other protocols use +305 for the end date (standard window)
+    const dateEnd = new Date(endDate);
+    if (origin === "natural_mating") {
+      dateEnd.setDate(dateEnd.getDate() + 270);
+    } else {
+      dateEnd.setDate(dateEnd.getDate() + 305);
+    }
 
     return {
       calving_start_date: date270.toISOString().split("T")[0],
-      calving_end_date: date305.toISOString().split("T")[0],
+      calving_end_date: dateEnd.toISOString().split("T")[0],
     };
   };
 
@@ -90,18 +118,39 @@ export function ReproductionForm({
   };
 
   const handleChange = (field: keyof ReproductionEvent, value: any) => {
-    if (field === "d0_date" && value) {
-      const dServices = calculateDServices(value);
-      const calving = calculateCalvingDates(value);
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-        ...dServices,
-        ...calving,
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    }
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // Auto-calculate D-Series if D0 changes
+      if (field === "d0_date" && value) {
+        const dServices = calculateDServices(value);
+        Object.assign(newData, dServices);
+        // Default origin to d0 if not set
+        if (!newData.pregnancy_origin) {
+          newData.pregnancy_origin = "d0";
+        }
+      }
+
+      // Recalculate Calving if origin or relevant dates change
+      const relevantFields: (keyof ReproductionEvent)[] = [
+        "pregnancy_origin",
+        "d0_date",
+        "natural_mating_d35_entry",
+        "natural_mating_d80_exit",
+      ];
+
+      if (relevantFields.includes(field)) {
+        if (newData.pregnancy_origin) {
+          const calving = calculateCalvingDates(
+            newData.pregnancy_origin,
+            newData
+          );
+          Object.assign(newData, calving);
+        }
+      }
+
+      return newData;
+    });
   };
 
   const handleTypeChange = (value: EventType) => {
@@ -171,6 +220,33 @@ export function ReproductionForm({
               required
             />
           </div>
+        </div>
+
+        <div className="space-y-1 w-full pt-2">
+          <label className="text-xs font-bold text-primary uppercase">
+            Origem da Gestação (Base Parto)
+          </label>
+          <Select
+            value={formData.pregnancy_origin || ""}
+            onValueChange={(val) =>
+              handleChange("pregnancy_origin", val as PregnancyOrigin)
+            }
+          >
+            <SelectTrigger className="bg-muted border-0 h-10 w-full">
+              <SelectValue placeholder="Selecione a Base" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="d0">Inicial (D10)</SelectItem>
+              <SelectItem value="resync">Resync (D32)</SelectItem>
+              <SelectItem value="natural_mating">
+                Repasse Natural (D35-D80)
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground italic px-1">
+            Define qual data será usada para calcular a previsão de parto (+270
+            a +305 dias).
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -251,6 +327,32 @@ export function ReproductionForm({
               }
               className="bg-muted border-0"
               placeholder="Touro do Campo"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Entrada Campo (D35)
+            </label>
+            <Input
+              type="date"
+              value={formData.natural_mating_d35_entry || ""}
+              onChange={(e) =>
+                handleChange("natural_mating_d35_entry", e.target.value)
+              }
+              className="bg-muted border-0"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-primary uppercase">
+              Saída Campo (D80)
+            </label>
+            <Input
+              type="date"
+              value={formData.natural_mating_d80_exit || ""}
+              onChange={(e) =>
+                handleChange("natural_mating_d80_exit", e.target.value)
+              }
+              className="bg-muted border-0"
             />
           </div>
         </div>
@@ -412,40 +514,6 @@ export function ReproductionForm({
             </Select>
           </div>
         </div>
-
-        {/* Previsão de Parto */}
-        {(formData.diagnostic_d30 === "prenha" ||
-          formData.final_diagnostic === "prenha" ||
-          formData.gestational_condition === "prenha") && (
-          <div className="grid grid-cols-2 gap-4 bg-primary/5 p-3 rounded-lg border border-primary/20">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase">
-                Prev. Parto (270d)
-              </label>
-              <Input
-                type="date"
-                value={formData.calving_start_date || ""}
-                onChange={(e) =>
-                  handleChange("calving_start_date", e.target.value)
-                }
-                className="bg-white h-9 text-sm font-bold text-primary"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase">
-                Prev. Parto (305d)
-              </label>
-              <Input
-                type="date"
-                value={formData.calving_end_date || ""}
-                onChange={(e) =>
-                  handleChange("calving_end_date", e.target.value)
-                }
-                className="bg-white h-9 text-sm font-bold text-primary"
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex gap-3 pt-4">

@@ -12,6 +12,8 @@ export type CycleStage = "estro" | "anestro 1" | "anestro 2";
 
 export type Diagnostic = "prenha" | "vazia";
 
+export type PregnancyOrigin = "d0" | "resync" | "natural_mating";
+
 export interface ReproductionEvent {
   /** Identification */
   event_id: string; // UUID
@@ -20,6 +22,11 @@ export interface ReproductionEvent {
   /** Type and Status */
   event_type: EventType;
   productive_status?: ReproductionStatus;
+
+  /** Gestational Data */
+  pregnancy_origin?: PregnancyOrigin;
+  calving_start_date?: string;
+  calving_end_date?: string;
 
   /** Productive evaluation */
   evaluation_date?: string; // ISO Date (YYYY-MM-DD)
@@ -44,10 +51,6 @@ export interface ReproductionEvent {
   diagnostic_d30?: Diagnostic;
   d32_date?: string;
   resync_bull?: string;
-
-  /** Calving forecast */
-  calving_start_date?: string;
-  calving_end_date?: string;
 
   /** Natural mating */
   natural_mating_d35_entry?: string;
