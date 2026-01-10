@@ -149,7 +149,6 @@ export function useLocalMutation<
 
         await doc.patch({
           _deleted: true,
-          updated_at: new Date().toISOString(),
         } as any);
 
         setIsLoading(false);
@@ -231,7 +230,6 @@ export function useLocalMutation<
           docs.map((doc: any) =>
             doc.patch({
               _deleted: true,
-              updated_at: new Date().toISOString(),
             } as any)
           )
         );

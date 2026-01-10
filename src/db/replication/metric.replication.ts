@@ -16,7 +16,6 @@ export const animalMetricWeightReplication = createReplication<AnimalMetric>({
     born_metric: doc.born_metric ?? false,
     date: doc.date,
     value: doc.value,
-    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 
@@ -50,7 +49,6 @@ export const animalMetricCEReplication = createReplication<AnimalMetric>({
     born_metric: doc.born_metric ?? false,
     date: doc.date,
     value: doc.value,
-    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

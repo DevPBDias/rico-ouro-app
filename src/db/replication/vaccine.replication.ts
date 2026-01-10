@@ -13,7 +13,6 @@ export const vaccineReplication = createReplication<Vaccine>({
   mapToSupabase: (doc) => ({
     id: doc.id,
     vaccine_name: doc.vaccine_name,
-    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

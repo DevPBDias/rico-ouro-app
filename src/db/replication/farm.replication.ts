@@ -13,7 +13,6 @@ export const farmReplication = createReplication<Farm>({
   mapToSupabase: (doc) => ({
     id: doc.id,
     farm_name: doc.farm_name,
-    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

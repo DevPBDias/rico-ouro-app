@@ -51,7 +51,6 @@ export const animalReplication = createReplication<ReplicableAnimal>({
     maternal_grandfather_name: doc.maternal_grandfather_name ?? null,
     paternal_grandfather_name: doc.paternal_grandfather_name ?? null,
     partnership: doc.partnership ?? null,
-    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 
