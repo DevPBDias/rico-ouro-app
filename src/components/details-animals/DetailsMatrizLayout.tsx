@@ -14,7 +14,7 @@ import {
 import { ChartLineLabel } from "@/components/charts/BoiCharts";
 import { useAnimalWeights } from "@/hooks/db/animal_weights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDate } from "@/utils/formatDates";
+import { formatDate, parseToDate } from "@/utils/formatDates";
 import Link from "next/link";
 import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
@@ -101,7 +101,9 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
     if (!weights || weights.length < 2) return [];
 
     const sortedWeights = [...weights].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) =>
+        (parseToDate(a.date)?.getTime() || 0) -
+        (parseToDate(b.date)?.getTime() || 0)
     );
 
     return sortedWeights

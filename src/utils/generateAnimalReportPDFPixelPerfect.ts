@@ -58,19 +58,7 @@ function formatValue(val: any): string {
   return String(val);
 }
 
-function formatDateBR(dateStr?: string): string {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return "";
-  }
-}
+import { formatDate } from "@/utils/formatDates";
 
 export async function generateAnimalReportPDFPixelPerfect(
   data: Animal[],
@@ -207,7 +195,7 @@ export async function generateAnimalReportPDFPixelPerfect(
         let val = animal[key as keyof Animal];
 
         // Formatações específicas para manter fidelidade
-        if (key === "born_date") val = formatDateBR(val as string);
+        if (key === "born_date") val = formatDate(val as string);
         if (key === "sex") val = val === "M" ? "M" : val === "F" ? "F" : val;
 
         // Converte farm_id para o nome da fazenda

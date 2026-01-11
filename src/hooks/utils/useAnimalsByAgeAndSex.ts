@@ -3,7 +3,11 @@
 import { useMemo } from "react";
 import { Animal } from "@/types/animal.type";
 
-type AgeRange = "0 - 12 m" | "12 - 24 m" | "24 - 36 m" | "+36 m";
+import {
+  calculateAgeInMonths,
+  getAgeRange,
+  AgeRange,
+} from "@/utils/formatDates";
 
 interface AnimalsByAgeAndSex {
   male: {
@@ -29,30 +33,6 @@ interface AnimalsByAgeAndSex {
     "24 - 36 m": number;
     "+36 m": number;
   };
-}
-
-function calculateAgeInMonths(birthDate: string | undefined): number {
-  if (!birthDate) return 0;
-
-  const birth = new Date(birthDate);
-  const now = new Date();
-
-  const yearsDiff = now.getFullYear() - birth.getFullYear();
-  const monthsDiff = now.getMonth() - birth.getMonth();
-
-  return yearsDiff * 12 + monthsDiff;
-}
-
-function getAgeRange(months: number): AgeRange {
-  if (months <= 12) {
-    return "0 - 12 m";
-  } else if (months <= 24 && months > 12) {
-    return "12 - 24 m";
-  } else if (months <= 36 && months > 24) {
-    return "24 - 36 m";
-  } else {
-    return "+36 m";
-  }
 }
 
 export { calculateAgeInMonths, getAgeRange };
