@@ -24,3 +24,26 @@ export const DEFAULT_SELECTED_COLUMNS: TableColumn[] = [
   { header: "CLASSE", dataKey: "classification" },
   { header: "STATUS", dataKey: "status" },
 ];
+
+export const REPRODUCTION_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
+  { header: "NOME", dataKey: "animalName" },
+  { header: "MANEJO", dataKey: "managementType" },
+  { header: "DATA D0", dataKey: "date" },
+  { header: "ECC", dataKey: "body_score" },
+  { header: "CICLO", dataKey: "cycle_stage" },
+  { header: "TAM. OVÁRIO", dataKey: "ovary_size" },
+  { header: "ESTRUT. OVÁRIO", dataKey: "ovary_structure" },
+  { header: "PROTOCOLO", dataKey: "protocol_name" },
+  { header: "TOURO (IA)", dataKey: "bull_name" },
+  { header: "TOURO (RESYNC)", dataKey: "resync_bull" },
+  { header: "TOURO (MONTA)", dataKey: "natural_mating_bull" },
+  { header: "DG30", dataKey: "diagnostic_d30" },
+  { header: "DG FINAL", dataKey: "final_diagnostic" },
+];
+
+export const REPRODUCTION_DEFAULT_COLUMNS: TableColumn[] = [
+  { header: "NOME", dataKey: "animalName" },
+  { header: "MANEJO", dataKey: "managementType" },
+  { header: "DATA D0", dataKey: "date" },
+  { header: "DG FINAL", dataKey: "final_diagnostic" },
+];

@@ -18,7 +18,7 @@ import { farmSchema } from "./schemas/farm.schema";
 import { MyDatabase, MyDatabaseCollections } from "./collections";
 import { setupReplication } from "./replication";
 import { animalMetricCESchema } from "./schemas/animal_metric_ce.schema";
-import { animalMetricWeightSchema } from "./schemas/animal_metric_weigth.schema";
+import { animalMetricWeightSchema } from "./schemas/animal_metric_weight.schema";
 import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
 import { animalStatusSchema } from "./schemas/animal_status.schema";

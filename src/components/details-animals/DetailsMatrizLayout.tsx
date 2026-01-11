@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/accordion";
 import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
 import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
+import { ReproductionIATFCard } from "@/components/cards/ReproductionIATFCard";
+import { ReproductionEventListCard } from "@/components/cards/ReproductionEventListCard";
 import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
 import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
@@ -531,16 +533,53 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                 className="mt-0 animate-in fade-in-0 duration-200"
               >
                 {reproductionEvents.length > 0 ? (
-                  <Accordion type="single" collapsible className="space-y-3">
+                  <div className="space-y-6">
                     {reproductionEvents.map((event) => (
-                      <ReproductionEventCard
-                        key={event.event_id}
-                        event={event}
-                        onEdit={handleEditReproduction}
-                        onDelete={handleDeleteReproduction}
-                      />
+                      <div key={event.event_id} className="space-y-2">
+                        <div className="px-2">
+                          <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
+                            Novo Layout Sugerido
+                          </span>
+                        </div>
+                        <Accordion type="single" collapsible className="w-full">
+                          <ReproductionIATFCard
+                            event={event}
+                            matriz={matriz}
+                            onEdit={handleEditReproduction}
+                            onDelete={handleDeleteReproduction}
+                          />
+                        </Accordion>
+
+                        <div className="px-2 mt-4">
+                          <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
+                            Opção 3: Lista Completa (Sem Tabs)
+                          </span>
+                        </div>
+                        <Accordion type="single" collapsible className="w-full">
+                          <ReproductionEventListCard
+                            event={event}
+                            matriz={matriz}
+                            onEdit={handleEditReproduction}
+                            onDelete={handleDeleteReproduction}
+                          />
+                        </Accordion>
+
+                        <div className="px-2 mt-4">
+                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest bg-muted/5 px-2 py-0.5 rounded-full border border-muted-foreground/10">
+                            Layout Original Atual
+                          </span>
+                        </div>
+                        <Accordion type="single" collapsible className="w-full">
+                          <ReproductionEventCard
+                            event={event}
+                            onEdit={handleEditReproduction}
+                            onDelete={handleDeleteReproduction}
+                          />
+                        </Accordion>
+                        <div className="h-px bg-border my-8" />
+                      </div>
                     ))}
-                  </Accordion>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
                     <p className="text-muted-foreground text-sm">

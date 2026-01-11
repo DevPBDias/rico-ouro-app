@@ -3,6 +3,10 @@ import { Animal } from "@/types/animal.type";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { ReportDefinition, ReportGeneratorParams } from "./types";
 import { generateReproductionPDF } from "../generators/reproduction";
+import {
+  REPRODUCTION_REPORT_AVAILABLE_COLUMNS,
+  REPRODUCTION_DEFAULT_COLUMNS,
+} from "./availableColumns";
 
 async function generateReproductionReport(
   params: ReportGeneratorParams
@@ -63,6 +67,16 @@ async function generateReproductionReport(
         date: event.d0_date
           ? new Date(event.d0_date).toLocaleDateString("pt-BR")
           : "---",
+        body_score: event.body_score || "---",
+        cycle_stage: event.cycle_stage || "---",
+        ovary_size: event.ovary_size || "---",
+        ovary_structure: event.ovary_structure || "---",
+        protocol_name: event.protocol_name || "---",
+        bull_name: event.bull_name || "---",
+        resync_bull: event.resync_bull || "---",
+        natural_mating_bull: event.natural_mating_bull || "---",
+        diagnostic_d30: event.diagnostic_d30 || "---",
+        final_diagnostic: event.final_diagnostic || "---",
         observations: event.bull_name ? `Touro: ${event.bull_name}` : "---",
       };
     }),
@@ -70,7 +84,12 @@ async function generateReproductionReport(
     systemName: "Rico Ouro",
   };
 
-  await generateReproductionPDF(reportData);
+  const selectedColumns =
+    filters.selectedColumns && filters.selectedColumns.length > 0
+      ? [...filters.selectedColumns]
+      : [...REPRODUCTION_DEFAULT_COLUMNS];
+
+  await generateReproductionPDF(reportData, selectedColumns);
 }
 
 function formatEventType(event: ReproductionEvent): string {
@@ -98,6 +117,6 @@ export const reproductionDefinition: ReportDefinition = {
     "Lista os eventos de manejo reprodutivo dos animais em um período",
   icon: "Heart",
   requiredFilters: ["farm", "dateRange"],
-  allowColumnSelection: false,
+  allowColumnSelection: true,
   generate: generateReproductionReport,
 };

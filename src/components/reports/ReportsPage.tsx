@@ -1,12 +1,5 @@
 "use client";
 
-/**
- * ReportsPage Component
- *
- * Main page displaying all available reports in a tabbed layout.
- * Each tab contains a configuration form for the specific report.
- */
-
 import { useReports } from "@/context/ReportsContext";
 import { AVAILABLE_REPORTS } from "@/lib/pdf/definitions";
 import { ReportForm } from "./ReportForm";

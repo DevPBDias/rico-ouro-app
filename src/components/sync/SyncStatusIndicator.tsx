@@ -16,7 +16,7 @@ import {
 export function SyncStatusIndicator() {
   const [isMounted, setIsMounted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { status, online, isSyncing, triggerSync, lastSyncedAt } =
+  const { status, online, isSyncing, triggerSync, lastSyncedAt, errors } =
     useSyncStatus();
 
   useEffect(() => {
@@ -100,6 +100,25 @@ export function SyncStatusIndicator() {
                     minute: "2-digit",
                   })}
                 </p>
+              </div>
+            )}
+
+            {errors && errors.length > 0 && (
+              <div className="pt-2 border-t border-rose-900/40">
+                <p className="text-[9px] font-bold text-rose-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                  <AlertCircle size={10} />
+                  Detalhes do Erro
+                </p>
+                <div className="max-h-20 overflow-y-auto pr-1">
+                  {errors.map((err, i) => (
+                    <p
+                      key={i}
+                      className="text-[9px] text-rose-400/90 leading-tight mb-1 last:mb-0 break-all"
+                    >
+                      {err.message}
+                    </p>
+                  ))}
+                </div>
               </div>
             )}
 
