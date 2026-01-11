@@ -27,6 +27,7 @@ export type ConflictResolver<T> = (localDoc: T, remoteDoc: T) => T;
  */
 export interface ReplicationCheckpoint {
   updated_at?: string;
+  last_id?: string | null;
 }
 
 /**
