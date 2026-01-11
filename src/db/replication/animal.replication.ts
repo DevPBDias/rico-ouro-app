@@ -23,7 +23,7 @@ interface ReplicableAnimal extends Omit<Animal, "_deleted" | "updated_at"> {
 export const animalReplication = createReplication<ReplicableAnimal>({
   collectionName: "animals",
   tableName: "animals",
-  replicationIdentifier: "animals-replication-v2", // Incrementado para nova versão
+  replicationIdentifier: "animals-replication-v10", // Nova versão robusta v10
 
   // Mapeia documento RxDB → Supabase
   // Normaliza todos os campos para valores válidos do PostgreSQL

@@ -112,7 +112,6 @@ export default function NascimentosPage() {
         });
       }
 
-      console.log("Animal criado com sucesso!", newAnimal, bornWeightAnimal, mother);
       setShowModal(true);
     } catch (error: any) {
       console.error("Erro ao cadastrar nascimento:", error);

@@ -81,44 +81,27 @@ async function createDatabase(): Promise<MyDatabase> {
       eventReduce: true,
     });
 
-    // Se o banco foi retornado de uma chamada anterior (ignoreDuplicate),
-    // ele pode já ter as coleções. Verificamos uma para decidir.
-    if (db.collections.animals) {
+    // Check for any existing collection to avoid COL23 (16 collections limit)
+    // In RxDB Open Source, cross-instance collections are counted towards the limit.
+    const collectionsCount = Object.keys(db.collections).length;
+    if (collectionsCount > 0) {
       console.log(
-        "[RxDB] Collections already initialized, skipping addCollections"
+        `[RxDB] Database already has ${collectionsCount} collections, skipping addCollections`
       );
       return db;
     }
 
     try {
       await db.addCollections({
-        animals: {
-          schema: animalSchema,
-        },
-        vaccines: {
-          schema: vaccineSchema,
-        },
-        farms: {
-          schema: farmSchema,
-        },
-        animal_metrics_ce: {
-          schema: animalMetricCESchema,
-        },
-        animal_metrics_weight: {
-          schema: animalMetricWeightSchema,
-        },
-        animal_vaccines: {
-          schema: animalVaccineSchema,
-        },
-        reproduction_events: {
-          schema: reproductionEventSchema,
-        },
-        animal_statuses: {
-          schema: animalStatusSchema,
-        },
-        semen_doses: {
-          schema: semenDoseSchema,
-        },
+        animals: { schema: animalSchema },
+        vaccines: { schema: vaccineSchema },
+        farms: { schema: farmSchema },
+        animal_metrics_ce: { schema: animalMetricCESchema },
+        animal_metrics_weight: { schema: animalMetricWeightSchema },
+        animal_vaccines: { schema: animalVaccineSchema },
+        reproduction_events: { schema: reproductionEventSchema },
+        animal_statuses: { schema: animalStatusSchema },
+        semen_doses: { schema: semenDoseSchema },
       });
     } catch (err: any) {
       console.error("[RxDB] Failed to add collections:", err);
