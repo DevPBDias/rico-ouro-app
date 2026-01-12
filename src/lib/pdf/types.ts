@@ -43,22 +43,17 @@ export interface WeightReportData extends ReportBaseData {
 export interface ReproductionReportData extends ReportBaseData {
   managementDate: string;
   data: Array<{
-    rgd?: string;
     rgn: string;
-    animalName?: string;
-    managementType: string;
-    date: string;
-    observations?: string;
-    body_score?: string | number;
-    cycle_stage?: string;
-    ovary_size?: string;
-    ovary_structure?: string;
-    protocol_name?: string;
+    idade?: string;
     bull_name?: string;
+    d0_date?: string;
+    d8_date?: string;
+    d10_date?: string;
     resync_bull?: string;
-    natural_mating_bull?: string;
+    resync_d0?: string;
+    resync_d8?: string;
     diagnostic_d30?: string;
-    final_diagnostic?: string;
+    resync_d10?: string;
     [key: string]: any;
   }>;
 }

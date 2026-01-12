@@ -18,19 +18,12 @@ import { formatDate, parseToDate } from "@/utils/formatDates";
 import Link from "next/link";
 import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion } from "@/components/ui/accordion";
 import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
-import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
-import { ReproductionIATFCard } from "@/components/cards/ReproductionIATFCard";
-import { ReproductionEventListCard } from "@/components/cards/ReproductionEventListCard";
 import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
 import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
+import { ReproductionEventCard } from "../cards/ReproductionEventCard";
 
 const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { matriz, isLoading: matrizLoading } = useMatrizById(rgn);
@@ -240,7 +233,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                       </div>
                       <div className="flex justify-between items-center pt-0.5">
                         <span className="text-[11px] text-gray-500 uppercase">
-                          Condição gestacional
+                          Diagnóstico gestacional
                         </span>
                         <span className="text-sm font-semibold text-primary">
                           {matriz?.condition || "-"}
@@ -537,49 +530,19 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                 {reproductionEvents.length > 0 ? (
                   <div className="space-y-6">
                     {reproductionEvents.map((event) => (
-                      <div key={event.event_id} className="space-y-2">
-                        <div className="px-2">
-                          <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
-                            Novo Layout Sugerido
-                          </span>
-                        </div>
-                        <Accordion type="single" collapsible className="w-full">
-                          <ReproductionIATFCard
-                            event={event}
-                            matriz={matriz}
-                            onEdit={handleEditReproduction}
-                            onDelete={handleDeleteReproduction}
-                          />
-                        </Accordion>
-
-                        <div className="px-2 mt-4">
-                          <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
-                            Opção 3: Lista Completa (Sem Tabs)
-                          </span>
-                        </div>
-                        <Accordion type="single" collapsible className="w-full">
-                          <ReproductionEventListCard
-                            event={event}
-                            matriz={matriz}
-                            onEdit={handleEditReproduction}
-                            onDelete={handleDeleteReproduction}
-                          />
-                        </Accordion>
-
-                        <div className="px-2 mt-4">
-                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest bg-muted/5 px-2 py-0.5 rounded-full border border-muted-foreground/10">
-                            Layout Original Atual
-                          </span>
-                        </div>
-                        <Accordion type="single" collapsible className="w-full">
-                          <ReproductionEventCard
-                            event={event}
-                            onEdit={handleEditReproduction}
-                            onDelete={handleDeleteReproduction}
-                          />
-                        </Accordion>
-                        <div className="h-px bg-border my-8" />
-                      </div>
+                      <Accordion
+                        key={event.event_id}
+                        type="single"
+                        collapsible
+                        className="w-full"
+                      >
+                        <ReproductionEventCard
+                          event={event}
+                          matriz={matriz}
+                          onEdit={handleEditReproduction}
+                          onDelete={handleDeleteReproduction}
+                        />
+                      </Accordion>
                     ))}
                   </div>
                 ) : (

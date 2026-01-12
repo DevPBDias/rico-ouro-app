@@ -6,6 +6,7 @@ import {
   ANIMAL_REPORT_AVAILABLE_COLUMNS,
   DEFAULT_SELECTED_COLUMNS,
 } from "./availableColumns";
+import { calculateAgeInMonths, getAgeRange } from "@/utils/formatDates";
 
 async function generateAnimalByFarmReport(
   params: ReportGeneratorParams
@@ -66,6 +67,7 @@ async function generateAnimalByFarmReport(
       status: animal.status || "---",
       society: animal.partnership || "---",
       sex: animal.sex || "---",
+      category: getAgeRange(calculateAgeInMonths(animal.born_date)),
       observations: "---",
     })),
     reportDate: new Date().toLocaleDateString("pt-BR"),

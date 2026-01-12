@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useMemo } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
-import { GenderFilterValue } from "@/lib/pdf/definitions/types";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { GenderFilterValue, ReportFilters } from "@/lib/pdf/definitions/types";
+import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   ANIMAL_REPORT_AVAILABLE_COLUMNS,
   REPRODUCTION_REPORT_AVAILABLE_COLUMNS,
@@ -68,6 +72,77 @@ export function ReportForm() {
   // Check if we've reached max columns
   const maxColumnsReached =
     (filters.selectedColumns?.length || 0) >= MAX_SELECTABLE_COLUMNS;
+
+  // --- REPRODUCTION SPECIFIC LOGIC ---
+  const { events: allEvents } = useReproductionEvents();
+  const { animals } = useAnimals();
+
+  // Filter animals by selected farm
+  const farmAnimals = useMemo(() => {
+    if (!filters.farmId) return [];
+    return animals.filter((a) => a.farm_id === filters.farmId);
+  }, [animals, filters.farmId]);
+
+  const farmAnimalRgns = useMemo(
+    () => new Set(farmAnimals.map((a) => a.rgn)),
+    [farmAnimals]
+  );
+
+  // Filter events by farm animals
+  const farmEvents = useMemo(() => {
+    if (!filters.farmId) return [];
+    return allEvents.filter((e) => farmAnimalRgns.has(e.rgn));
+  }, [allEvents, farmAnimalRgns, filters.farmId]);
+
+  // Available Years from Events of the current farm
+  const availableYears = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          farmEvents
+            .filter((e) => e.d0_date)
+            .map((e) => e.d0_date.split("-")[0])
+        )
+      ).sort((a, b) => b.localeCompare(a)),
+    [farmEvents]
+  );
+
+  // Available Dates for the selected Year and Farm
+  const availableDatesForYear = useMemo(
+    () =>
+      farmEvents
+        .filter(
+          (e) =>
+            e.d0_date && (!filters.year || e.d0_date.startsWith(filters.year))
+        )
+        .map((e) => e.d0_date)
+        .filter((value, index, self) => self.indexOf(value) === index) // Unique
+        .sort((a, b) => b.localeCompare(a)),
+    [farmEvents, filters.year]
+  );
+
+  const handleYearChange = (year: string) => {
+    updateFilters({ year, managementDates: [] });
+  };
+
+  const toggleManagementDate = (date: string) => {
+    const currentDates = filters.managementDates || [];
+    if (currentDates.includes(date)) {
+      updateFilters({
+        managementDates: currentDates.filter((d) => d !== date),
+      });
+    } else {
+      updateFilters({ managementDates: [...currentDates, date] });
+    }
+  };
+
+  const handleSelectAllDates = () => {
+    if (filters.managementDates?.length === availableDatesForYear.length) {
+      updateFilters({ managementDates: [] });
+    } else {
+      updateFilters({ managementDates: availableDatesForYear });
+    }
+  };
 
   return (
     <div className="w-full border border-border rounded-xl p-6 space-y-6 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 bg-card">
@@ -149,10 +224,10 @@ export function ReportForm() {
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-border shadow-xl">
                   <SelectItem value="M" className="rounded-lg my-0.5">
-                    Machos
+                    Macho
                   </SelectItem>
                   <SelectItem value="F" className="rounded-lg my-0.5">
-                    Fêmeas
+                    Fêmea
                   </SelectItem>
                   <SelectItem value="Ambos" className="rounded-lg my-0.5">
                     Todos
@@ -161,53 +236,80 @@ export function ReportForm() {
               </Select>
             </div>
           )}
+
+          {/* Reproduction Year Filter */}
+          {selectedReport.id === "reproduction" && (
+            <div className="space-y-1 md:w-32">
+              <Label
+                htmlFor="year"
+                className="text-[10px] font-bold uppercase text-primary tracking-tight"
+              >
+                Ano
+              </Label>
+              <Select
+                value={filters.year || ""}
+                onValueChange={handleYearChange}
+              >
+                <SelectTrigger
+                  id="year"
+                  className="w-full h-11 bg-muted/40 border-0 focus:ring-primary"
+                >
+                  <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-border shadow-xl">
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={year} className="rounded-lg">
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
-        {/* Date Range Filter */}
-        {requiresFilter("dateRange") && (
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="space-y-1">
-              <Label
-                htmlFor="startDate"
-                className="text-[10px] font-bold uppercase text-primary tracking-tight"
-              >
-                Data Inicial <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={filters.startDate || ""}
-                onChange={(e) => handleDateChange("startDate", e.target.value)}
-                className={`h-11 bg-muted/40 border-0 focus:ring-primary ${
-                  getError("dateRange") ? "border-red-500 bg-red-50/10" : ""
-                }`}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label
-                htmlFor="endDate"
-                className="text-[10px] font-bold uppercase text-primary tracking-tight"
-              >
-                Data Final <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={filters.endDate || ""}
-                onChange={(e) => handleDateChange("endDate", e.target.value)}
-                className={`h-11 bg-muted/40 border-0 focus:ring-primary ${
-                  getError("dateRange") ? "border-red-500 bg-red-50/10" : ""
-                }`}
-              />
-              {getError("dateRange") && (
-                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1 pt-1">
+        {/* Reproduction Management Dates Checklist */}
+        {selectedReport.id === "reproduction" &&
+          filters.year &&
+          availableDatesForYear.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center px-1">
+                <Label className="text-[10px] font-bold uppercase text-primary tracking-tight">
+                  Datas de Manejo
+                </Label>
+              </div>
+
+              <div className="bg-muted/30 rounded-xl p-3 grid grid-cols-2 sm:grid-cols-3 gap-3 border border-border/30 max-h-48 overflow-y-auto">
+                {availableDatesForYear.map((date) => (
+                  <div
+                    key={date}
+                    className="flex items-center space-x-2 bg-white/50 dark:bg-zinc-800/50 p-2 rounded-lg border border-border/40 transition-colors hover:border-primary/40"
+                  >
+                    <Checkbox
+                      id={`date-${date}`}
+                      checked={filters.managementDates?.includes(date)}
+                      onCheckedChange={() => toggleManagementDate(date)}
+                      className="rounded-md border-primary/40 text-primary focus-visible:ring-primary"
+                    />
+                    <Label
+                      htmlFor={`date-${date}`}
+                      className="text-[11px] font-bold text-muted-foreground cursor-pointer select-none"
+                    >
+                      {new Date(date).toLocaleDateString("pt-BR", {
+                        timeZone: "UTC",
+                      })}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {getError("managementDates") && (
+                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
                   <AlertCircle className="h-3.5 w-3.5" />
-                  {getError("dateRange")}
+                  {getError("managementDates")}
                 </p>
               )}
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* Column Selection */}

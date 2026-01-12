@@ -48,25 +48,29 @@ const HomePage = () => {
           </div>
         </div>
 
-        <div className="relative z-20 flex w-full flex-1 flex-col gap-6 pt-6">
+        <div className="relative z-20 flex w-full flex-1 flex-col items-center gap-2 pt-6">
           <HomeButtons data={homeLinks} />
+          <span className="text-[11px] text-white">
+            Desenvolvido por
+            <span className="font-bold"> Paulo Bruno M Dias</span>
+          </span>
         </div>
 
-        <div className="relative z-10 mt-4 flex flex-col items-center gap-2">
+        <div className="relative z-10 mt-1 flex flex-col items-center gap-2">
           <div className="flex items-center gap-4">
             <Image
               src={abczLogo}
               alt="ABCZ"
-              width={28}
-              height={28}
+              width={26}
+              height={26}
               className="object-cover"
             />
             <div className="h-8 w-[1px] bg-slate-400"></div>
             <Image
               src={pmgzLogo}
               alt="PMGZ"
-              width={26}
-              height={26}
+              width={24}
+              height={24}
               className="object-cover"
             />
           </div>
