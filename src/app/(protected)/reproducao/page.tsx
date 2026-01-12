@@ -209,6 +209,7 @@ export default function ReproducaoPage() {
                     <ReproductionEventCard
                       key={event.event_id}
                       event={event}
+                      matriz={selectedMatriz}
                       onEdit={handleEditEvent}
                       onDelete={handleDeleteEvent}
                     />
