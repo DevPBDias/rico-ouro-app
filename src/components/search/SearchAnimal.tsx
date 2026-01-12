@@ -2,8 +2,7 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Animal } from "@/types/animal.type";
+import { useMemo, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
@@ -11,75 +10,53 @@ import SearchCard from "../cards/SearchCard";
 import DetailsAnimalLayout from "../details-animals/DetailsAnimalLayout";
 
 function SearchAnimal() {
-  const { animals } = useAnimals();
+  const { animals, isLoading } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Animal[]>([]);
-  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  // Armazena apenas o RGN, não o objeto completo
+  const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const handleSearch = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setSearchResults([]);
-        setSelectedAnimal(null);
-        setHasSearched(false);
-        return;
-      }
+  // Deriva os resultados da busca diretamente do array reativo
+  // Quando RxDB emitir novos dados, animals atualiza e searchResults recalcula
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
 
-      setIsSearching(true);
-      setHasSearched(false);
-      setSelectedAnimal(null);
+    // Match exato primeiro
+    const exactMatch = animals.find(
+      (animal) => animal.rgn?.toLowerCase() === query
+    );
+    if (exactMatch) return [exactMatch];
 
-      const queryLower = query.toLowerCase().trim();
+    // Busca parcial
+    return animals.filter((animal) => {
+      const rgn = animal.rgn?.toString().toLowerCase() || "";
+      const name = animal.name?.toLowerCase() || "";
+      const serieRgd = animal.serie_rgd?.toLowerCase() || "";
 
-      const exactMatch = animals.find(
-        (animal) => animal.rgn?.toLowerCase() === queryLower
+      return (
+        rgn.includes(query) || name.includes(query) || serieRgd.includes(query)
       );
+    });
+  }, [animals, searchQuery]);
 
-      if (exactMatch) {
-        setSearchResults([exactMatch]);
-        setIsSearching(false);
-        setHasSearched(true);
-        return;
-      }
+  // Deriva o animal selecionado do array reativo usando o RGN
+  // Isso garante que sempre mostramos os dados mais atuais
+  const selectedAnimal = useMemo(() => {
+    if (!selectedRgn) return null;
+    return animals.find((a) => a.rgn === selectedRgn) || null;
+  }, [animals, selectedRgn]);
 
-      const results = animals.filter((animal) => {
-        const rgn = animal.rgn?.toString().toLowerCase() || "";
-        const name = animal.name?.toLowerCase() || "";
-        const serieRgd = animal.serie_rgd?.toLowerCase() || "";
+  const hasSearched = searchQuery.trim().length > 0;
 
-        return (
-          rgn.includes(queryLower) ||
-          name.includes(queryLower) ||
-          serieRgd.includes(queryLower)
-        );
-      });
-
-      setSearchResults(results);
-      setIsSearching(false);
-      setHasSearched(true);
-    },
-    [animals]
-  );
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      handleSearch(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, handleSearch]);
-
-  const handleSelectAnimal = (animal: Animal) => {
-    setSelectedAnimal(animal);
+  const handleSelectAnimal = (rgn: string) => {
+    setSelectedRgn(rgn);
     setShowDetails(true);
   };
 
   const handleBackToSearch = () => {
     setShowDetails(false);
-    setSelectedAnimal(null);
+    setSelectedRgn(null);
   };
 
   if (showDetails && selectedAnimal) {
@@ -126,10 +103,10 @@ function SearchAnimal() {
         </div>
       </div>
 
-      {isSearching ? (
+      {isLoading ? (
         <div className="space-y-3 my-4">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-            Buscando...
+            Carregando...
           </h2>
           {Array.from({ length: 3 }).map((_, index) => (
             <SkeletonSearchAnimal key={index} />
@@ -137,7 +114,7 @@ function SearchAnimal() {
         </div>
       ) : (
         <div className="my-4">
-          {searchQuery.trim() && hasSearched && (
+          {hasSearched && (
             <>
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -155,12 +132,12 @@ function SearchAnimal() {
                     {searchResults.map((animal) => (
                       <div
                         key={animal.rgn}
-                        onClick={() => handleSelectAnimal(animal)}
+                        onClick={() => handleSelectAnimal(animal.rgn)}
                         className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-lg transition-all active:scale-[0.98]"
                       >
                         <SearchCard
                           animal={animal}
-                          onDetailsClick={() => handleSelectAnimal(animal)}
+                          onDetailsClick={() => handleSelectAnimal(animal.rgn)}
                         />
                       </div>
                     ))}

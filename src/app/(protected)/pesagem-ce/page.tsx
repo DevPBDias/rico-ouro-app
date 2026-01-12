@@ -2,12 +2,11 @@
 
 import Header from "@/components/layout/Header";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import { WeightList } from "@/components/lists/WeightList";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
-import { Animal } from "@/types/animal.type";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useAnimalWeights } from "@/hooks/db/animal_weights/useAnimalWeights";
@@ -23,9 +22,18 @@ const PesagemPage = () => {
   const { animals: dados } = useAnimals();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
-  const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [type, setType] = useState<string>("");
   const [isBorn, setIsBorn] = useState<boolean>(false);
+
+  // Deriva selectedAnimal diretamente do array reativo (useMemo)
+  // Isso garante que a UI sempre mostra os dados mais atuais do RxDB
+  const selectedAnimal = useMemo(() => {
+    if (!formData.rgn) return null;
+    return (
+      dados.find((d) => d.rgn?.toLowerCase() === formData.rgn.toLowerCase()) ??
+      null
+    );
+  }, [formData.rgn, dados]);
 
   const { weights: pesosMedidos, isLoading: loadingWeights } = useAnimalWeights(
     selectedAnimal?.rgn
@@ -49,18 +57,6 @@ const PesagemPage = () => {
       }))
       .filter((option) => option.value);
   }, [dados]);
-
-  useEffect(() => {
-    if (!formData.rgn) {
-      setSelectedAnimal(null);
-      return;
-    }
-
-    const a = dados.find(
-      (d) => d.rgn?.toLowerCase() === formData.rgn.toLowerCase()
-    );
-    setSelectedAnimal(a ?? null);
-  }, [formData.rgn, dados]);
 
   const getPesosWithDefault = (): AnimalMetric[] => {
     if (!pesosMedidos || pesosMedidos.length === 0) {

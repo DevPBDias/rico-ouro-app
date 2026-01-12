@@ -2,8 +2,7 @@
 
 import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import { useCallback, useEffect, useState, useMemo } from "react";
-import { Animal } from "@/types/animal.type";
+import { useMemo, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
@@ -11,75 +10,53 @@ import SearchCard from "../cards/SearchCard";
 import DetailsMatrizLayout from "../details-animals/DetailsMatrizLayout";
 
 function SearchMatriz() {
-  const { matrizes } = useMatrizes();
+  const { matrizes, isLoading } = useMatrizes();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Animal[]>([]);
-  const [selectedMatriz, setSelectedMatriz] = useState<Animal | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  // Armazena apenas o RGN, não o objeto completo
+  const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
-  const handleSearch = useCallback(
-    async (query: string) => {
-      if (!query.trim()) {
-        setSearchResults([]);
-        setSelectedMatriz(null);
-        setHasSearched(false);
-        return;
-      }
+  // Deriva os resultados da busca diretamente do array reativo
+  // Quando RxDB emitir novos dados, matrizes atualiza e searchResults recalcula
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
 
-      setIsSearching(true);
-      setHasSearched(false);
-      setSelectedMatriz(null);
+    // Match exato primeiro
+    const exactMatch = matrizes.find(
+      (matriz) => matriz.rgn?.toLowerCase() === query
+    );
+    if (exactMatch) return [exactMatch];
 
-      const queryLower = query.toLowerCase().trim();
+    // Busca parcial
+    return matrizes.filter((matriz) => {
+      const rgn = matriz.rgn?.toString().toLowerCase() || "";
+      const name = matriz.name?.toLowerCase() || "";
+      const serieRgd = matriz.serie_rgd?.toLowerCase() || "";
 
-      const exactMatch = matrizes.find(
-        (matriz) => matriz.rgn?.toLowerCase() === queryLower
+      return (
+        rgn.includes(query) || name.includes(query) || serieRgd.includes(query)
       );
+    });
+  }, [matrizes, searchQuery]);
 
-      if (exactMatch) {
-        setSearchResults([exactMatch]);
-        setIsSearching(false);
-        setHasSearched(true);
-        return;
-      }
+  // Deriva a matriz selecionada do array reativo usando o RGN
+  // Isso garante que sempre mostramos os dados mais atuais
+  const selectedMatriz = useMemo(() => {
+    if (!selectedRgn) return null;
+    return matrizes.find((m) => m.rgn === selectedRgn) || null;
+  }, [matrizes, selectedRgn]);
 
-      const results = matrizes.filter((matriz) => {
-        const rgn = matriz.rgn?.toString().toLowerCase() || "";
-        const name = matriz.name?.toLowerCase() || "";
-        const serieRgd = matriz.serie_rgd?.toLowerCase() || "";
+  const hasSearched = searchQuery.trim().length > 0;
 
-        return (
-          rgn.includes(queryLower) ||
-          name.includes(queryLower) ||
-          serieRgd.includes(queryLower)
-        );
-      });
-
-      setSearchResults(results);
-      setIsSearching(false);
-      setHasSearched(true);
-    },
-    [matrizes]
-  );
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      handleSearch(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, handleSearch]);
-
-  const handleSelectMatriz = (matriz: Animal) => {
-    setSelectedMatriz(matriz);
+  const handleSelectMatriz = (rgn: string) => {
+    setSelectedRgn(rgn);
     setShowDetails(true);
   };
 
   const handleBackToSearch = () => {
     setShowDetails(false);
-    setSelectedMatriz(null);
+    setSelectedRgn(null);
   };
 
   if (showDetails && selectedMatriz) {
@@ -126,10 +103,10 @@ function SearchMatriz() {
         </div>
       </div>
 
-      {isSearching ? (
+      {isLoading ? (
         <div className="space-y-3 my-4">
           <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
-            Buscando...
+            Carregando...
           </h2>
           {Array.from({ length: 3 }).map((_, index) => (
             <SkeletonSearchAnimal key={index} />
@@ -137,7 +114,7 @@ function SearchMatriz() {
         </div>
       ) : (
         <div className="my-4">
-          {searchQuery.trim() && hasSearched && (
+          {hasSearched && (
             <>
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
@@ -155,12 +132,12 @@ function SearchMatriz() {
                     {searchResults.map((matriz) => (
                       <div
                         key={matriz.rgn}
-                        onClick={() => handleSelectMatriz(matriz)}
+                        onClick={() => handleSelectMatriz(matriz.rgn)}
                         className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-lg transition-all active:scale-[0.98]"
                       >
                         <SearchCard
                           animal={matriz}
-                          onDetailsClick={() => handleSelectMatriz(matriz)}
+                          onDetailsClick={() => handleSelectMatriz(matriz.rgn)}
                         />
                       </div>
                     ))}

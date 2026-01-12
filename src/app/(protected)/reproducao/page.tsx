@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import {
-  Search,
-  Loader2,
-  ArrowRight,
-  Plus,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { Search, Loader2, ArrowRight, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,9 +13,8 @@ import { CreateReproductionModal } from "@/components/modals/reproduction/Create
 import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
 import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
-import { formatDate } from "@/utils/formatDates";
-import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
 import { Accordion } from "@/components/ui/accordion";
+import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
 
 export default function ReproducaoPage() {
   const router = useRouter();
