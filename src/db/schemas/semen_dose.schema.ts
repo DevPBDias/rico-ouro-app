@@ -44,5 +44,12 @@ export const semenDoseSchema: RxJsonSchema<SemenDose> = {
       type: "boolean",
     },
   },
-  required: ["id", "animal_name", "breed", "quantity"],
+  required: [
+    "id",
+    "animal_name",
+    "breed",
+    "quantity",
+    "_deleted",
+    "updated_at",
+  ],
 };

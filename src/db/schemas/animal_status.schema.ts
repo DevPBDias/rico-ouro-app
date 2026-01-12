@@ -12,5 +12,5 @@ export const animalStatusSchema: RxJsonSchema<AnimalStatus> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "status_name"],
+  required: ["id", "status_name", "_deleted", "updated_at"],
 };

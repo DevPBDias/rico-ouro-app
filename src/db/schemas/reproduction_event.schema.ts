@@ -39,6 +39,13 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["event_id", "rgn", "event_type", "d0_date"],
+  required: [
+    "event_id",
+    "rgn",
+    "event_type",
+    "d0_date",
+    "_deleted",
+    "updated_at",
+  ],
   indexes: ["rgn", "event_type"],
 };

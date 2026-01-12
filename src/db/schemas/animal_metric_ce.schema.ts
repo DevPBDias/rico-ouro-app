@@ -15,6 +15,6 @@ export const animalMetricCESchema: RxJsonSchema<AnimalMetric> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "rgn"],
+  required: ["id", "rgn", "_deleted", "updated_at"],
   indexes: ["rgn"],
 };

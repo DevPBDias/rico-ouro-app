@@ -12,5 +12,5 @@ export const farmSchema: RxJsonSchema<Farm> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "farm_name"],
+  required: ["id", "farm_name", "_deleted", "updated_at"],
 };

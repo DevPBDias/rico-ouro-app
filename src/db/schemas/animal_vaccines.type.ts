@@ -14,6 +14,6 @@ export const animalVaccineSchema: RxJsonSchema<AnimalVaccine> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "rgn", "vaccine_id"],
+  required: ["id", "rgn", "vaccine_id", "_deleted", "updated_at"],
   indexes: ["rgn", "vaccine_id"],
 };

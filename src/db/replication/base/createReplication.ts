@@ -20,7 +20,7 @@ export function createReplication<T extends ReplicableEntity>(
   const {
     collectionName,
     tableName,
-    replicationIdentifier = `${String(collectionName)}-replication-v10`, // v10 for clean start
+    replicationIdentifier = `${String(collectionName)}-replication-v11`, // v11 for clean start after timestamptz change
     pullBatchSize = 1000,
     pushBatchSize = 1000,
     mapToSupabase,

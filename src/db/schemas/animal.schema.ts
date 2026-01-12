@@ -39,5 +39,5 @@ export const animalSchema: RxJsonSchema<Animal> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["rgn", "serie_rgd"],
+  required: ["rgn", "serie_rgd", "_deleted", "updated_at"],
 };
