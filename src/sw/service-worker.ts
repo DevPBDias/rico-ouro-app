@@ -6,7 +6,7 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v25"; // Updated routes: removed stale gerenciar sub-routes
+const SCHEMA_VERSION = "v26"; // Forced update for DB v3 reset
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
 
