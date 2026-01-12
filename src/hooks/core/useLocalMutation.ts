@@ -27,6 +27,7 @@ export function useLocalMutation<
         const documentData = {
           ...data,
           _deleted: false,
+          updated_at: new Date().toISOString(),
         };
 
         const doc = await collection.insert(documentData as unknown as T);
@@ -64,6 +65,7 @@ export function useLocalMutation<
         const documentData = {
           ...data,
           _deleted: false,
+          updated_at: new Date().toISOString(),
         };
 
         const doc = await collection.upsert(documentData as unknown as T);
