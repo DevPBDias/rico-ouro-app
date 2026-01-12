@@ -23,7 +23,6 @@ import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
 import { animalStatusSchema } from "./schemas/animal_status.schema";
 import { semenDoseSchema } from "./schemas/semen_dose.schema";
-import { supabaseConflictHandler } from "./replication/base/rxdbConflictHandler";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -47,7 +46,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v3";
+const DB_VERSION = "v4"; // Reset to clear loop states
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -91,42 +90,15 @@ async function createDatabase(): Promise<MyDatabase> {
 
     try {
       await db.addCollections({
-        animals: {
-          schema: animalSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        vaccines: {
-          schema: vaccineSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        farms: {
-          schema: farmSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        animal_metrics_ce: {
-          schema: animalMetricCESchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        animal_metrics_weight: {
-          schema: animalMetricWeightSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        animal_vaccines: {
-          schema: animalVaccineSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        reproduction_events: {
-          schema: reproductionEventSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        animal_statuses: {
-          schema: animalStatusSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
-        semen_doses: {
-          schema: semenDoseSchema,
-          conflictHandler: supabaseConflictHandler,
-        },
+        animals: { schema: animalSchema },
+        vaccines: { schema: vaccineSchema },
+        farms: { schema: farmSchema },
+        animal_metrics_ce: { schema: animalMetricCESchema },
+        animal_metrics_weight: { schema: animalMetricWeightSchema },
+        animal_vaccines: { schema: animalVaccineSchema },
+        reproduction_events: { schema: reproductionEventSchema },
+        animal_statuses: { schema: animalStatusSchema },
+        semen_doses: { schema: semenDoseSchema },
       });
     } catch (err: any) {
       console.error("[RxDB] Failed to add collections:", err);

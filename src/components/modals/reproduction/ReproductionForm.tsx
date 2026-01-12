@@ -22,6 +22,9 @@ import {
   PregnancyOrigin,
 } from "@/types/reproduction_event.type";
 import { Loader2 } from "lucide-react";
+import { SemenDoseSelector } from "@/components/doses/SemenDoseSelector";
+import { useUpdateDose } from "@/hooks/db/doses/useUpdateDose";
+import { useSemenDoses } from "@/hooks/db/doses/useSemenDoses";
 
 interface ReproductionFormProps {
   initialData?: Partial<ReproductionEvent>;
@@ -299,28 +302,19 @@ export function ReproductionForm({
             Touros
           </h3>
           <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Touro D0
-              </label>
-              <Input
-                value={formData.bull_name || ""}
-                onChange={(e) => handleChange("bull_name", e.target.value)}
-                className="bg-muted/40 border-0 h-11"
-                placeholder="Nome do Touro"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Touro Resync (D22)
-              </label>
-              <Input
-                value={formData.resync_bull || ""}
-                onChange={(e) => handleChange("resync_bull", e.target.value)}
-                className="bg-muted/40 border-0 h-11"
-                placeholder="Nome do Touro de Repasse"
-              />
-            </div>
+            <SemenDoseSelector
+              label="Touro D0"
+              value={formData.bull_name || ""}
+              onValueChange={(name) => handleChange("bull_name", name)}
+              placeholder="Selecione o Touro da IA"
+            />
+
+            <SemenDoseSelector
+              label="Touro Resync (D22)"
+              value={formData.resync_bull || ""}
+              onValueChange={(name) => handleChange("resync_bull", name)}
+              placeholder="Selecione o Touro de Repasse"
+            />
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
                 Touro Monta Natural
