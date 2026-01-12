@@ -22,6 +22,7 @@ export interface ReproductionEvent {
   /** Type and Status */
   event_type: EventType;
   productive_status?: ReproductionStatus;
+  age?: number;
 
   /** Gestational Data */
   pregnancy_origin?: PregnancyOrigin;

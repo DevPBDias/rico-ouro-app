@@ -12,7 +12,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 export const semenDoseReplication = createReplication<SemenDose>({
   collectionName: "semen_doses",
   tableName: "semen_doses",
-  replicationIdentifier: "semen-doses-replication-v10",
+  replicationIdentifier: "semen-doses-replication-v11",
 
   // Mapeia documento RxDB → Supabase
   // Garante que todos os campos estejam no formato correto
