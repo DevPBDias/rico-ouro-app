@@ -20,7 +20,7 @@ export function createReplication<T extends ReplicableEntity>(
   const {
     collectionName,
     tableName,
-    replicationIdentifier = `${String(collectionName)}-replication-v1`,
+    replicationIdentifier = `${String(collectionName)}-replication-v10`, // v10 for clean start
     pullBatchSize = 1000,
     pushBatchSize = 1000,
     mapToSupabase,
@@ -34,7 +34,7 @@ export function createReplication<T extends ReplicableEntity>(
   return async (
     db: MyDatabase,
     supabaseUrl: string,
-    _supabaseKey: string // Mantido para compatibilidade, mas usamos getAuthHeaders
+    _supabaseKey: string
   ): Promise<RxReplicationState<T, ReplicationCheckpoint>> => {
     const collection = db[collectionName];
 
@@ -70,7 +70,6 @@ export function createReplication<T extends ReplicableEntity>(
             }
           );
 
-          // Obtém headers com autenticação
           const headers = await getAuthHeaders();
 
           if (!headers.Authorization) {
@@ -79,12 +78,9 @@ export function createReplication<T extends ReplicableEntity>(
                 collectionName
               )}] No auth token available. Skipping pull.`
             );
-            throw new Error("Authentication required for sync");
+            return { documents: [], checkpoint };
           }
 
-          // Monta a URL da query
-          // Usamos gte para updated_at para garantir que não perdemos registros com o mesmo timestamp,
-          // e depois filtramos o lastId se necessário.
           const encodedDate = encodeURIComponent(lastModified);
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
@@ -94,8 +90,10 @@ export function createReplication<T extends ReplicableEntity>(
           const response = await fetch(url, { headers });
 
           if (!response.ok) {
+            const errorText = await response.text();
             console.error(
-              `❌ [${String(collectionName)}] Pull failed: ${response.status}`
+              `❌ [${String(collectionName)}] Pull failed: ${response.status}`,
+              errorText
             );
             throw new Error(`Pull failed: ${response.status}`);
           }
@@ -103,7 +101,6 @@ export function createReplication<T extends ReplicableEntity>(
           const rawDocuments: Record<string, any>[] = await response.json();
           let data = Array.isArray(rawDocuments) ? rawDocuments : [];
 
-          // Se o primeiro item do batch for exatamente o último que já vimos (mesmo updated_at e mesmo ID), removemos ele.
           if (
             data.length > 0 &&
             lastId &&
@@ -113,7 +110,6 @@ export function createReplication<T extends ReplicableEntity>(
             data.shift();
           }
 
-          // Limpa valores null e aplica transformação customizada
           const processedDocuments = data.map((doc) => {
             if (mapFromSupabase) {
               return mapFromSupabase(doc);
@@ -128,11 +124,9 @@ export function createReplication<T extends ReplicableEntity>(
           console.log(
             `✅ [${String(collectionName)}] Received ${
               processedDocuments.length
-            } documents`
+            } unique documents`
           );
 
-          // Calcula o novo checkpoint
-          // Precisamos do ID do último documento para desempatar no próximo pull
           const lastDoc = data.length > 0 ? data[data.length - 1] : null;
           const newCheckpoint: ReplicationCheckpoint = {
             updated_at: lastDoc ? lastDoc.updated_at : lastModified,
@@ -156,7 +150,6 @@ export function createReplication<T extends ReplicableEntity>(
             } rows`
           );
 
-          // Mapeia documentos para o formato do Supabase
           const documents = rows.map((row) => {
             const doc = row.newDocumentState as T;
             if (mapToSupabase) {
@@ -165,17 +158,15 @@ export function createReplication<T extends ReplicableEntity>(
             return doc as Record<string, unknown>;
           });
 
-          console.log(`🔼 [${String(collectionName)}] Sending to Supabase:`, {
-            count: documents.length,
-            sampleKeys: documents[0] ? Object.keys(documents[0]) : [],
-            sample: documents[0],
-          });
-
-          // Obtém headers com autenticação
           const headers = await getAuthHeaders();
 
-          // Usa merge-duplicates para resolução de conflitos no Supabase
-          // Prefer: return=representation nos ajuda a obter o updated_at gerado pelo servidor
+          if (!headers.Authorization) {
+            console.warn(
+              `⚠️ [${String(collectionName)}] No auth token for push.`
+            );
+            throw new Error("Authentication required for sync");
+          }
+
           const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
             method: "POST",
             headers: {
@@ -187,26 +178,12 @@ export function createReplication<T extends ReplicableEntity>(
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error(`❌ [${String(collectionName)}] PUSH FAILED:`, {
-              status: response.status,
-              error: errorText,
-            });
             throw new Error(`Push failed: ${response.status} - ${errorText}`);
           }
 
           const responseData = await response.json();
           const updatedDocs = Array.isArray(responseData) ? responseData : [];
 
-          console.log(
-            `✅ [${String(collectionName)}] SUCCESSFULLY PUSHED ${
-              documents.length
-            } documents. Server replied with ${
-              updatedDocs.length
-            } updated docs.`
-          );
-
-          // Se o servidor retornou os documentos atualizados (com updated_at),
-          // retornamos eles para que o RxDB atualize o estado local
           if (updatedDocs.length > 0) {
             const mappedResults = updatedDocs.map((doc) => {
               if (mapFromSupabase) return mapFromSupabase(doc);
@@ -221,14 +198,9 @@ export function createReplication<T extends ReplicableEntity>(
         batchSize: pushBatchSize,
       },
 
-      // ==================== OPTIONS ====================
       live,
       retryTime,
       autoStart,
-    });
-
-    replication.error$.subscribe((err) => {
-      console.error(`❌ [Replication Error] ${String(collectionName)}:`, err);
     });
 
     return replication;

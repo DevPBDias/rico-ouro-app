@@ -6,7 +6,7 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v24"; // Added doses-semen route
+const SCHEMA_VERSION = "v25"; // Updated routes: removed stale gerenciar sub-routes
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
 
@@ -41,10 +41,6 @@ const APP_SHELL_ASSETS = [
 
   // Gerenciar
   "/gerenciar",
-  "/gerenciar/fazendas",
-  "/gerenciar/classe",
-  "/gerenciar/sociedade",
-  "/gerenciar/status",
   "/gerenciar/doses-semen",
 
   // Geral / Relatórios

@@ -1,5 +1,5 @@
 "use client";
-
+ 
 import {
   createRxDatabase,
   addRxPlugin,
@@ -23,6 +23,7 @@ import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
 import { animalStatusSchema } from "./schemas/animal_status.schema";
 import { semenDoseSchema } from "./schemas/semen_dose.schema";
+import { supabaseConflictHandler } from "./replication/base/rxdbConflictHandler";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -76,13 +77,10 @@ async function createDatabase(): Promise<MyDatabase> {
       name: DB_NAME,
       storage: storage,
       multiInstance: true,
-      // ignoreDuplicate só é permitido em dev-mode (erro DB9 em produção)
       ignoreDuplicate: process.env.NODE_ENV === "development",
       eventReduce: true,
     });
 
-    // Check for any existing collection to avoid COL23 (16 collections limit)
-    // In RxDB Open Source, cross-instance collections are counted towards the limit.
     const collectionsCount = Object.keys(db.collections).length;
     if (collectionsCount > 0) {
       console.log(
@@ -93,21 +91,46 @@ async function createDatabase(): Promise<MyDatabase> {
 
     try {
       await db.addCollections({
-        animals: { schema: animalSchema },
-        vaccines: { schema: vaccineSchema },
-        farms: { schema: farmSchema },
-        animal_metrics_ce: { schema: animalMetricCESchema },
-        animal_metrics_weight: { schema: animalMetricWeightSchema },
-        animal_vaccines: { schema: animalVaccineSchema },
-        reproduction_events: { schema: reproductionEventSchema },
-        animal_statuses: { schema: animalStatusSchema },
-        semen_doses: { schema: semenDoseSchema },
+        animals: {
+          schema: animalSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        vaccines: {
+          schema: vaccineSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        farms: {
+          schema: farmSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        animal_metrics_ce: {
+          schema: animalMetricCESchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        animal_metrics_weight: {
+          schema: animalMetricWeightSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        animal_vaccines: {
+          schema: animalVaccineSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        reproduction_events: {
+          schema: reproductionEventSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        animal_statuses: {
+          schema: animalStatusSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
+        semen_doses: {
+          schema: semenDoseSchema,
+          conflictHandler: supabaseConflictHandler,
+        },
       });
     } catch (err: any) {
       console.error("[RxDB] Failed to add collections:", err);
 
-      // Limpeza crítica: Se as coleções falharem, fechamos a instância do banco
-      // para evitar o erro DB9 (já aberto) em tentativas subsequentes no mesmo processo.
       try {
         await db.close();
       } catch (closeErr) {
@@ -156,7 +179,6 @@ export async function getDatabase(): Promise<MyDatabase> {
     })
     .catch(async (error) => {
       console.error("[RxDB] Critical initialization error:", error);
-      // Reset promises to allow retry
       dbPromise = null;
       dbInstance = null;
       throw error;
@@ -170,7 +192,6 @@ export async function clearAllDatabases(): Promise<void> {
 
   console.log("[RxDB] Starting full local database purge...");
 
-  // 1. Destruir a instância ativa se existir
   if (dbInstance) {
     try {
       await dbInstance.close();
@@ -181,13 +202,11 @@ export async function clearAllDatabases(): Promise<void> {
     }
   }
 
-  // 2. Limpar localStorage (pode conter metadados e tokens)
   try {
     localStorage.clear();
     console.log("[RxDB] LocalStorage cleared");
   } catch (e) {}
 
-  // 3. Força Bruta no IndexedDB
   try {
     if (window.indexedDB && (window.indexedDB as any).databases) {
       const dbs = await (window.indexedDB as any).databases();
@@ -196,7 +215,6 @@ export async function clearAllDatabases(): Promise<void> {
         const name = dbInfo.name;
         if (!name) continue;
 
-        // Padrões de nomes que queremos deletar (abrange RxDB, Dexie e filas antigas)
         const shouldDelete =
           name.includes("indi_ouro") ||
           name.includes("rxdb") ||
@@ -209,7 +227,6 @@ export async function clearAllDatabases(): Promise<void> {
         }
       }
     } else {
-      // Fallback para navegadores antigos
       const commonNames = [
         "indi_ouro_db",
         "indi_ouro_db_v1",
