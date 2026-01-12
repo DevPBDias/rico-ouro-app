@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ArrowLeft, Plus } from "lucide-react";
+import { Search, ArrowLeft, Plus, Edit2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useMemo, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
@@ -8,27 +8,25 @@ import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import SearchCard from "../cards/SearchCard";
 import DetailsAnimalLayout from "../details-animals/DetailsAnimalLayout";
+import { EditAnimalModal } from "../modals/edit-animal/EditAnimalModal";
+import { Button } from "../ui/button";
 
 function SearchAnimal() {
   const { animals, isLoading } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
-  // Armazena apenas o RGN, não o objeto completo
   const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Deriva os resultados da busca diretamente do array reativo
-  // Quando RxDB emitir novos dados, animals atualiza e searchResults recalcula
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
 
-    // Match exato primeiro
     const exactMatch = animals.find(
       (animal) => animal.rgn?.toLowerCase() === query
     );
     if (exactMatch) return [exactMatch];
 
-    // Busca parcial
     return animals.filter((animal) => {
       const rgn = animal.rgn?.toString().toLowerCase() || "";
       const name = animal.name?.toLowerCase() || "";
@@ -40,8 +38,6 @@ function SearchAnimal() {
     });
   }, [animals, searchQuery]);
 
-  // Deriva o animal selecionado do array reativo usando o RGN
-  // Isso garante que sempre mostramos os dados mais atuais
   const selectedAnimal = useMemo(() => {
     if (!selectedRgn) return null;
     return animals.find((a) => a.rgn === selectedRgn) || null;
@@ -70,13 +66,28 @@ function SearchAnimal() {
           Voltar para busca
         </button>
 
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
           <p className="text-sm text-primary font-semibold">
             {selectedAnimal.serie_rgd} {selectedAnimal.rgn}
           </p>
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            variant="outline"
+            className="p-2 rounded-sm bg-transparent text-primary transition-colors border-primary/20"
+            title="Editar dados cadastrais"
+          >
+            <Edit2 className="w-4 h-4" />
+            Editar
+          </Button>
         </div>
 
         <DetailsAnimalLayout rgn={selectedAnimal.rgn} />
+
+        <EditAnimalModal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          animal={selectedAnimal}
+        />
       </section>
     );
   }

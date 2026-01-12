@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ArrowLeft, Plus } from "lucide-react";
+import { Search, ArrowLeft, Plus, Edit2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useMemo, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
@@ -8,27 +8,25 @@ import Link from "next/link";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
 import SearchCard from "../cards/SearchCard";
 import DetailsMatrizLayout from "../details-animals/DetailsMatrizLayout";
+import { EditAnimalModal } from "../modals/edit-animal/EditAnimalModal";
+import { Button } from "../ui/button";
 
 function SearchMatriz() {
   const { matrizes, isLoading } = useMatrizes();
   const [searchQuery, setSearchQuery] = useState("");
-  // Armazena apenas o RGN, não o objeto completo
   const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Deriva os resultados da busca diretamente do array reativo
-  // Quando RxDB emitir novos dados, matrizes atualiza e searchResults recalcula
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
 
-    // Match exato primeiro
     const exactMatch = matrizes.find(
       (matriz) => matriz.rgn?.toLowerCase() === query
     );
     if (exactMatch) return [exactMatch];
 
-    // Busca parcial
     return matrizes.filter((matriz) => {
       const rgn = matriz.rgn?.toString().toLowerCase() || "";
       const name = matriz.name?.toLowerCase() || "";
@@ -40,8 +38,6 @@ function SearchMatriz() {
     });
   }, [matrizes, searchQuery]);
 
-  // Deriva a matriz selecionada do array reativo usando o RGN
-  // Isso garante que sempre mostramos os dados mais atuais
   const selectedMatriz = useMemo(() => {
     if (!selectedRgn) return null;
     return matrizes.find((m) => m.rgn === selectedRgn) || null;
@@ -70,13 +66,28 @@ function SearchMatriz() {
           Voltar para busca
         </button>
 
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
           <p className="text-sm text-primary font-semibold">
             {selectedMatriz.serie_rgd} {selectedMatriz.rgn}
           </p>
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            variant="outline"
+            className="p-2 rounded-sm bg-transparent text-primary transition-colors border-primary/20"
+            title="Editar dados cadastrais"
+          >
+            <Edit2 className="w-4 h-4" />
+            Editar
+          </Button>
         </div>
 
         <DetailsMatrizLayout rgn={selectedMatriz.rgn} />
+
+        <EditAnimalModal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          animal={selectedMatriz}
+        />
       </section>
     );
   }
