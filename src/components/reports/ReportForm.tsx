@@ -17,6 +17,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { GenderFilterValue, ReportFilters } from "@/lib/pdf/definitions/types";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
+import { useStatuses } from "@/hooks/db/statuses/useStatuses";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ANIMAL_REPORT_AVAILABLE_COLUMNS,
@@ -37,6 +38,7 @@ export function ReportForm() {
   } = useReports();
 
   const { farms } = useFarms();
+  const { statuses } = useStatuses();
 
   if (!selectedReport) return null;
 
@@ -67,6 +69,11 @@ export function ReportForm() {
   // Handle date changes
   const handleDateChange = (field: "startDate" | "endDate", value: string) => {
     updateFilters({ [field]: value });
+  };
+
+  // Handle status selection
+  const handleStatusChange = (status: string) => {
+    updateFilters({ status });
   };
 
   // Check if we've reached max columns
@@ -234,6 +241,57 @@ export function ReportForm() {
                   </SelectItem>
                 </SelectContent>
               </Select>
+              {getError("sex") && (
+                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {getError("sex")}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Status Filter */}
+          {requiresFilter("status") && (
+            <div className="space-y-1 md:w-48">
+              <Label
+                htmlFor="status"
+                className="text-[10px] font-bold uppercase text-primary tracking-tight"
+              >
+                Status
+              </Label>
+              <Select
+                value={filters.status || "Todos"}
+                onValueChange={handleStatusChange}
+              >
+                <SelectTrigger
+                  id="status"
+                  className={`w-full h-11 bg-muted/40 border-0 focus:ring-primary ${
+                    getError("status") ? "border-red-500 bg-red-50/10" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Todos os status" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-border shadow-xl">
+                  <SelectItem value="Todos" className="rounded-lg my-0.5">
+                    Todos
+                  </SelectItem>
+                  {statuses.map((s) => (
+                    <SelectItem
+                      key={s.id}
+                      value={s.status_name}
+                      className="rounded-lg my-0.5"
+                    >
+                      {s.status_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {getError("status") && (
+                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {getError("status")}
+                </p>
+              )}
             </div>
           )}
 

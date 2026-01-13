@@ -48,6 +48,7 @@ const initialFilters: ReportFilters = {
   selectedColumns: [],
   year: undefined,
   managementDates: [],
+  status: "Todos",
 };
 
 const initialState: ReportsContextState = {

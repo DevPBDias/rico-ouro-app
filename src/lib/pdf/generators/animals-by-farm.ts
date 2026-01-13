@@ -41,11 +41,11 @@ export const generateAnimalsByFarmPDF = async (
     ...selectableColumns,
   ];
 
-  // Ordenação RGN Decrescente
+  // Ordenação RGN Ascendente
   const sortedData = [...reportData.data].sort((a, b) => {
     const rgnA = a.rgn || "";
     const rgnB = b.rgn || "";
-    return rgnB.localeCompare(rgnA, undefined, { numeric: true });
+    return rgnA.localeCompare(rgnB, undefined, { numeric: true });
   });
 
   // Mapeamento dos dados para a tabela

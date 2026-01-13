@@ -16,7 +16,12 @@ import { TableColumn } from "../types";
 /**
  * Available filter types for reports
  */
-export type FilterType = "farm" | "sex" | "dateRange" | "managementDates";
+export type FilterType =
+  | "farm"
+  | "sex"
+  | "dateRange"
+  | "managementDates"
+  | "status";
 
 /**
  * Gender filter options
@@ -35,6 +40,7 @@ export interface ReportFilters {
   selectedColumns?: TableColumn[];
   year?: string;
   managementDates?: string[]; // Selected d0_dates for reproduction report
+  status?: string;
 }
 
 // =============================================================================
@@ -144,6 +150,12 @@ export function validateRequiredFilters(
             field: "managementDates",
             message: "Selecione ao menos uma data de manejo",
           });
+        }
+        break;
+
+      case "status":
+        if (!filters.status) {
+          errors.push({ field: "status", message: "Selecione um status" });
         }
         break;
     }

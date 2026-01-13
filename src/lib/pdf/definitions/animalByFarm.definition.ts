@@ -28,11 +28,16 @@ async function generateAnimalByFarmReport(
     selector.sex = { $eq: filters.sex };
   }
 
+  // Add status filter if provided
+  if (filters.status && filters.status !== "Todos") {
+    selector.status = { $eq: filters.status };
+  }
+
   // Fetch animals from database
   const docs = await db.animals
     .find({
       selector,
-      sort: [{ rgn: "desc" as const }],
+      sort: [{ rgn: "asc" as const }],
     })
     .exec();
 
@@ -67,6 +72,7 @@ async function generateAnimalByFarmReport(
       status: animal.status || "---",
       society: animal.partnership || "---",
       sex: animal.sex || "---",
+      genotype: animal.genotyping || "---",
       category: getAgeRange(calculateAgeInMonths(animal.born_date)),
       observations: "---",
     })),
@@ -114,7 +120,7 @@ export const animalByFarmDefinition: ReportDefinition = {
   description:
     "Lista todos os animais de uma fazenda específica com colunas personalizáveis",
   icon: "Beef",
-  requiredFilters: ["farm", "sex"],
+  requiredFilters: ["farm", "sex", "status"],
   allowColumnSelection: true,
   generate: generateAnimalByFarmReport,
 };

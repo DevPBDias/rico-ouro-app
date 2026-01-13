@@ -14,9 +14,9 @@ export const ANIMAL_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
   { header: "P%", dataKey: "p" },
   { header: "F%", dataKey: "f" },
   { header: "CLASSE", dataKey: "classification" },
-  { header: "STATUS", dataKey: "status" },
   { header: "SOCIEDADE", dataKey: "society" },
   { header: "CATEGORIA", dataKey: "category" },
+  { header: "GENOTIPAGEM", dataKey: "genotype" },
 ];
 
 export const DEFAULT_SELECTED_COLUMNS: TableColumn[] = [
