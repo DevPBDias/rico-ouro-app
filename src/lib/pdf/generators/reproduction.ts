@@ -26,6 +26,7 @@ export const generateReproductionPDF = async (
   const columns = [
     { header: "rgn", dataKey: "rgn" },
     { header: "idade", dataKey: "idade" },
+    { header: "classe", dataKey: "classification" },
     { header: "touro", dataKey: "touro" },
     { header: "d0", dataKey: "d0" },
     { header: "d8", dataKey: "d8" },
@@ -47,6 +48,7 @@ export const generateReproductionPDF = async (
     return {
       rgn: item.rgn || "---",
       idade: item.idade || "---",
+      classification: item.classification || "---",
       touro: item.bull_name?.toUpperCase() || "---",
       d0: item.d0_date || "---",
       d8: item.d8_date || "---",
@@ -65,8 +67,9 @@ export const generateReproductionPDF = async (
     columns: columns,
     body: rows,
     columnStyles: {
-      rgn: { cellWidth: 20 },
+      rgn: { cellWidth: 15 },
       idade: { cellWidth: 23 },
+      classification: { cellWidth: 18 },
       touro: { cellWidth: 35 },
       d0: { cellWidth: 23 },
       d8: { cellWidth: 23 },
@@ -74,7 +77,7 @@ export const generateReproductionPDF = async (
       touro_resync: { cellWidth: 35 },
       resync_d0: { cellWidth: 23 },
       resync_d8: { cellWidth: 23 },
-      dg30: { cellWidth: 15 },
+      dg30s: { cellWidth: 18 },
       resync_d10: { cellWidth: 23 },
     },
     styles: {

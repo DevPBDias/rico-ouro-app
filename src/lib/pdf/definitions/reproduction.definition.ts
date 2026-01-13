@@ -13,23 +13,27 @@ function formatDate(dateStr: string | undefined): string {
   }
 }
 
-function calculateAge(bornDate: string | undefined): string {
-  if (!bornDate) return "---";
-  const birthDate = new Date(bornDate);
-  const today = new Date();
+function calculateAge(birthDate: string | Date | undefined): string {
+  if (!birthDate) return "---";
+  const date = typeof birthDate === "string" ? new Date(birthDate) : birthDate;
+  if (isNaN(date.getTime())) return "---";
 
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months = today.getMonth() - birthDate.getMonth();
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
 
-  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
-    years--;
-    months += 12;
+  if (diffMonths < 12) {
+    return `${diffMonths} meses`;
   }
 
-  if (years > 0) {
+  const years = Math.floor(diffMonths / 12);
+  const months = diffMonths % 12;
+
+  if (months === 0) {
     return `${years} ${years === 1 ? "ano" : "anos"}`;
   }
-  return `${months} ${months === 1 ? "mês" : "meses"}`;
+
+  return `${years}a ${months}m`;
 }
 
 async function generateReproductionReport(
@@ -98,6 +102,7 @@ async function generateReproductionReport(
         return {
           rgn: event.rgn || "---",
           idade: calculateAge(animal?.born_date),
+          classification: animal?.classification || "---",
           bull_name: event.bull_name || "---",
           d0_date: formatDate(event.d0_date),
           d8_date: formatDate(event.d8_date),

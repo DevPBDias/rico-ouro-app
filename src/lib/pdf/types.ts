@@ -45,6 +45,7 @@ export interface ReproductionReportData extends ReportBaseData {
   data: Array<{
     rgn: string;
     idade?: string;
+    classification?: string;
     bull_name?: string;
     d0_date?: string;
     d8_date?: string;
