@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { useRxDB } from "./RxDBProvider";
-import { useSupabaseRealtimeSync } from "@/hooks/sync/useSupabaseRealtimeSync";
+import { useIntelligentPollingSync } from "@/hooks/sync/useIntelligentPollingSync";
 import { combineLatest } from "rxjs";
 
 interface ReplicationContextType {
@@ -45,8 +45,19 @@ export function ReplicationProvider({
     Record<string, { isSyncing: boolean; error: Error | null }>
   >({});
 
-  // Ativa o listener de Realtime do Supabase
-  useSupabaseRealtimeSync(db);
+  // Ativa o sistema de polling inteligente para sincronização
+  useEffect(() => {
+    console.log(
+      "🔍 [ReplicationProvider] useIntelligentPollingSync will be called",
+      {
+        hasDb: !!db,
+        isLoading,
+        hasReplications: !!(db as any)?.replications,
+      }
+    );
+  }, [db, isLoading]);
+
+  useIntelligentPollingSync(db);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

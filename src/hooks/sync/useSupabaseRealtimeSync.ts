@@ -28,21 +28,36 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initialSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isConnectedRef = useRef(false); // Ref para acessar estado sem causar re-render
 
   useEffect(() => {
+    console.log("🔍 [Realtime Sync] Hook effect triggered", {
+      hasDb: !!db,
+      hasReplications: !!(db as any)?.replications,
+      replicationsKeys: db ? Object.keys((db as any)?.replications || {}) : [],
+    });
+
     if (
       !db ||
       typeof (db as MyDatabase).replications !== "object" ||
       !(db as MyDatabase).replications
     ) {
-      console.log("⚠️ [Realtime Sync] DB or replications not ready");
+      console.warn("⚠️ [Realtime Sync] DB or replications not ready", {
+        db: !!db,
+        replications: !!(db as any)?.replications,
+      });
       return;
     }
 
     console.log(
-      "📡 [Realtime Sync] Initializing Supabase Realtime listener..."
+      "📡 [Realtime Sync] Initializing Supabase Realtime listener...",
+      {
+        supabaseUrl:
+          process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + "...",
+        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }
     );
 
     // We know db.replications exists due to previous checks, but the type system can't confirm it,
@@ -62,12 +77,28 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
         return;
       }
 
+      const replication = replications[collectionName];
+
       console.log(
-        `🔔 [Realtime Sync] Change detected on table "${tableName}" → collection "${collectionName}". Triggering sync...`
+        `🔔 [Realtime Sync] Change detected on table "${tableName}" → collection "${collectionName}". Triggering sync...`,
+        {
+          hasReSync: typeof replication.reSync === "function",
+          replicationState: replication,
+        }
       );
 
       try {
-        replications[collectionName].reSync();
+        // Força uma nova sincronização
+        if (typeof replication.reSync === "function") {
+          replication.reSync();
+          console.log(
+            `✅ [Realtime Sync] reSync() called for ${collectionName}`
+          );
+        } else {
+          console.error(
+            `❌ [Realtime Sync] reSync is not a function for ${collectionName}`
+          );
+        }
       } catch (error) {
         console.error(
           `❌ [Realtime Sync] Error triggering sync for ${collectionName}:`,
@@ -108,6 +139,19 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
         }
       }
 
+      console.log("🔧 [Realtime Sync] Creating Realtime channel...");
+
+      // Verifica se o Supabase está configurado
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("placeholder")) {
+        console.error(
+          "❌ [Realtime Sync] Supabase not configured. Realtime sync disabled."
+        );
+        return null;
+      }
+
       const channel = supabase
         .channel("db_changes", {
           config: {
@@ -124,6 +168,15 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
             const tableName = payload.table;
             const collectionName = TABLE_TO_COLLECTION_MAP[tableName];
 
+            console.log(
+              `📨 [Realtime Sync] Received event: ${payload.eventType} on table "${tableName}"`,
+              {
+                new: payload.new,
+                old: payload.old,
+                collectionName,
+              }
+            );
+
             if (!collectionName) {
               console.warn(
                 `⚠️ [Realtime Sync] Unknown table in event: ${tableName}. Payload:`,
@@ -132,15 +185,14 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
               return;
             }
 
-            console.log(
-              `📨 [Realtime Sync] Received event: ${payload.eventType} on table "${tableName}"`
-            );
-
             triggerSync(collectionName, tableName);
           }
         )
-        .subscribe((status) => {
-          console.log(`📡 [Realtime Sync] Channel status: ${status}`);
+        .subscribe((status, err) => {
+          console.log(`📡 [Realtime Sync] Channel status: ${status}`, {
+            error: err || null,
+            hasChannel: !!channelRef.current,
+          });
 
           if (status === "SUBSCRIBED") {
             console.log(
@@ -220,7 +272,20 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
     };
 
     // Inicializa o canal Realtime
-    initializeRealtime();
+    const channel = initializeRealtime();
+
+    if (!channel) {
+      console.warn(
+        "⚠️ [Realtime Sync] Channel initialization failed. Using polling only."
+      );
+    }
+
+    // Força uma sincronização inicial após 2 segundos (para garantir que o banco está pronto)
+    initialSyncTimeoutRef.current = setTimeout(() => {
+      console.log("🔄 [Realtime Sync] Initial sync after startup...");
+      triggerAllSyncs("initial sync");
+      initialSyncTimeoutRef.current = null;
+    }, 2000);
 
     // Polling como fallback (executa mesmo quando Realtime está conectado,
     // mas menos frequente para reduzir carga)
@@ -289,6 +354,11 @@ export function useSupabaseRealtimeSync(db: MyDatabase | null) {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
+      }
+
+      if (initialSyncTimeoutRef.current) {
+        clearTimeout(initialSyncTimeoutRef.current);
+        initialSyncTimeoutRef.current = null;
       }
 
       // Remove canal (set null antes para evitar reconexão durante cleanup)
