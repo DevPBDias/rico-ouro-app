@@ -39,15 +39,30 @@ export function CreateReproductionModal({
       });
 
       // 2. Subtrair doses do estoque (Touro D0 e Resync)
-      const bullsToSubtract = [data.bull_name, data.resync_bull].filter(
-        Boolean
-      );
+      // Se o touro resync for o mesmo do D0, debita 2 vezes do mesmo touro
+      const bullD0 = data.bull_name;
+      const bullResync = data.resync_bull;
 
-      for (const bullName of bullsToSubtract) {
-        const dose = doses.find((d) => d.animal_name === bullName);
-        if (dose && dose.quantity > 0) {
-          console.log(`📉 Subtraindo 1 dose de ${bullName} (ID: ${dose.id})`);
-          await updateQuantity(dose.id, dose.quantity - 1);
+      // Debitar do touro D0
+      if (bullD0) {
+        const doseD0 = doses.find((d) => d.animal_name === bullD0);
+        if (doseD0 && doseD0.quantity > 0) {
+          const quantityToDebit = bullD0 === bullResync ? 2 : 1;
+          console.log(
+            `📉 Criando evento: Subtraindo ${quantityToDebit} dose(s) de ${bullD0} (ID: ${doseD0.id})`
+          );
+          await updateQuantity(doseD0.id, doseD0.quantity - quantityToDebit);
+        }
+      }
+
+      // Debitar do touro Resync apenas se for diferente do D0
+      if (bullResync && bullResync !== bullD0) {
+        const doseResync = doses.find((d) => d.animal_name === bullResync);
+        if (doseResync && doseResync.quantity > 0) {
+          console.log(
+            `📉 Criando evento: Subtraindo 1 dose de ${bullResync} (ID: ${doseResync.id})`
+          );
+          await updateQuantity(doseResync.id, doseResync.quantity - 1);
         }
       }
       onSuccess?.();
