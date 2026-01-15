@@ -1,4 +1,4 @@
-# 🐄 Rico Ouro App
+# 🐄 Nelre INDI Ouro App
 
 Aplicativo web progressivo (PWA) para gestão completa de gado bovino, desenvolvido com foco em funcionalidade offline e experiência de usuário moderna.
 
@@ -9,7 +9,7 @@ Aplicativo web progressivo (PWA) para gestão completa de gado bovino, desenvolv
 
 ## 📋 Sobre o Projeto
 
-O **Rico Ouro App** é uma solução completa para gestão de rebanhos bovinos, permitindo que produtores rurais gerenciem informações de seus animais de forma eficiente, mesmo em áreas com conexão limitada. O aplicativo funciona totalmente offline, utilizando armazenamento local para garantir que os dados estejam sempre acessíveis.
+O **Nelre INDI Ouro App** é uma solução completa para gestão de rebanhos bovinos, permitindo que produtores rurais gerenciem informações de seus animais de forma eficiente, mesmo em áreas com conexão limitada. O aplicativo funciona totalmente offline, utilizando armazenamento local para garantir que os dados estejam sempre acessíveis.
 
 ## ✨ Funcionalidades
 
