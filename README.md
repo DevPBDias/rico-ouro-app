@@ -1,4 +1,4 @@
-# 🐄 Nelre INDI Ouro App
+# 🐄 Nelore INDI Ouro App
 
 Aplicativo web progressivo (PWA) para gestão completa de gado bovino, desenvolvido com foco em funcionalidade offline e experiência de usuário moderna.
 
