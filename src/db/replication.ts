@@ -157,7 +157,21 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY
     );
 
-    (db as any).replications = {
+    (
+      db as {
+        replications: {
+          animals: typeof animalsReplication;
+          vaccines: typeof vaccinesReplication;
+          farms: typeof farmsReplication;
+          animal_metrics_weight: typeof animalMetricsWeightReplication;
+          animal_metrics_ce: typeof animalMetricsCEReplication;
+          animal_vaccines: typeof animalVaccinesReplication;
+          reproduction_events: typeof reproductionEventsReplication;
+          animal_statuses: typeof animalStatusesReplication;
+          semen_doses: typeof semenDosesReplication;
+        };
+      }
+    ).replications = {
       animals: animalsReplication,
       vaccines: vaccinesReplication,
       farms: farmsReplication,
@@ -236,8 +250,15 @@ export async function setupReplication(db: MyDatabase) {
       }
     });
 
+    let lastActiveState = false;
     animalsReplication.active$.subscribe((active) => {
-      console.log(`🔄 [Animals] Replication active: ${active}`);
+      // Só loga mudanças de estado para reduzir spam no console
+      if (active !== lastActiveState) {
+        console.log(
+          `🔄 [Animals] Replication ${active ? "started" : "completed"}`
+        );
+        lastActiveState = active;
+      }
       if (active) {
         animalsErrorCount = 0; // Reset error count on successful activity
       }
