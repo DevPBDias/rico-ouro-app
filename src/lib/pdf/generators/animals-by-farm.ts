@@ -38,6 +38,14 @@ export const generateAnimalsByFarmPDF = async (
   // Coluna fixa inicial
   const columns = [
     { header: "RGD RGN", dataKey: "rgdn" },
+    // Adiciona colunas de filtro se necessário (quando filterMode é "all")
+    ...(reportData.showFarmColumn
+      ? [{ header: "FAZENDA", dataKey: "farmName" }]
+      : []),
+    ...(reportData.showSexColumn ? [{ header: "SEXO", dataKey: "sex" }] : []),
+    ...(reportData.showStatusColumn
+      ? [{ header: "STATUS", dataKey: "status" }]
+      : []),
     ...selectableColumns,
   ];
 
@@ -50,9 +58,20 @@ export const generateAnimalsByFarmPDF = async (
 
   // Mapeamento dos dados para a tabela
   const rows = sortedData.map((item) => {
-    const row: any = {
+    const row: Record<string, string> = {
       rgdn: `${item.rgd || ""} ${item.rgn || ""}`.trim() || "---",
     };
+
+    // Adiciona colunas de filtro se necessário
+    if (reportData.showFarmColumn && item.farmName) {
+      row.farmName = item.farmName;
+    }
+    if (reportData.showSexColumn && item.sex) {
+      row.sex = item.sex;
+    }
+    if (reportData.showStatusColumn && item.status) {
+      row.status = item.status;
+    }
 
     // Adiciona colunas extras selecionadas
     selectableColumns.forEach((col) => {
@@ -69,6 +88,9 @@ export const generateAnimalsByFarmPDF = async (
     body: rows,
     columnStyles: {
       rgdn: { cellWidth: 23 },
+      farmName: { cellWidth: 25 },
+      sex: { cellWidth: 15 },
+      status: { cellWidth: 20 },
       birthDate: { cellWidth: 22 },
       age: { cellWidth: 14 },
       fatherRgd: { cellWidth: 35 },
@@ -80,13 +102,11 @@ export const generateAnimalsByFarmPDF = async (
       p: { cellWidth: 10 },
       f: { cellWidth: 10 },
       classification: { cellWidth: 20 },
-      status: { cellWidth: 20 },
       society: { cellWidth: 30 },
-      sex: { cellWidth: 15 },
       category: { cellWidth: 25 },
       observations: { cellWidth: "auto" },
     },
-    didDrawPage: (data) => {},
+    didDrawPage: () => {},
   });
 
   // 4. Aplicação de Branding (Header/Footer em todas as páginas)

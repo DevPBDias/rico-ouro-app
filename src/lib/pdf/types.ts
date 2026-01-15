@@ -9,6 +9,9 @@ export type GenderFilter = "M" | "F" | "Ambos";
 export interface AnimalReportData extends ReportBaseData {
   gender: GenderFilter;
   totalItems: number;
+  showFarmColumn?: boolean; // Se true, adiciona coluna FAZENDA após RGN
+  showSexColumn?: boolean; // Se true, adiciona coluna SEXO
+  showStatusColumn?: boolean; // Se true, adiciona coluna STATUS
   data: any[];
 }
 
@@ -41,9 +44,11 @@ export interface WeightReportData extends ReportBaseData {
 }
 
 export interface ReproductionReportData extends ReportBaseData {
+  showFarmColumn?: boolean; // Se true, adiciona coluna FAZENDA após RGN
   managementDate: string;
   data: Array<{
     rgn: string;
+    farmName?: string; // Nome da fazenda quando showFarmColumn é true
     idade?: string;
     classification?: string;
     bull_name?: string;

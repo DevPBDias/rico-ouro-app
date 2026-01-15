@@ -8,7 +8,7 @@ function formatDate(dateStr: string | undefined): string {
   if (!dateStr) return "---";
   try {
     return new Date(dateStr).toLocaleDateString("pt-BR", { timeZone: "UTC" });
-  } catch (e) {
+  } catch {
     return "---";
   }
 }
@@ -44,24 +44,67 @@ async function generateReproductionReport(
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
 
-  // Fetch animals from the selected farm
+  // Fetch farms for mapping farm_id to farm_name
+  const farmDocs = await db.farms
+    .find({
+      selector: { _deleted: { $eq: false } },
+    })
+    .exec();
+  const farms = farmDocs.map((doc) => doc.toJSON());
+  const farmMap = new Map(
+    farms.map((f: { id: string; farm_name?: string }) => [
+      f.id,
+      f.farm_name || "",
+    ])
+  );
+
+  // Build selector for animals
+  const animalSelector: {
+    _deleted: { $eq: false };
+    sex: { $eq: "F" };
+    farm_id?: { $eq: string };
+  } = {
+    _deleted: { $eq: false },
+    // Only female animals for reproduction
+    sex: { $eq: "F" },
+  };
+
+  // Add farm filter only if farmId is provided and filterMode is "specific"
+  if (filters.farmId && filters.farmFilterMode === "specific") {
+    animalSelector.farm_id = { $eq: filters.farmId };
+  }
+
+  // Fetch animals from the selected farm(s)
   const animalDocs = await db.animals
     .find({
-      selector: {
-        _deleted: { $eq: false },
-        farm_id: { $eq: filters.farmId },
-        // Only female animals for reproduction
-        sex: { $eq: "F" },
-      },
+      selector: animalSelector,
     })
     .exec();
 
   const animals = animalDocs.map((doc) => doc.toJSON() as Animal);
   const animalRgns = animals.map((a) => a.rgn);
 
+  // For reproduction report, show farm column when no specific farm is selected
+  const showFarmColumn = !filters.farmId || filters.farmFilterMode === "all";
+
+  // Create animal lookup map including farm_id
+  const animalMap = new Map(
+    animals.map((a) => [
+      a.rgn,
+      { ...a, farmName: farmMap.get(a.farm_id || "") || "---" },
+    ])
+  );
+
   // Fetch reproduction events
   // If no date range, we fetch all active events
-  const selector: any = {
+  const selector: {
+    _deleted: { $eq: false };
+    rgn: { $in: string[] };
+    d0_date?: {
+      $gte?: string;
+      $lte?: string;
+    };
+  } = {
     _deleted: { $eq: false },
     rgn: { $in: animalRgns },
   };
@@ -81,12 +124,10 @@ async function generateReproductionReport(
 
   const events = eventDocs.map((doc) => doc.toJSON() as ReproductionEvent);
 
-  // Create animal lookup map
-  const animalMap = new Map(animals.map((a) => [a.rgn, a]));
-
   // Transform data for report
   const reportData = {
-    farmName: filters.farmName || "Fazenda",
+    farmName: filters.farmName || "Todas as Fazendas",
+    showFarmColumn,
     managementDate: filters.managementDates?.length
       ? filters.managementDates.map((d) => formatDate(d)).join(", ")
       : "---",
@@ -101,6 +142,7 @@ async function generateReproductionReport(
         const animal = animalMap.get(event.rgn);
         return {
           rgn: event.rgn || "---",
+          farmName: showFarmColumn ? animal?.farmName || "---" : undefined,
           idade: calculateAge(animal?.born_date),
           classification: animal?.classification || "---",
           bull_name: event.bull_name || "---",
@@ -125,9 +167,9 @@ export const reproductionDefinition: ReportDefinition = {
   id: "reproduction",
   title: "Reprodução",
   description:
-    "Lista os eventos de manejo reprodutivo dos animais em um período",
+    "Lista os eventos de manejo reprodutivo dos animais (de uma fazenda específica ou todas) em um período",
   icon: "Heart",
-  requiredFilters: ["farm", "managementDates"],
+  requiredFilters: ["managementDates"], // farm é opcional agora
   allowColumnSelection: false,
   generate: generateReproductionReport,
 };

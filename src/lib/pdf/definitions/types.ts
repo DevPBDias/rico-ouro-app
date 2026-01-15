@@ -34,13 +34,16 @@ export type GenderFilterValue = "M" | "F" | "Ambos";
 export interface ReportFilters {
   farmId?: string;
   farmName?: string;
+  farmFilterMode?: "all" | "specific"; // "all" para todas as fazendas, "specific" para uma específica
   sex?: GenderFilterValue;
+  sexFilterMode?: "all" | "specific"; // "all" para ambos (mostra coluna), "specific" para M/F (filtra, não mostra)
   startDate?: string;
   endDate?: string;
   selectedColumns?: TableColumn[];
   year?: string;
   managementDates?: string[]; // Selected d0_dates for reproduction report
   status?: string;
+  statusFilterMode?: "all" | "specific"; // "all" para todos (mostra coluna), "specific" para um status (filtra, não mostra)
 }
 
 // =============================================================================

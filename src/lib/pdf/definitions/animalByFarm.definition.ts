@@ -17,19 +17,32 @@ async function generateAnimalByFarmReport(
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
 
+  // Fetch farms for mapping farm_id to farm_name
+  const farmDocs = await db.farms
+    .find({
+      selector: { _deleted: { $eq: false } },
+    })
+    .exec();
+  const farms = farmDocs.map((doc) => doc.toJSON());
+  const farmMap = new Map(farms.map((f: any) => [f.id, f.farm_name || ""]));
+
   // Build selector based on filters
   const selector: any = {
     _deleted: { $eq: false },
-    farm_id: { $eq: filters.farmId },
   };
 
-  // Add sex filter if not "Ambos"
-  if (filters.sex && filters.sex !== "Ambos") {
+  // Add farm filter only if farmId is provided and filterMode is "specific"
+  if (filters.farmId && filters.farmFilterMode === "specific") {
+    selector.farm_id = { $eq: filters.farmId };
+  }
+
+  // Add sex filter only if sexFilterMode is "specific"
+  if (filters.sex && filters.sexFilterMode === "specific" && filters.sex !== "Ambos") {
     selector.sex = { $eq: filters.sex };
   }
 
-  // Add status filter if provided
-  if (filters.status && filters.status !== "Todos") {
+  // Add status filter only if statusFilterMode is "specific"
+  if (filters.status && filters.statusFilterMode === "specific" && filters.status !== "Todos") {
     selector.status = { $eq: filters.status };
   }
 
@@ -42,15 +55,37 @@ async function generateAnimalByFarmReport(
     .exec();
 
   const animals = docs.map((doc) => doc.toJSON() as Animal);
+  
+  // Determine which filter columns to show
+  // Only show when column is selected AND filterMode is "all"
+  // When filterMode is "specific", don't show the column (it doesn't count towards limit)
+  const isFarmColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "farmName") ?? false;
+  const isSexColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "sex") ?? false;
+  const isStatusColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "status") ?? false;
+  
+  const showFarmColumn = isFarmColumnSelected && filters.farmFilterMode === "all";
+  const showSexColumn = isSexColumnSelected && filters.sexFilterMode === "all";
+  const showStatusColumn = isStatusColumnSelected && filters.statusFilterMode === "all";
 
   // Transform data for report
   const reportData = {
-    farmName: filters.farmName || "Geral",
+    farmName: filters.farmName || "Todas as Fazendas",
     gender: filters.sex || "Ambos",
     totalItems: animals.length,
+    showFarmColumn,
+    showSexColumn,
+    showStatusColumn,
     data: animals.map((animal) => ({
       rgd: animal.serie_rgd || "",
       rgn: animal.rgn || "",
+      farmName: showFarmColumn
+        ? (farmMap.get(animal.farm_id || "") || "---")
+        : undefined,
+      sex: showSexColumn ? (animal.sex || "---") : undefined,
+      status: showStatusColumn ? (animal.status || "---") : undefined,
       name: animal.name || "---",
       birthDate: animal.born_date
         ? new Date(animal.born_date).toLocaleDateString("pt-BR")
@@ -69,15 +104,13 @@ async function generateAnimalByFarmReport(
       p: animal.p || "---",
       f: animal.f || "---",
       classification: animal.classification || "---",
-      status: animal.status || "---",
       society: animal.partnership || "---",
-      sex: animal.sex || "---",
       genotype: animal.genotyping || "---",
       category: getAgeRange(calculateAgeInMonths(animal.born_date)),
       observations: "---",
     })),
     reportDate: new Date().toLocaleDateString("pt-BR"),
-    systemName: filters.farmName || "Fazenda",
+    systemName: filters.farmName || "Todas as Fazendas",
   };
 
   let selectedColumns =
@@ -85,12 +118,19 @@ async function generateAnimalByFarmReport(
       ? [...filters.selectedColumns]
       : [...DEFAULT_SELECTED_COLUMNS];
 
-  if (
-    filters.sex === "Ambos" &&
-    !selectedColumns.some((c) => c.dataKey === "sex")
-  ) {
-    selectedColumns.unshift({ header: "SEXO", dataKey: "sex" });
-  }
+  // Remove filter columns that won't be shown (when filterMode is "specific")
+  selectedColumns = selectedColumns.filter((col) => {
+    if (col.dataKey === "farmName" && filters.farmFilterMode === "specific") {
+      return false;
+    }
+    if (col.dataKey === "sex" && filters.sexFilterMode === "specific") {
+      return false;
+    }
+    if (col.dataKey === "status" && filters.statusFilterMode === "specific") {
+      return false;
+    }
+    return true;
+  });
 
   await generateAnimalsByFarmPDF(reportData, selectedColumns);
 }
@@ -118,9 +158,9 @@ export const animalByFarmDefinition: ReportDefinition = {
   id: "animals-by-farm",
   title: "Animais por Fazenda",
   description:
-    "Lista todos os animais de uma fazenda específica com colunas personalizáveis",
+    "Lista todos os animais (de uma fazenda específica ou todas) com colunas personalizáveis",
   icon: "Beef",
-  requiredFilters: ["farm", "sex", "status"],
+  requiredFilters: ["sex", "status"], // farm é opcional agora
   allowColumnSelection: true,
   generate: generateAnimalByFarmReport,
 };

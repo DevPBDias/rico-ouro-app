@@ -42,13 +42,16 @@ type ReportsContextType = ReportsContextState & ReportsContextActions;
 const initialFilters: ReportFilters = {
   farmId: undefined,
   farmName: undefined,
+  farmFilterMode: undefined,
   sex: "Ambos" as GenderFilterValue,
+  sexFilterMode: undefined,
   startDate: undefined,
   endDate: undefined,
   selectedColumns: [],
   year: undefined,
-  managementDates: [],
   status: "Todos",
+  statusFilterMode: undefined,
+  managementDates: [],
 };
 
 const initialState: ReportsContextState = {

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useMemo } from "react";
 import { useReports } from "@/context/ReportsContext";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useMemo } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useAnimals } from "@/hooks/db/animals/useAnimals";
-import { GenderFilterValue, ReportFilters } from "@/lib/pdf/definitions/types";
+import { GenderFilterValue } from "@/lib/pdf/definitions/types";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
 import { useStatuses } from "@/hooks/db/statuses/useStatuses";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   ANIMAL_REPORT_AVAILABLE_COLUMNS,
@@ -25,6 +24,10 @@ import {
   MAX_SELECTABLE_COLUMNS,
 } from "@/lib/pdf/definitions/availableColumns";
 import { ReportCheckboxItem } from "@/components/relatorios/ReportCheckboxItem";
+import { FarmFilterModal } from "./FarmFilterModal";
+import { SexFilterModal } from "./SexFilterModal";
+import { StatusFilterModal } from "./StatusFilterModal";
+import { TableColumn } from "@/lib/pdf/types";
 
 export function ReportForm() {
   const {
@@ -37,69 +40,36 @@ export function ReportForm() {
     generateReport,
   } = useReports();
 
+  // Hooks must be called unconditionally (before any early returns)
   const { farms } = useFarms();
   const { statuses } = useStatuses();
-
-  if (!selectedReport) return null;
-
-  // Check if a filter type is required
-  const requiresFilter = (filterType: string): boolean => {
-    return selectedReport.requiredFilters.includes(filterType as any);
-  };
-
-  // Get validation error for a field
-  const getError = (field: string): string | undefined => {
-    return validationErrors.find((e) => e.field === field)?.message;
-  };
-
-  // Handle farm selection
-  const handleFarmChange = (farmId: string) => {
-    const farm = farms.find((f) => f.id === farmId);
-    updateFilters({
-      farmId: farmId,
-      farmName: farm?.farm_name || "",
-    });
-  };
-
-  // Handle sex selection
-  const handleSexChange = (sex: GenderFilterValue) => {
-    updateFilters({ sex });
-  };
-
-  // Handle date changes
-  const handleDateChange = (field: "startDate" | "endDate", value: string) => {
-    updateFilters({ [field]: value });
-  };
-
-  // Handle status selection
-  const handleStatusChange = (status: string) => {
-    updateFilters({ status });
-  };
-
-  // Check if we've reached max columns
-  const maxColumnsReached =
-    (filters.selectedColumns?.length || 0) >= MAX_SELECTABLE_COLUMNS;
-
-  // --- REPRODUCTION SPECIFIC LOGIC ---
   const { events: allEvents } = useReproductionEvents();
   const { animals } = useAnimals();
 
-  // Filter animals by selected farm
+  const [farmModalOpen, setFarmModalOpen] = React.useState(false);
+  const [sexModalOpen, setSexModalOpen] = React.useState(false);
+  const [statusModalOpen, setStatusModalOpen] = React.useState(false);
+
+  // Filter animals by selected farm (or all if no farm selected or filterMode is "all")
   const farmAnimals = useMemo(() => {
-    if (!filters.farmId) return [];
+    if (!filters.farmId || filters.farmFilterMode === "all") {
+      return animals;
+    }
     return animals.filter((a) => a.farm_id === filters.farmId);
-  }, [animals, filters.farmId]);
+  }, [animals, filters.farmId, filters.farmFilterMode]);
 
   const farmAnimalRgns = useMemo(
     () => new Set(farmAnimals.map((a) => a.rgn)),
     [farmAnimals]
   );
 
-  // Filter events by farm animals
+  // Filter events by farm animals (or all if no farm selected or filterMode is "all")
   const farmEvents = useMemo(() => {
-    if (!filters.farmId) return [];
+    if (!filters.farmId || filters.farmFilterMode === "all") {
+      return allEvents;
+    }
     return allEvents.filter((e) => farmAnimalRgns.has(e.rgn));
-  }, [allEvents, farmAnimalRgns, filters.farmId]);
+  }, [allEvents, farmAnimalRgns, filters.farmId, filters.farmFilterMode]);
 
   // Available Years from Events of the current farm
   const availableYears = useMemo(
@@ -128,6 +98,130 @@ export function ReportForm() {
     [farmEvents, filters.year]
   );
 
+  if (!selectedReport) return null;
+
+  // Handle farm filter from modal
+  const handleFarmFilterConfirm = (
+    farmId: string | undefined,
+    filterMode: "all" | "specific"
+  ) => {
+    const farm = farms.find((f) => f.id === farmId);
+    updateFilters({
+      farmId,
+      farmName: farm?.farm_name || "",
+      farmFilterMode: filterMode,
+    });
+  };
+
+  // Handle sex filter from modal
+  const handleSexFilterConfirm = (
+    sex: GenderFilterValue | undefined,
+    filterMode: "all" | "specific"
+  ) => {
+    updateFilters({
+      sex: sex || "Ambos",
+      sexFilterMode: filterMode,
+    });
+  };
+
+  // Handle status filter from modal
+  const handleStatusFilterConfirm = (
+    status: string | undefined,
+    filterMode: "all" | "specific"
+  ) => {
+    updateFilters({
+      status: status || "Todos",
+      statusFilterMode: filterMode,
+    });
+  };
+
+  // Custom toggle for filter columns - opens modal instead
+  const handleColumnToggle = (column: TableColumn) => {
+    if (column.dataKey === "farmName") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "farmName") ?? false;
+      if (isChecked) {
+        updateFilters({
+          farmId: undefined,
+          farmName: undefined,
+          farmFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setFarmModalOpen(true);
+      }
+    } else if (column.dataKey === "sex") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "sex") ?? false;
+      if (isChecked) {
+        updateFilters({
+          sex: undefined,
+          sexFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setSexModalOpen(true);
+      }
+    } else if (column.dataKey === "status") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "status") ?? false;
+      if (isChecked) {
+        updateFilters({
+          status: undefined,
+          statusFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setStatusModalOpen(true);
+      }
+    } else {
+      toggleColumn(column);
+    }
+  };
+
+  // Get validation error for a field
+  const getError = (field: string): string | undefined => {
+    return validationErrors.find((e) => e.field === field)?.message;
+  };
+
+  // Check if we've reached max columns
+  // Filter columns (farmName, sex, status) don't count when filterMode is "specific"
+  // because they don't appear in the report when filtering
+  const isFarmColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "farmName") ?? false;
+  const isSexColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "sex") ?? false;
+  const isStatusColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "status") ?? false;
+
+  const effectiveMaxColumns = MAX_SELECTABLE_COLUMNS; // Sempre 9 colunas
+
+  // Count columns excluding filter columns when filterMode is "specific" (because they won't appear)
+  const filterColumnsToExclude = [
+    filters.farmFilterMode === "specific" && isFarmColumnSelected
+      ? "farmName"
+      : null,
+    filters.sexFilterMode === "specific" && isSexColumnSelected ? "sex" : null,
+    filters.statusFilterMode === "specific" && isStatusColumnSelected
+      ? "status"
+      : null,
+  ].filter(Boolean) as string[];
+
+  const columnCount =
+    filterColumnsToExclude.length > 0
+      ? filters.selectedColumns?.filter(
+          (c) => !filterColumnsToExclude.includes(c.dataKey)
+        ).length || 0
+      : filters.selectedColumns?.length || 0;
+
+  const maxColumnsReached = columnCount >= effectiveMaxColumns;
+
   const handleYearChange = (year: string) => {
     updateFilters({ year, managementDates: [] });
   };
@@ -140,14 +234,6 @@ export function ReportForm() {
       });
     } else {
       updateFilters({ managementDates: [...currentDates, date] });
-    }
-  };
-
-  const handleSelectAllDates = () => {
-    if (filters.managementDates?.length === availableDatesForYear.length) {
-      updateFilters({ managementDates: [] });
-    } else {
-      updateFilters({ managementDates: availableDatesForYear });
     }
   };
 
@@ -168,133 +254,6 @@ export function ReportForm() {
         </h3>
 
         <div className="flex flex-col md:flex-row gap-4 w-full">
-          {/* Farm Filter */}
-          {requiresFilter("farm") && (
-            <div className="space-y-1 flex-1">
-              <Label
-                htmlFor="farm"
-                className="text-[10px] font-bold uppercase text-primary tracking-tight"
-              >
-                Fazenda <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={filters.farmId || ""}
-                onValueChange={handleFarmChange}
-              >
-                <SelectTrigger
-                  id="farm"
-                  className={`w-full h-11 bg-muted/40 border-0 focus:ring-primary ${
-                    getError("farm") ? "border-red-500 bg-red-50/10" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Selecione uma fazenda" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border shadow-xl">
-                  {farms.map((farm) => (
-                    <SelectItem
-                      key={farm.id}
-                      value={farm.id}
-                      className="rounded-lg my-0.5"
-                    >
-                      {farm.farm_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {getError("farm") && (
-                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
-                  <AlertCircle className="h-3.5 w-3.5" />
-                  {getError("farm")}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Sex Filter */}
-          {requiresFilter("sex") && (
-            <div className="space-y-1 md:w-48">
-              <Label
-                htmlFor="sex"
-                className="text-[10px] font-bold uppercase text-primary tracking-tight"
-              >
-                Sexo <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={filters.sex || "Ambos"}
-                onValueChange={(v) => handleSexChange(v as GenderFilterValue)}
-              >
-                <SelectTrigger
-                  id="sex"
-                  className="w-full h-11 bg-muted/40 border-0 focus:ring-primary"
-                >
-                  <SelectValue placeholder="Selecione o sexo" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border shadow-xl">
-                  <SelectItem value="M" className="rounded-lg my-0.5">
-                    Macho
-                  </SelectItem>
-                  <SelectItem value="F" className="rounded-lg my-0.5">
-                    Fêmea
-                  </SelectItem>
-                  <SelectItem value="Ambos" className="rounded-lg my-0.5">
-                    Todos
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {getError("sex") && (
-                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
-                  <AlertCircle className="h-3.5 w-3.5" />
-                  {getError("sex")}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Status Filter */}
-          {requiresFilter("status") && (
-            <div className="space-y-1 md:w-48">
-              <Label
-                htmlFor="status"
-                className="text-[10px] font-bold uppercase text-primary tracking-tight"
-              >
-                Status
-              </Label>
-              <Select
-                value={filters.status || "Todos"}
-                onValueChange={handleStatusChange}
-              >
-                <SelectTrigger
-                  id="status"
-                  className={`w-full h-11 bg-muted/40 border-0 focus:ring-primary ${
-                    getError("status") ? "border-red-500 bg-red-50/10" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Todos os status" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border shadow-xl">
-                  <SelectItem value="Todos" className="rounded-lg my-0.5">
-                    Todos
-                  </SelectItem>
-                  {statuses.map((s) => (
-                    <SelectItem
-                      key={s.id}
-                      value={s.status_name}
-                      className="rounded-lg my-0.5"
-                    >
-                      {s.status_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {getError("status") && (
-                <p className="text-xs text-red-500 flex items-center gap-1.5 px-1">
-                  <AlertCircle className="h-3.5 w-3.5" />
-                  {getError("status")}
-                </p>
-              )}
-            </div>
-          )}
-
           {/* Reproduction Year Filter */}
           {selectedReport.id === "reproduction" && (
             <div className="space-y-1 md:w-32">
@@ -380,7 +339,25 @@ export function ReportForm() {
               </Label>
               <p className="text-[10px] text-muted-foreground italic leading-tight">
                 RGD / RGN é sempre incluída primeiro. Máximo de{" "}
-                {MAX_SELECTABLE_COLUMNS} colunas.
+                {effectiveMaxColumns} colunas
+                {filterColumnsToExclude.length > 0 && (
+                  <span className="text-[9px]">
+                    {" "}
+                    (
+                    {filterColumnsToExclude
+                      .map((c) => {
+                        const names: Record<string, string> = {
+                          farmName: "FAZENDA",
+                          sex: "SEXO",
+                          status: "STATUS",
+                        };
+                        return names[c] || c;
+                      })
+                      .join(", ")}{" "}
+                    não contam quando filtro específico está ativo)
+                  </span>
+                )}
+                .
               </p>
             </div>
             <span
@@ -390,7 +367,7 @@ export function ReportForm() {
                   : "bg-primary/10 text-primary"
               }`}
             >
-              {filters.selectedColumns?.length || 0} / {MAX_SELECTABLE_COLUMNS}
+              {columnCount} / {effectiveMaxColumns}
             </span>
           </div>
 
@@ -403,7 +380,14 @@ export function ReportForm() {
                 filters.selectedColumns?.some(
                   (c) => c.dataKey === column.dataKey
                 ) ?? false;
-              const isDisabled = maxColumnsReached && !isChecked;
+
+              // Filter columns (farmName, sex, status) are never disabled when filterMode is "specific"
+              // because they don't count towards the limit
+              const isFilterColumn = ["farmName", "sex", "status"].includes(
+                column.dataKey
+              );
+              const isDisabled =
+                !isFilterColumn && maxColumnsReached && !isChecked;
 
               return (
                 <div key={column.dataKey} className="flex items-center">
@@ -412,7 +396,7 @@ export function ReportForm() {
                     label={column.header}
                     checked={isChecked}
                     disabled={isDisabled}
-                    onCheckedChange={() => toggleColumn(column)}
+                    onCheckedChange={() => handleColumnToggle(column)}
                   />
                 </div>
               );
@@ -420,6 +404,56 @@ export function ReportForm() {
           </div>
         </div>
       )}
+
+      {/* Filter Modals */}
+      <FarmFilterModal
+        open={farmModalOpen}
+        onOpenChange={setFarmModalOpen}
+        farms={farms}
+        currentFarmId={filters.farmId}
+        currentFilterMode={filters.farmFilterMode || "all"}
+        onConfirm={(farmId, filterMode) => {
+          handleFarmFilterConfirm(farmId, filterMode);
+          const isFarmColumnSelected =
+            filters.selectedColumns?.some((c) => c.dataKey === "farmName") ??
+            false;
+          if (!isFarmColumnSelected) {
+            toggleColumn({ header: "FAZENDA", dataKey: "farmName" });
+          }
+        }}
+      />
+
+      <SexFilterModal
+        open={sexModalOpen}
+        onOpenChange={setSexModalOpen}
+        currentSex={filters.sex}
+        currentFilterMode={filters.sexFilterMode || "all"}
+        onConfirm={(sex, filterMode) => {
+          handleSexFilterConfirm(sex, filterMode);
+          const isSexColumnSelected =
+            filters.selectedColumns?.some((c) => c.dataKey === "sex") ?? false;
+          if (!isSexColumnSelected) {
+            toggleColumn({ header: "SEXO", dataKey: "sex" });
+          }
+        }}
+      />
+
+      <StatusFilterModal
+        open={statusModalOpen}
+        onOpenChange={setStatusModalOpen}
+        statuses={statuses}
+        currentStatus={filters.status}
+        currentFilterMode={filters.statusFilterMode || "all"}
+        onConfirm={(status, filterMode) => {
+          handleStatusFilterConfirm(status, filterMode);
+          const isStatusColumnSelected =
+            filters.selectedColumns?.some((c) => c.dataKey === "status") ??
+            false;
+          if (!isStatusColumnSelected) {
+            toggleColumn({ header: "STATUS", dataKey: "status" });
+          }
+        }}
+      />
 
       <div className="pt-4 flex justify-end">
         <Button
