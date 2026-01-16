@@ -54,14 +54,14 @@ export function ReproductionForm({
 
   const calculateCalvingDates = (
     origin: PregnancyOrigin,
-    dates: Partial<ReproductionEvent>
+    dates: Partial<ReproductionEvent>,
   ) => {
     let startBase: string | undefined;
     let endBase: string | undefined;
 
     switch (origin) {
       case "d0":
-        startBase = endBase = dates.d0_date;
+        startBase = endBase = dates.d10_date;
         break;
       case "resync":
         startBase = endBase = dates.d32_date;
@@ -88,10 +88,10 @@ export function ReproductionForm({
 
     // Natural mating uses +270 for both ends (as per user requested range)
     // Other protocols use +305 for the end date (standard window)
-    const daysToAdd = origin === "natural_mating" ? 270 : 305;
+    const daysToAdd = origin === "natural_mating" ? 280 : 315;
 
     return {
-      calving_start_date: addDays(startBase, 270),
+      calving_start_date: addDays(startBase, 280),
       calving_end_date: addDays(endBase, daysToAdd),
     };
   };
@@ -101,7 +101,7 @@ export function ReproductionForm({
 
     // Parse a data no formato YYYY-MM-DD sem considerar timezone
     const parseDate = (
-      dateStr: string
+      dateStr: string,
     ): { year: number; month: number; day: number } => {
       const [year, month, day] = dateStr.split("-").map(Number);
       return { year, month, day };
@@ -124,12 +124,12 @@ export function ReproductionForm({
     return {
       d8_date: addDays(d0Date, 8),
       d10_date: addDays(d0Date, 10),
-      d22_date: addDays(d0Date, 22),
-      d30_date: addDays(d0Date, 30),
-      d32_date: addDays(d0Date, 32),
-      natural_mating_d35_entry: addDays(d0Date, 35),
-      natural_mating_d80_exit: addDays(d0Date, 80),
-      d110_date: addDays(d0Date, 110),
+      d22_date: addDays(d0Date, 32),
+      d30_date: addDays(d0Date, 40),
+      d32_date: addDays(d0Date, 42),
+      natural_mating_d35_entry: addDays(d0Date, 45),
+      natural_mating_d80_exit: addDays(d0Date, 90),
+      d110_date: addDays(d0Date, 120),
     };
   };
 
@@ -159,7 +159,7 @@ export function ReproductionForm({
         if (newData.pregnancy_origin) {
           const calving = calculateCalvingDates(
             newData.pregnancy_origin,
-            newData
+            newData,
           );
           Object.assign(newData, calving);
         }
