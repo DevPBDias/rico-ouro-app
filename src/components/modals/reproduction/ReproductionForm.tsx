@@ -14,7 +14,6 @@ import {
   ReproductionEvent,
   EventType,
   ReproductionStatus,
-  GestationalStatus,
   OvarySize,
   OvaryStructure,
   CycleStage,
@@ -23,8 +22,6 @@ import {
 } from "@/types/reproduction_event.type";
 import { Loader2 } from "lucide-react";
 import { SemenDoseSelector } from "@/components/doses/SemenDoseSelector";
-import { useUpdateDose } from "@/hooks/db/doses/useUpdateDose";
-import { useSemenDoses } from "@/hooks/db/doses/useSemenDoses";
 
 interface ReproductionFormProps {
   initialData?: Partial<ReproductionEvent>;
@@ -77,46 +74,62 @@ export function ReproductionForm({
 
     if (!startBase || !endBase) return {};
 
-    const startDate = new Date(startBase);
-    const endDate = new Date(endBase);
+    // Função auxiliar para adicionar dias sem problemas de timezone
+    const addDays = (dateStr: string, days: number): string => {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      date.setDate(date.getDate() + days);
 
-    const date270 = new Date(startDate);
-    date270.setDate(date270.getDate() + 270);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    };
 
     // Natural mating uses +270 for both ends (as per user requested range)
     // Other protocols use +305 for the end date (standard window)
-    const dateEnd = new Date(endDate);
-    if (origin === "natural_mating") {
-      dateEnd.setDate(dateEnd.getDate() + 270);
-    } else {
-      dateEnd.setDate(dateEnd.getDate() + 305);
-    }
+    const daysToAdd = origin === "natural_mating" ? 270 : 305;
 
     return {
-      calving_start_date: date270.toISOString().split("T")[0],
-      calving_end_date: dateEnd.toISOString().split("T")[0],
+      calving_start_date: addDays(startBase, 270),
+      calving_end_date: addDays(endBase, daysToAdd),
     };
   };
 
   const calculateDServices = (d0Date: string) => {
     if (!d0Date) return {};
-    const base = new Date(d0Date);
 
-    const addDays = (days: number) => {
-      const d = new Date(base);
-      d.setDate(d.getDate() + days);
-      return d.toISOString().split("T")[0];
+    // Parse a data no formato YYYY-MM-DD sem considerar timezone
+    const parseDate = (
+      dateStr: string
+    ): { year: number; month: number; day: number } => {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return { year, month, day };
+    };
+
+    // Adiciona dias a uma data sem problemas de timezone
+    const addDays = (dateStr: string, days: number): string => {
+      const { year, month, day } = parseDate(dateStr);
+      // Cria data local (sem timezone)
+      const date = new Date(year, month - 1, day);
+      date.setDate(date.getDate() + days);
+
+      // Formata como YYYY-MM-DD usando métodos locais
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
     };
 
     return {
-      d8_date: addDays(8),
-      d10_date: addDays(10),
-      d22_date: addDays(22),
-      d30_date: addDays(30),
-      d32_date: addDays(32),
-      natural_mating_d35_entry: addDays(35),
-      natural_mating_d80_exit: addDays(80),
-      d110_date: addDays(110),
+      d8_date: addDays(d0Date, 8),
+      d10_date: addDays(d0Date, 10),
+      d22_date: addDays(d0Date, 22),
+      d30_date: addDays(d0Date, 30),
+      d32_date: addDays(d0Date, 32),
+      natural_mating_d35_entry: addDays(d0Date, 35),
+      natural_mating_d80_exit: addDays(d0Date, 80),
+      d110_date: addDays(d0Date, 110),
     };
   };
 
@@ -430,9 +443,9 @@ export function ReproductionForm({
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="foliculo">Folículo</SelectItem>
-                  <SelectItem value="corpo_luteo">Corpo Lúteo</SelectItem>
-                  <SelectItem value="cisto">Cisto</SelectItem>
+                  <SelectItem value="Folículo">Folículo</SelectItem>
+                  <SelectItem value="Corpo Lúteo">Corpo Lúteo</SelectItem>
+                  <SelectItem value="Cisto">Cisto</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -508,4 +521,3 @@ export function ReproductionForm({
     </form>
   );
 }
-
