@@ -61,7 +61,7 @@ export function ReproductionForm({
 
     switch (origin) {
       case "d0":
-        startBase = endBase = dates.d10_date;
+        startBase = endBase = dates.d0_date;
         break;
       case "resync":
         startBase = endBase = dates.d32_date;
@@ -86,8 +86,6 @@ export function ReproductionForm({
       return `${y}-${m}-${d}`;
     };
 
-    // Natural mating uses +270 for both ends (as per user requested range)
-    // Other protocols use +305 for the end date (standard window)
     const daysToAdd = origin === "natural_mating" ? 280 : 315;
 
     return {
