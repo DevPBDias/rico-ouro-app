@@ -8,7 +8,11 @@ import React, {
   useCallback,
 } from "react";
 import { MyDatabase } from "@/db/collections";
-import { getDatabase, isDatabaseReady as checkDbReady } from "@/db/client";
+import {
+  getDatabase,
+  isDatabaseReady as checkDbReady,
+  clearAllDatabases,
+} from "@/db/client";
 
 interface RxDBContextType {
   db: MyDatabase | null;
@@ -16,6 +20,7 @@ interface RxDBContextType {
   error: Error | null;
   isReady: boolean;
   retryConnection: () => void;
+  resetDatabase: () => Promise<void>;
 }
 
 const RxDBContext = createContext<RxDBContextType>({
@@ -24,6 +29,7 @@ const RxDBContext = createContext<RxDBContextType>({
   error: null,
   isReady: false,
   retryConnection: () => {},
+  resetDatabase: async () => {},
 });
 
 export const useRxDB = () => {
@@ -66,7 +72,7 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
 
         window.dispatchEvent(
-          new CustomEvent("rxdb-ready", { detail: { database } })
+          new CustomEvent("rxdb-ready", { detail: { database } }),
         );
 
         console.log("[RxDB] Database ready for offline operations");
@@ -77,13 +83,26 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
         setIsReady(false);
       }
     },
-    [db]
+    [db],
   );
 
   const retryConnection = useCallback(() => {
     console.log("[RxDB] Retrying database connection...");
     initDatabase(true);
   }, [initDatabase]);
+
+  const resetDatabase = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await clearAllDatabases();
+      console.log("[RxDB] Database cleared, reloading page...");
+      window.location.reload();
+    } catch (err) {
+      console.error("[RxDB] Failed to reset database:", err);
+      setError(err as Error);
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -115,7 +134,7 @@ export function RxDBProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <RxDBContext.Provider
-      value={{ db, isLoading, error, isReady, retryConnection }}
+      value={{ db, isLoading, error, isReady, retryConnection, resetDatabase }}
     >
       {children}
     </RxDBContext.Provider>
@@ -131,7 +150,7 @@ export function useWaitForDatabase() {
     error,
     isReady,
     query: async <T,>(
-      queryFn: (db: MyDatabase) => Promise<T>
+      queryFn: (db: MyDatabase) => Promise<T>,
     ): Promise<T | null> => {
       if (!db || !isReady) {
         console.warn("[RxDB] Database not ready for query");

@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { useRxDB } from "./RxDBProvider";
 import { useIntelligentPollingSync } from "@/hooks/sync/useIntelligentPollingSync";
+import { useSupabaseRealtimeSync } from "@/hooks/sync/useSupabaseRealtimeSync";
 import { combineLatest } from "rxjs";
 
 interface ReplicationContextType {
@@ -53,11 +54,12 @@ export function ReplicationProvider({
         hasDb: !!db,
         isLoading,
         hasReplications: !!(db as any)?.replications,
-      }
+      },
     );
   }, [db, isLoading]);
 
   useIntelligentPollingSync(db);
+  useSupabaseRealtimeSync(db);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -79,7 +81,7 @@ export function ReplicationProvider({
 
       console.log(
         `📡 [ReplicationProvider] Tracking ${replicationEntries.length} entities:`,
-        Object.keys(replicationsMap)
+        Object.keys(replicationsMap),
       );
 
       if (replicationEntries.length === 0) return;
@@ -105,7 +107,7 @@ export function ReplicationProvider({
               ...prev,
               [name]: { ...prev[name], isSyncing: isActive },
             }));
-          })
+          }),
         );
 
         // Track errors (error$)
@@ -116,30 +118,30 @@ export function ReplicationProvider({
               ...prev,
               [name]: { ...prev[name], error },
             }));
-          })
+          }),
         );
       });
 
       // Global sync status logic
       const activeObservables = replicationEntries.map(
-        ([_, rep]: [string, any]) => rep.active$
+        ([_, rep]: [string, any]) => rep.active$,
       );
       const globalActiveSub = combineLatest(activeObservables).subscribe(
         (actives) => {
           const currentlySyncing = actives.some((a) => a === true);
           setIsSyncing(currentlySyncing);
           if (!currentlySyncing) setLastSyncedAt(new Date());
-        }
+        },
       );
 
       const errorObservables = replicationEntries.map(
-        ([_, rep]: [string, any]) => rep.error$
+        ([_, rep]: [string, any]) => rep.error$,
       );
       const globalErrorSub = combineLatest(errorObservables).subscribe(
         (errors) => {
           const activeErrors = errors.filter((err) => err !== null) as Error[];
           setReplicationErrors(activeErrors);
-        }
+        },
       );
 
       subscriptions.push(globalActiveSub, globalErrorSub);

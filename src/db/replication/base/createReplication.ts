@@ -61,10 +61,23 @@ export function createReplication<T extends ReplicableEntity>(
           const lastId = checkpoint?.last_id || null;
           const effectiveBatchSize = batchSize || pullBatchSize;
 
+          // Subtrai 5 segundos do checkpoint para garantir que não perdemos dados
+          // devido a diferenças de timezone ou timing
+          let safeCheckpointDate = lastModified;
+          try {
+            const checkpointDate = new Date(lastModified);
+            checkpointDate.setSeconds(checkpointDate.getSeconds() - 5);
+            safeCheckpointDate = checkpointDate.toISOString();
+          } catch (e) {
+            // Se falhar, usa o checkpoint original
+            safeCheckpointDate = lastModified;
+          }
+
           console.log(
             `🔽 [${String(collectionName)}] Pulling from Supabase...`,
             {
-              lastModified,
+              originalCheckpoint: lastModified,
+              safeCheckpoint: safeCheckpointDate,
               lastId,
               batchSize: effectiveBatchSize,
             }
@@ -81,11 +94,16 @@ export function createReplication<T extends ReplicableEntity>(
             return { documents: [], checkpoint };
           }
 
-          const encodedDate = encodeURIComponent(lastModified);
+          const encodedDate = encodeURIComponent(safeCheckpointDate);
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
           let url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&updated_at=gte.${encodedDate}`;
+          
+          console.log(
+            `🔗 [${String(collectionName)}] Pull URL:`,
+            url.substring(0, 200) + (url.length > 200 ? "..." : "")
+          );
 
           const response = await fetch(url, { headers });
 

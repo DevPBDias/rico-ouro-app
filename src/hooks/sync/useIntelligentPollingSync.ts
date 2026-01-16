@@ -19,15 +19,22 @@ export function useIntelligentPollingSync(db: MyDatabase | null) {
   const lastSyncTimeRef = useRef<Date>(new Date());
 
   // Intervalos de polling (em ms)
-  const POLLING_INTERVAL_ACTIVE = 10000; // 10 segundos quando app está ativo
-  const POLLING_INTERVAL_INACTIVE = 60000; // 60 segundos quando app está inativo
-  const INITIAL_SYNC_DELAY = 2000; // 2 segundos após inicialização
+  const POLLING_INTERVAL_ACTIVE = 5000; // 5 segundos quando app está ativo (reduzido para testes)
+  const POLLING_INTERVAL_INACTIVE = 30000; // 30 segundos quando app está inativo
+  const INITIAL_SYNC_DELAY = 1000; // 1 segundo após inicialização (reduzido)
 
   useEffect(() => {
     console.log("🔍 [Polling Sync] Hook effect triggered", {
       hasDb: !!db,
-      hasReplications: !!(db as any)?.replications,
-      replicationsKeys: db ? Object.keys((db as any)?.replications || {}) : [],
+      hasReplications: !!(
+        db as MyDatabase & { replications?: Record<string, unknown> }
+      )?.replications,
+      replicationsKeys: db
+        ? Object.keys(
+            (db as MyDatabase & { replications?: Record<string, unknown> })
+              ?.replications || {}
+          )
+        : [],
     });
 
     if (
@@ -37,7 +44,9 @@ export function useIntelligentPollingSync(db: MyDatabase | null) {
     ) {
       console.warn("⚠️ [Polling Sync] DB or replications not ready", {
         db: !!db,
-        replications: !!(db as any)?.replications,
+        replications: !!(
+          db as MyDatabase & { replications?: Record<string, unknown> }
+        )?.replications,
       });
       return;
     }
@@ -59,16 +68,47 @@ export function useIntelligentPollingSync(db: MyDatabase | null) {
       console.log(`🔄 [Polling Sync] Triggering all syncs: ${reason}`, {
         timeSinceLastSync: `${Math.round(timeSinceLastSync / 1000)}s`,
         isAppActive: isAppActiveRef.current,
+        replicationCount: Object.keys(replications).length,
+        replicationNames: Object.keys(replications),
       });
 
+      let syncCount = 0;
+      let errorCount = 0;
+
       Object.entries(replications).forEach(([name, rep]) => {
-        if (rep && typeof rep.reSync === "function") {
-          try {
-            rep.reSync();
-          } catch (error) {
-            console.error(`❌ [Polling Sync] Error syncing ${name}:`, error);
-          }
+        if (!rep) {
+          console.warn(
+            `⚠️ [Polling Sync] Replication ${name} is null/undefined`
+          );
+          return;
         }
+
+        if (typeof rep.reSync !== "function") {
+          console.error(
+            `❌ [Polling Sync] reSync is not a function for ${name}`,
+            { type: typeof rep.reSync, replication: rep }
+          );
+          errorCount++;
+          return;
+        }
+
+        try {
+          console.log(`🔄 [Polling Sync] Calling reSync() for ${name}...`);
+          rep.reSync();
+          syncCount++;
+          console.log(
+            `✅ [Polling Sync] reSync() called successfully for ${name}`
+          );
+        } catch (error) {
+          console.error(`❌ [Polling Sync] Error syncing ${name}:`, error);
+          errorCount++;
+        }
+      });
+
+      console.log(`📊 [Polling Sync] Sync summary:`, {
+        total: Object.keys(replications).length,
+        successful: syncCount,
+        errors: errorCount,
       });
 
       lastSyncTimeRef.current = now;
@@ -95,23 +135,39 @@ export function useIntelligentPollingSync(db: MyDatabase | null) {
       );
 
       pollIntervalRef.current = setInterval(() => {
-        if (isAppActiveRef.current) {
-          console.log("🔄 [Polling Sync] Periodic sync (app active)...");
-          triggerAllSyncs("periodic sync (active)");
-        } else {
-          console.log("🔄 [Polling Sync] Periodic sync (app inactive)...");
-          triggerAllSyncs("periodic sync (inactive)");
-        }
+        const syncReason = isAppActiveRef.current
+          ? "periodic sync (active)"
+          : "periodic sync (inactive)";
+        console.log(`🔄 [Polling Sync] ${syncReason} - interval triggered`);
+        triggerAllSyncs(syncReason);
       }, interval);
+
+      console.log(
+        `✅ [Polling Sync] Polling interval set to ${interval / 1000}s`
+      );
     };
 
     // Sincronização inicial após delay
+    console.log(
+      `⏳ [Polling Sync] Scheduling initial sync in ${INITIAL_SYNC_DELAY}ms...`
+    );
     initialSyncTimeoutRef.current = setTimeout(() => {
       console.log("🔄 [Polling Sync] Initial sync after startup...");
       triggerAllSyncs("initial sync");
       setupPolling();
       initialSyncTimeoutRef.current = null;
     }, INITIAL_SYNC_DELAY);
+
+    // Também força uma sincronização imediata se o banco já estiver pronto
+    // (útil se o hook for chamado depois que o banco já está inicializado)
+    if (Object.keys(replications).length > 0) {
+      console.log(
+        "🔄 [Polling Sync] Replications already available, triggering immediate sync in 500ms..."
+      );
+      setTimeout(() => {
+        triggerAllSyncs("immediate sync (replications ready)");
+      }, 500);
+    }
 
     // Detecta quando app volta ao foreground
     const handleVisibilityChange = () => {

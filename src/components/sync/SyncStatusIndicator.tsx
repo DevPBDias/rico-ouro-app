@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSyncStatus } from "@/hooks/sync/useSyncStatus";
+import { useRxDB } from "@/providers/RxDBProvider";
 import {
   RefreshCw,
   Wifi,
@@ -18,6 +19,7 @@ export function SyncStatusIndicator() {
   const [isExpanded, setIsExpanded] = useState(false);
   const { status, online, isSyncing, triggerSync, lastSyncedAt, errors } =
     useSyncStatus();
+  const { resetDatabase } = useRxDB();
 
   useEffect(() => {
     setIsMounted(true);
@@ -135,6 +137,27 @@ export function SyncStatusIndicator() {
                 className={isSyncing ? "animate-spin" : ""}
               />
               Forçar Sincronização
+            </button>
+
+            <button
+              onClick={() => {
+                if (
+                  confirm(
+                    "Isso apagará todos os dados locais e recarregará o app do zero. Continuar?",
+                  )
+                ) {
+                  resetDatabase();
+                  setIsExpanded(false);
+                }
+              }}
+              disabled={!online}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:text-slate-600 text-slate-300 text-[10px] font-bold rounded-xl transition-all shadow-sm active:scale-95 uppercase tracking-wider border border-slate-700/50"
+            >
+              <RefreshCw
+                size={12}
+                className={isSyncing ? "animate-spin" : ""}
+              />
+              Recriar Banco (Sinc Total)
             </button>
 
             {!online && (
