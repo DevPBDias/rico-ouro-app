@@ -5,7 +5,6 @@ import { useSyncStatus } from "@/hooks/sync/useSyncStatus";
 import { useRxDB } from "@/providers/RxDBProvider";
 import {
   RefreshCw,
-  Wifi,
   WifiOff,
   AlertCircle,
   CheckCircle,
