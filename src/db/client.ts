@@ -195,7 +195,25 @@ export async function clearAllDatabases(): Promise<void> {
 
         if (shouldDelete) {
           console.log(`[RxDB] Purging IndexedDB: ${name}`);
-          window.indexedDB.deleteDatabase(name);
+          await new Promise<void>((resolve, reject) => {
+            const request = window.indexedDB.deleteDatabase(name);
+            request.onsuccess = () => {
+              console.log(`[RxDB] IndexedDB deleted: ${name}`);
+              resolve();
+            };
+            request.onerror = (event) => {
+              console.error("[RxDB] Failed to delete IndexedDB:", name, event);
+              // Mesmo em caso de erro, seguimos para evitar travar o reset
+              resolve();
+            };
+            request.onblocked = () => {
+              console.warn(
+                "[RxDB] Delete blocked for IndexedDB:",
+                name,
+                "- close other tabs if possible."
+              );
+            };
+          });
         }
       }
     } else {
@@ -212,7 +230,14 @@ export async function clearAllDatabases(): Promise<void> {
         "indi_ouro_db_v9",
         "offline-sync-queue",
       ];
-      commonNames.forEach((name) => window.indexedDB.deleteDatabase(name));
+      for (const name of commonNames) {
+        await new Promise<void>((resolve) => {
+          const request = window.indexedDB.deleteDatabase(name);
+          request.onsuccess = () => resolve();
+          request.onerror = () => resolve();
+          request.onblocked = () => resolve();
+        });
+      }
     }
     console.log("[RxDB] Full purge complete.");
   } catch (err) {

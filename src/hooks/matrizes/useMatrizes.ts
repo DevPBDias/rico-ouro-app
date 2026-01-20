@@ -31,7 +31,7 @@ export function useMatrizes() {
       .$.subscribe({
         next: (docs) => {
           const allFemales = docs.map((doc) => doc.toJSON() as Animal);
-          // Filtrar apenas as que têm 25+ meses
+          // Filtrar apenas as que têm 20+ meses
           const matrizesData = allFemales.filter(isMatriz);
           setMatrizes(matrizesData);
           setIsLoading(false);
