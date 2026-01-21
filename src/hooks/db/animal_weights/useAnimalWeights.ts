@@ -23,7 +23,7 @@ export function useAnimalWeights(rgn?: string) {
         _deleted: { $eq: false },
         ...(rgn ? { rgn: { $eq: rgn } } : {}),
       },
-      sort: [{ date: "desc" }],
+      sort: [{ date: "asc" }],
     });
 
     const subscription = query.$.subscribe({

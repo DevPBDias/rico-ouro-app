@@ -31,8 +31,22 @@ export function DetailsWeightList({ weightData, gainDaily }: WeightListProps) {
     if (i === 0) return "0";
 
     const entry = gainDaily.find((g) => g.endDate === weightData[i].date);
-    if (!entry) return "0";
-    return entry.dailyGain.toFixed(2);
+    if (entry) return entry.dailyGain.toFixed(2);
+
+    // Fallback calculation if gainDaily is not provided
+    const current = weightData[i];
+    const previous = weightData[i - 1];
+
+    if (!current.date || !previous.date || !current.value || !previous.value)
+      return "0";
+
+    const days = diffInDays(current.date, previous.date);
+    if (days <= 0) return "0";
+
+    const diffWeight = current.value - previous.value;
+    const gmd = diffWeight / days;
+
+    return gmd.toFixed(2);
   };
 
   return (
@@ -45,7 +59,9 @@ export function DetailsWeightList({ weightData, gainDaily }: WeightListProps) {
           {/* Header Minimalista */}
           <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {i === 0 ? "Peso Nascimento" : `${i}ª Pesagem`}
+              {p.born_metric
+                ? "Peso Nascimento"
+                : `${weightData.slice(0, i + 1).filter((w) => !w.born_metric).length}ª Pesagem`}
             </span>
             <span className="text-xs text-muted-foreground">
               {formatDate(p.date)}

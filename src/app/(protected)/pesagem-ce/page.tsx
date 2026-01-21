@@ -58,37 +58,6 @@ const PesagemPage = () => {
       .filter((option) => option.value);
   }, [dados]);
 
-  const getPesosWithDefault = (): AnimalMetric[] => {
-    if (!pesosMedidos || pesosMedidos.length === 0) {
-      const nascimento = selectedAnimal?.born_date || new Date().toISOString();
-      return [
-        {
-          id: "0",
-          rgn: selectedAnimal?.rgn || "",
-          date: nascimento,
-          value: 0,
-          _deleted: false,
-        },
-      ];
-    }
-    return pesosMedidos;
-  };
-
-  const getCircWithDefault = (): AnimalMetric[] => {
-    if (!circunferenciaEscrotal || circunferenciaEscrotal.length === 0) {
-      const nascimento = selectedAnimal?.born_date || new Date().toISOString();
-      return [
-        {
-          id: "0",
-          rgn: selectedAnimal?.rgn || "",
-          date: nascimento,
-          value: 0,
-          _deleted: false,
-        },
-      ];
-    }
-    return circunferenciaEscrotal;
-  };
 
   const handleAddPeso = async (date: string, valor: number) => {
     setError(null);
@@ -104,6 +73,7 @@ const PesagemPage = () => {
         value: valor,
         born_metric: isBorn,
       });
+      setIsBorn(false);
     } catch (err) {
       console.error("Erro ao adicionar peso:", err);
       setError("Erro ao adicionar peso");
@@ -122,7 +92,9 @@ const PesagemPage = () => {
         rgn: selectedAnimal.rgn,
         date,
         value: valor,
+        born_metric: isBorn,
       });
+      setIsBorn(false);
     } catch (err) {
       console.error("Erro ao adicionar CE:", err);
       setError("Erro ao adicionar CE");
@@ -236,15 +208,22 @@ const PesagemPage = () => {
               onAddPeso={(date, valor) => handleAddPeso(date, valor)}
               isBorn={isBorn}
               setIsBorn={setIsBorn}
+              bornDate={selectedAnimal?.born_date}
             />
           </div>
 
-          <WeightList
-            deletePeso={(id) => handleDeletePeso(id)}
-            editPeso={(id, valor) => handleEditPeso(id, valor)}
-            pesosMedidos={getPesosWithDefault()}
-            gainDaily={[]}
-          />
+          {pesosMedidos.length > 0 ? (
+            <WeightList
+              deletePeso={(id) => handleDeletePeso(id)}
+              editPeso={(id, valor) => handleEditPeso(id, valor)}
+              pesosMedidos={pesosMedidos}
+              gainDaily={[]}
+            />
+          ) : (
+            <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
+              Nenhum peso registrado ainda.
+            </div>
+          )}
         </section>
       )}
       {selectedAnimal && type === "circunferencia" && (
@@ -253,14 +232,26 @@ const PesagemPage = () => {
             <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
               Perímetro Escrotal
             </h2>
-            <AddPesoModal type="circunferencia" onAddPeso={handleAddCE} />
+            <AddPesoModal
+              type="circunferencia"
+              onAddPeso={handleAddCE}
+              isBorn={isBorn}
+              setIsBorn={setIsBorn}
+              bornDate={selectedAnimal?.born_date}
+            />
           </div>
 
-          <CircunfList
-            deleteCE={(id) => handleDeleteCE(id)}
-            editCE={(id, valor) => handleEditCE(id, valor)}
-            CEMedidos={getCircWithDefault()}
-          />
+          {circunferenciaEscrotal.length > 0 ? (
+            <CircunfList
+              deleteCE={(id) => handleDeleteCE(id)}
+              editCE={(id, valor) => handleEditCE(id, valor)}
+              CEMedidos={circunferenciaEscrotal}
+            />
+          ) : (
+            <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
+              Nenhuma medição registrada ainda.
+            </div>
+          )}
         </section>
       )}
     </main>

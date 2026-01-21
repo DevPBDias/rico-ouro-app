@@ -108,7 +108,9 @@ export function WeightList({
           <div className="relative w-full flex flex-col items-start gap-3 border border-gray-400 px-1 py-2.5 rounded-lg">
             <div className="flex flex-col items-start gap-[2px] pl-3">
               <span className="absolute bg-white -top-2 left-2 px-2 text-xs font-semibold text-gray-400">
-                {i === 0 ? "Peso Nascimento" : `${i}° Pesagem`}
+                {p.born_metric
+                  ? "Peso Nascimento"
+                  : `${pesosMedidos.slice(0, i + 1).filter((w) => !w.born_metric).length}ª Pesagem`}
               </span>
               <span className="text-xs font-semibold text-primary mt-1">
                 {formatDate(p.date)}

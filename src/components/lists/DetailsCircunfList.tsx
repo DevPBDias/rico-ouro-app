@@ -35,7 +35,9 @@ export function DetailsCircunfList({ CEMedidos }: DetailsCircunfListProps) {
           {/* Header Minimalista */}
           <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {i === 0 ? "Medição Inicial" : `${i}ª Medição`}
+              {p.born_metric
+                ? "Medição Inicial"
+                : `${CEMedidos.slice(0, i + 1).filter((w) => !w.born_metric).length}ª Medição`}
             </span>
             <span className="text-xs text-muted-foreground">
               {formatDate(p.date)}

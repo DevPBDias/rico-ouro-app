@@ -21,6 +21,7 @@ interface AddPesoModalProps {
   type: "peso" | "circunferencia";
   isBorn?: boolean;
   setIsBorn?: (value: boolean) => void;
+  bornDate?: string;
 }
 
 export function AddPesoModal({
@@ -28,6 +29,7 @@ export function AddPesoModal({
   type,
   isBorn,
   setIsBorn,
+  bornDate,
 }: AddPesoModalProps) {
   const [open, setOpen] = useState(false);
   const [valor, setValor] = useState("");
@@ -112,13 +114,30 @@ export function AddPesoModal({
             <Checkbox
               id="born_metric"
               checked={isBorn}
-              onCheckedChange={(checked) => setIsBorn?.(checked as boolean)}
+              onCheckedChange={(checked) => {
+                const isChecked = checked as boolean;
+                setIsBorn?.(isChecked);
+                if (isChecked && bornDate) {
+                  // Preencher a data com a data de nascimento
+                  // bornDate pode ser DD/MM/YYYY ou ISO
+                  let formattedDate = "";
+                  if (bornDate.includes("/")) {
+                    const [dia, mes, ano] = bornDate.split("/");
+                    formattedDate = `${ano}-${mes}-${dia}`;
+                  } else {
+                    formattedDate = bornDate.split("T")[0];
+                  }
+                  setData(formattedDate);
+                } else {
+                  setData("");
+                }
+              }}
             />
             <Label
               htmlFor="born_metric"
               className="text-base font-semibold text-[#1162AE]"
             >
-              Peso Nascimento?
+              {isPeso ? "Peso Nascimento?" : "Medição Inicial?"}
             </Label>
           </div>
 
