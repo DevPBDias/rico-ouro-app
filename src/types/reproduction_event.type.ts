@@ -12,7 +12,7 @@ export type CycleStage = "estro" | "anestro 1" | "anestro 2";
 
 export type Diagnostic = "prenha" | "vazia";
 
-export type PregnancyOrigin = "d0" | "resync" | "natural_mating";
+export type PregnancyOrigin = "d10" | "resync" | "natural_mating";
 
 export interface ReproductionEvent {
   /** Identification */

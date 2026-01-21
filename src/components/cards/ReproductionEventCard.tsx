@@ -225,7 +225,7 @@ export const ReproductionEventCard = ({
                 value="iatf"
                 className="text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
-                IATF
+                SYNC D10
               </TabsTrigger>
               <TabsTrigger
                 value="resync"
@@ -315,8 +315,7 @@ export const ReproductionEventCard = ({
             <div className="flex items-center gap-1.5 text-primary">
               <ClipboardList size={14} className="stroke-[3]" />
               <h4 className="text-[11px] font-black uppercase tracking-wider">
-                Previsão Parto -{" "}
-                {event.pregnancy_origin || "ORIGEM NÃO INFORMADA"}
+                Previsão Parto
               </h4>
             </div>
             <div className="grid grid-cols-2 gap-2">

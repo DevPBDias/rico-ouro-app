@@ -22,6 +22,7 @@ import {
 } from "@/types/reproduction_event.type";
 import { Loader2 } from "lucide-react";
 import { SemenDoseSelector } from "@/components/doses/SemenDoseSelector";
+import { formatDate } from "@/utils/formatDates";
 
 interface ReproductionFormProps {
   initialData?: Partial<ReproductionEvent>;
@@ -60,8 +61,8 @@ export function ReproductionForm({
     let endBase: string | undefined;
 
     switch (origin) {
-      case "d0":
-        startBase = endBase = dates.d0_date;
+      case "d10":
+        startBase = endBase = dates.d10_date;
         break;
       case "resync":
         startBase = endBase = dates.d32_date;
@@ -141,7 +142,7 @@ export function ReproductionForm({
         Object.assign(newData, dServices);
         // Default origin to d0 if not set
         if (!newData.pregnancy_origin) {
-          newData.pregnancy_origin = "d0";
+          newData.pregnancy_origin = "d10";
         }
       }
 
@@ -195,12 +196,6 @@ export function ReproductionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-primary font-black text-center text-lg uppercase tracking-tight mb-2">
-        {isEdit
-          ? "Editar Evento de Reprodução"
-          : "Cadastrar Evento de Reprodução"}
-      </h2>
-
       {/* Seção Principal */}
       <div className="space-y-4">
         <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
@@ -228,7 +223,7 @@ export function ReproductionForm({
 
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Data D0 (Inseminação)
+              Data D0
             </label>
             <Input
               type="date"
@@ -241,57 +236,10 @@ export function ReproductionForm({
             />
           </div>
         </div>
-
-        <div className="space-y-1 w-full">
-          <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-            Origem da Gestação (Base Parto)
-          </label>
-          <Select
-            value={formData.pregnancy_origin || ""}
-            onValueChange={(val) =>
-              handleChange("pregnancy_origin", val as PregnancyOrigin)
-            }
-          >
-            <SelectTrigger className="bg-muted/40 border-0 h-11 w-full text-sm">
-              <SelectValue placeholder="Selecione a Base" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="d0">Inicial (D10)</SelectItem>
-              <SelectItem value="resync">Resync (D32)</SelectItem>
-              <SelectItem value="natural_mating">
-                Repasse Natural (D35-D80)
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-[10px] text-muted-foreground/80 italic px-1 leading-tight">
-            Define qual data será usada para calcular a previsão de parto (+270
-            a +305 dias).
-          </p>
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1 w-full">
             <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Status Reprodutivo
-            </label>
-            <Select
-              value={formData.productive_status || ""}
-              onValueChange={(v) =>
-                handleChange("productive_status", v as ReproductionStatus)
-              }
-            >
-              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="parida">Parida</SelectItem>
-                <SelectItem value="solteira">Solteira</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1 w-full">
-            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Protocolo
+              Protocolo IATF
             </label>
             <Select
               value={formData.protocol_name || ""}
@@ -301,52 +249,32 @@ export function ReproductionForm({
                 <SelectValue placeholder="Tipo de Protocolo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Protocolo D10">Protocolo D10</SelectItem>
-                <SelectItem value="Protocolo D11">Protocolo D11</SelectItem>
+                <SelectItem value="Sync D10">Sync D10</SelectItem>
+                <SelectItem value="Sync D11">Sync D11</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div className="pt-2">
-          <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-            Touros
-          </h3>
-          <div className="space-y-4">
-            <SemenDoseSelector
-              label="Touro D0"
-              value={formData.bull_name || ""}
-              onValueChange={(name) => handleChange("bull_name", name)}
-              placeholder="Selecione o Touro da IA"
-            />
-
-            <SemenDoseSelector
-              label="Touro Resync (D22)"
-              value={formData.resync_bull || ""}
-              onValueChange={(name) => handleChange("resync_bull", name)}
-              placeholder="Selecione o Touro de Repasse"
-            />
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Touro Monta Natural
-              </label>
-              <Input
-                value={formData.natural_mating_bull || ""}
-                onChange={(e) =>
-                  handleChange("natural_mating_bull", e.target.value)
-                }
-                className="bg-muted/40 border-0 h-11"
-                placeholder="Touro do Campo"
-              />
-            </div>
+          <div className="flex flex-col justify-start gap-2 w-full border border-primary/60 p-2 rounded-md">
+            <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2">
+              Data D8{" "}
+              <span className="text-black text-center text-sm font-normal">
+                {formatDate(formData.d8_date)}
+              </span>
+            </p>
+            <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2 ">
+              Data D10{" "}
+              <span className="text-black text-center text-sm font-normal">
+                {formatDate(formData.d10_date)}
+              </span>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Seção Avaliação Produtiva */}
+      {/* Seção Avaliação Reprodutiva */}
       <div className="space-y-4">
         <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-          Avaliação Produtiva
+          Avaliação Reprodutiva
         </h3>
 
         <div className="space-y-4">
@@ -387,7 +315,7 @@ export function ReproductionForm({
             </div>
             <div className="space-y-1 w-full">
               <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Estágio do Ciclo
+                Estágio do Ciclo Estral
               </label>
               <Select
                 value={formData.cycle_stage || ""}
@@ -399,16 +327,17 @@ export function ReproductionForm({
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="proestro">Proestro</SelectItem>
                   <SelectItem value="estro">Estro</SelectItem>
-                  <SelectItem value="anestro 1">Anestro 1</SelectItem>
-                  <SelectItem value="anestro 2">Anestro 2</SelectItem>
+                  <SelectItem value="metaestro">Metaestro (Cio)</SelectItem>
+                  <SelectItem value="diestro">Diestro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1 w-full">
               <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Tamanho Ovários
+                Tamanho dos Ovários
               </label>
               <Select
                 value={formData.ovary_size || ""}
@@ -429,7 +358,7 @@ export function ReproductionForm({
 
             <div className="space-y-1 w-full">
               <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                Estrutura Ovários
+                Estrutura dos Ovários
               </label>
               <Select
                 value={formData.ovary_structure || ""}
@@ -449,33 +378,120 @@ export function ReproductionForm({
             </div>
           </div>
         </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Status Reprodutivo
+            </label>
+            <Select
+              value={formData.productive_status || ""}
+              onValueChange={(v) =>
+                handleChange("productive_status", v as ReproductionStatus)
+              }
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="parida">Parida</SelectItem>
+                <SelectItem value="solteira">Solteira</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+            Touro sYNC D10 - {formatDate(formData.d10_date)}
+          </h3>
+          <div className="space-y-4">
+            <SemenDoseSelector
+              value={formData.bull_name || ""}
+              onValueChange={(name) => handleChange("bull_name", name)}
+              placeholder="Selecione o Touro da IA"
+            />
+            <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+              Resync / diaganostico gestacional
+            </h3>
+
+            <div className="space-y-1 w-full flex flex-row justify-between">
+              <div className="flex flex-col">
+                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                  Diagnóstico GestaCIONAL (D30) -{" "}
+                  {formatDate(formData.d30_date)}
+                </label>
+                <Select
+                  value={formData.diagnostic_d30 || ""}
+                  onValueChange={(v) =>
+                    handleChange("diagnostic_d30", v as Diagnostic)
+                  }
+                >
+                  <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vazia">Vazia</SelectItem>
+                    <SelectItem value="prenha">Prenha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight p-2 rounded-md flex flex-col items-start gap-2">
+                Data Resync D22{" "}
+                <span className="text-primary text-center text-sm">
+                  {formatDate(formData.d22_date)}
+                </span>
+              </p>
+            </div>
+
+            {formData.diagnostic_d30 === "vazia" && (
+              <div className="space-y-1">
+                <div className="flex justify-between w-full">
+                  <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
+                    Data Resync D30{" "}
+                    <span className="text-primary text-center text-sm">
+                      {formatDate(formData.d30_date)}
+                    </span>
+                  </p>
+                  <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
+                    Data resync IA{" "}
+                    <span className="text-primary text-center text-sm">
+                      {formatDate(formData.d32_date)}
+                    </span>
+                  </p>
+                </div>
+                <SemenDoseSelector
+                  label="Touro Resync"
+                  value={formData.resync_bull || ""}
+                  onValueChange={(name) => handleChange("resync_bull", name)}
+                  placeholder="Selecione o Touro"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Touro Monta Natural
+              </label>
+              <Input
+                value={formData.natural_mating_bull || ""}
+                onChange={(e) =>
+                  handleChange("natural_mating_bull", e.target.value)
+                }
+                className="bg-muted/40 border-0 h-11"
+                placeholder="Selecione o Touro"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Seção Diagnóstico */}
       <div className="space-y-4">
         <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-          Diagnósticos
+          Diagnóstico / Previsão de Parto
         </h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1 w-full">
-            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Diagnóstico D30
-            </label>
-            <Select
-              value={formData.diagnostic_d30 || ""}
-              onValueChange={(val) =>
-                handleChange("diagnostic_d30", val as Diagnostic)
-              }
-            >
-              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                <SelectValue placeholder="Pendente" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prenha">Prenha</SelectItem>
-                <SelectItem value="vazia">Vazia</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-1 w-full">
             <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
               Diagnóstico Final (D110)
@@ -492,6 +508,28 @@ export function ReproductionForm({
               <SelectContent>
                 <SelectItem value="prenha">Prenha</SelectItem>
                 <SelectItem value="vazia">Vazia</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Previsão de Parto a Partir De
+            </label>
+            <Select
+              value={formData.pregnancy_origin || ""}
+              onValueChange={(val) =>
+                handleChange("pregnancy_origin", val as PregnancyOrigin)
+              }
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full text-sm">
+                <SelectValue placeholder="Selecione a Base" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="d10">Sync D10</SelectItem>
+                <SelectItem value="resync">Resync D32</SelectItem>
+                <SelectItem value="natural_mating">
+                  Monta Natural D35-D80
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
