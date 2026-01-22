@@ -22,6 +22,7 @@ interface AddPesoModalProps {
   isBorn?: boolean;
   setIsBorn?: (value: boolean) => void;
   bornDate?: string;
+  lastValue?: number;
 }
 
 export function AddPesoModal({
@@ -30,6 +31,7 @@ export function AddPesoModal({
   isBorn,
   setIsBorn,
   bornDate,
+  lastValue,
 }: AddPesoModalProps) {
   const [open, setOpen] = useState(false);
   const [valor, setValor] = useState("");
@@ -38,6 +40,15 @@ export function AddPesoModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (valor.trim() && data.trim()) {
+      const selectedDate = new Date(data);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // Final do dia de hoje
+
+      if (selectedDate > today) {
+        alert("A data da medição não pode ser no futuro.");
+        return;
+      }
+
       const [ano, mes, dia] = data.split("-");
       const dataFormatada = `${dia}/${mes}/${ano}`;
 
@@ -68,8 +79,13 @@ export function AddPesoModal({
           <DialogTitle className="w-full text-xl text-left font-bold text-[#1162AE]">
             {title}
           </DialogTitle>
-          <DialogDescription className="w-full text-base text-left">
-            {description}
+          <DialogDescription className="w-full text-base text-left flex justify-between items-center">
+            <span>{description}</span>
+            {lastValue !== undefined && lastValue > 0 && (
+              <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold border border-primary/20">
+                LTC: {lastValue} {unit}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,6 +123,7 @@ export function AddPesoModal({
               className="my-2 h-10"
               onChange={(e) => setData(e.target.value)}
               required
+              max={new Date().toISOString().split("T")[0]}
             />
           </div>
 

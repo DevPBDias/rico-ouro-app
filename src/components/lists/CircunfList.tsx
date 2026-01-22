@@ -10,9 +10,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { formatDate } from "@/utils/formatDates";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { SuccessModal } from "@/components/modals/SuccessModal";
 
 interface CircunfListProps {
   CEMedidos: AnimalMetric[];
@@ -24,6 +26,8 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: "" });
+  const [successModal, setSuccessModal] = useState({ open: false, title: "" });
 
   const handleOpen = (id: string, valor: number) => {
     setEditId(id);
@@ -112,7 +116,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => deleteCE(p.id)}
+                onClick={() => setDeleteModal({ open: true, id: p.id })}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -141,7 +145,21 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
                   Cresc.
                 </h4>
                 <div className="flex flex-row gap-1 items-center justify-center">
-                  <span className="uppercase text-sm font-bold text-primary">
+                  <span
+                    className={`uppercase text-sm font-bold flex items-center gap-1 ${
+                      Number(valueGrowth(i)) > 0
+                        ? "text-green-600"
+                        : Number(valueGrowth(i)) < 0
+                          ? "text-red-600"
+                          : "text-primary"
+                    }`}
+                  >
+                    {Number(valueGrowth(i)) > 0 && (
+                      <TrendingUp className="w-3 h-3" />
+                    )}
+                    {Number(valueGrowth(i)) < 0 && (
+                      <TrendingDown className="w-3 h-3" />
+                    )}
                     {valueGrowth(i)}
                   </span>
                   <span className="text-xs text-gray-400">cm</span>
@@ -178,6 +196,23 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmModal
+        open={deleteModal.open}
+        title="Excluir Medição"
+        description="Esta ação não pode ser desfeita. Tem certeza que deseja remover este registro de perímetro escrotal?"
+        onClose={() => setDeleteModal({ open: false, id: "" })}
+        onConfirm={async () => {
+          await deleteCE(deleteModal.id);
+          setDeleteModal({ open: false, id: "" });
+          setSuccessModal({ open: true, title: "Excluído com sucesso!" });
+        }}
+      />
+
+      <SuccessModal
+        open={successModal.open}
+        onClose={() => setSuccessModal({ ...successModal, open: false })}
+        title={successModal.title}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { formatDate, diffInDays } from "@/utils/formatDates";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface GainDaily {
   dailyGain: number;
@@ -97,7 +98,21 @@ export function DetailsWeightList({ weightData, gainDaily }: WeightListProps) {
                     <span className="text-[10px] text-muted-foreground uppercase block">
                       GMD
                     </span>
-                    <span className="text-sm font-medium text-foreground">
+                    <span
+                      className={`text-sm font-medium flex items-center gap-1 ${
+                        Number(valueGmd(i)) > 0
+                          ? "text-green-600"
+                          : Number(valueGmd(i)) < 0
+                            ? "text-red-600"
+                            : "text-foreground"
+                      }`}
+                    >
+                      {Number(valueGmd(i)) > 0 && (
+                        <TrendingUp className="w-3 h-3" />
+                      )}
+                      {Number(valueGmd(i)) < 0 && (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
                       {valueGmd(i)}{" "}
                       <span className="text-muted-foreground font-normal">
                         kg/dia

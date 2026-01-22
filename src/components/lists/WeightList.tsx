@@ -10,9 +10,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { formatDate } from "@/utils/formatDates";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { SuccessModal } from "@/components/modals/SuccessModal";
 
 interface GainDaily {
   dailyGain: number;
@@ -37,19 +39,21 @@ export function WeightList({
 }: WeightListProps) {
   const [open, setOpen] = useState(false);
   const [valorEdit, setValorEdit] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
+  const [selectedPeso, setSelectedPeso] = useState<AnimalMetric | null>(null);
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: "" });
+  const [successModal, setSuccessModal] = useState({ open: false, title: "" });
 
   const handleOpen = (id: string, valor: number) => {
-    setEditId(id);
+    setSelectedPeso(pesosMedidos.find((p) => p.id === id) || null);
     setValorEdit(String(valor));
     setOpen(true);
   };
 
   const handleSave = () => {
-    if (editId !== null) {
-      editPeso(editId, Number(valorEdit));
+    if (selectedPeso !== null) {
+      editPeso(selectedPeso.id, Number(valorEdit));
       setOpen(false);
-      setEditId(null);
+      setSelectedPeso(null);
     }
   };
 
@@ -79,7 +83,7 @@ export function WeightList({
     if (i === 0) return "0";
     const days = diferencaEmDias(
       pesosMedidos[i].date,
-      pesosMedidos[i - 1].date
+      pesosMedidos[i - 1].date,
     );
     return String(days);
   };
@@ -136,7 +140,7 @@ export function WeightList({
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => deletePeso(p.id)}
+                onClick={() => setDeleteModal({ open: true, id: p.id })}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -153,12 +157,26 @@ export function WeightList({
                   <span className="text-xs text-gray-400">dias</span>
                 </div>
               </div>
-              <div className="relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
+              <div className="mt-1 relative flex flex-col items-center justify-center w-20 border border-gray-400 px-1 py-2 rounded-lg">
                 <h4 className="absolute bg-white -top-2 left-2 px-1 text-xs font-semibold text-gray-400">
                   GMD
                 </h4>
                 <div className="flex flex-row gap-1 items-center justify-center">
-                  <span className="uppercase text-sm font-bold text-primary">
+                  <span
+                    className={`uppercase text-sm font-bold flex items-center gap-1 ${
+                      Number(valueGmd(i)) > 0
+                        ? "text-green-600"
+                        : Number(valueGmd(i)) < 0
+                          ? "text-red-600"
+                          : "text-primary"
+                    }`}
+                  >
+                    {Number(valueGmd(i)) > 0 && (
+                      <TrendingUp className="w-3 h-3" />
+                    )}
+                    {Number(valueGmd(i)) < 0 && (
+                      <TrendingDown className="w-3 h-3" />
+                    )}
                     {valueGmd(i)}
                   </span>
                   <span className="text-xs text-gray-400">kg</span>
@@ -190,6 +208,23 @@ export function WeightList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmModal
+        open={deleteModal.open}
+        title="Excluir Pesagem"
+        description="Esta ação não pode ser desfeita. Tem certeza que deseja remover este registro de peso?"
+        onClose={() => setDeleteModal({ open: false, id: "" })}
+        onConfirm={async () => {
+          await deletePeso(deleteModal.id);
+          setDeleteModal({ open: false, id: "" });
+          setSuccessModal({ open: true, title: "Excluído com sucesso!" });
+        }}
+      />
+
+      <SuccessModal
+        open={successModal.open}
+        onClose={() => setSuccessModal({ ...successModal, open: false })}
+        title={successModal.title}
+      />
     </div>
   );
 }

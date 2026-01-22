@@ -7,6 +7,9 @@ import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
 import { WeightList } from "@/components/lists/WeightList";
 import { Button } from "@/components/ui/button";
 import { CircunfList } from "@/components/lists/CircunfList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SuccessModal } from "@/components/modals/SuccessModal";
+import { X } from "lucide-react";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useAnimalWeights } from "@/hooks/db/animal_weights/useAnimalWeights";
@@ -22,8 +25,9 @@ const PesagemPage = () => {
   const { animals: dados } = useAnimals();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
-  const [type, setType] = useState<string>("");
+  const [type, setType] = useState<string>("pesagem");
   const [isBorn, setIsBorn] = useState<boolean>(false);
+  const [successModal, setSuccessModal] = useState({ open: false, title: "" });
 
   // Deriva selectedAnimal diretamente do array reativo (useMemo)
   // Isso garante que a UI sempre mostra os dados mais atuais do RxDB
@@ -36,14 +40,14 @@ const PesagemPage = () => {
   }, [formData.rgn, dados]);
 
   const { weights: pesosMedidos, isLoading: loadingWeights } = useAnimalWeights(
-    selectedAnimal?.rgn
+    selectedAnimal?.rgn,
   );
   const { createWeight } = useCreateAnimalWeight();
   const { updateWeight } = useUpdateAnimalWeight();
   const { deleteWeight } = useDeleteAnimalWeight();
 
   const { metrics: circunferenciaEscrotal, isLoading: loadingCE } = useAnimalCE(
-    selectedAnimal?.rgn
+    selectedAnimal?.rgn,
   );
   const { createCE } = useCreateAnimalCE();
   const { updateCE } = useUpdateAnimalCE();
@@ -57,7 +61,6 @@ const PesagemPage = () => {
       }))
       .filter((option) => option.value);
   }, [dados]);
-
 
   const handleAddPeso = async (date: string, valor: number) => {
     setError(null);
@@ -74,6 +77,7 @@ const PesagemPage = () => {
         born_metric: isBorn,
       });
       setIsBorn(false);
+      setSuccessModal({ open: true, title: "Peso registrado!" });
     } catch (err) {
       console.error("Erro ao adicionar peso:", err);
       setError("Erro ao adicionar peso");
@@ -95,6 +99,7 @@ const PesagemPage = () => {
         born_metric: isBorn,
       });
       setIsBorn(false);
+      setSuccessModal({ open: true, title: "CE registrada!" });
     } catch (err) {
       console.error("Erro ao adicionar CE:", err);
       setError("Erro ao adicionar CE");
@@ -159,101 +164,141 @@ const PesagemPage = () => {
         )}
 
         <div className="flex flex-col justify-start items-start w-full gap-2 relative">
-          <label
-            htmlFor="rgn"
-            className="text-primary font-bold text-sm uppercase w-full text-left"
-          >
-            Animal (RGN):
-          </label>
-          <RgnAutocomplete
-            options={rgnOptions}
-            value={formData.rgn}
-            onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
-          />
+          {!selectedAnimal ? (
+            <div className="w-full animate-in fade-in slide-in-from-top-2 duration-500">
+              <label
+                htmlFor="rgn"
+                className="text-primary font-bold text-xs uppercase block mb-2"
+              >
+                Animal (RGN):
+              </label>
+              <RgnAutocomplete
+                options={rgnOptions}
+                value={formData.rgn}
+                onSelect={(rgn) => setFormData((prev) => ({ ...prev, rgn }))}
+              />
+            </div>
+          ) : (
+            <div className="w-full bg-primary/5 border border-primary/20 p-4 rounded-2xl flex justify-between items-center animate-in zoom-in-95 duration-300 shadow-sm">
+              <div>
+                <span className="text-[10px] font-bold text-foreground/50 uppercase mb-0.5">
+                  Animal Selecionado
+                </span>
+                <p className="text-xl font-black text-primary leading-none">
+                  {selectedAnimal.rgn}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFormData({ rgn: "" })}
+                className="text-destructive/70 hover:text-white hover:bg-destructive h-10 w-10 p-0 rounded-xl transition-all group border border-destructive/10"
+              >
+                <X className="w-5 h-5 group-hover:scale-110" />
+              </Button>
+            </div>
+          )}
         </div>
       </form>
 
       {selectedAnimal && !isLoading && (
-        <div className="w-full px-6 mb-4 flex flex-col items-center gap-2">
-          <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
-            Tipo de Medição
-          </h2>
-          <div className="w-full grid grid-cols-2 gap-4 items-center justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setType("pesagem")}
-              className="text-primary border-primary font-semibold text-sm uppercase w-full"
+        <div className="w-full px-6 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Tabs value={type} onValueChange={setType} className="w-full">
+            <div className="overflow-x-auto pb-1 -mx-2 px-2 scrollbar-hide mb-4">
+              <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 h-auto gap-0.5 border border-border">
+                <TabsTrigger
+                  value="pesagem"
+                  className="flex-1 min-w-[120px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
+                >
+                  Pesagem
+                </TabsTrigger>
+                <TabsTrigger
+                  value="circunferencia"
+                  className="flex-1 min-w-[120px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
+                >
+                  Perím. Escrotal
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent
+              value="pesagem"
+              className="mt-0 ring-offset-background focus-visible:outline-none"
             >
-              Pesagem
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setType("circunferencia")}
-              className="text-primary border-primary font-semibold text-sm uppercase w-full"
+              <section className="w-full">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-primary font-bold text-xs uppercase w-full text-left">
+                    Histórico de Pesos
+                  </h2>
+                  <AddPesoModal
+                    type="peso"
+                    onAddPeso={(date, valor) => handleAddPeso(date, valor)}
+                    isBorn={isBorn}
+                    setIsBorn={setIsBorn}
+                    bornDate={selectedAnimal?.born_date}
+                    lastValue={pesosMedidos[pesosMedidos.length - 1]?.value}
+                  />
+                </div>
+
+                {pesosMedidos.length > 0 ? (
+                  <WeightList
+                    deletePeso={(id) => handleDeletePeso(id)}
+                    editPeso={(id, valor) => handleEditPeso(id, valor)}
+                    pesosMedidos={pesosMedidos}
+                    gainDaily={[]}
+                  />
+                ) : (
+                  <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
+                    Nenhum peso registrado ainda.
+                  </div>
+                )}
+              </section>
+            </TabsContent>
+
+            <TabsContent
+              value="circunferencia"
+              className="mt-0 ring-offset-background focus-visible:outline-none"
             >
-              Perím. Escrotal
-            </Button>
-          </div>
+              <section className="w-full">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-primary font-bold text-xs uppercase w-full text-left">
+                    Histórico de Perímetro
+                  </h2>
+                  <AddPesoModal
+                    type="circunferencia"
+                    onAddPeso={handleAddCE}
+                    isBorn={isBorn}
+                    setIsBorn={setIsBorn}
+                    bornDate={selectedAnimal?.born_date}
+                    lastValue={
+                      circunferenciaEscrotal[circunferenciaEscrotal.length - 1]
+                        ?.value
+                    }
+                  />
+                </div>
+
+                {circunferenciaEscrotal.length > 0 ? (
+                  <CircunfList
+                    deleteCE={(id) => handleDeleteCE(id)}
+                    editCE={(id, valor) => handleEditCE(id, valor)}
+                    CEMedidos={circunferenciaEscrotal}
+                  />
+                ) : (
+                  <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
+                    Nenhuma medição registrada ainda.
+                  </div>
+                )}
+              </section>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
 
-      {selectedAnimal && type === "pesagem" && (
-        <section className="w-full px-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
-              Pesos
-            </h2>
-            <AddPesoModal
-              type="peso"
-              onAddPeso={(date, valor) => handleAddPeso(date, valor)}
-              isBorn={isBorn}
-              setIsBorn={setIsBorn}
-              bornDate={selectedAnimal?.born_date}
-            />
-          </div>
-
-          {pesosMedidos.length > 0 ? (
-            <WeightList
-              deletePeso={(id) => handleDeletePeso(id)}
-              editPeso={(id, valor) => handleEditPeso(id, valor)}
-              pesosMedidos={pesosMedidos}
-              gainDaily={[]}
-            />
-          ) : (
-            <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
-              Nenhum peso registrado ainda.
-            </div>
-          )}
-        </section>
-      )}
-      {selectedAnimal && type === "circunferencia" && (
-        <section className="w-full px-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-primary font-bold text-sm uppercase w-full text-left">
-              Perímetro Escrotal
-            </h2>
-            <AddPesoModal
-              type="circunferencia"
-              onAddPeso={handleAddCE}
-              isBorn={isBorn}
-              setIsBorn={setIsBorn}
-              bornDate={selectedAnimal?.born_date}
-            />
-          </div>
-
-          {circunferenciaEscrotal.length > 0 ? (
-            <CircunfList
-              deleteCE={(id) => handleDeleteCE(id)}
-              editCE={(id, valor) => handleEditCE(id, valor)}
-              CEMedidos={circunferenciaEscrotal}
-            />
-          ) : (
-            <div className="mt-8 text-center text-muted-foreground bg-muted/20 py-8 rounded-xl border border-dashed border-border">
-              Nenhuma medição registrada ainda.
-            </div>
-          )}
-        </section>
-      )}
+      <SuccessModal
+        open={successModal.open}
+        onClose={() => setSuccessModal({ ...successModal, open: false })}
+        title={successModal.title}
+      />
     </main>
   );
 };

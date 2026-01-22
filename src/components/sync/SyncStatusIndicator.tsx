@@ -12,10 +12,12 @@ import {
   ChevronUp,
   Cloud,
 } from "lucide-react";
+import { ConfirmModal } from "../modals/ConfirmModal";
 
 export function SyncStatusIndicator() {
   const [isMounted, setIsMounted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const { status, online, isSyncing, triggerSync, lastSyncedAt, errors } =
     useSyncStatus();
   const { resetDatabase } = useRxDB();
@@ -140,14 +142,7 @@ export function SyncStatusIndicator() {
 
             <button
               onClick={() => {
-                if (
-                  confirm(
-                    "Isso apagará todos os dados locais e recarregará o app do zero. Continuar?",
-                  )
-                ) {
-                  resetDatabase();
-                  setIsExpanded(false);
-                }
+                setIsResetModalOpen(true);
               }}
               disabled={!online}
               className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:text-slate-600 text-slate-300 text-[10px] font-bold rounded-xl transition-all shadow-sm active:scale-95 uppercase tracking-wider border border-slate-700/50"
@@ -167,6 +162,18 @@ export function SyncStatusIndicator() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={isResetModalOpen}
+        title="Recriar Banco de Dados"
+        description="Esta ação apagará todos os dados locais e baixará tudo da nuvem novamente. O aplicativo será reiniciado. Deseja continuar?"
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={async () => {
+          setIsResetModalOpen(false);
+          setIsExpanded(false);
+          await resetDatabase();
+        }}
+        confirmLabel="Recriar"
+      />
     </div>
   );
 }
