@@ -117,12 +117,17 @@ export function AnimalForm({
                     rgn: e.target.value.toUpperCase(),
                   })
                 }
-                disabled={isEditMode}
+                disabled={isEditMode && !formData.rgn.startsWith("N")}
                 placeholder="Ex: 1234"
                 className="py-5 pl-12 bg-muted/50 border-0 rounded-sm focus:ring-2 focus:ring-primary/20 shadow-sm"
                 required
               />
             </div>
+            {isEditMode && formData.rgn.startsWith("T-") && (
+              <p className="text-[10px] text-orange-500 font-medium px-1 mt-1">
+                ID temporário. Você pode alterá-lo para o RGN definitivo agora.
+              </p>
+            )}
           </div>
           <div className="flex flex-col items-start justify-start gap-1.5 w-full">
             <label className="text-xs uppercase font-bold text-primary px-1">

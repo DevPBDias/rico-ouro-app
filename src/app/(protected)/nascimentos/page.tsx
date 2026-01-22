@@ -48,6 +48,8 @@ export default function NascimentosPage() {
     sexo: "",
   });
 
+  const [finalRgnCreated, setFinalRgnCreated] = useState("");
+
   const { createAnimal } = useCreateAnimal();
   const { updateAnimal } = useUpdateAnimal();
   const { createWeight } = useCreateAnimalWeight();
@@ -60,7 +62,7 @@ export default function NascimentosPage() {
     // Validation
     if (formData.rgn.length > 10) {
       setErrorMessage(
-        "O RGN deve ter no máximo 10 caracteres conforme o esquema."
+        "O RGN deve ter no máximo 10 caracteres conforme o esquema.",
       );
       return;
     }
@@ -70,15 +72,25 @@ export default function NascimentosPage() {
       return;
     }
 
+    if (!formData.mae) {
+      setErrorMessage("O RGN da mãe é obrigatório.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // Find mother to inherit farm and update her status
       const mother = animals.find((a) => a.rgn === formData.mae);
 
+      // Generate temporary RGN if blank: N<RGN da mãe>
+      let finalRgn = formData.rgn;
+      if (!finalRgn) finalRgn = `N${formData.mae}`;
+      setFinalRgnCreated(finalRgn);
+
       const newAnimal: Partial<Animal> = {
         serie_rgd: "INDI",
-        rgn: formData.rgn,
+        rgn: finalRgn,
         sex: formData.sexo === "Macho" ? "M" : "F",
         born_date: formData.data,
         born_color: formData.cor,
@@ -89,7 +101,7 @@ export default function NascimentosPage() {
       };
 
       const bornWeightAnimal: Partial<AnimalMetric> = {
-        rgn: formData.rgn,
+        rgn: finalRgn,
         value: Number(formData.peso.replace(",", ".")),
         born_metric: true,
         date: formData.data,
@@ -107,7 +119,7 @@ export default function NascimentosPage() {
           condition: "Parida",
           parturition_from: {
             baby_sex: (formData.sexo === "Macho" ? "M" : "F") as any,
-            baby_rgn: formData.rgn,
+            baby_rgn: finalRgn,
           },
         });
       }
@@ -117,7 +129,7 @@ export default function NascimentosPage() {
       console.error("Erro ao cadastrar nascimento:", error);
       setErrorMessage(
         error?.message ||
-          "Ocorreu um erro ao salvar os dados. Verifique sua conexão e tente novamente."
+          "Ocorreu um erro ao salvar os dados. Verifique sua conexão e tente novamente.",
       );
     } finally {
       setIsSubmitting(false);
@@ -212,10 +224,12 @@ export default function NascimentosPage() {
                         })
                       }
                       className="h-14 pl-12 bg-muted/50 border-0 rounded-xl focus:ring-2 focus:ring-primary/20 shadow-sm"
-                      placeholder="Ex: 1234A"
-                      required
+                      placeholder="Identificação ou deixe em branco"
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground px-1 mt-1">
+                    Deixe em branco para gerar ID temporário baseado na mãe.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -368,7 +382,9 @@ export default function NascimentosPage() {
                 <h3 className="text-foreground text-2xl font-bold">Sucesso!</h3>
                 <p className="text-muted-foreground text-sm">
                   O animal{" "}
-                  <span className="font-bold text-primary">{formData.rgn}</span>{" "}
+                  <span className="font-bold text-primary">
+                    {finalRgnCreated}
+                  </span>{" "}
                   foi cadastrado com sucesso.
                 </p>
               </div>
