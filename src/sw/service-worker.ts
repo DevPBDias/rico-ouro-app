@@ -6,7 +6,7 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v26"; // Forced update for DB v3 reset
+const SCHEMA_VERSION = "v27"; // Forced update for DB v3 reset
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
 
@@ -61,7 +61,7 @@ const APP_SHELL_ASSETS = [
 async function cacheResponse(
   cacheName: string,
   request: Request,
-  response: Response
+  response: Response,
 ): Promise<void> {
   try {
     if (
@@ -103,7 +103,7 @@ async function cacheUrls(urls: string[]): Promise<void> {
 // INSTALAÇÃO - Pré-cache do App Shell
 // ============================================================================
 self.addEventListener("install", (event: ExtendableEvent) => {
-  console.log("Service Worker: Installing v24 (App Shell)...");
+  console.log("Service Worker: Installing v27 (App Shell)...");
 
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
@@ -120,7 +120,7 @@ self.addEventListener("install", (event: ExtendableEvent) => {
       });
 
       await Promise.all(cachePromises);
-    })
+    }),
   );
 
   // Ativa imediatamente sem esperar tabs fecharem
