@@ -68,6 +68,7 @@ export const ReproductionEventCard = ({
   const isPrenha = diagnosticResult === "prenha";
   const isVazia = diagnosticResult === "vazia";
   const hasResult = isPrenha || isVazia;
+  const isD11 = event.protocol_name === "Sync D11";
 
   const months = calculateAgeInMonths(matriz?.born_date);
   const years = Math.floor(months / 12);
@@ -199,7 +200,11 @@ export const ReproductionEventCard = ({
               value={event.cycle_stage || "-"}
             />
             <InfoRow
-              label="DIAGNOSTICO GESTACIONAL (D30)"
+              label={
+                isD11
+                  ? "DIAGNOSTICO GESTACIONAL (D32)"
+                  : "DIAGNOSTICO GESTACIONAL (D30)"
+              }
               value={event.diagnostic_d30 || "Seca"}
             />
             <InfoRow
@@ -225,7 +230,7 @@ export const ReproductionEventCard = ({
                 value="iatf"
                 className="text-[10px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
-                SYNC D10
+                {isD11 ? "SYNC D11" : "SYNC D10"}
               </TabsTrigger>
               <TabsTrigger
                 value="resync"
@@ -248,11 +253,11 @@ export const ReproductionEventCard = ({
                   value={event.d0_date ? formatDate(event.d0_date) : "-"}
                 />
                 <InfoRow
-                  label="Data D8"
+                  label={isD11 ? "Data D9" : "Data D8"}
                   value={event.d8_date ? formatDate(event.d8_date) : "-"}
                 />
                 <InfoRow
-                  label="Data D10"
+                  label={isD11 ? "Data D11" : "Data D10"}
                   value={event.d10_date ? formatDate(event.d10_date) : "-"}
                 />
                 <InfoRow
@@ -266,15 +271,15 @@ export const ReproductionEventCard = ({
             <TabsContent value="resync" className="mt-0">
               <div className="bg-primary/5 p-3 rounded-lg border border-primary/10">
                 <InfoRow
-                  label="Data D0 (D22)"
+                  label={isD11 ? "Data D0 (D23)" : "Data D0 (D22)"}
                   value={event.d22_date ? formatDate(event.d22_date) : "-"}
                 />
                 <InfoRow
-                  label="Data D8 (D30)"
+                  label={isD11 ? "Data D9 (D32)" : "Data D8 (D30)"}
                   value={event.d30_date ? formatDate(event.d30_date) : "-"}
                 />
                 <InfoRow
-                  label="Data D10 (D32)"
+                  label={isD11 ? "Data D11 (D34)" : "Data D10 (D32)"}
                   value={event.d32_date ? formatDate(event.d32_date) : "-"}
                 />
                 <InfoRow
@@ -288,7 +293,7 @@ export const ReproductionEventCard = ({
             <TabsContent value="monta" className="mt-0">
               <div className="bg-primary/5 p-3 rounded-lg border border-primary/10">
                 <InfoRow
-                  label="Data Entrada (D35)"
+                  label={isD11 ? "Data Entrada (D37)" : "Data Entrada (D35)"}
                   value={
                     event.natural_mating_d35_entry
                       ? formatDate(event.natural_mating_d35_entry)
@@ -296,7 +301,7 @@ export const ReproductionEventCard = ({
                   }
                 />
                 <InfoRow
-                  label="Data Saída (D80)"
+                  label={isD11 ? "Data Saída (D82)" : "Data Saída (D80)"}
                   value={
                     event.natural_mating_d80_exit
                       ? formatDate(event.natural_mating_d80_exit)
