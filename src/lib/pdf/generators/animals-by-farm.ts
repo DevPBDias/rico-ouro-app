@@ -6,7 +6,7 @@ import { drawHeader, drawFooter } from "../core/branding-utils";
 
 export const generateAnimalsByFarmPDF = async (
   reportData: AnimalReportData,
-  selectableColumns: TableColumn[]
+  selectableColumns: TableColumn[],
 ) => {
   const doc = new jsPDF({
     orientation: "landscape",
@@ -35,6 +35,11 @@ export const generateAnimalsByFarmPDF = async (
   };
 
   // 2. Preparação de Dados e Colunas
+  // Filtra colunas que são tratadas separadamente pelas flags
+  const filteredSelectableColumns = selectableColumns.filter(
+    (col) => !["farmName", "sex", "status"].includes(col.dataKey),
+  );
+
   // Coluna fixa inicial
   const columns = [
     { header: "RGD RGN", dataKey: "rgdn" },
@@ -46,11 +51,31 @@ export const generateAnimalsByFarmPDF = async (
     ...(reportData.showStatusColumn
       ? [{ header: "STATUS", dataKey: "status" }]
       : []),
-    ...selectableColumns,
+    ...filteredSelectableColumns,
   ];
 
-  // Ordenação RGN Ascendente
+  // Ordenação dinâmica baseada em sortBy
   const sortedData = [...reportData.data].sort((a, b) => {
+    const sortBy = reportData.sortBy || "rgn";
+    
+    if (sortBy === "classification") {
+      // Ordena por classificação (classe) alfabeticamente: A, B, C, D, ... e ?, --- no final
+      const classA = a.classification || "";
+      const classB = b.classification || "";
+
+      // Valores vazios, "?" ou "---" vão para o final
+      const isEmptyA = !classA || classA === "---" || classA === "?";
+      const isEmptyB = !classB || classB === "---" || classB === "?";
+
+      if (isEmptyA && !isEmptyB) return 1; // A vai para o final
+      if (!isEmptyA && isEmptyB) return -1; // B vai para o final
+      if (isEmptyA && isEmptyB) return 0; // Ambos vazios, mantém ordem
+
+      // Ordena alfabeticamente (A, B, C, D, ...)
+      return classA.localeCompare(classB, "pt-BR");
+    }
+    
+    // Padrão: ordenar por RGN ascendente
     const rgnA = a.rgn || "";
     const rgnB = b.rgn || "";
     return rgnA.localeCompare(rgnB, undefined, { numeric: true });
@@ -74,7 +99,7 @@ export const generateAnimalsByFarmPDF = async (
     }
 
     // Adiciona colunas extras selecionadas
-    selectableColumns.forEach((col) => {
+    filteredSelectableColumns.forEach((col) => {
       row[col.dataKey] = item[col.dataKey] ?? "---";
     });
 
@@ -118,4 +143,4 @@ export const generateAnimalsByFarmPDF = async (
     .toLowerCase()
     .replace(/\s+/g, "-")}.pdf`;
   doc.save(filename);
-};
+};;

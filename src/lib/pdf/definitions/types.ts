@@ -29,6 +29,11 @@ export type FilterType =
 export type GenderFilterValue = "M" | "F" | "Ambos";
 
 /**
+ * Sort options for animal report
+ */
+export type AnimalReportSortBy = "rgn" | "classification";
+
+/**
  * Active filters state
  */
 export interface ReportFilters {
@@ -44,6 +49,7 @@ export interface ReportFilters {
   managementDates?: string[]; // Selected d0_dates for reproduction report
   status?: string;
   statusFilterMode?: "all" | "specific"; // "all" para todos (mostra coluna), "specific" para um status (filtra, não mostra)
+  sortBy?: AnimalReportSortBy; // Ordenação do relatório de animais
 }
 
 // =============================================================================

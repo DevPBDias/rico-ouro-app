@@ -1,6 +1,6 @@
 import { TableColumn } from "../types";
 
-export const MAX_SELECTABLE_COLUMNS = 9;
+export const MAX_SELECTABLE_COLUMNS = 10;
 
 export const ANIMAL_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
   { header: "FAZENDA", dataKey: "farmName" },

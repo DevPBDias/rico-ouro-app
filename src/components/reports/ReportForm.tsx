@@ -329,6 +329,51 @@ export function ReportForm() {
           )}
       </div>
 
+      {/* Sorting Option - Only for animals-by-farm report */}
+      {selectedReport.id === "animals-by-farm" && (
+        <div className="space-y-2 pt-2">
+          <Label className="text-[10px] font-bold uppercase text-primary tracking-tight">
+            Ordenar por
+          </Label>
+          <div className="flex gap-3">
+            <label
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                filters.sortBy === "rgn" || !filters.sortBy
+                  ? "bg-primary/10 border-primary text-primary font-bold"
+                  : "bg-muted/40 border-border text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              <input
+                type="radio"
+                name="sortBy"
+                value="rgn"
+                checked={filters.sortBy === "rgn" || !filters.sortBy}
+                onChange={() => updateFilters({ sortBy: "rgn" })}
+                className="sr-only"
+              />
+              <span className="text-xs">RGN</span>
+            </label>
+            <label
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                filters.sortBy === "classification"
+                  ? "bg-primary/10 border-primary text-primary font-bold"
+                  : "bg-muted/40 border-border text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              <input
+                type="radio"
+                name="sortBy"
+                value="classification"
+                checked={filters.sortBy === "classification"}
+                onChange={() => updateFilters({ sortBy: "classification" })}
+                className="sr-only"
+              />
+              <span className="text-xs">Classe</span>
+            </label>
+          </div>
+        </div>
+      )}
+
       {/* Column Selection */}
       {selectedReport.allowColumnSelection && (
         <div className="space-y-4 pt-4 border-t border-border/40">
@@ -378,13 +423,13 @@ export function ReportForm() {
             ).map((column) => {
               const isChecked =
                 filters.selectedColumns?.some(
-                  (c) => c.dataKey === column.dataKey
+                  (c) => c.dataKey === column.dataKey,
                 ) ?? false;
 
               // Filter columns (farmName, sex, status) are never disabled when filterMode is "specific"
               // because they don't count towards the limit
               const isFilterColumn = ["farmName", "sex", "status"].includes(
-                column.dataKey
+                column.dataKey,
               );
               const isDisabled =
                 !isFilterColumn && maxColumnsReached && !isChecked;

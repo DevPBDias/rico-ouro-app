@@ -52,6 +52,7 @@ const initialFilters: ReportFilters = {
   status: "Todos",
   statusFilterMode: undefined,
   managementDates: [],
+  sortBy: "rgn", // Padrão: ordenar por RGN
 };
 
 const initialState: ReportsContextState = {

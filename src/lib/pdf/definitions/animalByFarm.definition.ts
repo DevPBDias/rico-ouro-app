@@ -78,14 +78,15 @@ async function generateAnimalByFarmReport(
     showFarmColumn,
     showSexColumn,
     showStatusColumn,
+    sortBy: filters.sortBy || "rgn", // Ordenação: RGN (padrão) ou Classe
     data: animals.map((animal) => ({
       rgd: animal.serie_rgd || "",
       rgn: animal.rgn || "",
       farmName: showFarmColumn
-        ? (farmMap.get(animal.farm_id || "") || "---")
+        ? farmMap.get(animal.farm_id || "") || "---"
         : undefined,
-      sex: showSexColumn ? (animal.sex || "---") : undefined,
-      status: showStatusColumn ? (animal.status || "---") : undefined,
+      sex: showSexColumn ? animal.sex || "---" : undefined,
+      status: showStatusColumn ? animal.status || "---" : undefined,
       name: animal.name || "---",
       birthDate: animal.born_date
         ? new Date(animal.born_date).toLocaleDateString("pt-BR")

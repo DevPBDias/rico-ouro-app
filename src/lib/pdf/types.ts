@@ -12,6 +12,7 @@ export interface AnimalReportData extends ReportBaseData {
   showFarmColumn?: boolean; // Se true, adiciona coluna FAZENDA após RGN
   showSexColumn?: boolean; // Se true, adiciona coluna SEXO
   showStatusColumn?: boolean; // Se true, adiciona coluna STATUS
+  sortBy?: "rgn" | "classification"; // Ordenação: RGN (padrão) ou Classe
   data: any[];
 }
 
