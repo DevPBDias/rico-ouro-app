@@ -25,13 +25,15 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStatusName, setSelectedStatusName] = useState<string | null>(null);
+  const [selectedStatusNames, setSelectedStatusNames] = useState<string[]>([]);
 
   useEffect(() => {
-    if (selectedAnimal) {
-      setSelectedStatusName(selectedAnimal.status || null);
+    if (selectedAnimal?.status) {
+      setSelectedStatusNames(
+        selectedAnimal.status.split(" / ").filter(Boolean),
+      );
     } else {
-      setSelectedStatusName(null);
+      setSelectedStatusNames([]);
     }
   }, [selectedAnimal]);
 
@@ -42,7 +44,10 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
 
     try {
       await updateAnimal(selectedAnimal.rgn, {
-        status: selectedStatusName || "-",
+        status:
+          selectedStatusNames.length > 0
+            ? selectedStatusNames.join(" / ")
+            : "-",
       });
       setSuccessModalOpen(true);
       onSuccess?.();
@@ -64,9 +69,11 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
   const handleDeleteStatus = async (id: string) => {
     try {
       await deleteStatus(id);
-      const status = statuses.find(s => s.id === id);
-      if (status && selectedStatusName === status.status_name) {
-        setSelectedStatusName(null);
+      const status = statuses.find((s) => s.id === id);
+      if (status && selectedStatusNames.includes(status.status_name)) {
+        setSelectedStatusNames((prev) =>
+          prev.filter((name) => name !== status.status_name),
+        );
       }
     } catch (err) {
       console.error("Erro ao deletar status:", err);
@@ -77,7 +84,9 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
   if (!selectedAnimal) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-6 text-center bg-muted/20 rounded-2xl border-2 border-dashed border-muted">
-        <p className="text-muted-foreground font-medium">Selecione um animal acima para gerenciar seu status.</p>
+        <p className="text-muted-foreground font-medium">
+          Selecione um animal acima para gerenciar seu status.
+        </p>
       </div>
     );
   }
@@ -103,8 +112,8 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
         <StatusSelector
           statuses={statuses}
           loading={isLoading}
-          selectedStatusName={selectedStatusName}
-          onToggle={setSelectedStatusName}
+          selectedStatusNames={selectedStatusNames}
+          onToggle={setSelectedStatusNames}
           onAddClick={() => setAddModalOpen(true)}
           onDeleteClick={() => setDeleteModalOpen(true)}
         />

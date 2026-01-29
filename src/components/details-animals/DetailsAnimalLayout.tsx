@@ -7,7 +7,16 @@ import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines"
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 import { useDeleteAnimalVaccine } from "@/hooks/db/animal_vaccines/useDeleteAnimalVaccine";
-import { Trash2, Syringe, Calendar, AlertCircle } from "lucide-react";
+import {
+  Trash2,
+  Syringe,
+  Calendar,
+  AlertCircle,
+  LineChart,
+  ClipboardList,
+  VenusAndMars,
+  RulerDimensionLine,
+} from "lucide-react";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
@@ -22,6 +31,15 @@ import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { DetailsCircunfList } from "@/components/lists/DetailsCircunfList";
 import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
 
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
+import { Accordion } from "@/components/ui/accordion";
+import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
+import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
+import { ReproductionEvent } from "@/types/reproduction_event.type";
+import { ReproductionEventCard } from "../cards/ReproductionEventCard";
+
 const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
   const { animal, isLoading: animalLoading } = useAnimalById(rgn);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(rgn);
@@ -32,13 +50,39 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
   const { farms } = useFarms();
   const getMonths = getAgeMonths(animal?.born_date);
   const { weights, isLoading: weightsLoading } = useAnimalWeights(
-    rgn ?? undefined
+    rgn ?? undefined,
   );
   const { metrics: ceMetrics, isLoading: ceLoading } = useAnimalCE(
-    rgn ?? undefined
+    rgn ?? undefined,
+  );
+  const { events: reproductionEvents, isLoading: reproductionLoading } =
+    useReproductionEvents(rgn);
+
+  const [activeTab, setActiveTab] = useState("dados");
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<ReproductionEvent | null>(
+    null,
+  );
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<ReproductionEvent | null>(
+    null,
   );
 
   const [vaccineToDelete, setVaccineToDelete] = useState<string | null>(null);
+
+  const handleEditReproduction = (event: ReproductionEvent) => {
+    setEventToEdit(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteReproduction = (eventId: string) => {
+    const event = reproductionEvents.find((e) => e.event_id === eventId);
+    if (event) {
+      setEventToDelete(event);
+      setIsDeleteModalOpen(true);
+    }
+  };
 
   const handleDeleteVaccine = async (vaccineId: string) => {
     try {
@@ -89,32 +133,63 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
       <div className="flex-1 overflow-y-auto w-full">
         <div className="space-y-3 mt-2 w-full">
           <div>
-            <Tabs defaultValue="dados" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-2 h-auto gap-1 shadow-sm">
-                <TabsTrigger
-                  value="dados"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Dados</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="vaccines"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Vacinas</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="pesagem-ce-list"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Medidas</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="graphics"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Gráficos</span>
-                </TabsTrigger>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="h-auto gap-2 rounded-xl p-1 bg-gradient-to-r from-muted/50 to-muted/30 shadow-sm mb-4 flex w-full">
+                {[
+                  { value: "dados", label: "Dados", icon: ClipboardList },
+                  { value: "vaccines", label: "Vacinas", icon: Syringe },
+                  {
+                    value: "pesagem-ce-list",
+                    label: "Medidas",
+                    icon: RulerDimensionLine,
+                  },
+                  { value: "reproduction", label: "Repro", icon: VenusAndMars },
+                  { value: "graphics", label: "Gráficos", icon: LineChart },
+                ].map(({ value, label, icon: Icon }) => {
+                  const isActive = activeTab === value;
+
+                  return (
+                    <TabsTrigger
+                      key={value}
+                      value={value}
+                      asChild
+                      className="p-0 border-none bg-transparent data-[state=active]:bg-transparent shadow-none"
+                    >
+                      <motion.div
+                        layout
+                        className={cn(
+                          "flex h-9 items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all duration-300",
+                          isActive
+                            ? "flex-1 !bg-[#1162ae] !text-primary-foreground shadow-none border-none"
+                            : "flex-none text-muted-foreground hover:bg-muted/50",
+                        )}
+                        animate={{
+                          width: isActive ? 90 : 40,
+                        }}
+                      >
+                        <motion.div className="flex h-9 w-full items-center justify-center px-2 gap-2">
+                          <Icon className="aspect-square size-5 shrink-0" />
+                          <AnimatePresence initial={false}>
+                            {isActive && (
+                              <motion.span
+                                className="font-semibold text-[11px] uppercase whitespace-nowrap"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                              >
+                                {label}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+                      </motion.div>
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
               <TabsContent
@@ -277,13 +352,13 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                           Classificação
                         </h3>
-                        <div className="grid grid-cols-4 justify-between items-center w-full">
+                        <div className="grid grid-cols-4 justify-between items-start w-full">
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[11px] text-gray-500 uppercase block">
                               Classe
                             </span>
                             <span className="text-sm font-semibold text-primary">
-                              {animal?.classification}
+                              {animal?.classification || "-"}
                             </span>
                           </div>
 
@@ -291,9 +366,18 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                             <span className="text-[11px] text-gray-500 uppercase">
                               Status
                             </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {animal?.status}
-                            </span>
+                            <div className="flex flex-col">
+                              {animal?.status?.split(" / ").map((s, idx) => (
+                                <span
+                                  key={idx}
+                                  className={cn(
+                                    "font-semibold text-primary truncate max-w-[80px] text-xs",
+                                  )}
+                                >
+                                  - {s}
+                                </span>
+                              )) || "-"}
+                            </div>
                           </div>
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[10px] text-gray-500 uppercase">
@@ -325,7 +409,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                 <div className="space-y-3">
                   {(() => {
                     const vaccineMap = new Map(
-                      vaccines.map((v) => [v.id, v.vaccine_name])
+                      vaccines.map((v) => [v.id, v.vaccine_name]),
                     );
 
                     const vaccinesWithNames = animalVaccines
@@ -532,10 +616,68 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   </TabsContent>
                 </Tabs>
               </TabsContent>
+              <TabsContent
+                value="reproduction"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                {reproductionEvents.length > 0 ? (
+                  <div className="space-y-6">
+                    {reproductionEvents.map((event) => (
+                      <Accordion
+                        key={event.event_id}
+                        type="single"
+                        collapsible
+                        className="w-full"
+                      >
+                        <ReproductionEventCard
+                          event={event}
+                          matriz={animal as any}
+                          onEdit={handleEditReproduction}
+                          onDelete={handleDeleteReproduction}
+                        />
+                      </Accordion>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                    <p className="text-muted-foreground text-sm">
+                      Nenhum evento de reprodução registrado
+                    </p>
+                    <Link
+                      className="bg-primary text-primary-foreground text-center py-2.5 px-6 uppercase text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
+                      href="/reproducao"
+                    >
+                      + Novo Evento
+                    </Link>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
+
+      {eventToEdit && (
+        <EditReproductionModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEventToEdit(null);
+          }}
+          event={eventToEdit}
+        />
+      )}
+
+      {eventToDelete && (
+        <DeleteReproductionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setEventToDelete(null);
+          }}
+          event={eventToDelete}
+        />
+      )}
     </main>
   );
 };

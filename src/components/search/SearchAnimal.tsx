@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ArrowLeft, Plus, Edit2 } from "lucide-react";
+import { Search, ArrowLeft, Plus, Edit2, Edit } from "lucide-react";
 import { Input } from "../ui/input";
 import { useMemo, useState } from "react";
 import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
@@ -23,7 +23,7 @@ function SearchAnimal() {
     if (!query) return [];
 
     const exactMatch = animals.find(
-      (animal) => animal.rgn?.toLowerCase() === query
+      (animal) => animal.rgn?.toLowerCase() === query,
     );
     if (exactMatch) return [exactMatch];
 
@@ -58,26 +58,27 @@ function SearchAnimal() {
   if (showDetails && selectedAnimal) {
     return (
       <section className="px-4 py-4">
-        <button
-          onClick={handleBackToSearch}
-          className="flex items-center text-[#1162AE] font-medium hover:underline mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Voltar para busca
-        </button>
-
         <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
-          <p className="text-sm text-primary font-semibold">
-            {selectedAnimal.serie_rgd} {selectedAnimal.rgn}
-          </p>
+          <div className="flex items-center gap-6">
+            <Button
+              onClick={handleBackToSearch}
+              variant="outline"
+              className="flex items-center text-primary font-semibold bg-transparent border-primary/20"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Buscar RGN
+            </Button>
+            <p className="text-2xl text-primary font-black">
+              {selectedAnimal.serie_rgd} {selectedAnimal.rgn}
+            </p>
+          </div>
           <Button
             onClick={() => setIsEditModalOpen(true)}
             variant="outline"
             className="p-2 rounded-sm bg-transparent text-primary transition-colors border-primary/20"
             title="Editar dados cadastrais"
           >
-            <Edit2 className="w-4 h-4" />
-            Editar
+            <Edit className="w-4 h-4" />
           </Button>
         </div>
 

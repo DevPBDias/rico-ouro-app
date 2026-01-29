@@ -6,7 +6,15 @@ import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines"
 import { useVaccines } from "@/hooks/db/vaccines/useVaccines";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 import { useDeleteAnimalVaccine } from "@/hooks/db/animal_vaccines/useDeleteAnimalVaccine";
-import { Trash2, Syringe, Calendar, AlertCircle } from "lucide-react";
+import {
+  Trash2,
+  Syringe,
+  Calendar,
+  AlertCircle,
+  ClipboardList,
+  Scale,
+  Heart,
+} from "lucide-react";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
@@ -25,6 +33,9 @@ import { DeleteReproductionModal } from "@/components/modals/reproduction/Delete
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { ReproductionEventCard } from "../cards/ReproductionEventCard";
 
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+
 const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { matriz, isLoading: matrizLoading } = useMatrizById(rgn);
   const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(rgn);
@@ -35,18 +46,20 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
   const { farms } = useFarms();
   const getMonths = getAgeMonths(matriz?.born_date);
   const { weights, isLoading: weightsLoading } = useAnimalWeights(
-    rgn ?? undefined
+    rgn ?? undefined,
   );
   const { events: reproductionEvents, isLoading: reproductionLoading } =
     useReproductionEvents(rgn);
 
+  const [activeTab, setActiveTab] = useState("dados");
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<ReproductionEvent | null>(
-    null
+    null,
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<ReproductionEvent | null>(
-    null
+    null,
   );
 
   const [vaccineToDelete, setVaccineToDelete] = useState<string | null>(null);
@@ -96,7 +109,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
     const sortedWeights = [...weights].sort(
       (a, b) =>
         (parseToDate(a.date)?.getTime() || 0) -
-        (parseToDate(b.date)?.getTime() || 0)
+        (parseToDate(b.date)?.getTime() || 0),
     );
 
     return sortedWeights
@@ -105,7 +118,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
         const previous = sortedWeights[index - 1];
 
         const diffTime = Math.abs(
-          new Date(current.date).getTime() - new Date(previous.date).getTime()
+          new Date(current.date).getTime() - new Date(previous.date).getTime(),
         );
         const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -142,32 +155,68 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
       <div className="flex-1 overflow-y-auto w-full">
         <div className="space-y-3 w-full">
           <div>
-            <Tabs defaultValue="dados" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-2 h-auto gap-1 shadow-sm">
-                <TabsTrigger
-                  value="dados"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Dados</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="vaccines"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Vacinas</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="pesagem-list"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase">Pesagem</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="reproduction"
-                  className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <span className="uppercase text-[11px]">Reprodução</span>
-                </TabsTrigger>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="h-auto gap-2 rounded-xl p-1 bg-gradient-to-r from-muted/50 to-muted/30 shadow-sm mb-4 flex w-full">
+                {[
+                  { value: "dados", label: "Dados", icon: ClipboardList },
+                  { value: "vaccines", label: "Vacinas", icon: Syringe },
+                  { value: "pesagem-list", label: "Pesagem", icon: Scale },
+                  { value: "reproduction", label: "Repro", icon: Heart },
+                ].map(({ value, label, icon: Icon }) => {
+                  const isActive = activeTab === value;
+
+                  return (
+                    <TabsTrigger
+                      key={value}
+                      value={value}
+                      asChild
+                      className="p-0 border-none bg-transparent data-[state=active]:bg-transparent shadow-none"
+                    >
+                      <motion.div
+                        layout
+                        className={cn(
+                          "flex h-9 items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all duration-200",
+                          isActive
+                            ? "flex-1 !bg-[#1162ae] !text-primary-foreground shadow-none border-none"
+                            : "flex-none text-muted-foreground hover:bg-muted/50",
+                        )}
+                        animate={{
+                          width: isActive ? 110 : 40,
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 60,
+                          damping: 15,
+                        }}
+                      >
+                        <motion.div className="flex h-9 w-full items-center justify-center px-2 gap-2">
+                          <Icon className="aspect-square size-5 shrink-0" />
+                          <AnimatePresence initial={false}>
+                            {isActive && (
+                              <motion.span
+                                className="font-semibold text-[11px] uppercase whitespace-nowrap"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                  duration: 0.6,
+                                  ease: "easeInOut",
+                                  delay: 0.1,
+                                }}
+                              >
+                                {label}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+                      </motion.div>
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
 
               <TabsContent
@@ -341,9 +390,21 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                             <span className="text-[11px] text-gray-500 uppercase">
                               Status
                             </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {matriz?.status}
-                            </span>
+                            <div className="flex flex-col">
+                              {matriz?.status?.split(" / ").map((s, idx) => (
+                                <span
+                                  key={idx}
+                                  className={cn(
+                                    "font-semibold text-primary truncate max-w-[80px]",
+                                    matriz.status.includes("/")
+                                      ? "text-[10px] leading-tight"
+                                      : "text-sm",
+                                  )}
+                                >
+                                  {s}
+                                </span>
+                              )) || "-"}
+                            </div>
                           </div>
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[10px] text-gray-500 uppercase">
@@ -375,7 +436,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                 <div className="space-y-3">
                   {(() => {
                     const vaccineMap = new Map(
-                      vaccines.map((v) => [v.id, v.vaccine_name])
+                      vaccines.map((v) => [v.id, v.vaccine_name]),
                     );
 
                     const vaccinesWithNames = animalVaccines

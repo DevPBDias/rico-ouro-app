@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Animal } from "@/types/animal.type";
 import { useFarms } from "@/hooks/db/farms/useFarms";
 import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 interface SearchCardProps {
   animal: Animal;
@@ -65,7 +66,9 @@ export default function SearchCard({
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
                 Status
               </span>
-              <span className="text-sm font-medium text-primary">
+              <span
+                className={cn("font-medium text-primary uppercase text-xs")}
+              >
                 {animal?.status}
               </span>
             </div>

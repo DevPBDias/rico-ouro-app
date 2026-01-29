@@ -7,8 +7,8 @@ import { AnimalStatus } from "@/types/status.type";
 interface StatusSelectorProps {
   statuses: AnimalStatus[];
   loading: boolean;
-  selectedStatusName: string | null;
-  onToggle: (name: string | null) => void;
+  selectedStatusNames: string[];
+  onToggle: (names: string[]) => void;
   onAddClick: () => void;
   onDeleteClick: () => void;
 }
@@ -16,7 +16,7 @@ interface StatusSelectorProps {
 export function StatusSelector({
   statuses,
   loading,
-  selectedStatusName,
+  selectedStatusNames,
   onToggle,
   onAddClick,
   onDeleteClick,
@@ -39,7 +39,7 @@ export function StatusSelector({
       <StatusCheckboxList
         statuses={statuses}
         loading={loading}
-        selected={selectedStatusName}
+        selected={selectedStatusNames}
         onToggle={onToggle}
       />
     </div>
