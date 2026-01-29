@@ -6,7 +6,7 @@ declare const self: ServiceWorkerGlobalScope;
 // ============================================================================
 // CONFIGURAÇÃO - Versão e nomes de cache
 // ============================================================================
-const SCHEMA_VERSION = "v27"; // Forced update for DB v3 reset
+const SCHEMA_VERSION = "v28"; // Increment for /calendario and eye-soft animation updates
 const CACHE_NAME = `rico-ouro-cache-${SCHEMA_VERSION}`;
 const API_CACHE_NAME = `rico-ouro-api-${SCHEMA_VERSION}`;
 
@@ -35,6 +35,7 @@ const APP_SHELL_ASSETS = [
   "/reproducao",
   "/vacinas",
   "/nascimentos",
+  "/calendario",
   "/pesagem-ce",
   "/importar",
   "/importar/planilhas",
