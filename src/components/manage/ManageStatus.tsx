@@ -30,7 +30,9 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
   useEffect(() => {
     if (selectedAnimal?.status) {
       setSelectedStatusNames(
-        selectedAnimal.status.split(" / ").filter(Boolean),
+        selectedAnimal.status
+          .split(" / ")
+          .filter((s) => s && s !== "-" && s !== "Nenhum"),
       );
     } else {
       setSelectedStatusNames([]);
@@ -105,7 +107,11 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
             Status Atual:
           </span>
           <span className="text-base font-black text-primary uppercase">
-            {selectedAnimal.status || "Nenhum"}
+            {selectedAnimal.status &&
+            selectedAnimal.status !== "-" &&
+            selectedAnimal.status !== "Nenhum"
+              ? selectedAnimal.status
+              : "Nenhum"}
           </span>
         </div>
 

@@ -41,9 +41,6 @@ export function AnimalForm({
   initialData,
   title,
 }: AnimalFormProps) {
-  const { farms, isLoading: loadingFarms } = useFarms();
-  const { statuses, isLoading: loadingStatuses } = useStatuses();
-
   const [formData, setFormData] = useState({
     rgn: initialData?.rgn || "",
     serie_rgd: initialData?.serie_rgd || "INDI",
@@ -56,8 +53,8 @@ export function AnimalForm({
     maternal_grandfather_name: initialData?.maternal_grandfather_name || "",
     paternal_grandfather_name: initialData?.paternal_grandfather_name || "",
     farm_id: initialData?.farm_id || "",
-    status: initialData?.status || "Ativo",
-    genotyping: initialData?.genotyping || "Não",
+    status: initialData?.status || "",
+    genotyping: initialData?.genotyping || "-",
   });
 
   // Update form if initialData changes (useful for modals)
@@ -76,8 +73,8 @@ export function AnimalForm({
         maternal_grandfather_name: initialData.maternal_grandfather_name || "",
         paternal_grandfather_name: initialData.paternal_grandfather_name || "",
         farm_id: initialData.farm_id || "",
-        status: initialData.status || "Ativo",
-        genotyping: initialData.genotyping || "Não",
+        status: initialData.status || "",
+        genotyping: initialData.genotyping || "",
       });
     }
   }, [initialData, initialSex]);

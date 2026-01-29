@@ -71,7 +71,7 @@ export default function CadastroAnimalPage() {
             onClick={handleCloseModal}
           />
 
-          <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <div className="fixed inset-0 z-60 flex items-center justify-center px-4">
             <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl p-8 w-full max-w-sm flex flex-col items-center gap-6 animate-in zoom-in-95 duration-300">
               <div className="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center">
                 <CheckCircle2
