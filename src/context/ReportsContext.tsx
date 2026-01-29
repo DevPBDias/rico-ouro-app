@@ -15,6 +15,10 @@ import {
   GenderFilterValue,
 } from "@/lib/pdf/definitions/types";
 import { animalByFarmDefinition } from "@/lib/pdf/definitions/animalByFarm.definition";
+import {
+  DEFAULT_SELECTED_COLUMNS,
+  REPRODUCTION_DEFAULT_COLUMNS,
+} from "@/lib/pdf/definitions/availableColumns";
 import { TableColumn } from "@/lib/pdf/types";
 
 interface ReportsContextState {
@@ -28,7 +32,7 @@ interface ReportsContextActions {
   selectReport: (report: ReportDefinition) => void;
   updateFilter: <K extends keyof ReportFilters>(
     key: K,
-    value: ReportFilters[K]
+    value: ReportFilters[K],
   ) => void;
   updateFilters: (updates: Partial<ReportFilters>) => void;
   toggleColumn: (column: TableColumn) => void;
@@ -47,12 +51,16 @@ const initialFilters: ReportFilters = {
   sexFilterMode: undefined,
   startDate: undefined,
   endDate: undefined,
-  selectedColumns: [],
+  selectedColumns: DEFAULT_SELECTED_COLUMNS,
   year: undefined,
   status: "Todos",
   statusFilterMode: undefined,
   managementDates: [],
   sortBy: "rgn", // Padrão: ordenar por RGN
+  classes: [],
+  classFilterMode: undefined,
+  society: undefined,
+  societyFilterMode: undefined,
 };
 
 const initialState: ReportsContextState = {
@@ -78,7 +86,7 @@ interface ReportsProviderProps {
 
 export function ReportsProvider({ children }: ReportsProviderProps) {
   const [selectedReport, setSelectedReport] = useState<ReportDefinition | null>(
-    animalByFarmDefinition
+    animalByFarmDefinition,
   );
   const [filters, setFilters] = useState<ReportFilters>(initialFilters);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -88,7 +96,17 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
 
   const selectReport = useCallback((report: ReportDefinition) => {
     setSelectedReport(report);
-    setFilters(initialFilters); // Reset filters when selecting new report
+
+    // Set default columns based on report type
+    const defaultCols =
+      report.id === "reproduction"
+        ? REPRODUCTION_DEFAULT_COLUMNS
+        : DEFAULT_SELECTED_COLUMNS;
+
+    setFilters({
+      ...initialFilters,
+      selectedColumns: defaultCols,
+    });
     setValidationErrors([]);
   }, []);
 
@@ -98,7 +116,7 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       // Clear validation errors when user changes a filter
       setValidationErrors([]);
     },
-    []
+    [],
   );
 
   const updateFilters = useCallback((updates: Partial<ReportFilters>) => {
@@ -116,7 +134,7 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
         return {
           ...prev,
           selectedColumns: currentColumns.filter(
-            (c) => c.dataKey !== column.dataKey
+            (c) => c.dataKey !== column.dataKey,
           ),
         };
       } else {
@@ -194,7 +212,7 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       validateFilters,
       generateReport,
       reset,
-    ]
+    ],
   );
 
   return (

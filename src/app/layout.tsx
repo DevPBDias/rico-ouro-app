@@ -5,6 +5,7 @@ import "./globals.css";
 import ServiceWorkerUpdater from "@/components/sync/ServiceWorkerUpdater";
 import RegisterSW from "@/components/sync/RegisterSW";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
+import { CalendarNavigation } from "@/components/calendar/CalendarNavigation";
 import { LocalFirstProvider } from "@/providers";
 
 export const metadata: Metadata = {

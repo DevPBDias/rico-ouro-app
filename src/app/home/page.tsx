@@ -10,6 +10,7 @@ import logoIndiouro from "@/assets/icons/logo_home.png";
 import abczLogo from "@/assets/icons/ABCZ.png";
 import pmgzLogo from "@/assets/icons/PMGZ.png";
 import cowModel from "@/assets/images/cow_model.png";
+import { CalendarNavigation } from "@/components/calendar/CalendarNavigation";
 
 const HomePage = () => {
   return (
@@ -75,6 +76,7 @@ const HomePage = () => {
             />
           </div>
         </div>
+        <CalendarNavigation />
       </motion.main>
     </ProtectedClient>
   );

@@ -27,6 +27,8 @@ import { ReportCheckboxItem } from "@/components/relatorios/ReportCheckboxItem";
 import { FarmFilterModal } from "./FarmFilterModal";
 import { SexFilterModal } from "./SexFilterModal";
 import { StatusFilterModal } from "./StatusFilterModal";
+import { ClassFilterModal } from "./ClassFilterModal";
+import { SocietyFilterModal } from "./SocietyFilterModal";
 import { TableColumn } from "@/lib/pdf/types";
 
 export function ReportForm() {
@@ -49,6 +51,8 @@ export function ReportForm() {
   const [farmModalOpen, setFarmModalOpen] = React.useState(false);
   const [sexModalOpen, setSexModalOpen] = React.useState(false);
   const [statusModalOpen, setStatusModalOpen] = React.useState(false);
+  const [classModalOpen, setClassModalOpen] = React.useState(false);
+  const [societyModalOpen, setSocietyModalOpen] = React.useState(false);
 
   // Filter animals by selected farm (or all if no farm selected or filterMode is "all")
   const farmAnimals = useMemo(() => {
@@ -60,7 +64,7 @@ export function ReportForm() {
 
   const farmAnimalRgns = useMemo(
     () => new Set(farmAnimals.map((a) => a.rgn)),
-    [farmAnimals]
+    [farmAnimals],
   );
 
   // Filter events by farm animals (or all if no farm selected or filterMode is "all")
@@ -78,10 +82,10 @@ export function ReportForm() {
         new Set(
           farmEvents
             .filter((e) => e.d0_date)
-            .map((e) => e.d0_date.split("-")[0])
-        )
+            .map((e) => e.d0_date.split("-")[0]),
+        ),
       ).sort((a, b) => b.localeCompare(a)),
-    [farmEvents]
+    [farmEvents],
   );
 
   // Available Dates for the selected Year and Farm
@@ -90,12 +94,20 @@ export function ReportForm() {
       farmEvents
         .filter(
           (e) =>
-            e.d0_date && (!filters.year || e.d0_date.startsWith(filters.year))
+            e.d0_date && (!filters.year || e.d0_date.startsWith(filters.year)),
         )
         .map((e) => e.d0_date)
         .filter((value, index, self) => self.indexOf(value) === index) // Unique
         .sort((a, b) => b.localeCompare(a)),
-    [farmEvents, filters.year]
+    [farmEvents, filters.year],
+  );
+
+  const availableSocieties = useMemo(
+    () =>
+      Array.from(
+        new Set(animals.map((a) => a.partnership).filter(Boolean)),
+      ) as string[],
+    [animals],
   );
 
   if (!selectedReport) return null;
@@ -103,7 +115,7 @@ export function ReportForm() {
   // Handle farm filter from modal
   const handleFarmFilterConfirm = (
     farmId: string | undefined,
-    filterMode: "all" | "specific"
+    filterMode: "all" | "specific",
   ) => {
     const farm = farms.find((f) => f.id === farmId);
     updateFilters({
@@ -116,7 +128,7 @@ export function ReportForm() {
   // Handle sex filter from modal
   const handleSexFilterConfirm = (
     sex: GenderFilterValue | undefined,
-    filterMode: "all" | "specific"
+    filterMode: "all" | "specific",
   ) => {
     updateFilters({
       sex: sex || "Ambos",
@@ -127,11 +139,33 @@ export function ReportForm() {
   // Handle status filter from modal
   const handleStatusFilterConfirm = (
     status: string | undefined,
-    filterMode: "all" | "specific"
+    filterMode: "all" | "specific",
   ) => {
     updateFilters({
       status: status || "Todos",
       statusFilterMode: filterMode,
+    });
+  };
+
+  // Handle class filter from modal
+  const handleClassFilterConfirm = (
+    classes: string[] | undefined,
+    filterMode: "all" | "specific",
+  ) => {
+    updateFilters({
+      classes: classes || [],
+      classFilterMode: filterMode,
+    });
+  };
+
+  // Handle society filter from modal
+  const handleSocietyFilterConfirm = (
+    society: string | undefined,
+    filterMode: "all" | "specific",
+  ) => {
+    updateFilters({
+      society: society || "",
+      societyFilterMode: filterMode,
     });
   };
 
@@ -180,6 +214,35 @@ export function ReportForm() {
         // Se está marcando, abrir modal
         setStatusModalOpen(true);
       }
+    } else if (column.dataKey === "classification") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "classification") ??
+        false;
+      if (isChecked) {
+        updateFilters({
+          classes: [],
+          classFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setClassModalOpen(true);
+      }
+    } else if (column.dataKey === "society") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "society") ?? false;
+      if (isChecked) {
+        updateFilters({
+          society: undefined,
+          societyFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setSocietyModalOpen(true);
+      }
     } else {
       toggleColumn(column);
     }
@@ -190,36 +253,14 @@ export function ReportForm() {
     return validationErrors.find((e) => e.field === field)?.message;
   };
 
-  // Check if we've reached max columns
-  // Filter columns (farmName, sex, status) don't count when filterMode is "specific"
-  // because they don't appear in the report when filtering
-  const isFarmColumnSelected =
-    filters.selectedColumns?.some((c) => c.dataKey === "farmName") ?? false;
-  const isSexColumnSelected =
-    filters.selectedColumns?.some((c) => c.dataKey === "sex") ?? false;
-  const isStatusColumnSelected =
-    filters.selectedColumns?.some((c) => c.dataKey === "status") ?? false;
+  const isClassColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "classification") ??
+    false;
+  const isSocietyColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "society") ?? false;
 
-  const effectiveMaxColumns = MAX_SELECTABLE_COLUMNS; // Sempre 9 colunas
-
-  // Count columns excluding filter columns when filterMode is "specific" (because they won't appear)
-  const filterColumnsToExclude = [
-    filters.farmFilterMode === "specific" && isFarmColumnSelected
-      ? "farmName"
-      : null,
-    filters.sexFilterMode === "specific" && isSexColumnSelected ? "sex" : null,
-    filters.statusFilterMode === "specific" && isStatusColumnSelected
-      ? "status"
-      : null,
-  ].filter(Boolean) as string[];
-
-  const columnCount =
-    filterColumnsToExclude.length > 0
-      ? filters.selectedColumns?.filter(
-          (c) => !filterColumnsToExclude.includes(c.dataKey)
-        ).length || 0
-      : filters.selectedColumns?.length || 0;
-
+  const effectiveMaxColumns = MAX_SELECTABLE_COLUMNS;
+  const columnCount = filters.selectedColumns?.length || 0;
   const maxColumnsReached = columnCount >= effectiveMaxColumns;
 
   const handleYearChange = (year: string) => {
@@ -384,25 +425,7 @@ export function ReportForm() {
               </Label>
               <p className="text-[10px] text-muted-foreground italic leading-tight">
                 RGD / RGN é sempre incluída primeiro. Máximo de{" "}
-                {effectiveMaxColumns} colunas
-                {filterColumnsToExclude.length > 0 && (
-                  <span className="text-[9px]">
-                    {" "}
-                    (
-                    {filterColumnsToExclude
-                      .map((c) => {
-                        const names: Record<string, string> = {
-                          farmName: "FAZENDA",
-                          sex: "SEXO",
-                          status: "STATUS",
-                        };
-                        return names[c] || c;
-                      })
-                      .join(", ")}{" "}
-                    não contam quando filtro específico está ativo)
-                  </span>
-                )}
-                .
+                {effectiveMaxColumns} colunas.
               </p>
             </div>
             <span
@@ -426,13 +449,8 @@ export function ReportForm() {
                   (c) => c.dataKey === column.dataKey,
                 ) ?? false;
 
-              // Filter columns (farmName, sex, status) are never disabled when filterMode is "specific"
-              // because they don't count towards the limit
-              const isFilterColumn = ["farmName", "sex", "status"].includes(
-                column.dataKey,
-              );
-              const isDisabled =
-                !isFilterColumn && maxColumnsReached && !isChecked;
+              // Default check for disabled state
+              const isDisabled = maxColumnsReached && !isChecked;
 
               return (
                 <div key={column.dataKey} className="flex items-center">
@@ -496,6 +514,33 @@ export function ReportForm() {
             false;
           if (!isStatusColumnSelected) {
             toggleColumn({ header: "STATUS", dataKey: "status" });
+          }
+        }}
+      />
+
+      <ClassFilterModal
+        open={classModalOpen}
+        onOpenChange={setClassModalOpen}
+        currentClasses={filters.classes}
+        currentFilterMode={filters.classFilterMode || "all"}
+        onConfirm={(classes, filterMode) => {
+          handleClassFilterConfirm(classes, filterMode);
+          if (!isClassColumnSelected) {
+            toggleColumn({ header: "CLASSE", dataKey: "classification" });
+          }
+        }}
+      />
+
+      <SocietyFilterModal
+        open={societyModalOpen}
+        onOpenChange={setSocietyModalOpen}
+        societies={availableSocieties}
+        currentSociety={filters.society}
+        currentFilterMode={filters.societyFilterMode || "all"}
+        onConfirm={(society, filterMode) => {
+          handleSocietyFilterConfirm(society, filterMode);
+          if (!isSocietyColumnSelected) {
+            toggleColumn({ header: "SOCIEDADE", dataKey: "society" });
           }
         }}
       />

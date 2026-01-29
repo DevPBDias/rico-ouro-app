@@ -21,7 +21,9 @@ export type FilterType =
   | "sex"
   | "dateRange"
   | "managementDates"
-  | "status";
+  | "status"
+  | "class"
+  | "society";
 
 /**
  * Gender filter options
@@ -50,6 +52,10 @@ export interface ReportFilters {
   status?: string;
   statusFilterMode?: "all" | "specific"; // "all" para todos (mostra coluna), "specific" para um status (filtra, não mostra)
   sortBy?: AnimalReportSortBy; // Ordenação do relatório de animais
+  classes?: string[];
+  classFilterMode?: "all" | "specific";
+  society?: string;
+  societyFilterMode?: "all" | "specific";
 }
 
 // =============================================================================
