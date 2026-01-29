@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  createRxDatabase,
-  addRxPlugin,
-  RxStorage,
-  removeRxDatabase,
-} from "rxdb";
+import { createRxDatabase, addRxPlugin, RxStorage } from "rxdb";
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie";
 import { RxDBUpdatePlugin } from "rxdb/plugins/update";
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder";
@@ -48,7 +43,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v5"; // Reset to clear loop states
+const DB_VERSION = "v6"; // Reset to clear loop states
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
