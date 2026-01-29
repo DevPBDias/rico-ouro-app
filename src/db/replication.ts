@@ -216,21 +216,6 @@ export async function setupReplication(db: MyDatabase) {
       console.log("✅ All replications started");
     }, 500); // Aguarda 0.5 segundos antes de iniciar
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("online", () => {
-        console.log("🌐 Online detected - forcing replication retry");
-        animalsReplication.reSync();
-        vaccinesReplication.reSync();
-        farmsReplication.reSync();
-        animalMetricsWeightReplication.reSync();
-        animalMetricsCEReplication.reSync();
-        animalVaccinesReplication.reSync();
-        reproductionEventsReplication.reSync();
-        animalStatusesReplication.reSync();
-        semenDosesReplication.reSync();
-      });
-    }
-
     let animalsErrorCount = 0;
     const MAX_ERRORS = 5;
 
@@ -315,4 +300,22 @@ export async function setupReplication(db: MyDatabase) {
     console.error("❌ Replication setup error:", error);
     console.warn("⚠️ App will continue in offline-only mode");
   }
+}
+
+/**
+ * Global utility to force a full re-sync of all active replications.
+ */
+export function forceSyncAll(db: MyDatabase) {
+  if (!db || !(db as any).replications) {
+    console.warn("⚠️ Cannot force sync: replications not initialized");
+    return;
+  }
+
+  console.log("🔄 [Manual Sync] Triggering reSync for all collections...");
+  const replications = (db as any).replications;
+  Object.values(replications).forEach((rep: any) => {
+    if (rep && typeof rep.reSync === "function") {
+      rep.reSync();
+    }
+  });
 }

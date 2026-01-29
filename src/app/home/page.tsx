@@ -11,8 +11,17 @@ import abczLogo from "@/assets/icons/ABCZ.png";
 import pmgzLogo from "@/assets/icons/PMGZ.png";
 import cowModel from "@/assets/images/cow_model.png";
 import { CalendarNavigation } from "@/components/calendar/CalendarNavigation";
+import { useReplication } from "@/hooks/sync/useSyncStatus";
+import { useEffect } from "react";
 
 const HomePage = () => {
+  const { triggerSync } = useReplication();
+
+  useEffect(() => {
+    console.log("🏠 [Home] Page mounted - triggering synchronization");
+    triggerSync();
+  }, [triggerSync]);
+
   return (
     <ProtectedClient>
       <motion.main
@@ -66,7 +75,7 @@ const HomePage = () => {
               height={26}
               className="object-cover"
             />
-            <div className="h-8 w-[1px] bg-slate-400"></div>
+            <div className="h-8 w-px bg-slate-400"></div>
             <Image
               src={pmgzLogo}
               alt="PMGZ"

@@ -8,9 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import { useRxDB } from "./RxDBProvider";
-import { useIntelligentPollingSync } from "@/hooks/sync/useIntelligentPollingSync";
-import { useSupabaseRealtimeSync } from "@/hooks/sync/useSupabaseRealtimeSync";
 import { combineLatest } from "rxjs";
+import { forceSyncAll } from "../db/replication";
 
 interface ReplicationContextType {
   isSyncing: boolean;
@@ -46,10 +45,9 @@ export function ReplicationProvider({
     Record<string, { isSyncing: boolean; error: Error | null }>
   >({});
 
-  // Ativa o sistema de polling inteligente para sincronização
   useEffect(() => {
     console.log(
-      "🔍 [ReplicationProvider] useIntelligentPollingSync will be called",
+      "📡 [ReplicationProvider] Replication initialized. Direct sync disabled.",
       {
         hasDb: !!db,
         isLoading,
@@ -57,9 +55,6 @@ export function ReplicationProvider({
       },
     );
   }, [db, isLoading]);
-
-  useIntelligentPollingSync(db);
-  useSupabaseRealtimeSync(db);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -153,10 +148,7 @@ export function ReplicationProvider({
   }, [isLoading, db, (db as any)?.replications]); // Adicionado replications como dependência "fake"
 
   const triggerSync = useCallback(() => {
-    if (!db || !(db as any).replications) return;
-    Object.values((db as any).replications).forEach((rep: any) => {
-      if (rep && typeof rep.reSync === "function") rep.reSync();
-    });
+    forceSyncAll(db as any);
   }, [db]);
 
   return (

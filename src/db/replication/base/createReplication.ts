@@ -13,9 +13,10 @@ import {
   cleanSupabaseDocuments,
   cleanSupabaseDocument,
 } from "@/lib/supabase/auth-helper";
+import { lastWriteWins } from "./conflictResolver";
 
 export function createReplication<T extends ReplicableEntity>(
-  config: ReplicationConfig<T>
+  config: ReplicationConfig<T>,
 ) {
   const {
     collectionName,
@@ -34,7 +35,7 @@ export function createReplication<T extends ReplicableEntity>(
   return async (
     db: MyDatabase,
     supabaseUrl: string,
-    _supabaseKey: string
+    _supabaseKey: string,
   ): Promise<RxReplicationState<T, ReplicationCheckpoint>> => {
     const collection = db[collectionName];
 
@@ -47,7 +48,7 @@ export function createReplication<T extends ReplicableEntity>(
         pushBatchSize,
         live,
         autoStart,
-      }
+      },
     );
 
     const replication = replicateRxCollection<T, ReplicationCheckpoint>({
@@ -61,15 +62,14 @@ export function createReplication<T extends ReplicableEntity>(
           const lastId = checkpoint?.last_id || null;
           const effectiveBatchSize = batchSize || pullBatchSize;
 
-          // Subtrai 5 segundos do checkpoint para garantir que não perdemos dados
-          // devido a diferenças de timezone ou timing
+          // Subtrai 1 segundo do checkpoint para garantir que não perdemos dados
+          // devido a diferenças de precisão em milissegundos
           let safeCheckpointDate = lastModified;
           try {
             const checkpointDate = new Date(lastModified);
-            checkpointDate.setSeconds(checkpointDate.getSeconds() - 5);
+            checkpointDate.setSeconds(checkpointDate.getSeconds() - 1);
             safeCheckpointDate = checkpointDate.toISOString();
           } catch (e) {
-            // Se falhar, usa o checkpoint original
             safeCheckpointDate = lastModified;
           }
 
@@ -80,7 +80,7 @@ export function createReplication<T extends ReplicableEntity>(
               safeCheckpoint: safeCheckpointDate,
               lastId,
               batchSize: effectiveBatchSize,
-            }
+            },
           );
 
           const headers = await getAuthHeaders();
@@ -88,8 +88,8 @@ export function createReplication<T extends ReplicableEntity>(
           if (!headers.Authorization) {
             console.warn(
               `⚠️ [${String(
-                collectionName
-              )}] No auth token available. Skipping pull.`
+                collectionName,
+              )}] No auth token available. Skipping pull.`,
             );
             return { documents: [], checkpoint };
           }
@@ -99,10 +99,10 @@ export function createReplication<T extends ReplicableEntity>(
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
           let url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&updated_at=gte.${encodedDate}`;
-          
+
           console.log(
             `🔗 [${String(collectionName)}] Pull URL:`,
-            url.substring(0, 200) + (url.length > 200 ? "..." : "")
+            url.substring(0, 200) + (url.length > 200 ? "..." : ""),
           );
 
           const response = await fetch(url, { headers });
@@ -111,7 +111,7 @@ export function createReplication<T extends ReplicableEntity>(
             const errorText = await response.text();
             console.error(
               `❌ [${String(collectionName)}] Pull failed: ${response.status}`,
-              errorText
+              errorText,
             );
             throw new Error(`Pull failed: ${response.status}`);
           }
@@ -142,7 +142,7 @@ export function createReplication<T extends ReplicableEntity>(
           console.log(
             `✅ [${String(collectionName)}] Received ${
               processedDocuments.length
-            } unique documents`
+            } unique documents`,
           );
 
           const lastDoc = data.length > 0 ? data[data.length - 1] : null;
@@ -165,7 +165,7 @@ export function createReplication<T extends ReplicableEntity>(
           console.log(
             `🔼 [${String(collectionName)}] PUSH triggered with ${
               rows.length
-            } rows`
+            } rows`,
           );
 
           const documents = rows.map((row) => {
@@ -180,7 +180,7 @@ export function createReplication<T extends ReplicableEntity>(
 
           if (!headers.Authorization) {
             console.warn(
-              `⚠️ [${String(collectionName)}] No auth token for push.`
+              `⚠️ [${String(collectionName)}] No auth token for push.`,
             );
             throw new Error("Authentication required for sync");
           }

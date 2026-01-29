@@ -1,5 +1,5 @@
 "use client";
- 
+
 import {
   createRxDatabase,
   addRxPlugin,
@@ -23,6 +23,8 @@ import { animalVaccineSchema } from "./schemas/animal_vaccines.type";
 import { reproductionEventSchema } from "./schemas/reproduction_event.schema";
 import { animalStatusSchema } from "./schemas/animal_status.schema";
 import { semenDoseSchema } from "./schemas/semen_dose.schema";
+import { lastWriteWins } from "./replication/base/conflictResolver";
+import { RxConflictHandler, defaultConflictHandler } from "rxdb";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -46,7 +48,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v5"; // Reset to clear loop states
+const DB_VERSION = "v6"; // Reset to clear loop states
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -83,22 +85,53 @@ async function createDatabase(): Promise<MyDatabase> {
     const collectionsCount = Object.keys(db.collections).length;
     if (collectionsCount > 0) {
       console.log(
-        `[RxDB] Database already has ${collectionsCount} collections, skipping addCollections`
+        `[RxDB] Database already has ${collectionsCount} collections, skipping addCollections`,
       );
       return db;
     }
 
     try {
+      const customConflictHandler: RxConflictHandler<any> = {
+        isEqual: defaultConflictHandler.isEqual,
+        resolve: async (i) => {
+          return lastWriteWins(i.newDocumentState, i.realMasterState);
+        },
+      };
+
       await db.addCollections({
-        animals: { schema: animalSchema },
-        vaccines: { schema: vaccineSchema },
-        farms: { schema: farmSchema },
-        animal_metrics_ce: { schema: animalMetricCESchema },
-        animal_metrics_weight: { schema: animalMetricWeightSchema },
-        animal_vaccines: { schema: animalVaccineSchema },
-        reproduction_events: { schema: reproductionEventSchema },
-        animal_statuses: { schema: animalStatusSchema },
-        semen_doses: { schema: semenDoseSchema },
+        animals: {
+          schema: animalSchema,
+          conflictHandler: customConflictHandler,
+        },
+        vaccines: {
+          schema: vaccineSchema,
+          conflictHandler: customConflictHandler,
+        },
+        farms: { schema: farmSchema, conflictHandler: customConflictHandler },
+        animal_metrics_ce: {
+          schema: animalMetricCESchema,
+          conflictHandler: customConflictHandler,
+        },
+        animal_metrics_weight: {
+          schema: animalMetricWeightSchema,
+          conflictHandler: customConflictHandler,
+        },
+        animal_vaccines: {
+          schema: animalVaccineSchema,
+          conflictHandler: customConflictHandler,
+        },
+        reproduction_events: {
+          schema: reproductionEventSchema,
+          conflictHandler: customConflictHandler,
+        },
+        animal_statuses: {
+          schema: animalStatusSchema,
+          conflictHandler: customConflictHandler,
+        },
+        semen_doses: {
+          schema: semenDoseSchema,
+          conflictHandler: customConflictHandler,
+        },
       });
     } catch (err: any) {
       console.error("[RxDB] Failed to add collections:", err);
@@ -108,13 +141,13 @@ async function createDatabase(): Promise<MyDatabase> {
       } catch (closeErr) {
         console.error(
           "[RxDB] Failed to close db after collection error",
-          closeErr
+          closeErr,
         );
       }
 
       if (err.message?.includes("schema") || err.name === "RxError") {
         console.warn(
-          "[RxDB] Schema mismatch detected. You might need to increment collection version or DB_VERSION."
+          "[RxDB] Schema mismatch detected. You might need to increment collection version or DB_VERSION.",
         );
       }
       throw err;
@@ -210,7 +243,7 @@ export async function clearAllDatabases(): Promise<void> {
               console.warn(
                 "[RxDB] Delete blocked for IndexedDB:",
                 name,
-                "- close other tabs if possible."
+                "- close other tabs if possible.",
               );
             };
           });

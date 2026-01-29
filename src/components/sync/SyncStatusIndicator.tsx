@@ -11,6 +11,8 @@ import {
   ChevronDown,
   ChevronUp,
   Cloud,
+  Database,
+  Zap,
 } from "lucide-react";
 import { ConfirmModal } from "../modals/ConfirmModal";
 
@@ -18,8 +20,15 @@ export function SyncStatusIndicator() {
   const [isMounted, setIsMounted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const { status, online, isSyncing, triggerSync, lastSyncedAt, errors } =
-    useSyncStatus();
+  const {
+    status,
+    online,
+    isSyncing,
+    triggerSync,
+    lastSyncedAt,
+    errors,
+    entityStatus,
+  } = useSyncStatus();
   const { resetDatabase } = useRxDB();
 
   useEffect(() => {
@@ -106,57 +115,96 @@ export function SyncStatusIndicator() {
               </div>
             )}
 
+            {/* Per-Entity Status List */}
+            <div className="pt-2 border-t border-slate-800 space-y-2">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <Database size={10} />
+                Saúde das Entidades
+              </p>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-hide">
+                {Object.entries(entityStatus || {}).map(
+                  ([name, state]: [string, any]) => (
+                    <div
+                      key={name}
+                      className="flex items-center justify-between bg-slate-800/40 rounded-lg px-2 py-1.5 border border-slate-700/30"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${state.error ? "bg-rose-500 animate-pulse" : state.isSyncing ? "bg-blue-400 animate-pulse" : "bg-emerald-500"}`}
+                        />
+                        <span className="text-[10px] font-medium text-slate-300 capitalize">
+                          {name.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      {state.error && (
+                        <AlertCircle size={10} className="text-rose-500" />
+                      )}
+                      {state.isSyncing && (
+                        <RefreshCw
+                          size={10}
+                          className="text-blue-400 animate-spin"
+                        />
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+
             {errors && errors.length > 0 && (
               <div className="pt-2 border-t border-rose-900/40">
                 <p className="text-[9px] font-bold text-rose-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                   <AlertCircle size={10} />
-                  Detalhes do Erro
+                  Logs de Erro
                 </p>
-                <div className="max-h-20 overflow-y-auto pr-1">
-                  {errors.map((err, i) => (
-                    <p
+                <div className="max-h-24 overflow-y-auto pr-1 space-y-1">
+                  {errors.map((err: Error, i: number) => (
+                    <div
                       key={i}
-                      className="text-[9px] text-rose-400/90 leading-tight mb-1 last:mb-0 break-all"
+                      className="p-1.5 bg-rose-500/5 rounded border border-rose-500/10"
                     >
-                      {err.message}
-                    </p>
+                      <p className="text-[9px] text-rose-400/90 leading-tight wrap-break-word font-mono">
+                        {err.message}
+                      </p>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <button
-              onClick={() => {
-                triggerSync();
-                setIsExpanded(false);
-              }}
-              disabled={isSyncing || !online}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white text-[11px] font-black rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-wider"
-            >
-              <RefreshCw
-                size={14}
-                className={isSyncing ? "animate-spin" : ""}
-              />
-              Forçar Sincronização
-            </button>
+            <div className="pt-2 space-y-2">
+              <button
+                onClick={() => {
+                  triggerSync();
+                  // Don't close so user can see it happening
+                }}
+                disabled={isSyncing || !online}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 text-white text-[11px] font-black rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-wider relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-linear-to-r from-blue-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <RefreshCw
+                  size={14}
+                  className={isSyncing ? "animate-spin" : ""}
+                />
+                Sincronizar Agora
+              </button>
 
-            <button
-              onClick={() => {
-                setIsResetModalOpen(true);
-              }}
-              disabled={!online}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:text-slate-600 text-slate-300 text-[10px] font-bold rounded-xl transition-all shadow-sm active:scale-95 uppercase tracking-wider border border-slate-700/50"
-            >
-              <RefreshCw
-                size={12}
-                className={isSyncing ? "animate-spin" : ""}
-              />
-              Recriar Banco (Sinc Total)
-            </button>
+              <button
+                onClick={() => {
+                  setIsResetModalOpen(true);
+                }}
+                disabled={!online}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:text-slate-600 text-slate-400 text-[10px] font-bold rounded-xl transition-all shadow-sm active:scale-95 uppercase tracking-wider border border-slate-700/50"
+              >
+                <Zap size={12} className="text-amber-500/70" />
+                Reset & Full Sync
+              </button>
+            </div>
 
             {!online && (
-              <p className="text-[9px] text-center text-amber-500/80 font-medium leading-tight">
-                Funcionalidades de nuvem desativadas em modo offline.
+              <p className="text-[9px] text-center text-amber-500/80 font-medium leading-tight px-2 py-1 bg-amber-500/5 rounded-lg border border-amber-500/10">
+                Modo Offline: Alterações serão salvas localmente e enviadas
+                automaticamente ao reconectar.
               </p>
             )}
           </div>

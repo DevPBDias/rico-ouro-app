@@ -1,5 +1,6 @@
 "use client";
 
+export { useReplication } from "@/providers/ReplicationProvider";
 import { useReplication } from "@/providers/ReplicationProvider";
 import { useEffect, useState } from "react";
 
@@ -12,8 +13,14 @@ export type SyncStatus =
   | "checking";
 
 export function useSyncStatus() {
-  const { isSyncing, online, replicationErrors, triggerSync, lastSyncedAt } =
-    useReplication();
+  const {
+    isSyncing,
+    online,
+    replicationErrors,
+    triggerSync,
+    lastSyncedAt,
+    entityStatus,
+  } = useReplication();
   const [status, setStatus] = useState<SyncStatus>("checking");
 
   useEffect(() => {
@@ -39,5 +46,6 @@ export function useSyncStatus() {
     triggerSync,
     lastSyncedAt,
     errors: replicationErrors,
+    entityStatus,
   };
 }
