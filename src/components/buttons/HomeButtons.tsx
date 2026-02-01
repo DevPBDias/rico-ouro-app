@@ -8,14 +8,14 @@ interface RedirectButtonsProps {
 
 const HomeButtons = ({ data }: RedirectButtonsProps) => {
   return (
-    <section className="grid w-full grid-cols-5 gap-1.5 px-2.5">
+    <section className="grid w-full grid-cols-5 gap-1 px-2">
       {data.map((link: Links) => (
         <Link
           key={link.id}
           href={link.href}
-          className="flex aspect-[1/1.5] w-full flex-col items-center justify-center gap-2 rounded-lg bg-white p-1 text-center shadow-xl active:scale-95 transition-all uuration-300"
+          className="flex h-28 w-full flex-col items-center justify-center gap-2 rounded-lg bg-white p-2 shadow-xl active:scale-95 transition-all duration-300"
         >
-          <div className="flex items-center justify-center h-14 w-full">
+          <div className="flex items-center justify-center h-16 w-full">
             {link.icon ? (
               typeof link.icon === "string" ? (
                 <span className="text-2xl">{link.icon}</span>
@@ -30,7 +30,7 @@ const HomeButtons = ({ data }: RedirectButtonsProps) => {
               />
             ) : null}
           </div>
-          <span className="text-[10px] font-black uppercase text-primary px-0.5">
+          <span className="text-[9px] font-black uppercase text-primary text-center">
             {link.name}
           </span>
         </Link>
