@@ -8,7 +8,7 @@ import importIcon2 from "@/assets/icons/import2.png";
 import reports2 from "@/assets/icons/reports2.png";
 import reproduction from "@/assets/icons/reproduction_bov.png";
 import semen from "@/assets/icons/semen.png";
-import historico from "@/assets/icons/historico.png";
+import movimentacoes from "@/assets/icons/movimentacoes.png";
 
 export const homeLinks: Links[] = [
   {
@@ -20,9 +20,9 @@ export const homeLinks: Links[] = [
   },
   {
     id: 2,
-    name: "Histórico Vendas",
-    href: "/dashboard",
-    iconSrc: historico,
+    name: "Movimentações",
+    href: "/movimentacoes",
+    iconSrc: movimentacoes,
     className: "h-14 w-14 object-cover",
   },
   {
