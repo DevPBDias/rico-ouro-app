@@ -138,7 +138,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="h-auto gap-2 rounded-xl p-1 bg-gradient-to-r from-muted/50 to-muted/30 shadow-sm mb-4 flex w-full">
+              <TabsList className="h-auto gap-2 rounded-xl p-1 bg-linear-to-r from-muted/50 to-muted/30 shadow-sm mb-4 flex w-full">
                 {[
                   { value: "dados", label: "Dados", icon: ClipboardList },
                   { value: "vaccines", label: "Vacinas", icon: Syringe },
@@ -164,7 +164,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                         className={cn(
                           "flex h-9 items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all duration-300",
                           isActive
-                            ? "flex-1 !bg-[#1162ae] !text-primary-foreground shadow-none border-none"
+                            ? "flex-1 bg-[#1162ae]! text-primary-foreground! shadow-none border-none"
                             : "flex-none text-muted-foreground hover:bg-muted/50",
                         )}
                         animate={{
@@ -350,7 +350,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                     <div className="space-y-1 grid grid-cols-1 gap-x-4 w-full">
                       <div className="bg-card border border-border rounded-lg px-3 py-2 w-full">
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                          Classificação
+                          Outras informações
                         </h3>
                         <div className="grid grid-cols-2 gap-4 justify-between items-start w-full">
                           <div className="flex flex-col justify-start items-start">
@@ -394,7 +394,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                                       "font-semibold text-primary truncate max-w-[150px] text-xs",
                                     )}
                                   >
-                                    - {s}
+                                    {s}
                                   </span>
                                 )) || "-"}
                             </div>
@@ -406,15 +406,6 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                             </span>
                             <span className="text-sm font-semibold text-primary">
                               {animal?.partnership || "-"}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start">
-                            <span className="text-[10px] text-gray-500 uppercase">
-                              DNA
-                            </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {animal?.type || "-"}
                             </span>
                           </div>
                         </div>
@@ -449,7 +440,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                             className="bg-card border border-border rounded-lg p-3 flex items-center justify-between gap-3 hover:border-primary/30 transition-colors"
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                              <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
                                 <Syringe className="w-4 h-4 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -488,7 +479,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                             ) : (
                               <button
                                 onClick={() => setVaccineToDelete(vaccine.id)}
-                                className="flex-shrink-0 p-2 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                                className="shrink-0 p-2 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                                 title="Excluir vacina"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -524,7 +515,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
               >
                 <div className="border-t border-border pt-3"></div>
                 <Tabs defaultValue="weight" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 -mb-3 h-auto gap-1 shadow-sm">
+                  <TabsList className="grid w-full grid-cols-2 bg-linear-to-r from-muted/50 to-muted/30 rounded-lg p-1 -mb-3 h-auto gap-1 shadow-sm">
                     <TabsTrigger
                       value="weight"
                       className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
@@ -596,7 +587,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
               >
                 <div className="border-t border-border pt-3"></div>
                 <Tabs defaultValue="graphic-weight" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-3 h-auto gap-1 shadow-sm">
+                  <TabsList className="grid w-full grid-cols-2 bg-linear-to-r from-muted/50 to-muted/30 rounded-lg p-1 mb-3 h-auto gap-1 shadow-sm">
                     <TabsTrigger
                       value="graphic-weight"
                       className="flex flex-col text-gray-500 items-center gap-1 py-2.5 px-1 text-xs sm:text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
