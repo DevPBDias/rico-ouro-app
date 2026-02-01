@@ -28,16 +28,20 @@ export const ManageStatus = ({ selectedAnimal, onSuccess }: ManageStatusProps) =
   const [selectedStatusNames, setSelectedStatusNames] = useState<string[]>([]);
 
   useEffect(() => {
-    if (selectedAnimal?.status) {
+    if (selectedAnimal?.status && statuses.length > 0) {
+      const animalStatusParts = selectedAnimal.status.split(" / ");
+      const validStatusNames = statuses.map((s) => s.status_name);
+
       setSelectedStatusNames(
-        selectedAnimal.status
-          .split(" / ")
-          .filter((s) => s && s !== "-" && s !== "Nenhum"),
+        animalStatusParts.filter(
+          (s) =>
+            s && s !== "-" && s !== "Nenhum" && validStatusNames.includes(s),
+        ),
       );
-    } else {
+    } else if (selectedAnimal) {
       setSelectedStatusNames([]);
     }
-  }, [selectedAnimal]);
+  }, [selectedAnimal, statuses]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
