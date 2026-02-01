@@ -12,6 +12,7 @@ export interface Animal {
   p?: string;
   f?: string;
   status: IStatus;
+  document_situation?: string;
   farm_id?: string;
   classification?: string;
   type?: "Doadora" | "Reprodutora" | "Receptora FIV";

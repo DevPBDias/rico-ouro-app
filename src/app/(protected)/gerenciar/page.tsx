@@ -10,6 +10,7 @@ import { ManageFarms } from "@/components/manage/ManageFarms";
 import { ManageStatus } from "@/components/manage/ManageStatus";
 import { ManageClassification } from "@/components/manage/ManageClassification";
 import { ManageSociety } from "@/components/manage/ManageSociety";
+import { ManageSituation } from "@/components/manage/ManageSituation";
 import { Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -22,7 +23,7 @@ const GerenciarPage = () => {
   const selectedAnimal = useMemo(() => {
     if (!selectedRgn) return null;
     return animals.find(
-      (a) => a.rgn?.toLowerCase() === selectedRgn.toLowerCase()
+      (a) => a.rgn?.toLowerCase() === selectedRgn.toLowerCase(),
     );
   }, [selectedRgn, animals]);
 
@@ -119,6 +120,12 @@ const GerenciarPage = () => {
                   >
                     Sociedade
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="situacao"
+                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
+                  >
+                    Situação
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -149,6 +156,13 @@ const GerenciarPage = () => {
                   className="mt-0 ring-offset-background focus-visible:outline-none"
                 >
                   <ManageSociety selectedAnimal={selectedAnimal} />
+                </TabsContent>
+
+                <TabsContent
+                  value="situacao"
+                  className="mt-0 ring-offset-background focus-visible:outline-none"
+                >
+                  <ManageSituation selectedAnimal={selectedAnimal} />
                 </TabsContent>
               </div>
             </Tabs>

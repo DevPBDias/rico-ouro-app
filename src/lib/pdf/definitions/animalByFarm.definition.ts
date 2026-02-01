@@ -92,12 +92,16 @@ async function generateAnimalByFarmReport(
     false;
   const isSocietyColumnSelected =
     filters.selectedColumns?.some((c) => c.dataKey === "society") ?? false;
+  const isSituationColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "document_situation") ??
+    false;
 
   const showFarmColumn = isFarmColumnSelected;
   const showSexColumn = isSexColumnSelected;
   const showStatusColumn = isStatusColumnSelected;
   const showClassColumn = isClassColumnSelected;
   const showSocietyColumn = isSocietyColumnSelected;
+  const showSituationColumn = isSituationColumnSelected;
 
   // Transform data for report
   const reportData = {
@@ -109,6 +113,7 @@ async function generateAnimalByFarmReport(
     showStatusColumn,
     showClassColumn,
     showSocietyColumn,
+    showSituationColumn,
     sortBy: filters.sortBy || "rgn", // Ordenação: RGN (padrão) ou Classe
     data: animals.map((animal) => ({
       rgd: animal.serie_rgd || "",
@@ -139,6 +144,9 @@ async function generateAnimalByFarmReport(
         ? animal.classification || "---"
         : undefined,
       society: showSocietyColumn ? animal.partnership || "---" : undefined,
+      document_situation: showSituationColumn
+        ? animal.document_situation || "---"
+        : undefined,
       genotype: animal.genotyping || "---",
       category: getAgeRange(calculateAgeInMonths(animal.born_date)),
       observations: "---",

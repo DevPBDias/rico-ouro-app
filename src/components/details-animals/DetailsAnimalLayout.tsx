@@ -352,7 +352,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                           Classificação
                         </h3>
-                        <div className="grid grid-cols-4 justify-between items-start w-full">
+                        <div className="grid grid-cols-2 gap-4 justify-between items-start w-full">
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[11px] text-gray-500 uppercase block">
                               Classe
@@ -371,7 +371,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                                 <span
                                   key={idx}
                                   className={cn(
-                                    "font-semibold text-primary truncate max-w-[80px] text-xs",
+                                    "font-semibold text-primary truncate max-w-[150px] text-xs",
                                   )}
                                 >
                                   - {s}
@@ -379,20 +379,42 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                               )) || "-"}
                             </div>
                           </div>
+
+                          <div className="flex flex-col justify-start items-start">
+                            <span className="text-[11px] text-gray-500 uppercase">
+                              Situação
+                            </span>
+                            <div className="flex flex-col">
+                              {animal?.document_situation
+                                ?.split(" / ")
+                                .map((s, idx) => (
+                                  <span
+                                    key={idx}
+                                    className={cn(
+                                      "font-semibold text-primary truncate max-w-[150px] text-xs",
+                                    )}
+                                  >
+                                    - {s}
+                                  </span>
+                                )) || "-"}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start">
+                            <span className="text-[11px] text-gray-500 uppercase">
+                              Sociedade
+                            </span>
+                            <span className="text-sm font-semibold text-primary">
+                              {animal?.partnership || "-"}
+                            </span>
+                          </div>
+
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[10px] text-gray-500 uppercase">
                               DNA
                             </span>
                             <span className="text-sm font-semibold text-primary">
                               {animal?.type || "-"}
-                            </span>
-                          </div>
-                          <div className="flex flex-col justify-start items-start">
-                            <span className="text-[10px] text-gray-500 uppercase">
-                              Sociedade
-                            </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {animal?.partnership || "-"}
                             </span>
                           </div>
                         </div>

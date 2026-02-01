@@ -377,15 +377,16 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                         <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                           Classificação
                         </h3>
-                        <div className="grid grid-cols-4 justify-between items-center w-full">
+                        <div className="grid grid-cols-2 gap-4 justify-between items-start w-full">
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[11px] text-gray-500 uppercase block">
                               Classe
                             </span>
                             <span className="text-sm font-semibold text-primary">
-                              {matriz?.classification}
+                              {matriz?.classification || "-"}
                             </span>
                           </div>
+
                           <div className="flex flex-col justify-start items-start">
                             <span className="text-[11px] text-gray-500 uppercase">
                               Status
@@ -395,7 +396,7 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                                 <span
                                   key={idx}
                                   className={cn(
-                                    "font-semibold text-primary truncate max-w-[80px]",
+                                    "font-semibold text-primary truncate max-w-[150px]",
                                     matriz.status.includes("/")
                                       ? "text-[10px] leading-tight"
                                       : "text-sm",
@@ -406,20 +407,42 @@ const DetailsMatrizLayout = ({ rgn }: { rgn: string }) => {
                               )) || "-"}
                             </div>
                           </div>
+
                           <div className="flex flex-col justify-start items-start">
-                            <span className="text-[10px] text-gray-500 uppercase">
-                              Tipo
+                            <span className="text-[11px] text-gray-500 uppercase">
+                              Situação
                             </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {matriz?.type || "-"}
-                            </span>
+                            <div className="flex flex-col">
+                              {matriz?.document_situation
+                                ?.split(" / ")
+                                .map((s, idx) => (
+                                  <span
+                                    key={idx}
+                                    className={cn(
+                                      "font-semibold text-primary truncate max-w-[150px] text-[10px] leading-tight",
+                                    )}
+                                  >
+                                    {s}
+                                  </span>
+                                )) || "-"}
+                            </div>
                           </div>
+
                           <div className="flex flex-col justify-start items-start">
-                            <span className="text-[10px] text-gray-500 uppercase">
+                            <span className="text-[11px] text-gray-500 uppercase">
                               Sociedade
                             </span>
                             <span className="text-sm font-semibold text-primary">
                               {matriz?.partnership || "-"}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start">
+                            <span className="text-[11px] text-gray-500 uppercase">
+                              Tipo
+                            </span>
+                            <span className="text-sm font-semibold text-primary">
+                              {matriz?.type || "-"}
                             </span>
                           </div>
                         </div>

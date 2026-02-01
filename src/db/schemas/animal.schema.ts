@@ -18,6 +18,7 @@ export const animalSchema: RxJsonSchema<Animal> = {
     p: { type: "string" },
     f: { type: "string" },
     status: { type: "string" },
+    document_situation: { type: "string" },
     farm_id: { type: "string", maxLength: 36 },
     type: { type: "string" },
     genotyping: { type: "string" },

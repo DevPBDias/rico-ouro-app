@@ -20,6 +20,7 @@ import { animalStatusSchema } from "./schemas/animal_status.schema";
 import { semenDoseSchema } from "./schemas/semen_dose.schema";
 import { lastWriteWins } from "./replication/base/conflictResolver";
 import { RxConflictHandler, defaultConflictHandler } from "rxdb";
+import { animalSituationSchema } from "./schemas/animal_situation.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -43,7 +44,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v6"; // Reset to clear loop states
+const DB_VERSION = "v8"; // Added animal_situations collection
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -121,6 +122,10 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         animal_statuses: {
           schema: animalStatusSchema,
+          conflictHandler: customConflictHandler,
+        },
+        animal_situations: {
+          schema: animalSituationSchema,
           conflictHandler: customConflictHandler,
         },
         semen_doses: {

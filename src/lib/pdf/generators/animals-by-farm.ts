@@ -128,6 +128,7 @@ export const generateAnimalsByFarmPDF = async (
       f: { cellWidth: 10 },
       classification: { cellWidth: 20 },
       society: { cellWidth: 30 },
+      document_situation: { cellWidth: 25 },
       category: { cellWidth: 25 },
       observations: { cellWidth: "auto" },
     },
