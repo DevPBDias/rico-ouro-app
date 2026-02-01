@@ -20,7 +20,7 @@ export const homeLinks: Links[] = [
   },
   {
     id: 2,
-    name: "Movimentação / Venda",
+    name: "Histórico Vendas",
     href: "/dashboard",
     iconSrc: historico,
     className: "h-14 w-14 object-cover",
