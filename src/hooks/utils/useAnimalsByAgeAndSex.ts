@@ -7,15 +7,15 @@ import { calculateAgeInMonths, getAgeRange } from "@/utils/formatDates";
 interface AnimalsByAgeAndSex {
   male: {
     "0 - 12 m": Animal[];
-    "12 - 24 m": Animal[];
-    "24 - 36 m": Animal[];
-    "+36 m": Animal[];
+    "13 - 24 m": Animal[];
+    "25 - 36 m": Animal[];
+    "+37 m": Animal[];
   };
   female: {
     "0 - 12 m": Animal[];
-    "12 - 24 m": Animal[];
-    "24 - 36 m": Animal[];
-    "+36 m": Animal[];
+    "13 - 24 m": Animal[];
+    "25 - 36 m": Animal[];
+    "+37 m": Animal[];
   };
   total: {
     male: number;
@@ -24,9 +24,9 @@ interface AnimalsByAgeAndSex {
   };
   byAge: {
     "0 - 12 m": number;
-    "12 - 24 m": number;
-    "24 - 36 m": number;
-    "+36 m": number;
+    "13 - 24 m": number;
+    "25 - 36 m": number;
+    "+37 m": number;
   };
 }
 
@@ -37,15 +37,15 @@ export function useAnimalsByAgeAndSex(animals: Animal[]): AnimalsByAgeAndSex {
     const result: AnimalsByAgeAndSex = {
       male: {
         "0 - 12 m": [],
-        "12 - 24 m": [],
-        "24 - 36 m": [],
-        "+36 m": [],
+        "13 - 24 m": [],
+        "25 - 36 m": [],
+        "+37 m": [],
       },
       female: {
         "0 - 12 m": [],
-        "12 - 24 m": [],
-        "24 - 36 m": [],
-        "+36 m": [],
+        "13 - 24 m": [],
+        "25 - 36 m": [],
+        "+37 m": [],
       },
       total: {
         male: 0,
@@ -54,9 +54,9 @@ export function useAnimalsByAgeAndSex(animals: Animal[]): AnimalsByAgeAndSex {
       },
       byAge: {
         "0 - 12 m": 0,
-        "12 - 24 m": 0,
-        "24 - 36 m": 0,
-        "+36 m": 0,
+        "13 - 24 m": 0,
+        "25 - 36 m": 0,
+        "+37 m": 0,
       },
     };
 

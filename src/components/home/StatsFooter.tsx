@@ -35,9 +35,9 @@ export function StatsFooter() {
           </div>
           <div className="grid grid-cols-2 gap-1">
             <StatCard value={male["0 - 12 m"].length} label="0 - 12 m" />
-            <StatCard value={male["12 - 24 m"].length} label="12 - 24 m" />
-            <StatCard value={male["24 - 36 m"].length} label="24 - 36 m" />
-            <StatCard value={male["+36 m"].length} label="+36 m" />
+            <StatCard value={male["13 - 24 m"].length} label="13 - 24 m" />
+            <StatCard value={male["25 - 36 m"].length} label="25 - 36 m" />
+            <StatCard value={male["+37 m"].length} label="+37 m" />
           </div>
         </div>
 
@@ -50,9 +50,9 @@ export function StatsFooter() {
           </div>
           <div className="grid grid-cols-2 gap-1">
             <StatCard value={female["0 - 12 m"].length} label="0 - 12 m" />
-            <StatCard value={female["12 - 24 m"].length} label="12 - 24 m" />
-            <StatCard value={female["24 - 36 m"].length} label="24 - 36 m" />
-            <StatCard value={female["+36 m"].length} label="+36 m" />
+            <StatCard value={female["13 - 24 m"].length} label="13 - 24 m" />
+            <StatCard value={female["25 - 36 m"].length} label="25 - 36 m" />
+            <StatCard value={female["+37 m"].length} label="+37 m" />
           </div>
         </div>
       </div>

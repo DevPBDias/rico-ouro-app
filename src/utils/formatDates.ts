@@ -1,4 +1,4 @@
-export type AgeRange = "0 - 12 m" | "12 - 24 m" | "24 - 36 m" | "+36 m";
+export type AgeRange = "0 - 12 m" | "13 - 24 m" | "25 - 36 m" | "+37 m";
 
 export const parseToDate = (dateString: string | undefined): Date | null => {
   if (!dateString || typeof dateString !== "string") return null;
@@ -84,10 +84,10 @@ export function getAgeRange(months: number): AgeRange {
   if (months <= 12) {
     return "0 - 12 m";
   } else if (months <= 24) {
-    return "12 - 24 m";
+    return "13 - 24 m";
   } else if (months <= 36) {
-    return "24 - 36 m";
+    return "25 - 36 m";
   } else {
-    return "+36 m";
+    return "+37 m";
   }
 }
