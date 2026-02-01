@@ -30,7 +30,7 @@ const HomeButtons = ({ data }: RedirectButtonsProps) => {
               />
             ) : null}
           </div>
-          <span className="text-[9px] font-black uppercase text-primary text-center">
+          <span className="text-[8px] font-bold uppercase text-primary text-center">
             {link.name}
           </span>
         </Link>
