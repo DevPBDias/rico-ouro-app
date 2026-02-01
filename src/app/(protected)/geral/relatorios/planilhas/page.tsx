@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Download, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import { useFarms } from "@/hooks/db/farms/useFarms";
+import { useStatuses } from "@/hooks/db/statuses/useStatuses";
+import { useSituations } from "@/hooks/db/situations";
 import { Animal } from "@/types/animal.type";
+import { saveBlobAsFile } from "@/utils/saveBlobFile";
 
 export default function ExcelExport() {
   const [isExporting, setIsExporting] = useState(false);
@@ -17,7 +21,32 @@ export default function ExcelExport() {
     "share" | "save-picker" | "download"
   >("download");
   const { animals: dados } = useAnimals();
+  const { farms } = useFarms();
+  const { statuses } = useStatuses();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { situations } = useSituations();
   const router = useRouter();
+
+  // Create lookup maps for performance
+  const farmMap = useMemo(() => {
+    return farms.reduce(
+      (acc, farm) => {
+        acc[farm.id] = farm.farm_name;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  }, [farms]);
+
+  const statusMap = useMemo(() => {
+    return statuses.reduce(
+      (acc, status) => {
+        acc[status.id] = status.status_name;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  }, [statuses]);
 
   const handleExportFile = async () => {
     if (!dados || dados.length === 0) {
@@ -28,29 +57,59 @@ export default function ExcelExport() {
     setIsExporting(true);
 
     try {
-      const flattenedData = dados.map((item: Animal) => ({
-        "Nome Animal":
-          item.name ||
-          `${item.serie_rgd || ""} ${item.rgn || ""}`.trim() ||
-          "-",
-        RGN: item.rgn || "-",
-        "Série/RGD": item.serie_rgd || "-",
-        Sexo: item.sex === "M" ? "Macho" : item.sex === "F" ? "Fêmea" : "-",
-        Nascimento: item.born_date || "-",
-        "Cor ao Nascer": item.born_color || "-",
-        iABCz: item.iabcgz || "-",
-        Deca: item.deca || "-",
-        "P%": item.p || "-",
-        "F%": item.f || "-",
-        Pai: item.father_name || "-",
-        "Mãe Série/RGD": item.mother_serie_rgd || "-",
-        "Mãe RGN": item.mother_rgn || "-",
-        "Avô Materno": item.maternal_grandfather_name || "-",
-        "Avô Paterno": item.paternal_grandfather_name || "-",
-        Parceria: item.partnership || "-",
-        Status: item.status || "-",
-        "Fazenda ID": item.farm_id || "-",
-      }));
+      const flattenedData = dados.map((item: Animal) => {
+        // Resolve Farm Name
+        const farmName = item.farm_id
+          ? farmMap[item.farm_id] || item.farm_id
+          : "-";
+
+        // Resolve Status Name
+        // item.status can be an ID or an object depending on legacy data, checking both
+        let statusName = "-";
+        if (typeof item.status === "string") {
+          statusName = statusMap[item.status] || item.status;
+        } else if (
+          item.status &&
+          typeof item.status === "object" &&
+          "status_name" in item.status
+        ) {
+          // @ts-ignore - handling legacy or populated structure
+          statusName = item.status.status_name;
+        }
+
+        // Resolve Document Situation
+        // Logic: if it contains " / ", it's likely a composed string of names.
+        // If it's a UUID, we won't match it easily unless we mapped IDs.
+        // Based on ManageSituation.tsx, it saves NAMES joined by " / ".
+        const docSituation = item.document_situation || "-";
+
+        return {
+          RGN: item.rgn || "-",
+          "Nome Animal": item.name || "-",
+          Sexo: item.sex || "-",
+          Nascimento: item.born_date || "-",
+          "Série/RGD": item.serie_rgd || "-",
+          iABCZg: item.iabcgz || "-",
+          DECA: item.deca || "-",
+          P: item.p || "-",
+          F: item.f || "-",
+          Status: statusName,
+          "Situação Doc.": docSituation,
+          Fazenda: farmName,
+          "Cor ao Nascer": item.born_color || "-",
+          Pai: item.father_name || "-",
+          "Mãe Série/RGD": item.mother_rgn
+            ? item.mother_serie_rgd + "-" + item.mother_rgn
+            : "-",
+          "Avô Materno": item.maternal_grandfather_name || "-",
+          "Avô Paterno": item.paternal_grandfather_name || "-",
+          Parceria: item.partnership || "-",
+          Genotipagem: item.genotyping || "-",
+          Condição: item.condition || "-",
+          Tipo: item.type || "-",
+          "Última Atualização": item.updated_at || "-",
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(flattenedData);
       const workbook = XLSX.utils.book_new();
@@ -63,8 +122,8 @@ export default function ExcelExport() {
         const maxLength = Math.max(
           key.length,
           ...flattenedData.map(
-            (row) => String(row[key as keyof typeof row] || "").length
-          )
+            (row) => String(row[key as keyof typeof row] || "").length,
+          ),
         );
         return { wch: maxLength + 2 };
       });
@@ -72,7 +131,7 @@ export default function ExcelExport() {
 
       const date = new Date();
       const fileName = `Exportacao_Nelore_${date.getFullYear()}${String(
-        date.getMonth() + 1
+        date.getMonth() + 1,
       ).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}.xlsx`;
 
       // Generate blob for Web Share API
@@ -81,8 +140,7 @@ export default function ExcelExport() {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      // Import and use saveBlobAsFile
-      const { saveBlobAsFile } = await import("@/utils/saveBlobFile");
+      // Static import usage
       const result = await saveBlobAsFile(blob, fileName, {
         shareTitle: "📊 Planilha de Animais",
         shareText: `Planilha com ${dados.length} animais - INDI Ouro`,
