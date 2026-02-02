@@ -8,6 +8,7 @@ import { replicateAnimalMetricCENew as replicateAnimalMetricCE } from "./replica
 import { replicateAnimalVaccinesNew as replicateAnimalVaccines } from "./replication/animalVaccine.replication";
 import { replicateReproductionEventsNew as replicateReproductionEvents } from "./replication/reproduction.replication";
 import { replicateAnimalStatusesNew as replicateAnimalStatuses } from "./replication/status.replication";
+import { replicateAnimalSituationsNew as replicateAnimalSituations } from "./replication/situation.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -46,7 +47,7 @@ async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
 
     const isHealthy = response.ok || response.status === 404;
     console.log(
-      `🏥 Supabase health check: ${isHealthy ? "✅ OK" : "❌ FAILED"}`
+      `🏥 Supabase health check: ${isHealthy ? "✅ OK" : "❌ FAILED"}`,
     );
 
     return isHealthy;
@@ -66,7 +67,7 @@ export async function setupReplication(db: MyDatabase) {
       "⚠️ Supabase not configured properly. Replication disabled.\n" +
         "   This is normal in development if you haven't set up Supabase yet.\n" +
         "   The app will work in offline-only mode.\n" +
-        "   To enable sync, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        "   To enable sync, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",
     );
     return;
   }
@@ -79,7 +80,7 @@ export async function setupReplication(db: MyDatabase) {
   checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY).then((isHealthy) => {
     if (!isHealthy) {
       console.warn(
-        "⚠️ Supabase unreachable initially. Replication will retry automatically when online."
+        "⚠️ Supabase unreachable initially. Replication will retry automatically when online.",
       );
     }
   });
@@ -99,62 +100,68 @@ export async function setupReplication(db: MyDatabase) {
     // Se há dados locais, prioriza o uso do banco local
     if (animalsCount > 0 || vaccinesCount > 0 || farmsCount > 0) {
       console.log(
-        "✅ [Local DB] Local data detected. Replication will merge with local data."
+        "✅ [Local DB] Local data detected. Replication will merge with local data.",
       );
     }
 
     const animalsReplication = await replicateAnimals(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const vaccinesReplication = await replicateVaccines(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const farmsReplication = await replicateFarms(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const animalMetricsWeightReplication = await replicateAnimalMetricWeight(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const animalMetricsCEReplication = await replicateAnimalMetricCE(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const animalVaccinesReplication = await replicateAnimalVaccines(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const reproductionEventsReplication = await replicateReproductionEvents(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     const animalStatusesReplication = await replicateAnimalStatuses(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
+    );
+
+    const animalSituationsReplication = await replicateAnimalSituations(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY,
     );
 
     const semenDosesReplication = await replicateSemenDoses(
       db,
       SUPABASE_URL,
-      SUPABASE_KEY
+      SUPABASE_KEY,
     );
 
     (
@@ -168,6 +175,7 @@ export async function setupReplication(db: MyDatabase) {
           animal_vaccines: typeof animalVaccinesReplication;
           reproduction_events: typeof reproductionEventsReplication;
           animal_statuses: typeof animalStatusesReplication;
+          animal_situations: typeof animalSituationsReplication;
           semen_doses: typeof semenDosesReplication;
         };
       }
@@ -180,6 +188,7 @@ export async function setupReplication(db: MyDatabase) {
       animal_vaccines: animalVaccinesReplication,
       reproduction_events: reproductionEventsReplication,
       animal_statuses: animalStatusesReplication,
+      animal_situations: animalSituationsReplication,
       semen_doses: semenDosesReplication,
     };
 
@@ -189,7 +198,7 @@ export async function setupReplication(db: MyDatabase) {
     // Se houver dados locais, a replicação fará merge, não sobrescreverá
     setTimeout(() => {
       console.log(
-        "🔄 Starting replication after delay to ensure local DB is ready..."
+        "🔄 Starting replication after delay to ensure local DB is ready...",
       );
 
       // Verifica novamente os dados locais antes de iniciar
@@ -198,7 +207,7 @@ export async function setupReplication(db: MyDatabase) {
         .exec()
         .then((count) => {
           console.log(
-            `📊 [Animals] Local count before starting replication: ${count}`
+            `📊 [Animals] Local count before starting replication: ${count}`,
           );
         });
 
@@ -211,6 +220,7 @@ export async function setupReplication(db: MyDatabase) {
       animalVaccinesReplication.start();
       reproductionEventsReplication.start();
       animalStatusesReplication.start();
+      animalSituationsReplication.start();
       semenDosesReplication.start();
 
       console.log("✅ All replications started");
@@ -224,12 +234,12 @@ export async function setupReplication(db: MyDatabase) {
         animalsErrorCount++;
         console.error(
           `❌ [Animals] Replication error (${animalsErrorCount}/${MAX_ERRORS}):`,
-          error
+          error,
         );
 
         if (animalsErrorCount >= MAX_ERRORS) {
           console.warn(
-            "⚠️ [Animals] High error rate, but keeping replication alive for retry."
+            "⚠️ [Animals] High error rate, but keeping replication alive for retry.",
           );
         }
       }
@@ -240,7 +250,7 @@ export async function setupReplication(db: MyDatabase) {
       // Só loga mudanças de estado para reduzir spam no console
       if (active !== lastActiveState) {
         console.log(
-          `🔄 [Animals] Replication ${active ? "started" : "completed"}`
+          `🔄 [Animals] Replication ${active ? "started" : "completed"}`,
         );
         lastActiveState = active;
       }
@@ -256,12 +266,12 @@ export async function setupReplication(db: MyDatabase) {
         vaccinesErrorCount++;
         console.error(
           `❌ [Vaccines] Replication error (${vaccinesErrorCount}/${MAX_ERRORS}):`,
-          error
+          error,
         );
 
         if (vaccinesErrorCount >= MAX_ERRORS) {
           console.warn(
-            "⚠️ [Vaccines] High error rate, but keeping replication alive for retry."
+            "⚠️ [Vaccines] High error rate, but keeping replication alive for retry.",
           );
         }
       }
@@ -280,12 +290,12 @@ export async function setupReplication(db: MyDatabase) {
         farmsErrorCount++;
         console.error(
           `❌ [Farms] Replication error (${farmsErrorCount}/${MAX_ERRORS}):`,
-          error
+          error,
         );
 
         if (farmsErrorCount >= MAX_ERRORS) {
           console.warn(
-            "⚠️ [Farms] High error rate, but keeping replication alive for retry."
+            "⚠️ [Farms] High error rate, but keeping replication alive for retry.",
           );
         }
       }
