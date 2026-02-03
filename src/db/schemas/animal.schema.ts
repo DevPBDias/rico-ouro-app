@@ -24,6 +24,8 @@ export const animalSchema: RxJsonSchema<Animal> = {
     genotyping: { type: "string" },
     condition: { type: "string" },
     classification: { type: "string" },
+    animal_state: { type: "string" },
+    defects: { type: "array", items: { type: "string" } },
     parturition_from: {
       type: "object",
       properties: {
@@ -40,5 +42,5 @@ export const animalSchema: RxJsonSchema<Animal> = {
     updated_at: { type: "string" },
     _deleted: { type: "boolean" },
   },
-  required: ["rgn", "serie_rgd", "_deleted", "updated_at"],
+  required: ["rgn", "serie_rgd", "_deleted"],
 };

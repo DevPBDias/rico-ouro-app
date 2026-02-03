@@ -40,6 +40,8 @@ export const animalReplication = createReplication<ReplicableAnimal>({
     f: doc.f ?? null,
     status: doc.status ?? null,
     document_situation: doc.document_situation ?? null,
+    animal_state: doc.animal_state ?? null,
+    defects: doc.defects ?? null,
     farm_id: doc.farm_id ?? null,
     type: doc.type ?? null,
     genotyping: doc.genotyping ?? null,

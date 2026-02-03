@@ -94,8 +94,8 @@ const GerenciarPage = () => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <div className="overflow-x-auto pb-1 -mx-2 px-2 scrollbar-hide">
-                <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-0.5 border border-border">
+              <div className="overflow-x-hidden pb-1 -mx-2 px-2">
+                <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-0.5 border border-border  ">
                   <TabsTrigger
                     value="fazenda"
                     className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"

@@ -13,6 +13,8 @@ export interface Animal {
   f?: string;
   status: IStatus;
   document_situation?: string;
+  animal_state: string;
+  defects?: string[];
   farm_id?: string;
   classification?: string;
   type?: "Doadora" | "Reprodutora" | "Receptora FIV";
