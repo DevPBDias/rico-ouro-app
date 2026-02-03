@@ -21,6 +21,7 @@ import { semenDoseSchema } from "./schemas/semen_dose.schema";
 import { lastWriteWins } from "./replication/base/conflictResolver";
 import { RxConflictHandler, defaultConflictHandler } from "rxdb";
 import { animalSituationSchema } from "./schemas/animal_situation.schema";
+import { clientSchema } from "./schemas/client.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -130,6 +131,10 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         semen_doses: {
           schema: semenDoseSchema,
+          conflictHandler: customConflictHandler,
+        },
+        clients: {
+          schema: clientSchema,
           conflictHandler: customConflictHandler,
         },
       });

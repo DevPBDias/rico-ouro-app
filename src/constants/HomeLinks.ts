@@ -81,4 +81,11 @@ export const homeLinks: Links[] = [
     iconSrc: reports2,
     className: "h-12 w-12 object-cover",
   },
+  {
+    id: 11,
+    name: "Clientes",
+    href: "/gerenciar/clientes",
+    iconSrc: consult2,
+    className: "h-12 w-12 object-cover",
+  },
 ];

@@ -11,7 +11,7 @@ import { ManageStatus } from "@/components/manage/ManageStatus";
 import { ManageClassification } from "@/components/manage/ManageClassification";
 import { ManageSociety } from "@/components/manage/ManageSociety";
 import { ManageSituation } from "@/components/manage/ManageSituation";
-import { Info, X } from "lucide-react";
+import { Info, X, User, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -45,6 +45,23 @@ const GerenciarPage = () => {
       <Header title="Gerenciamento" />
 
       <div className="p-4 space-y-4">
+        {/* Clients Management Link */}
+        <Link href="/gerenciar/clientes">
+          <Button
+            variant="outline"
+            className="w-full h-14 rounded-2xl border-primary/20 bg-primary/5 text-primary font-bold uppercase text-xs flex items-center justify-between px-5 group hover:bg-primary hover:text-white transition-all shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <User
+                size={20}
+                className="group-hover:scale-110 transition-transform"
+              />
+              <span>Gerenciar Clientes</span>
+            </div>
+            <ChevronRight size={18} />
+          </Button>
+        </Link>
+
         {/* Selector Section */}
         <div className="space-y-3">
           {!selectedAnimal ? (

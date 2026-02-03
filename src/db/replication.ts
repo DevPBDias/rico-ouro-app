@@ -9,6 +9,7 @@ import { replicateAnimalVaccinesNew as replicateAnimalVaccines } from "./replica
 import { replicateReproductionEventsNew as replicateReproductionEvents } from "./replication/reproduction.replication";
 import { replicateAnimalStatusesNew as replicateAnimalStatuses } from "./replication/status.replication";
 import { replicateAnimalSituationsNew as replicateAnimalSituations } from "./replication/situation.replication";
+import { replicateClientsNew as replicateClients } from "./replication/client.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -90,11 +91,13 @@ export async function setupReplication(db: MyDatabase) {
     const animalsCount = await db.animals.count().exec();
     const vaccinesCount = await db.vaccines.count().exec();
     const farmsCount = await db.farms.count().exec();
+    const clientsCount = await db.clients.count().exec();
 
     console.log(`📊 [Local DB] Data counts before sync:`, {
       animals: animalsCount,
       vaccines: vaccinesCount,
       farms: farmsCount,
+      clients: clientsCount,
     });
 
     // Se há dados locais, prioriza o uso do banco local
@@ -164,6 +167,12 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY,
     );
 
+    const clientsReplication = await replicateClients(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY,
+    );
+
     (
       db as {
         replications: {
@@ -177,6 +186,7 @@ export async function setupReplication(db: MyDatabase) {
           animal_statuses: typeof animalStatusesReplication;
           animal_situations: typeof animalSituationsReplication;
           semen_doses: typeof semenDosesReplication;
+          clients: typeof clientsReplication;
         };
       }
     ).replications = {
@@ -190,6 +200,7 @@ export async function setupReplication(db: MyDatabase) {
       animal_statuses: animalStatusesReplication,
       animal_situations: animalSituationsReplication,
       semen_doses: semenDosesReplication,
+      clients: clientsReplication,
     };
 
     console.log("✅ Replication setup complete");
@@ -222,6 +233,7 @@ export async function setupReplication(db: MyDatabase) {
       animalStatusesReplication.start();
       animalSituationsReplication.start();
       semenDosesReplication.start();
+      clientsReplication.start();
 
       console.log("✅ All replications started");
     }, 500); // Aguarda 0.5 segundos antes de iniciar
