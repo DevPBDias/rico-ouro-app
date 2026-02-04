@@ -16,6 +16,9 @@
 /playwright-report/
 /playwright/.cache/
 
+# documentation
+/documentation
+
 # next.js
 /.next/
 /out/

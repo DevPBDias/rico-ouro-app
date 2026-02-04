@@ -5,6 +5,10 @@ import { Client } from "@/types/client.type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  validateClientForm,
+  formatters,
+} from "@/lib/validations/client.validation";
 
 interface ClientFormProps {
   initialData?: Client;
@@ -45,7 +49,18 @@ export function ClientForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Aplica formatação automática para campos específicos
+    let formattedValue = value;
+    if (name === "cpf_cnpj") {
+      formattedValue = formatters.cpfCnpj(value);
+    } else if (name === "phone") {
+      formattedValue = formatters.phone(value);
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }));
+
+    // Limpa erro do campo ao digitar
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -55,25 +70,17 @@ export function ClientForm({
     }
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório";
-    if (!formData.cpf_cnpj.trim())
-      newErrors.cpf_cnpj = "CPF/CNPJ é obrigatório";
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "E-mail inválido";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit(formData);
+
+    const validationErrors = validateClientForm(formData);
+
+    if (validationErrors) {
+      setErrors(validationErrors);
+      return;
     }
+
+    onSubmit(formData);
   };
 
   return (
@@ -94,7 +101,7 @@ export function ClientForm({
           value={formData.name}
           onChange={handleChange}
           placeholder="Ex: João da Silva"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.name ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
         {errors.name && (
           <p className="text-xs text-destructive font-semibold ml-1">
@@ -116,7 +123,8 @@ export function ClientForm({
           value={formData.cpf_cnpj}
           onChange={handleChange}
           placeholder="000.000.000-00"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          maxLength={18}
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.cpf_cnpj ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
         {errors.cpf_cnpj && (
           <p className="text-xs text-destructive font-semibold ml-1">
@@ -138,8 +146,14 @@ export function ClientForm({
           value={formData.phone}
           onChange={handleChange}
           placeholder="(00) 0 0000-0000"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          maxLength={16}
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.phone ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
+        {errors.phone && (
+          <p className="text-xs text-destructive font-semibold ml-1">
+            {errors.phone}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -155,8 +169,14 @@ export function ClientForm({
           value={formData.city}
           onChange={handleChange}
           placeholder="Ex: Uberlandia"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          maxLength={100}
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.city ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
+        {errors.city && (
+          <p className="text-xs text-destructive font-semibold ml-1">
+            {errors.city}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -172,8 +192,14 @@ export function ClientForm({
           value={formData.farm}
           onChange={handleChange}
           placeholder="Ex: Estancia Ouro"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          maxLength={100}
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.farm ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
+        {errors.farm && (
+          <p className="text-xs text-destructive font-semibold ml-1">
+            {errors.farm}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -190,7 +216,7 @@ export function ClientForm({
           value={formData.email}
           onChange={handleChange}
           placeholder="cliente@email.com"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.email ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
         {errors.email && (
           <p className="text-xs text-destructive font-semibold ml-1">
@@ -212,8 +238,14 @@ export function ClientForm({
           value={formData.inscricao_estadual}
           onChange={handleChange}
           placeholder="Número da IE"
-          className="h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary"
+          maxLength={20}
+          className={`h-12 rounded-xl bg-white shadow-sm border-muted focus-visible:ring-primary ${errors.inscricao_estadual ? "border-destructive ring-1 ring-destructive" : ""}`}
         />
+        {errors.inscricao_estadual && (
+          <p className="text-xs text-destructive font-semibold ml-1">
+            {errors.inscricao_estadual}
+          </p>
+        )}
       </div>
 
       <div className="pt-4 flex gap-3">
