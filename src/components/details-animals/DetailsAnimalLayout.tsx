@@ -16,7 +16,9 @@ import {
   ClipboardList,
   VenusAndMars,
   RulerDimensionLine,
+  ArrowRightLeft,
 } from "lucide-react";
+import { DetailsMovementList } from "@/components/movements/DetailsMovementList";
 import {
   calculateAgeInMonths as getAgeMonths,
   getAgeRange,
@@ -148,6 +150,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                     icon: RulerDimensionLine,
                   },
                   { value: "reproduction", label: "Repro", icon: VenusAndMars },
+                  { value: "movements", label: "Movim.", icon: ArrowRightLeft },
                   { value: "graphics", label: "Gráficos", icon: LineChart },
                 ].map(({ value, label, icon: Icon }) => {
                   const isActive = activeTab === value;
@@ -664,6 +667,12 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                     </Link>
                   </div>
                 )}
+              </TabsContent>
+              <TabsContent
+                value="movements"
+                className="mt-0 animate-in fade-in-0 duration-200"
+              >
+                <DetailsMovementList rgn={rgn} />
               </TabsContent>
             </Tabs>
           </div>

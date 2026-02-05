@@ -22,6 +22,7 @@ import { lastWriteWins } from "./replication/base/conflictResolver";
 import { RxConflictHandler, defaultConflictHandler } from "rxdb";
 import { animalSituationSchema } from "./schemas/animal_situation.schema";
 import { clientSchema } from "./schemas/client.schema";
+import { movementSchema } from "./schemas/movement.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -45,7 +46,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v8"; // Added animal_situations collection
+const DB_VERSION = "v9"; // Added movements collection
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -135,6 +136,10 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         clients: {
           schema: clientSchema,
+          conflictHandler: customConflictHandler,
+        },
+        movements: {
+          schema: movementSchema,
           conflictHandler: customConflictHandler,
         },
       });

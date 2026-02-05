@@ -1,6 +1,5 @@
 import { Links } from "@/types/links.type";
 import consult2 from "@/assets/icons/consult2.png";
-import borns2 from "@/assets/icons/borns2.png";
 import vaccine2 from "@/assets/icons/vaccine2.png";
 import farm2 from "@/assets/icons/farm2.png";
 import weigths2 from "@/assets/icons/weigths2.png";
@@ -9,6 +8,7 @@ import reports2 from "@/assets/icons/reports2.png";
 import reproduction from "@/assets/icons/reproduction_bov.png";
 import semen from "@/assets/icons/semen.png";
 import movimentacoes from "@/assets/icons/movimentacoes.png";
+import { LayoutDashboard } from "lucide-react";
 
 export const homeLinks: Links[] = [
   {
@@ -34,10 +34,10 @@ export const homeLinks: Links[] = [
   },
   {
     id: 4,
-    name: "Nascimento",
-    href: "/nascimentos",
-    iconSrc: borns2,
-    className: "h-14 w-14 object-cover",
+    name: "Dashboard",
+    href: "/geral",
+    icon: LayoutDashboard,
+    className: "h-12 w-12 text-primary",
   },
   {
     id: 5,
