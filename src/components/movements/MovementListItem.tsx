@@ -181,8 +181,6 @@ export function MovementListItem({ movement }: MovementListItemProps) {
 
         {/* Main Info */}
         <div className="flex-1 text-left min-w-0 w-full">
-          <div className="flex items-center justify-between gap-2 mb-0.5"></div>
-
           <div className="flex items-center justify-between border-t border-border/50 mt-2 pt-2 w-full">
             {renderDetails()}
           </div>
