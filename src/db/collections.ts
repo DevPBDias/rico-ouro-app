@@ -10,6 +10,7 @@ import { AnimalStatus } from "@/types/status.type";
 import { AnimalSituation } from "@/types/situation.type";
 import { SemenDose } from "@/types/semen_dose.type";
 import { Client } from "@/types/client.type";
+import { Sale } from "@/types/sale.type";
 
 import { Movement } from "@/types/movement.type";
 
@@ -25,6 +26,7 @@ export type AnimalSituationCollection = RxCollection<AnimalSituation>;
 export type SemenDoseCollection = RxCollection<SemenDose>;
 export type ClientCollection = RxCollection<Client>;
 export type MovementCollection = RxCollection<Movement>;
+export type SaleCollection = RxCollection<Sale>;
 
 export type MyDatabaseCollections = {
   animals: AnimalCollection;
@@ -39,6 +41,7 @@ export type MyDatabaseCollections = {
   semen_doses: SemenDoseCollection;
   clients: ClientCollection;
   movements: MovementCollection;
+  sales: SaleCollection;
 };
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
@@ -55,5 +58,6 @@ export type MyDatabase = RxDatabase<MyDatabaseCollections> & {
     semen_doses: RxReplicationState<SemenDose, any>;
     clients: RxReplicationState<Client, any>;
     movements: RxReplicationState<Movement, any>;
+    sales: RxReplicationState<Sale, any>;
   };
 };

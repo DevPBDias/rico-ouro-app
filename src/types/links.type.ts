@@ -7,4 +7,5 @@ export interface Links {
   icon?: React.ComponentType<{ className?: string }> | string;
   iconSrc?: string | StaticImageData;
   className?: string;
+  fontSize?: string;
 }

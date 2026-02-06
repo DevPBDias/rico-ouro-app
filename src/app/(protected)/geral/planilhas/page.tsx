@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useRxDatabase } from "@/providers/RxDBProvider";
 import { Trash2, RefreshCw } from "lucide-react";
 import { useState } from "react";
-
-
 import { clearAllDatabases } from "@/db/client";
 
 const ImportCsvFilesPage = () => {

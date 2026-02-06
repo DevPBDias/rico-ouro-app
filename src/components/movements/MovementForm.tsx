@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMovements } from "@/hooks/db/movements/useMovements";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useClients } from "@/hooks/db/clients/useClients";
@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
-import { BirthForm } from "./BirthForm";
 
 interface MovementFormProps {
   onSuccess?: () => void;
@@ -44,6 +43,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
   const [reason, setReason] = useState("");
 
   // Venda fields
+  const [saleType, setSaleType] = useState<"abate" | "comprado">("comprado");
   const [clientId, setClientId] = useState("");
   const [totalValue, setTotalValue] = useState("");
   const [downPayment, setDownPayment] = useState("");
@@ -51,6 +51,30 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
   const [installments, setInstallments] = useState("");
   const [gtaNumber, setGtaNumber] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
+
+  // Auto-select Frigorífico when saleType is "abate"
+  useEffect(() => {
+    if (saleType === "abate") {
+      const frigorifico = clients.find((c) =>
+        c.name.toLowerCase().includes("frigorífico"),
+      );
+      if (frigorifico) {
+        setClientId(frigorifico.id);
+      } else {
+        // If not found, we might want to alert or just set a placeholder
+        // For now, let's just keep it as is or set to an empty string if not found
+        // but the user wants it specifically for frigorífico
+      }
+    } else if (
+      clientId &&
+      clients
+        .find((c) => c.id === clientId)
+        ?.name.toLowerCase()
+        .includes("frigorífico")
+    ) {
+      setClientId(""); // Clear if switching back and it was frigorífico
+    }
+  }, [saleType, clients]);
 
   // Troca fields
   const [substituteAnimalRgn, setSubstituteAnimalRgn] = useState("");
@@ -72,6 +96,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
           break;
         case "venda":
           details = {
+            sale_type: saleType,
             client_id: clientId,
             total_value: parseFloat(totalValue) || 0,
             down_payment: parseFloat(downPayment) || 0,
@@ -82,7 +107,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
           };
           const clientName =
             clients.find((c) => c.id === clientId)?.name || "Cliente";
-          description = `Vendido para ${clientName}`;
+          description = `Venda (${saleType === "abate" ? "Abate" : "Comprado"}): ${clientName}`;
           break;
         case "troca":
           details = {
@@ -139,33 +164,6 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
     );
   }
 
-  if (movementType === "nascimento") {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2 mb-6">
-          <label className="text-xs uppercase font-bold text-primary px-1">
-            Tipo de Movimentação
-          </label>
-          <Select
-            value={movementType}
-            onValueChange={(v) => setMovementType(v as MovementType)}
-          >
-            <SelectTrigger className="bg-muted border-0 rounded-sm mt-1">
-              <SelectValue placeholder="Selecione o tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="nascimento">Nascimento</SelectItem>
-              <SelectItem value="morte">Morte</SelectItem>
-              <SelectItem value="venda">Venda</SelectItem>
-              <SelectItem value="troca">Troca</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <BirthForm onSuccess={() => setShowSuccess(true)} />
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
       <div className="mb-6">
@@ -173,7 +171,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
           Nova Movimentação
         </h2>
         <p className="text-muted-foreground text-sm">
-          Registre nascimento, morte, venda ou troca de animal.
+          Registre morte, venda ou troca de animal.
         </p>
       </div>
 
@@ -189,7 +187,6 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
             <SelectValue placeholder="Selecione o tipo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="nascimento">Nascimento</SelectItem>
             <SelectItem value="morte">Morte</SelectItem>
             <SelectItem value="venda">Venda</SelectItem>
             <SelectItem value="troca">Troca</SelectItem>
@@ -263,22 +260,53 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
 
           {movementType === "venda" && (
             <>
-              <div className="space-y-2 w-full">
-                <label className="text-xs uppercase font-bold text-primary px-1">
-                  Cliente
-                </label>
-                <Select value={clientId} onValueChange={setClientId}>
-                  <SelectTrigger className="bg-muted border-0 rounded-sm mt-1 w-full">
-                    <SelectValue placeholder="Selecione o cliente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-primary px-1">
+                    Tipo de Venda
+                  </label>
+                  <Select
+                    value={saleType}
+                    onValueChange={(v) =>
+                      setSaleType(v as "abate" | "comprado")
+                    }
+                  >
+                    <SelectTrigger className="bg-muted border-0 rounded-sm mt-1 w-full">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="comprado">Compra Cliente</SelectItem>
+                      <SelectItem value="abate">Abate Frigorífico</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-primary px-1">
+                    Cliente
+                  </label>
+                  <Select
+                    value={clientId}
+                    onValueChange={setClientId}
+                    disabled={saleType === "abate"}
+                  >
+                    <SelectTrigger className="bg-muted border-0 rounded-sm mt-1 w-full text-left">
+                      <SelectValue placeholder="Selecione o cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {saleType === "abate" && !clientId && (
+                    <p className="text-[10px] text-orange-500 font-semibold mt-1 px-1 leading-tight">
+                      Atenção: Cliente "Frigorífico" não encontrado no cadastro.
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

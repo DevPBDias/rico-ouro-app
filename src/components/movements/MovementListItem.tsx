@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { formatDate } from "@/utils/formatDates";
 import { useClientById } from "@/hooks/db/clients/useClientById";
+import { useSaleById } from "@/hooks/db/sales/useSaleById";
+import { SalePayload } from "@/types/movement.type";
 
 interface MovementListItemProps {
   movement: Movement;
@@ -49,6 +51,61 @@ const ClientName = ({ clientId }: { clientId: string }) => {
   return <span>{client?.name || clientId}</span>;
 };
 
+const VendaDetails = ({
+  movementDetails,
+}: {
+  movementDetails: SalePayload;
+}) => {
+  const { sale, isLoading } = useSaleById(movementDetails.sale_id || "");
+
+  // Use sale data from collection if available, fallback to movement details
+  const displayData = sale || movementDetails;
+
+  if (isLoading && movementDetails.sale_id) {
+    return (
+      <div className="text-sm text-muted-foreground animate-pulse">
+        Carregando dados da venda...
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2 text-sm w-full">
+      <div className="flex items-center justify-between">
+        <p>
+          <span className="font-semibold text-muted-foreground">
+            {displayData.sale_type === "abate" ? "Frigorífico:" : "Cliente:"}
+          </span>{" "}
+          <ClientName clientId={displayData.client_id} />
+        </p>
+        <p>
+          <span className="font-semibold text-muted-foreground">Valor:</span>{" "}
+          {displayData.total_value?.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
+        </p>
+      </div>
+      <div className="flex items-center justify-between">
+        {displayData.invoice_number && (
+          <p>
+            <span className="font-semibold text-muted-foreground">NF:</span>{" "}
+            {displayData.invoice_number}
+          </p>
+        )}
+        {displayData.payment_method && (
+          <p>
+            <span className="font-semibold text-muted-foreground">
+              Pagamento:
+            </span>{" "}
+            {displayData.payment_method}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export function MovementListItem({ movement }: MovementListItemProps) {
   const config = typeConfig[movement.type] || typeConfig.nascimento;
   const Icon = config.icon;
@@ -67,45 +124,8 @@ export function MovementListItem({ movement }: MovementListItemProps) {
           </div>
         );
       case "venda":
-        const sale = movement.details as any;
         return (
-          <div className="flex flex-col gap-2 text-sm w-full">
-            <div className="flex items-center justify-between">
-              <p>
-                <span className="font-semibold text-muted-foreground">
-                  Cliente:
-                </span>{" "}
-                <ClientName clientId={sale.client_id} />
-              </p>
-              <p>
-                <span className="font-semibold text-muted-foreground">
-                  Valor:
-                </span>{" "}
-                {sale.total_value?.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
-              {sale.invoice_number && (
-                <p>
-                  <span className="font-semibold text-muted-foreground">
-                    NF:
-                  </span>{" "}
-                  {sale.invoice_number}
-                </p>
-              )}
-              {sale.payment_method && (
-                <p>
-                  <span className="font-semibold text-muted-foreground">
-                    Pagamento:
-                  </span>{" "}
-                  {sale.payment_method}
-                </p>
-              )}
-            </div>
-          </div>
+          <VendaDetails movementDetails={movement.details as SalePayload} />
         );
       case "troca":
         const exchange = movement.details as any;

@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useLocalQuery, useLocalMutation } from "@/hooks/core";
-import { Movement } from "@/types/movement.type";
+import { Movement, SalePayload } from "@/types/movement.type";
 import { getDatabase } from "@/db/client";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -57,6 +57,40 @@ export function useMovements() {
               animal_state: "INATIVO",
               updated_at: timestamp,
             });
+          }
+
+          // 4. If it's a Venda, also create a record in the 'sales' collection
+          if (data.type === "venda") {
+            const vendaDetails = data.details as SalePayload;
+            const saleId = uuidv4();
+
+            await db.sales.insert({
+              id: saleId,
+              animal_rgn: data.animal_id,
+              client_id: vendaDetails.client_id,
+              date: data.date,
+              total_value: vendaDetails.total_value || 0,
+              down_payment: vendaDetails.down_payment || 0,
+              payment_method: vendaDetails.payment_method || "",
+              installments: vendaDetails.installments || 0,
+              financial_status: "pendente", // Default status
+              gta_number: vendaDetails.gta_number || "",
+              invoice_number: vendaDetails.invoice_number || "",
+              sale_type: vendaDetails.sale_type || "comprado",
+              updated_at: timestamp,
+              _deleted: false,
+            });
+
+            // Update movement details with the generated sale_id
+            const movementDoc = await db.movements.findOne(id).exec();
+            if (movementDoc) {
+              await movementDoc.patch({
+                details: {
+                  ...vendaDetails,
+                  sale_id: saleId,
+                },
+              });
+            }
           }
         }
 

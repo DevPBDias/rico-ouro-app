@@ -11,6 +11,7 @@ import { replicateAnimalStatusesNew as replicateAnimalStatuses } from "./replica
 import { replicateAnimalSituationsNew as replicateAnimalSituations } from "./replication/situation.replication";
 import { replicateClientsNew as replicateClients } from "./replication/client.replication";
 import { replicateMovementsNew as replicateMovements } from "./replication/movement.replication";
+import { replicateSalesNew as replicateSales } from "./replication/sale.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -180,6 +181,12 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY,
     );
 
+    const salesReplication = await replicateSales(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY,
+    );
+
     (
       db as {
         replications: {
@@ -195,6 +202,7 @@ export async function setupReplication(db: MyDatabase) {
           semen_doses: typeof semenDosesReplication;
           clients: typeof clientsReplication;
           movements: typeof movementsReplication;
+          sales: typeof salesReplication;
         };
       }
     ).replications = {
@@ -210,6 +218,7 @@ export async function setupReplication(db: MyDatabase) {
       semen_doses: semenDosesReplication,
       clients: clientsReplication,
       movements: movementsReplication,
+      sales: salesReplication,
     };
 
     console.log("✅ Replication setup complete");
@@ -244,6 +253,7 @@ export async function setupReplication(db: MyDatabase) {
       semenDosesReplication.start();
       clientsReplication.start();
       movementsReplication.start();
+      salesReplication.start();
 
       console.log("✅ All replications started");
     }, 500); // Aguarda 0.5 segundos antes de iniciar

@@ -34,3 +34,4 @@ export {
   animalSituationReplication,
   replicateAnimalSituationsNew,
 } from "./situation.replication";
+export { saleReplication, replicateSalesNew } from "./sale.replication";

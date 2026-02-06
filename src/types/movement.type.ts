@@ -4,7 +4,9 @@ export interface MortePayload {
   reason: string;
 }
 
-export interface VendaPayload {
+export interface SalePayload {
+  sale_type: "abate" | "comprado";
+  sale_id?: string;
   client_id: string;
   total_value?: number;
   down_payment?: number;
@@ -35,7 +37,7 @@ export interface Movement {
   date: string; // ISO Date
   animal_id: string; // RGN of the main animal involved
   description: string;
-  details: MortePayload | VendaPayload | TrocaPayload | NascimentoPayload;
+  details: MortePayload | SalePayload | TrocaPayload | NascimentoPayload;
   created_at?: string;
   updated_at?: string;
   _deleted: boolean;
