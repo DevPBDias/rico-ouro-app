@@ -8,7 +8,7 @@ import reproduction from "@/assets/icons/reproduction_bov.png";
 import semen from "@/assets/icons/semen.png";
 import movimentacoes from "@/assets/icons/movimentacoes.png";
 import borns2 from "@/assets/icons/borns2.png";
-import { LayoutDashboard } from "lucide-react";
+import { HandCoins } from "lucide-react";
 
 export const homeLinks: Links[] = [
   {
@@ -16,7 +16,7 @@ export const homeLinks: Links[] = [
     name: "Consulta Animal",
     href: "/consulta",
     iconSrc: consult2,
-    className: "h-12 w-12 object-cover",
+    className: "h-14 w-14 object-cover",
     fontSize: "text-[9px]",
   },
   {
@@ -48,7 +48,7 @@ export const homeLinks: Links[] = [
     name: "Vacinas",
     href: "/vacinas",
     iconSrc: vaccine2,
-    className: "h-12 w-12 object-cover",
+    className: "h-13 w-13 object-cover",
     fontSize: "text-[9px]",
   },
   {
@@ -72,15 +72,15 @@ export const homeLinks: Links[] = [
     name: "Estoque de Sêmen",
     href: "/gerenciar/doses-semen",
     iconSrc: semen,
-    className: "h-12 w-10 object-cover",
+    className: "h-14 w-12 object-cover",
     fontSize: "text-[9px]",
   },
   {
     id: 9,
     name: "Vendas Clientes",
     href: "/comercial",
-    icon: LayoutDashboard,
-    className: "h-12 w-12 text-primary",
+    icon: HandCoins,
+    className: "h-14 w-14 text-primary",
     fontSize: "text-[9px]",
   },
   {
