@@ -8,7 +8,7 @@ import reproduction from "@/assets/icons/reproduction_bov.png";
 import semen from "@/assets/icons/semen.png";
 import movimentacoes from "@/assets/icons/movimentacoes.png";
 import borns2 from "@/assets/icons/borns2.png";
-import { HandCoins } from "lucide-react";
+import sales_clients from "@/assets/icons/sales_clients.png";
 
 export const homeLinks: Links[] = [
   {
@@ -56,7 +56,7 @@ export const homeLinks: Links[] = [
     name: "Movimentações",
     href: "/movimentacoes",
     iconSrc: movimentacoes,
-    className: "h-14 w-14 object-cover",
+    className: "h-14 w-18 object-cover",
     fontSize: "text-[8px]",
   },
   {
@@ -79,8 +79,8 @@ export const homeLinks: Links[] = [
     id: 9,
     name: "Vendas Clientes",
     href: "/comercial",
-    icon: HandCoins,
-    className: "h-14 w-14 text-primary",
+    iconSrc: sales_clients,
+    className: "h-16 w-14 object-cover",
     fontSize: "text-[9px]",
   },
   {
