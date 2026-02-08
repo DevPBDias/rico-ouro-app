@@ -6,21 +6,32 @@ import { MovementList } from "@/components/movements/MovementList";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
 import { MovementForm } from "@/components/movements";
+import { Movement } from "@/types/movement.type";
 
-type ViewMode = "list" | "create";
+type ViewMode = "list" | "create" | "edit";
 
 export default function MovimentacoesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [editingMovement, setEditingMovement] = useState<Movement | null>(null);
 
   const handleCreateSuccess = () => {
     setViewMode("list");
+    setEditingMovement(null);
+  };
+
+  const handleEdit = (movement: Movement) => {
+    setEditingMovement(movement);
+    setViewMode("edit");
+  };
+
+  const handleBackToList = () => {
+    setViewMode("list");
+    setEditingMovement(null);
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header
-        title={viewMode === "create" ? "Movimentação" : "Movimentações"}
-      />
+      <Header title={viewMode === "list" ? "Movimentações" : "Movimentação"} />
 
       <main className="flex-1 px-4 py-6 pb-24 max-w-2xl mx-auto w-full">
         {viewMode === "list" && (
@@ -37,20 +48,23 @@ export default function MovimentacoesPage() {
                 Criar
               </Button>
             </div>
-            <MovementList />
+            <MovementList onEdit={handleEdit} />
           </>
         )}
 
-        {viewMode === "create" && (
+        {(viewMode === "create" || viewMode === "edit") && (
           <>
             <button
-              onClick={() => setViewMode("list")}
+              onClick={handleBackToList}
               className="border border-primary/50 rounded-sm px-2 py-1 flex items-center gap-2 text-muted-foreground text-sm mb-6 hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </button>
-            <MovementForm onSuccess={handleCreateSuccess} />
+            <MovementForm
+              onSuccess={handleCreateSuccess}
+              initialMovement={editingMovement}
+            />
           </>
         )}
       </main>

@@ -1,20 +1,13 @@
-export type MovementType = "nascimento" | "morte" | "venda" | "troca";
+import { Sale } from "./sale.type";
+
+export type MovementType = "morte" | "venda" | "troca";
 
 export interface MortePayload {
   reason: string;
 }
 
-export interface SalePayload {
-  sale_type: "abate" | "comprado";
+export interface SalePayload extends Sale {
   sale_id?: string;
-  client_id: string;
-  total_value?: number;
-  down_payment?: number;
-  payment_method?: string;
-  installments?: number;
-  financial_status?: string;
-  gta_number?: string;
-  invoice_number?: string;
 }
 
 export interface TrocaPayload {
@@ -24,20 +17,13 @@ export interface TrocaPayload {
   value_difference?: number;
 }
 
-export interface NascimentoPayload {
-  mother_rgn: string;
-  sex: "M" | "F";
-  weight?: number;
-  born_date: string;
-}
-
 export interface Movement {
   id: string;
   type: MovementType;
   date: string; // ISO Date
   animal_id: string; // RGN of the main animal involved
   description: string;
-  details: MortePayload | SalePayload | TrocaPayload | NascimentoPayload;
+  details: MortePayload | SalePayload | TrocaPayload;
   created_at?: string;
   updated_at?: string;
   _deleted: boolean;

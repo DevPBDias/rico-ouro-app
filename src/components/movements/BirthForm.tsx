@@ -24,7 +24,6 @@ import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
 import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useCreateAnimalWeight } from "@/hooks/db/animal_weights/useCreateAnimalWeight";
-import { useMovements } from "@/hooks/db/movements/useMovements";
 import { Animal } from "@/types/animal.type";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 
@@ -48,7 +47,6 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
   const { createAnimal } = useCreateAnimal();
   const { updateAnimal } = useUpdateAnimal();
   const { createWeight } = useCreateAnimalWeight();
-  const { createMovement } = useMovements();
   const { animals } = useAnimals();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,20 +117,6 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
           },
         });
       }
-
-      // 4. Register Movement
-      await createMovement({
-        type: "nascimento",
-        animal_id: finalRgn,
-        date: formData.data,
-        description: `Nascimento de ${finalRgn} (Mãe: ${formData.mae})`,
-        details: {
-          mother_rgn: formData.mae,
-          sex: (formData.sexo === "Macho" ? "M" : "F") as "M" | "F",
-          weight: Number(formData.peso.replace(",", ".")),
-          born_date: formData.data,
-        },
-      });
 
       onSuccess?.();
     } catch (error: any) {

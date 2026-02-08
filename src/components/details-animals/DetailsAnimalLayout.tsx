@@ -17,7 +17,7 @@ import {
   ClipboardList,
   VenusAndMars,
   RulerDimensionLine,
-  ArrowRightLeft,
+  History,
 } from "lucide-react";
 import { DetailsMovementList } from "@/components/movements/DetailsMovementList";
 import {
@@ -151,7 +151,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                     icon: RulerDimensionLine,
                   },
                   { value: "reproduction", label: "Repro", icon: VenusAndMars },
-                  { value: "movements", label: "Movim.", icon: ArrowRightLeft },
+                  { value: "history", label: "Histórico", icon: History },
                   { value: "graphics", label: "Gráficos", icon: LineChart },
                 ]}
                 activeTab={activeTab}
@@ -629,7 +629,7 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                 )}
               </TabsContent>
               <TabsContent
-                value="movements"
+                value="history"
                 className="mt-0 animate-in fade-in-0 duration-200"
               >
                 <DetailsMovementList rgn={rgn} />

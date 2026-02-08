@@ -2,19 +2,17 @@ import { useState, useMemo } from "react";
 import { useMovements } from "@/hooks/db/movements/useMovements";
 import { MovementListItem } from "./MovementListItem";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { StandardTabList } from "@/components/ui/StandardTabList";
-import {
-  Search,
-  X as XIcon,
-  LayoutList,
-  Baby,
-  Skull,
-  ShoppingCart,
-  ArrowRightLeft,
-} from "lucide-react";
+import { Search, X as XIcon } from "lucide-react";
+import { Accordion } from "@/components/ui/accordion";
+import { Movement } from "@/types/movement.type";
 
-export function MovementList() {
+interface MovementListProps {
+  onEdit?: (movement: Movement) => void;
+}
+
+export function MovementList({ onEdit }: MovementListProps) {
   const { movements, loading } = useMovements();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -105,11 +103,10 @@ export function MovementList() {
         <StandardTabList
           variant="simple"
           tabs={[
-            { value: "all", label: "Todas", icon: LayoutList },
-            { value: "nascimento", label: "Nasc.", icon: Baby },
-            { value: "morte", label: "Morte", icon: Skull },
-            { value: "venda", label: "Venda", icon: ShoppingCart },
-            { value: "troca", label: "Troca", icon: ArrowRightLeft },
+            { value: "all", label: "Todas" },
+            { value: "morte", label: "Morte" },
+            { value: "venda", label: "Venda" },
+            { value: "troca", label: "Troca" },
           ]}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -118,17 +115,21 @@ export function MovementList() {
       </Tabs>
 
       {/* List */}
-      <div className="space-y-1">
+      <Accordion type="single" collapsible className="space-y-1 w-full">
         {filteredMovements.length > 0 ? (
           filteredMovements.map((movement) => (
-            <MovementListItem key={movement.id} movement={movement} />
+            <MovementListItem
+              key={movement.id}
+              movement={movement}
+              onEdit={onEdit}
+            />
           ))
         ) : (
           <div className="text-center py-10 text-muted-foreground text-sm">
             Nenhuma movimentação encontrada.
           </div>
         )}
-      </div>
+      </Accordion>
     </div>
   );
 }

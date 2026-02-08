@@ -254,6 +254,16 @@ export function SalesList() {
                       <p className="text-muted-foreground text-xs">Parcelas</p>
                       <p className="font-medium">{sale.installments || "—"}</p>
                     </div>
+                    {sale.value_parcels !== undefined && (
+                      <div>
+                        <p className="text-muted-foreground text-xs">
+                          Valor das Parcelas
+                        </p>
+                        <p className="font-medium text-primary">
+                          {formatCurrency(sale.value_parcels)}
+                        </p>
+                      </div>
+                    )}
                     {sale.gta_number && (
                       <div>
                         <p className="text-muted-foreground text-xs">GTA</p>

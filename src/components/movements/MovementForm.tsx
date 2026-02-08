@@ -1,10 +1,8 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useMovements } from "@/hooks/db/movements/useMovements";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useClients } from "@/hooks/db/clients/useClients";
-import { MovementType } from "@/types/movement.type";
+import { MovementType, Movement, SalePayload } from "@/types/movement.type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,20 +16,32 @@ import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 
 interface MovementFormProps {
   onSuccess?: () => void;
+  initialMovement?: Movement | null;
 }
 
-export function MovementForm({ onSuccess }: MovementFormProps) {
-  const { createMovement } = useMovements();
+export function MovementForm({
+  onSuccess,
+  initialMovement,
+}: MovementFormProps) {
+  const { createMovement, updateMovement } = useMovements();
   const { animals } = useAnimals();
   const { clients } = useClients();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [movementType, setMovementType] = useState<MovementType | "">("");
+
+  // Initialize state based on initialMovement if editing
+  const [movementType, setMovementType] = useState<MovementType | "">(
+    initialMovement?.type || "",
+  );
 
   // Common fields (for morte, venda, troca)
-  const [animalId, setAnimalId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [animalId, setAnimalId] = useState(initialMovement?.animal_id || "");
+  const [date, setDate] = useState(
+    initialMovement?.date
+      ? initialMovement.date.split("T")[0]
+      : new Date().toISOString().split("T")[0],
+  );
 
   // Animal Validation
   const animalExists = animals.some(
@@ -40,48 +50,81 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
   const showRgnError = animalId.length > 0 && !animalExists;
 
   // Morte fields
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState(
+    initialMovement?.type === "morte"
+      ? (initialMovement.details as any).reason
+      : "",
+  );
 
   // Venda fields
-  const [saleType, setSaleType] = useState<"abate" | "comprado">("comprado");
-  const [clientId, setClientId] = useState("");
-  const [totalValue, setTotalValue] = useState("");
-  const [downPayment, setDownPayment] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [installments, setInstallments] = useState("");
-  const [gtaNumber, setGtaNumber] = useState("");
-  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const getSaleDetail = <K extends keyof SalePayload>(key: K): any => {
+    if (initialMovement?.type === "venda") {
+      return (initialMovement.details as SalePayload)[key];
+    }
+    return "";
+  };
+
+  const [saleType, setSaleType] = useState<"abate" | "comprado">(
+    getSaleDetail("sale_type") || "comprado",
+  );
+  const [clientId, setClientId] = useState(getSaleDetail("client_id") || "");
+  const [totalValue, setTotalValue] = useState(
+    getSaleDetail("total_value")?.toString() || "",
+  );
+  const [downPayment, setDownPayment] = useState(
+    getSaleDetail("down_payment")?.toString() || "",
+  );
+  const [paymentMethod, setPaymentMethod] = useState(
+    getSaleDetail("payment_method") || "",
+  );
+  const [installments, setInstallments] = useState(
+    getSaleDetail("installments")?.toString() || "",
+  );
+  const [installmentValue, setInstallmentValue] = useState(
+    getSaleDetail("installment_value")?.toString() || "",
+  );
+  const [valueParcels, setValueParcels] = useState(
+    getSaleDetail("value_parcels")?.toString() || "",
+  );
+  const [gtaNumber, setGtaNumber] = useState(getSaleDetail("gta_number") || "");
+  const [invoiceNumber, setInvoiceNumber] = useState(
+    getSaleDetail("invoice_number") || "",
+  );
 
   // Auto-select Frigorífico when saleType is "abate"
   useEffect(() => {
-    if (saleType === "abate") {
+    if (saleType === "abate" && !initialMovement) {
       const frigorifico = clients.find((c) =>
         c.name.toLowerCase().includes("frigorífico"),
       );
       if (frigorifico) {
         setClientId(frigorifico.id);
-      } else {
-        // If not found, we might want to alert or just set a placeholder
-        // For now, let's just keep it as is or set to an empty string if not found
-        // but the user wants it specifically for frigorífico
       }
     } else if (
+      !initialMovement &&
       clientId &&
       clients
         .find((c) => c.id === clientId)
         ?.name.toLowerCase()
         .includes("frigorífico")
     ) {
-      setClientId(""); // Clear if switching back and it was frigorífico
+      if (saleType !== "abate") {
+        setClientId("");
+      }
     }
-  }, [saleType, clients]);
+  }, [saleType, clients, initialMovement]);
 
   // Troca fields
-  const [substituteAnimalRgn, setSubstituteAnimalRgn] = useState("");
+  const [substituteAnimalRgn, setSubstituteAnimalRgn] = useState(
+    initialMovement?.type === "troca"
+      ? (initialMovement.details as any).substitute_animal_rgn
+      : "",
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!movementType || !animalId || !animalExists) return;
+    if (movementType === "venda" && !clientId) return;
 
     setIsSubmitting(true);
 
@@ -102,8 +145,14 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
             down_payment: parseFloat(downPayment) || 0,
             payment_method: paymentMethod,
             installments: parseInt(installments) || 0,
+            installment_value: parseFloat(installmentValue) || 0,
+            value_parcels: parseFloat(valueParcels) || 0,
             gta_number: gtaNumber,
             invoice_number: invoiceNumber,
+            // Preserve sale_id if editing
+            ...(initialMovement?.type === "venda"
+              ? { sale_id: (initialMovement.details as any).sale_id }
+              : {}),
           };
           const clientName =
             clients.find((c) => c.id === clientId)?.name || "Cliente";
@@ -121,13 +170,23 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
           break;
       }
 
-      await createMovement({
-        type: movementType,
-        animal_id: animalId,
-        date,
-        description,
-        details,
-      });
+      if (initialMovement) {
+        await updateMovement(initialMovement.id, {
+          type: movementType as MovementType,
+          animal_id: animalId,
+          date,
+          description,
+          details,
+        });
+      } else {
+        await createMovement({
+          type: movementType as MovementType,
+          animal_id: animalId,
+          date,
+          description,
+          details,
+        });
+      }
 
       setShowSuccess(true);
     } catch (error) {
@@ -148,7 +207,9 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
         </div>
         <div className="space-y-2 text-center">
           <h3 className="text-foreground text-2xl font-bold">
-            Movimentação Registrada!
+            {initialMovement
+              ? "Movimentação Atualizada!"
+              : "Movimentação Registrada!"}
           </h3>
           <p className="text-muted-foreground text-sm">
             O status do animal foi atualizado.
@@ -164,14 +225,22 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
     );
   }
 
+  const isFormValid =
+    !!movementType &&
+    !!animalId &&
+    animalExists &&
+    (movementType !== "venda" || !!clientId);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-primary uppercase">
-          Nova Movimentação
+          {initialMovement ? "Editar Movimentação" : "Nova Movimentação"}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Registre morte, venda ou troca de animal.
+          {initialMovement
+            ? "Altere os dados da movimentação selecionada."
+            : "Registre morte, venda ou troca de animal."}
         </p>
       </div>
 
@@ -182,6 +251,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
         <Select
           value={movementType}
           onValueChange={(v) => setMovementType(v as MovementType)}
+          disabled={!!initialMovement}
         >
           <SelectTrigger className="bg-muted border-0 rounded-sm mt-1 w-40">
             <SelectValue placeholder="Selecione o tipo" />
@@ -213,6 +283,7 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
                     showRgnError ? "ring-2 ring-red-500" : ""
                   }`}
                   placeholder="Digite o RGN do animal..."
+                  disabled={!!initialMovement}
                 />
                 {showRgnError && (
                   <p className="text-[10px] text-red-500 font-semibold mt-1 px-1">
@@ -283,14 +354,19 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
 
                 <div className="space-y-2">
                   <label className="text-xs uppercase font-bold text-primary px-1">
-                    Cliente
+                    Cliente{" "}
+                    {movementType === "venda" && (
+                      <span className="text-red-500">*</span>
+                    )}
                   </label>
                   <Select
                     value={clientId}
                     onValueChange={setClientId}
                     disabled={saleType === "abate"}
                   >
-                    <SelectTrigger className="bg-muted border-0 rounded-sm mt-1 w-full text-left">
+                    <SelectTrigger
+                      className={`bg-muted border-0 rounded-sm mt-1 w-full text-left ${movementType === "venda" && !clientId ? "ring-1 ring-orange-400" : ""}`}
+                    >
                       <SelectValue placeholder="Selecione o cliente" />
                     </SelectTrigger>
                     <SelectContent>
@@ -304,6 +380,11 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
                   {saleType === "abate" && !clientId && (
                     <p className="text-[10px] text-orange-500 font-semibold mt-1 px-1 leading-tight">
                       Atenção: Cliente "Frigorífico" não encontrado no cadastro.
+                    </p>
+                  )}
+                  {movementType === "venda" && !clientId && (
+                    <p className="text-[10px] text-orange-500 font-semibold mt-1 px-1">
+                      Obrigatório selecionar um cliente.
                     </p>
                   )}
                 </div>
@@ -346,17 +427,49 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
               </div>
 
               {paymentMethod === "Boleto" && (
-                <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-primary px-1">
+                        Entrada (R$)
+                      </label>
+                      <Input
+                        id="sale-down-payment"
+                        name="downPayment"
+                        type="number"
+                        value={downPayment}
+                        onChange={(e) => setDownPayment(e.target.value)}
+                        autoComplete="off"
+                        className="bg-muted border-0 rounded-sm mt-1 placeholder:text-xs"
+                        placeholder="0,00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase font-bold text-primary px-1">
+                        Parcelas
+                      </label>
+                      <Input
+                        id="sale-installments"
+                        name="installments"
+                        type="number"
+                        value={installments}
+                        onChange={(e) => setInstallments(e.target.value)}
+                        autoComplete="off"
+                        className="bg-muted border-0 rounded-sm mt-1 placeholder:text-xs"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase font-bold text-primary px-1">
-                      Entrada (R$)
+                      Valor da Parcela (R$)
                     </label>
                     <Input
-                      id="sale-down-payment"
-                      name="downPayment"
+                      id="sale-installment-value"
+                      name="installmentValue"
                       type="number"
-                      value={downPayment}
-                      onChange={(e) => setDownPayment(e.target.value)}
+                      value={installmentValue}
+                      onChange={(e) => setInstallmentValue(e.target.value)}
                       autoComplete="off"
                       className="bg-muted border-0 rounded-sm mt-1 placeholder:text-xs"
                       placeholder="0,00"
@@ -364,17 +477,17 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase font-bold text-primary px-1">
-                      Parcelas
+                      Valor Parcelas (R$)
                     </label>
                     <Input
-                      id="sale-installments"
-                      name="installments"
+                      id="sale-value-parcels"
+                      name="valueParcels"
                       type="number"
-                      value={installments}
-                      onChange={(e) => setInstallments(e.target.value)}
+                      value={valueParcels}
+                      onChange={(e) => setValueParcels(e.target.value)}
                       autoComplete="off"
                       className="bg-muted border-0 rounded-sm mt-1 placeholder:text-xs"
-                      placeholder="0"
+                      placeholder="0,00"
                     />
                   </div>
                 </div>
@@ -457,17 +570,17 @@ export function MovementForm({ onSuccess }: MovementFormProps) {
 
           <Button
             type="submit"
-            disabled={isSubmitting || !animalId || !animalExists}
+            disabled={isSubmitting || !isFormValid}
             className="h-12 w-full text-base uppercase font-bold rounded-md mt-4 shadow-xl shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-70 flex gap-2"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Registrando...
+                {initialMovement ? "Atualizando..." : "Registrando..."}
               </>
             ) : (
               <>
-                Finalizar
+                {initialMovement ? "Salvar Alterações" : "Finalizar"}
                 <ArrowRight className="h-5 w-5" />
               </>
             )}

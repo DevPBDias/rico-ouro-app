@@ -28,20 +28,23 @@ export function StandardTabList({
   if (variant === "simple") {
     return (
       <TabsList
-        className={cn("grid w-full h-12 rounded-xl bg-muted/50", className)}
-        style={{
-          gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
-        }}
+        className={cn(
+          "h-12 rounded-md bg-muted/50 w-full overflow-x-hidden",
+          className,
+        )}
       >
-        {tabs.map((tab) => (
-          <TabsTrigger
-            key={tab.value}
-            value={tab.value}
-            className="rounded-md data-[state=active]:bg-primary data-[state=active]:text-white font-semibold"
-          >
-            {tab.label}
-          </TabsTrigger>
-        ))}
+        <div className="flex w-full h-full min-w-max p-1 gap-1">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="rounded-md data-[state=active]:bg-primary data-[state=active]:text-white font-semibold flex items-center justify-center gap-2 px-1.5 transition-all duration-200"
+            >
+              {tab.icon && <tab.icon className="h-4 w-4 shrink-0" />}
+              <span className="truncate">{tab.label}</span>
+            </TabsTrigger>
+          ))}
+        </div>
       </TabsList>
     );
   }

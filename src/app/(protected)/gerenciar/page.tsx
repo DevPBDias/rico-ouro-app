@@ -105,11 +105,11 @@ const GerenciarPage = () => {
               <StandardTabList
                 variant="simple"
                 tabs={[
-                  { value: "fazenda", label: "Fazenda", icon: Landmark },
-                  { value: "status", label: "Status", icon: Activity },
-                  { value: "classe", label: "Classe", icon: Layers },
-                  { value: "sociedade", label: "Sociedade", icon: Users },
-                  { value: "situacao", label: "Situação", icon: ClipboardList },
+                  { value: "fazenda", label: "Fazenda" },
+                  { value: "status", label: "Status" },
+                  { value: "classe", label: "Classe" },
+                  { value: "sociedade", label: "Sociedade" },
+                  { value: "situacao", label: "Situação" },
                 ]}
                 activeTab={activeTab}
                 className="mb-4"
