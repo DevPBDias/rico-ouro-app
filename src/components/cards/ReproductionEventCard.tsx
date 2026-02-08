@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Edit2,
-  Trash2,
-  Calendar,
-  Info,
-  Activity,
-  ClipboardList,
-} from "lucide-react";
+import { Edit2, Trash2, Info, Activity, ClipboardList } from "lucide-react";
 import { formatDate } from "@/utils/formatDates";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { Animal } from "@/types/animal.type";
@@ -91,7 +84,7 @@ export const ReproductionEventCard = ({
               <span className="text-primary font-black text-sm uppercase tracking-tighter">
                 {event.event_type}
               </span>
-              <div className="h-4 w-[1px] bg-primary/20" />
+              <div className="h-4 w-px bg-primary/20" />
               <span className="text-muted-foreground text-xs font-bold">
                 {event.d0_date && formatDate(event.d0_date)}
               </span>
@@ -153,7 +146,7 @@ export const ReproductionEventCard = ({
         {/* Informações Gerais */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-primary">
-            <Info size={14} className="stroke-[3]" />
+            <Info size={14} className="stroke-3" />
             <h4 className="text-[11px] font-black uppercase tracking-wider">
               Informações Gerais da Matriz
             </h4>
@@ -171,7 +164,7 @@ export const ReproductionEventCard = ({
         {/* Avaliação Reprodutiva */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-primary">
-            <Activity size={14} className="stroke-[3]" />
+            <Activity size={14} className="stroke-3" />
             <h4 className="text-[11px] font-black uppercase tracking-wider">
               Avaliação Reprodutiva da Matriz
             </h4>
@@ -218,7 +211,7 @@ export const ReproductionEventCard = ({
         {/* Phases Tabs */}
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-primary">
-            <ClipboardList size={14} className="stroke-[3]" />
+            <ClipboardList size={14} className="stroke-3" />
             <h4 className="text-[11px] font-black uppercase tracking-wider">
               Etapas da Reprodução
             </h4>
@@ -318,7 +311,7 @@ export const ReproductionEventCard = ({
           </Tabs>
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-primary">
-              <ClipboardList size={14} className="stroke-[3]" />
+              <ClipboardList size={14} className="stroke-3" />
               <h4 className="text-[11px] font-black uppercase tracking-wider">
                 Previsão Parto
               </h4>

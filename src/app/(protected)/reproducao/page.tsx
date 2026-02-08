@@ -223,9 +223,6 @@ export default function ReproducaoPage() {
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           rgn={selectedMatriz.rgn}
-          onSuccess={() => {
-            /* Não precisa fazer nada, o hook de lista atualiza automatico via RxDB */
-          }}
         />
       )}
 

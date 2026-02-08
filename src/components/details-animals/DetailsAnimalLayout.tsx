@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { StandardTabList } from "@/components/ui/StandardTabList";
 import Header from "@/components/layout/Header";
 import { useAnimalById } from "@/hooks/db/animals/useAnimalById";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
@@ -140,8 +141,8 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="h-auto gap-2 rounded-xl p-1 bg-linear-to-r from-muted/50 to-muted/30 shadow-sm mb-4 flex w-full">
-                {[
+              <StandardTabList
+                tabs={[
                   { value: "dados", label: "Dados", icon: ClipboardList },
                   { value: "vaccines", label: "Vacinas", icon: Syringe },
                   {
@@ -152,49 +153,11 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   { value: "reproduction", label: "Repro", icon: VenusAndMars },
                   { value: "movements", label: "Movim.", icon: ArrowRightLeft },
                   { value: "graphics", label: "Gráficos", icon: LineChart },
-                ].map(({ value, label, icon: Icon }) => {
-                  const isActive = activeTab === value;
-
-                  return (
-                    <TabsTrigger
-                      key={value}
-                      value={value}
-                      asChild
-                      className="p-0 border-none bg-transparent data-[state=active]:bg-transparent shadow-none"
-                    >
-                      <motion.div
-                        layout
-                        className={cn(
-                          "flex h-9 items-center justify-center overflow-hidden rounded-md cursor-pointer transition-all duration-300",
-                          isActive
-                            ? "flex-1 bg-[#1162ae]! text-primary-foreground! shadow-none border-none"
-                            : "flex-none text-muted-foreground hover:bg-muted/50",
-                        )}
-                        animate={{
-                          width: isActive ? 90 : 40,
-                        }}
-                      >
-                        <motion.div className="flex h-9 w-full items-center justify-center px-2 gap-2">
-                          <Icon className="aspect-square size-5 shrink-0" />
-                          <AnimatePresence initial={false}>
-                            {isActive && (
-                              <motion.span
-                                className="font-semibold text-[11px] uppercase whitespace-nowrap"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                              >
-                                {label}
-                              </motion.span>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      </motion.div>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-
+                ]}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                className="mb-4"
+              />
               <TabsContent
                 value="dados"
                 className="mt-0 animate-in fade-in-0 duration-200 w-full"
@@ -417,7 +380,6 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   </div>
                 </div>
               </TabsContent>
-
               <TabsContent
                 value="vaccines"
                 className="mt-0 animate-in fade-in-0 duration-200"
@@ -511,7 +473,6 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   })()}
                 </div>
               </TabsContent>
-
               <TabsContent
                 value="pesagem-ce-list"
                 className="mt-0 animate-in fade-in-0 duration-200"
@@ -583,7 +544,6 @@ const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
                   </TabsContent>
                 </Tabs>
               </TabsContent>
-
               <TabsContent
                 value="graphics"
                 className="mt-0 animate-in fade-in-0 duration-200"

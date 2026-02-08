@@ -2,8 +2,17 @@ import { useState, useMemo } from "react";
 import { useMovements } from "@/hooks/db/movements/useMovements";
 import { MovementListItem } from "./MovementListItem";
 import { Input } from "@/components/ui/input";
-import { Search, X as XIcon } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StandardTabList } from "@/components/ui/StandardTabList";
+import {
+  Search,
+  X as XIcon,
+  LayoutList,
+  Baby,
+  Skull,
+  ShoppingCart,
+  ArrowRightLeft,
+} from "lucide-react";
 
 export function MovementList() {
   const { movements, loading } = useMovements();
@@ -93,23 +102,19 @@ export function MovementList() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-0.5 border border-border  ">
-          {[
-            { value: "all", label: "Todas" },
-            { value: "nascimento", label: "Nasc." },
-            { value: "morte", label: "Morte" },
-            { value: "venda", label: "Venda" },
-            { value: "troca", label: "Troca" },
-          ].map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="flex-1 min-w-[40px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <StandardTabList
+          variant="simple"
+          tabs={[
+            { value: "all", label: "Todas", icon: LayoutList },
+            { value: "nascimento", label: "Nasc.", icon: Baby },
+            { value: "morte", label: "Morte", icon: Skull },
+            { value: "venda", label: "Venda", icon: ShoppingCart },
+            { value: "troca", label: "Troca", icon: ArrowRightLeft },
+          ]}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          className="mb-1"
+        />
       </Tabs>
 
       {/* List */}

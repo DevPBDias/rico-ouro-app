@@ -11,8 +11,16 @@ import { ManageStatus } from "@/components/manage/ManageStatus";
 import { ManageClassification } from "@/components/manage/ManageClassification";
 import { ManageSociety } from "@/components/manage/ManageSociety";
 import { ManageSituation } from "@/components/manage/ManageSituation";
-import { Info, X, User, ChevronRight } from "lucide-react";
+import {
+  X,
+  Landmark,
+  Activity,
+  Layers,
+  Users,
+  ClipboardList,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StandardTabList } from "@/components/ui/StandardTabList";
 import Link from "next/link";
 
 const GerenciarPage = () => {
@@ -45,23 +53,6 @@ const GerenciarPage = () => {
       <Header title="Gerenciamento" />
 
       <div className="p-4 space-y-4">
-        {/* Clients Management Link */}
-        <Link href="/gerenciar/clientes">
-          <Button
-            variant="outline"
-            className="w-full h-14 rounded-2xl border-primary/20 bg-primary/5 text-primary font-bold uppercase text-xs flex items-center justify-between px-5 group hover:bg-primary hover:text-white transition-all shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <User
-                size={20}
-                className="group-hover:scale-110 transition-transform"
-              />
-              <span>Gerenciar Clientes</span>
-            </div>
-            <ChevronRight size={18} />
-          </Button>
-        </Link>
-
         {/* Selector Section */}
         <div className="space-y-3">
           {!selectedAnimal ? (
@@ -111,40 +102,18 @@ const GerenciarPage = () => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <div className="overflow-x-hidden pb-1 -mx-2 px-2">
-                <TabsList className="flex w-max min-w-full bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-0.5 border border-border  ">
-                  <TabsTrigger
-                    value="fazenda"
-                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-                  >
-                    Fazenda
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="status"
-                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-                  >
-                    Status
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="classe"
-                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-                  >
-                    Classe
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="sociedade"
-                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-                  >
-                    Sociedade
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="situacao"
-                    className="flex-1 min-w-[75px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-                  >
-                    Situação
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+              <StandardTabList
+                variant="simple"
+                tabs={[
+                  { value: "fazenda", label: "Fazenda", icon: Landmark },
+                  { value: "status", label: "Status", icon: Activity },
+                  { value: "classe", label: "Classe", icon: Layers },
+                  { value: "sociedade", label: "Sociedade", icon: Users },
+                  { value: "situacao", label: "Situação", icon: ClipboardList },
+                ]}
+                activeTab={activeTab}
+                className="mb-4"
+              />
 
               <div className="mt-2">
                 <TabsContent

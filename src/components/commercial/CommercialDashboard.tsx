@@ -1,6 +1,14 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { StandardTabList } from "@/components/ui/StandardTabList";
+import {
+  ShoppingCart,
+  Users,
+  ClipboardList,
+  LineChart,
+  BarChart3,
+} from "lucide-react";
 import { useState } from "react";
 import { SalesList } from "./SalesList";
 import { SalesDetails } from "./SalesDetails";
@@ -76,20 +84,15 @@ export function CommercialDashboard() {
         onValueChange={(v) => setMainTab(v as MainTab)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50">
-          <TabsTrigger
-            value="vendas"
-            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white font-bold"
-          >
-            Vendas
-          </TabsTrigger>
-          <TabsTrigger
-            value="clientes"
-            className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white font-bold"
-          >
-            Clientes
-          </TabsTrigger>
-        </TabsList>
+        <StandardTabList
+          variant="simple"
+          tabs={[
+            { value: "vendas", label: "Vendas", icon: ShoppingCart },
+            { value: "clientes", label: "Clientes", icon: Users },
+          ]}
+          activeTab={mainTab}
+          onTabChange={(v) => setMainTab(v as MainTab)}
+        />
 
         <TabsContent value="vendas" className="mt-4">
           {/* Sales Sub-Tabs: Detalhes | Gráficos | Resumo */}
@@ -98,26 +101,16 @@ export function CommercialDashboard() {
             onValueChange={(v) => setSalesSubTab(v as SalesSubTab)}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3 h-10 rounded-xl bg-white border">
-              <TabsTrigger
-                value="detalhes"
-                className="rounded-lg text-sm data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-semibold"
-              >
-                Detalhes
-              </TabsTrigger>
-              <TabsTrigger
-                value="graficos"
-                className="rounded-lg text-sm data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-semibold"
-              >
-                Gráficos
-              </TabsTrigger>
-              <TabsTrigger
-                value="resumo"
-                className="rounded-lg text-sm data-[state=active]:bg-primary/10 data-[state=active]:text-primary font-semibold"
-              >
-                Resumo
-              </TabsTrigger>
-            </TabsList>
+            <StandardTabList
+              variant="simple"
+              tabs={[
+                { value: "detalhes", label: "Detalhes", icon: ClipboardList },
+                { value: "graficos", label: "Gráficos", icon: LineChart },
+                { value: "resumo", label: "Resumo", icon: BarChart3 },
+              ]}
+              activeTab={salesSubTab}
+              onTabChange={(v) => setSalesSubTab(v as SalesSubTab)}
+            />
 
             <TabsContent value="detalhes" className="mt-4">
               <SalesList />
