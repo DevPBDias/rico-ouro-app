@@ -475,21 +475,7 @@ export function MovementForm({
                       placeholder="0,00"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase font-bold text-primary px-1">
-                      Valor Parcelas (R$)
-                    </label>
-                    <Input
-                      id="sale-value-parcels"
-                      name="valueParcels"
-                      type="number"
-                      value={valueParcels}
-                      onChange={(e) => setValueParcels(e.target.value)}
-                      autoComplete="off"
-                      className="bg-muted border-0 rounded-sm mt-1 placeholder:text-xs"
-                      placeholder="0,00"
-                    />
-                  </div>
+
                 </div>
               )}
 
