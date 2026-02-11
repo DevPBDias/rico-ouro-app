@@ -88,7 +88,7 @@ export function ClientDetails({
       </div>
 
       {/* Buy List Section */}
-      <BuyList />
+      <BuyList clientId={client.id} />
     </div>
   );
 }

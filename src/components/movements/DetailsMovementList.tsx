@@ -8,7 +8,7 @@ interface DetailsMovementListProps {
 }
 
 export function DetailsMovementList({ rgn }: DetailsMovementListProps) {
-  const { getMovementsByAnimal } = useMovements();
+  const { getMovementsByAnimal, deleteMovement } = useMovements();
   const [movements, setMovements] = useState<any[]>([]); // TODO: Type correctly after fetch fix
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +54,11 @@ export function DetailsMovementList({ rgn }: DetailsMovementListProps) {
   return (
     <div className="space-y-2">
       {movements.map((movement) => (
-        <MovementListItem key={movement.id} movement={movement} />
+        <MovementListItem
+          key={movement.id}
+          movement={movement}
+          onDelete={deleteMovement}
+        />
       ))}
     </div>
   );

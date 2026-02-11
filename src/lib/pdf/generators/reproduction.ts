@@ -29,13 +29,13 @@ export const generateReproductionPDF = async (
     { header: "idade", dataKey: "idade" },
     { header: "classe", dataKey: "classification" },
     { header: "d0", dataKey: "d0" },
-    { header: "d8", dataKey: "d8" },
-    { header: "d10", dataKey: "d10" },
+    { header: "d8/d9", dataKey: "d8" },
+    { header: "d10/d11", dataKey: "d10" },
     { header: "touro", dataKey: "touro" },
-    { header: "resync d0 (d22)", dataKey: "resync_d0" },
-    { header: "resync d8 (d30)", dataKey: "resync_d8" },
-    { header: "dg30", dataKey: "dg30s" }, // Changed to avoid clash if needed, but dataKey should match mapping
-    { header: "resync d10 (d32)", dataKey: "resync_d10" },
+    { header: "resync d0 (d22/d23)", dataKey: "resync_d0" },
+    { header: "resync d8 (d30/d32)", dataKey: "resync_d8" },
+    { header: "dg30", dataKey: "dg30s" },
+    { header: "resync d10 (d32/d34)", dataKey: "resync_d10" },
     { header: "touro resync", dataKey: "touro_resync" },
   ];
 

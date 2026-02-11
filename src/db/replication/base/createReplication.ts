@@ -13,7 +13,6 @@ import {
   cleanSupabaseDocuments,
   cleanSupabaseDocument,
 } from "@/lib/supabase/auth-helper";
-import { lastWriteWins } from "./conflictResolver";
 
 export function createReplication<T extends ReplicableEntity>(
   config: ReplicationConfig<T>,

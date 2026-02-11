@@ -110,7 +110,7 @@ export function SalesList() {
           <Select
             onValueChange={(v) => setYearFilter(v === "all" ? null : Number(v))}
           >
-            <SelectTrigger className="h-10 rounded-xl bg-white">
+            <SelectTrigger className="h-12 rounded-md bg-white w-full">
               <SelectValue placeholder="Ano" />
             </SelectTrigger>
             <SelectContent>
@@ -128,7 +128,7 @@ export function SalesList() {
               setMonthFilter(v === "all" ? null : Number(v))
             }
           >
-            <SelectTrigger className="h-10 rounded-xl bg-white">
+            <SelectTrigger className="h-12 rounded-md bg-white  w-full">
               <SelectValue placeholder="Mês" />
             </SelectTrigger>
             <SelectContent>
@@ -144,7 +144,7 @@ export function SalesList() {
           <Select
             onValueChange={(v) => setClientFilter(v === "all" ? null : v)}
           >
-            <SelectTrigger className="h-10 rounded-xl bg-white">
+            <SelectTrigger className="h-12 rounded-md bg-white w-full">
               <SelectValue placeholder="Cliente" />
             </SelectTrigger>
             <SelectContent>
@@ -162,7 +162,7 @@ export function SalesList() {
               setPaymentMethodFilter(v === "all" ? null : v)
             }
           >
-            <SelectTrigger className="h-10 rounded-xl bg-white">
+            <SelectTrigger className="h-12 rounded-md bg-white w-full">
               <SelectValue placeholder="Tipo Pgto" />
             </SelectTrigger>
             <SelectContent>
@@ -180,7 +180,7 @@ export function SalesList() {
           />
           <Input
             placeholder="Buscar por RGN, GTA ou Nota..."
-            className="pl-10 h-12 rounded-xl bg-white shadow-sm border-none focus-visible:ring-primary"
+            className="pl-10 h-12 rounded-md bg-white shadow-sm border-none focus-visible:ring-primary placeholder:text-sm"
             onChange={(e) => searchSales(e.target.value)}
           />
         </div>

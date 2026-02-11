@@ -1,11 +1,46 @@
-"use client";
-
-import { BUY_MOCK } from "@/constants/buy_mock";
+import { useSales } from "@/hooks/db/sales/useSales";
+import { useEffect, useMemo } from "react";
 import { Accordion } from "@/components/ui/accordion";
 import { BuyListItem } from "./BuyListItem";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Loader2 } from "lucide-react";
 
-export function BuyList() {
+interface BuyListProps {
+  clientId: string;
+}
+
+export function BuyList({ clientId }: BuyListProps) {
+  const { allSales, isLoading, setClientFilter } = useSales();
+
+  useEffect(() => {
+    setClientFilter(clientId);
+  }, [clientId, setClientFilter]);
+
+  const clientSales = useMemo(() => {
+    return allSales.filter((s) => s.client_id === clientId);
+  }, [allSales, clientId]);
+
+  const totalAmount = useMemo(() => {
+    return clientSales.reduce((sum, sale) => sum + (sale.total_value || 0), 0);
+  }, [clientSales]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground animate-pulse">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary/40" />
+        <p className="text-[10px] font-bold uppercase tracking-widest">
+          Carregando Compras...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -13,20 +48,22 @@ export function BuyList() {
           <ShoppingBag size={14} />
           Lista de Compras
         </h3>
-        <span className="text-[11px] font-bold bg-primary/10 text-primary px-3 py-1 rounded-sm uppercase">
-          Montante: R$ 3.800,50
-        </span>
+        {clientSales.length > 0 && (
+          <span className="text-[11px] font-bold bg-primary/10 text-primary px-3 py-1 rounded-sm uppercase">
+            Montante: {formatCurrency(totalAmount)}
+          </span>
+        )}
       </div>
 
-      {BUY_MOCK.length > 0 ? (
+      {clientSales.length > 0 ? (
         <Accordion
           type="single"
           collapsible
-          defaultValue={BUY_MOCK[0].rgn}
+          defaultValue={clientSales[0].id}
           className="w-full"
         >
-          {BUY_MOCK.map((buy) => (
-            <BuyListItem key={buy.rgn} buy={buy} />
+          {clientSales.map((sale) => (
+            <BuyListItem key={sale.id} sale={sale} />
           ))}
         </Accordion>
       ) : (

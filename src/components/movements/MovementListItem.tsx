@@ -1,7 +1,6 @@
+import { useState } from "react";
 import { Movement, SalePayload } from "@/types/movement.type";
-import { Skull, Banknote, ArrowRightLeft, Edit2 } from "lucide-react";
-import bezerro from "@/assets/icons/bezerro.png";
-import Image from "next/image";
+import { Skull, Banknote, ArrowRightLeft, Edit2, Trash2 } from "lucide-react";
 import { formatDate } from "@/utils/formatDates";
 import { useClientById } from "@/hooks/db/clients/useClientById";
 import {
@@ -10,10 +9,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 interface MovementListItemProps {
   movement: Movement;
   onEdit?: (movement: Movement) => void;
+  onDelete?: (id: string) => void;
 }
 
 const typeConfig = {
@@ -71,7 +72,12 @@ const InfoRow = ({
   </div>
 );
 
-export function MovementListItem({ movement, onEdit }: MovementListItemProps) {
+export function MovementListItem({
+  movement,
+  onEdit,
+  onDelete,
+}: MovementListItemProps) {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const config = (typeConfig as any)[movement.type] || typeConfig.morte;
   const Icon = config.icon;
 
@@ -192,23 +198,61 @@ export function MovementListItem({ movement, onEdit }: MovementListItemProps) {
           </span>
         </div>
 
-        <div className="flex items-center px-2 mr-1">
-          <button
+        <div className="flex items-center px-2 mr-1 gap-2">
+          <div
+            role="button"
+            tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
               onEdit?.(movement);
             }}
-            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-md border border-border bg-background shadow-xs hover:border-primary/30"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onEdit?.(movement);
+              }
+            }}
+            className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-md border border-border bg-background shadow-xs hover:border-primary/30 cursor-pointer"
             title="Editar Movimentação"
           >
             <Edit2 size={16} />
-          </button>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDeleteModalOpen(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                setIsDeleteModalOpen(true);
+              }
+            }}
+            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-md border border-border bg-background shadow-xs hover:border-destructive/30 cursor-pointer"
+            title="Excluir Movimentação"
+          >
+            <Trash2 size={16} />
+          </div>
         </div>
       </AccordionTrigger>
 
       <AccordionContent className="px-4 pb-4">
         <div className="pt-2 border-t border-border/50">{renderContent()}</div>
       </AccordionContent>
+
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        title="Excluir Movimentação"
+        description={`Tem certeza que deseja excluir esta movimentação de ${config.label} do animal ${movement.animal_id}?`}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          onDelete?.(movement.id);
+          setIsDeleteModalOpen(false);
+        }}
+      />
     </AccordionItem>
   );
 }

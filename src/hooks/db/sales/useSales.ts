@@ -50,6 +50,10 @@ export function useSales() {
     refetch,
   } = useLocalQuery<Sale>("sales", query);
 
+  if (allSales && allSales.length > 0) {
+    console.log(`📊 [useSales] Loaded ${allSales.length} sales from local DB`);
+  }
+
   // Filter by year and month after fetching (RxDB date handling)
   const sales = useMemo(() => {
     if (!allSales) return [];

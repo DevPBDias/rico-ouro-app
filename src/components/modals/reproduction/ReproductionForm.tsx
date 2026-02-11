@@ -20,15 +20,7 @@ import {
   Diagnostic,
   PregnancyOrigin,
 } from "@/types/reproduction_event.type";
-import {
-  Loader2,
-  Calendar,
-  Activity,
-  ClipboardList,
-  Target,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { StandardTabList } from "@/components/ui/StandardTabList";
+import { Loader2 } from "lucide-react";
 import { SemenDoseSelector } from "@/components/doses/SemenDoseSelector";
 import { formatDate } from "@/utils/formatDates";
 import { DateOnly } from "@/utils/date_only";
@@ -55,8 +47,6 @@ export function ReproductionForm({
     protocol_name: "",
     ...initialData,
   });
-
-  const [activeFormTab, setActiveFormTab] = useState("evento");
 
   useEffect(() => {
     if (initialData) {
@@ -199,401 +189,363 @@ export function ReproductionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Tabs
-        value={activeFormTab}
-        onValueChange={setActiveFormTab}
-        className="w-full"
-      >
-        <StandardTabList
-          tabs={[
-            { value: "evento", label: "Evento", icon: Calendar },
-            { value: "avaliacao", label: "Avaliação", icon: Activity },
-            { value: "resultados", label: "Resultados", icon: Target },
-          ]}
-          activeTab={activeFormTab}
-          onTabChange={setActiveFormTab}
-          className="mb-6"
-        />
+      {/* Seção Principal */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+          Dados do Evento
+        </h3>
 
-        <TabsContent value="evento" className="space-y-4">
-          {/* Seção Principal */}
-          <div className="space-y-4">
-            <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-              Dados do Evento
-            </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Tipo
+            </label>
+            <Select
+              value={formData.event_type}
+              onValueChange={(v) => handleTypeChange(v as EventType)}
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="IATF">IATF</SelectItem>
+                <SelectItem value="FIV">FIV</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Tipo
-                </label>
-                <Select
-                  value={formData.event_type}
-                  onValueChange={(v) => handleTypeChange(v as EventType)}
-                >
-                  <SelectTrigger className="bg-muted/40 border-0 h-11">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IATF">IATF</SelectItem>
-                    <SelectItem value="FIV">FIV</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Data D0
+            </label>
+            <Input
+              type="date"
+              value={formData.d0_date || ""}
+              onChange={(e) => {
+                handleChange("d0_date", e.target.value);
+              }}
+              className="bg-muted/40 border-0 h-11"
+              required
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Protocolo IATF
+            </label>
+            <Select
+              value={formData.protocol_name || ""}
+              onValueChange={(v) => handleChange("protocol_name", v)}
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                <SelectValue placeholder="Tipo de Protocolo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sync D10">Sync D10</SelectItem>
+                <SelectItem value="Sync D11">Sync D11</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col justify-start gap-2 w-full border border-primary/60 p-2 rounded-md">
+            <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2">
+              {formData.protocol_name === "Sync D11" ? "Data D9" : "Data D8"}{" "}
+              <span className="text-black text-center text-sm font-normal">
+                {formatDate(formData.d8_date)}
+              </span>
+            </p>
+            <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2 ">
+              {formData.protocol_name === "Sync D11" ? "Data D11" : "Data D10"}{" "}
+              <span className="text-black text-center text-sm font-normal">
+                {formatDate(formData.d10_date)}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Data D0
-                </label>
-                <Input
-                  type="date"
-                  value={formData.d0_date || ""}
-                  onChange={(e) => {
-                    handleChange("d0_date", e.target.value);
-                  }}
-                  className="bg-muted/40 border-0 h-11"
-                  required
-                />
-              </div>
+      {/* Seção Avaliação Reprodutiva */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+          Avaliação Reprodutiva
+        </h3>
+
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Data Avaliação
+            </label>
+            <Input
+              type="date"
+              value={formData.evaluation_date || ""}
+              onChange={(e) => handleChange("evaluation_date", e.target.value)}
+              className="bg-muted/40 border-0 h-11"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1 w-full">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Score Corporal
+              </label>
+              <Select
+                value={formData.body_score?.toString() || ""}
+                onValueChange={(v) =>
+                  handleChange("body_score", parseInt(v) as 1 | 2 | 3 | 4 | 5)
+                }
+              >
+                <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5].map((score) => (
+                    <SelectItem key={score} value={score.toString()}>
+                      {score}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1 w-full">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Protocolo IATF
-                </label>
-                <Select
-                  value={formData.protocol_name || ""}
-                  onValueChange={(v) => handleChange("protocol_name", v)}
-                >
-                  <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                    <SelectValue placeholder="Tipo de Protocolo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sync D10">Sync D10</SelectItem>
-                    <SelectItem value="Sync D11">Sync D11</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col justify-start gap-2 w-full border border-primary/60 p-2 rounded-md">
-                <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2">
-                  {formData.protocol_name === "Sync D11"
-                    ? "Data D9"
-                    : "Data D8"}{" "}
-                  <span className="text-black text-center text-sm font-normal">
-                    {formatDate(formData.d8_date)}
-                  </span>
-                </p>
-                <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center justify-center gap-2 ">
-                  {formData.protocol_name === "Sync D11"
-                    ? "Data D11"
-                    : "Data D10"}{" "}
-                  <span className="text-black text-center text-sm font-normal">
-                    {formatDate(formData.d10_date)}
-                  </span>
-                </p>
-              </div>
+            <div className="space-y-1 w-full">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Estágio do Ciclo Estral
+              </label>
+              <Select
+                value={formData.cycle_stage || ""}
+                onValueChange={(v) =>
+                  handleChange("cycle_stage", v as CycleStage)
+                }
+              >
+                <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proestro">Proestro</SelectItem>
+                  <SelectItem value="estro">Estro</SelectItem>
+                  <SelectItem value="metaestro">Metaestro (Cio)</SelectItem>
+                  <SelectItem value="diestro">Diestro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1 w-full">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Tamanho dos Ovários
+              </label>
+              <Select
+                value={formData.ovary_size || ""}
+                onValueChange={(v) =>
+                  handleChange("ovary_size", v as OvarySize)
+                }
+              >
+                <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="pequeno">Pequeno</SelectItem>
+                  <SelectItem value="grande">Grande</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1 w-full">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Estrutura dos Ovários
+              </label>
+              <Select
+                value={formData.ovary_structure || ""}
+                onValueChange={(v) =>
+                  handleChange("ovary_structure", v as OvaryStructure)
+                }
+              >
+                <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Folículo">Folículo</SelectItem>
+                  <SelectItem value="Corpo Lúteo">Corpo Lúteo</SelectItem>
+                  <SelectItem value="Cisto">Cisto</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="avaliacao" className="space-y-4">
-          {/* Seção Avaliação Reprodutiva */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Status Reprodutivo
+            </label>
+            <Select
+              value={formData.productive_status || ""}
+              onValueChange={(v) =>
+                handleChange("productive_status", v as ReproductionStatus)
+              }
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="parida">Parida</SelectItem>
+                <SelectItem value="solteira">Solteira</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Seção Diagnóstico */}
+      <div className="space-y-4">
+        <div className="pt-2">
+          <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+            Touro{" "}
+            {formData.protocol_name === "Sync D11" ? "Sync D11" : "Sync D10"} -{" "}
+            {formatDate(formData.d10_date)}
+          </h3>
           <div className="space-y-4">
+            <SemenDoseSelector
+              value={formData.bull_name || ""}
+              onValueChange={(name) => handleChange("bull_name", name)}
+              placeholder="Selecione o Touro da IA"
+            />
             <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-              Avaliação Reprodutiva
+              Resync / diaganostico gestacional
             </h3>
 
-            <div className="space-y-4">
-              <div className="space-y-1">
+            <div className="space-y-1 w-full flex flex-row justify-between">
+              <div className="flex flex-col">
                 <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Data Avaliação
-                </label>
-                <Input
-                  type="date"
-                  value={formData.evaluation_date || ""}
-                  onChange={(e) =>
-                    handleChange("evaluation_date", e.target.value)
-                  }
-                  className="bg-muted/40 border-0 h-11"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1 w-full">
-                  <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                    Score Corporal
-                  </label>
-                  <Select
-                    value={formData.body_score?.toString() || ""}
-                    onValueChange={(v) =>
-                      handleChange(
-                        "body_score",
-                        parseInt(v) as 1 | 2 | 3 | 4 | 5,
-                      )
-                    }
-                  >
-                    <TabsTrigger asChild value="avaliacao">
-                      <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                    </TabsTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5].map((score) => (
-                        <SelectItem key={score} value={score.toString()}>
-                          {score}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1 w-full">
-                  <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                    Estágio do Ciclo Estral
-                  </label>
-                  <Select
-                    value={formData.cycle_stage || ""}
-                    onValueChange={(v) =>
-                      handleChange("cycle_stage", v as CycleStage)
-                    }
-                  >
-                    <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="proestro">Proestro</SelectItem>
-                      <SelectItem value="estro">Estro</SelectItem>
-                      <SelectItem value="metaestro">Metaestro (Cio)</SelectItem>
-                      <SelectItem value="diestro">Diestro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1 w-full">
-                  <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                    Tamanho dos Ovários
-                  </label>
-                  <Select
-                    value={formData.ovary_size || ""}
-                    onValueChange={(v) =>
-                      handleChange("ovary_size", v as OvarySize)
-                    }
-                  >
-                    <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="pequeno">Pequeno</SelectItem>
-                      <SelectItem value="grande">Grande</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1 w-full">
-                  <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                    Estrutura dos Ovários
-                  </label>
-                  <Select
-                    value={formData.ovary_structure || ""}
-                    onValueChange={(v) =>
-                      handleChange("ovary_structure", v as OvaryStructure)
-                    }
-                  >
-                    <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Folículo">Folículo</SelectItem>
-                      <SelectItem value="Corpo Lúteo">Corpo Lúteo</SelectItem>
-                      <SelectItem value="Cisto">Cisto</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1 w-full">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Status Reprodutivo
+                  Diagnóstico GestaCIONAL (
+                  {formData.protocol_name === "Sync D11" ? "D32" : "D30"}) -{" "}
+                  {formatDate(formData.d30_date)}
                 </label>
                 <Select
-                  value={formData.productive_status || ""}
+                  value={formData.diagnostic_d30 || ""}
                   onValueChange={(v) =>
-                    handleChange("productive_status", v as ReproductionStatus)
+                    handleChange("diagnostic_d30", v as Diagnostic)
                   }
                 >
                   <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                    <SelectValue placeholder="Selecione" />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="parida">Parida</SelectItem>
-                    <SelectItem value="solteira">Solteira</SelectItem>
+                    <SelectItem value="vazia">Vazia</SelectItem>
+                    <SelectItem value="prenha">Prenha</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight p-2 rounded-md flex flex-col items-start gap-2">
+                Data Resync{" "}
+                {formData.protocol_name === "Sync D11" ? "D23" : "D22"}{" "}
+                <span className="text-primary text-center text-sm">
+                  {formatDate(formData.d22_date)}
+                </span>
+              </p>
             </div>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="resultados" className="space-y-4">
-          {/* Seção Diagnóstico */}
-          <div className="space-y-4">
-            <div className="pt-2">
-              <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-                Touro{" "}
-                {formData.protocol_name === "Sync D11"
-                  ? "Sync D11"
-                  : "Sync D10"}{" "}
-                - {formatDate(formData.d10_date)}
-              </h3>
-              <div className="space-y-4">
-                <SemenDoseSelector
-                  value={formData.bull_name || ""}
-                  onValueChange={(name) => handleChange("bull_name", name)}
-                  placeholder="Selecione o Touro da IA"
-                />
-                <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-                  Resync / diaganostico gestacional
-                </h3>
-
-                <div className="space-y-1 w-full flex flex-row justify-between">
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                      Diagnóstico GestaCIONAL (
-                      {formData.protocol_name === "Sync D11" ? "D32" : "D30"}) -{" "}
-                      {formatDate(formData.d30_date)}
-                    </label>
-                    <Select
-                      value={formData.diagnostic_d30 || ""}
-                      onValueChange={(v) =>
-                        handleChange("diagnostic_d30", v as Diagnostic)
-                      }
-                    >
-                      <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vazia">Vazia</SelectItem>
-                        <SelectItem value="prenha">Prenha</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight p-2 rounded-md flex flex-col items-start gap-2">
+            {formData.diagnostic_d30 === "vazia" && (
+              <div className="space-y-1">
+                <div className="flex justify-between w-full">
+                  <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
                     Data Resync{" "}
-                    {formData.protocol_name === "Sync D11" ? "D23" : "D22"}{" "}
+                    {formData.protocol_name === "Sync D11" ? "D32" : "D30"}{" "}
                     <span className="text-primary text-center text-sm">
-                      {formatDate(formData.d22_date)}
+                      {formatDate(formData.d30_date)}
+                    </span>
+                  </p>
+                  <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
+                    Data resync{" "}
+                    {formData.protocol_name === "Sync D11"
+                      ? "IA D34"
+                      : "IA D32"}{" "}
+                    <span className="text-primary text-center text-sm">
+                      {formatDate(formData.d32_date)}
                     </span>
                   </p>
                 </div>
-
-                {formData.diagnostic_d30 === "vazia" && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between w-full">
-                      <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
-                        Data Resync{" "}
-                        {formData.protocol_name === "Sync D11" ? "D32" : "D30"}{" "}
-                        <span className="text-primary text-center text-sm">
-                          {formatDate(formData.d30_date)}
-                        </span>
-                      </p>
-                      <p className="w-fit text-[10px] font-bold text-muted-foreground uppercase tracking-tight flex items-center gap-2 border border-primary/60 p-2 rounded-md">
-                        Data resync{" "}
-                        {formData.protocol_name === "Sync D11"
-                          ? "IA D34"
-                          : "IA D32"}{" "}
-                        <span className="text-primary text-center text-sm">
-                          {formatDate(formData.d32_date)}
-                        </span>
-                      </p>
-                    </div>
-                    <SemenDoseSelector
-                      label="Touro Resync"
-                      value={formData.resync_bull || ""}
-                      onValueChange={(name) =>
-                        handleChange("resync_bull", name)
-                      }
-                      placeholder="Selecione o Touro"
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                    Touro Monta Natural
-                  </label>
-                  <Input
-                    value={formData.natural_mating_bull || ""}
-                    onChange={(e) =>
-                      handleChange("natural_mating_bull", e.target.value)
-                    }
-                    className="bg-muted/40 border-0 h-11"
-                    placeholder="Selecione o Touro"
-                  />
-                </div>
+                <SemenDoseSelector
+                  label="Touro Resync"
+                  value={formData.resync_bull || ""}
+                  onValueChange={(name) => handleChange("resync_bull", name)}
+                  placeholder="Selecione o Touro"
+                />
               </div>
-            </div>
+            )}
 
-            <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
-              Diagnóstico / Previsão de Parto
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1 w-full">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Diagnóstico Final (D110)
-                </label>
-                <Select
-                  value={formData.final_diagnostic || ""}
-                  onValueChange={(val) =>
-                    handleChange("final_diagnostic", val as Diagnostic)
-                  }
-                >
-                  <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
-                    <SelectValue placeholder="Pendente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="prenha">Prenha</SelectItem>
-                    <SelectItem value="vazia">Vazia</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1 w-full">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-                  Previsão de Parto a Partir De
-                </label>
-                <Select
-                  value={formData.pregnancy_origin || ""}
-                  onValueChange={(val) =>
-                    handleChange("pregnancy_origin", val as PregnancyOrigin)
-                  }
-                >
-                  <SelectTrigger className="bg-muted/40 border-0 h-11 w-full text-sm">
-                    <SelectValue placeholder="Selecione a Base" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="d10">
-                      {formData.protocol_name === "Sync D11"
-                        ? "Sync D11"
-                        : "Sync D10"}
-                    </SelectItem>
-                    <SelectItem value="resync">
-                      {formData.protocol_name === "Sync D11"
-                        ? "Resync D34"
-                        : "Resync D32"}
-                    </SelectItem>
-                    <SelectItem value="natural_mating">
-                      {formData.protocol_name === "Sync D11"
-                        ? "Monta Natural D37-D82"
-                        : "Monta Natural D35-D80"}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+                Touro Monta Natural
+              </label>
+              <Input
+                value={formData.natural_mating_bull || ""}
+                onChange={(e) =>
+                  handleChange("natural_mating_bull", e.target.value)
+                }
+                className="bg-muted/40 border-0 h-11"
+                placeholder="Selecione o Touro"
+              />
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+
+        <h3 className="font-bold text-[11px] uppercase text-muted-foreground border-b border-border/60 pb-1 mb-4">
+          Diagnóstico / Previsão de Parto
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Diagnóstico Final (D110)
+            </label>
+            <Select
+              value={formData.final_diagnostic || ""}
+              onValueChange={(val) =>
+                handleChange("final_diagnostic", val as Diagnostic)
+              }
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full">
+                <SelectValue placeholder="Pendente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prenha">Prenha</SelectItem>
+                <SelectItem value="vazia">Vazia</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1 w-full">
+            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
+              Previsão de Parto a Partir De
+            </label>
+            <Select
+              value={formData.pregnancy_origin || ""}
+              onValueChange={(val) =>
+                handleChange("pregnancy_origin", val as PregnancyOrigin)
+              }
+            >
+              <SelectTrigger className="bg-muted/40 border-0 h-11 w-full text-sm">
+                <SelectValue placeholder="Selecione a Base" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="d10">
+                  {formData.protocol_name === "Sync D11"
+                    ? "Sync D11"
+                    : "Sync D10"}
+                </SelectItem>
+                <SelectItem value="resync">
+                  {formData.protocol_name === "Sync D11"
+                    ? "Resync D34"
+                    : "Resync D32"}
+                </SelectItem>
+                <SelectItem value="natural_mating">
+                  {formData.protocol_name === "Sync D11"
+                    ? "Monta Natural D37-D82"
+                    : "Monta Natural D35-D80"}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
       <div className="flex gap-4 pt-4">
         <Button

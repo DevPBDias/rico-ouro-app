@@ -24,6 +24,7 @@ export const saleReplication = createReplication<Sale>({
     gta_number: doc.gta_number ?? null,
     invoice_number: doc.invoice_number ?? null,
     value_parcels: doc.value_parcels ?? null,
+    installment_value: doc.installment_value ?? null,
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
     sale_type: doc.sale_type ?? null,

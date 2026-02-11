@@ -7,8 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { User, Phone, Mail, MapPin, Landmark, FileText } from "lucide-react";
+import { Phone, Mail, MapPin, Landmark, FileText } from "lucide-react";
 
 interface ClientListItemProps {
   client: Client;

@@ -2,12 +2,47 @@
 
 import { useReports } from "@/context/ReportsContext";
 import { AVAILABLE_REPORTS } from "@/lib/pdf/definitions";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import { ReportForm } from "@/components/reports";
+import { StandardTabList } from "@/components/ui/StandardTabList";
+import { useState, useMemo, useEffect } from "react";
+import { Syringe, Scale, Heart, FlaskConical, HouseIcon } from "lucide-react";
+
+type MainTab = "vendas" | "clientes";
+
+// Map icon strings from definitions to Lucide components
+const iconMap: Record<string, any> = {
+  HouseIcon,
+  Syringe,
+  Scale,
+  Heart,
+  FlaskConical,
+};
 
 export default function ReportsPage() {
   const { selectedReport, selectReport } = useReports();
+  const [mainTab, setMainTab] = useState<MainTab>("clientes");
+
+  // Filter reports based on the selected main category
+  const filteredReports = useMemo(() => {
+    if (mainTab === "clientes") {
+      return AVAILABLE_REPORTS;
+    }
+    return [];
+  }, [mainTab]);
+
+  // Ensure a report is selected when the category changes
+  useEffect(() => {
+    if (filteredReports.length > 0) {
+      if (
+        !selectedReport ||
+        !filteredReports.find((r) => r.id === selectedReport.id)
+      ) {
+        selectReport(filteredReports[0]);
+      }
+    }
+  }, [filteredReports, selectedReport, selectReport]);
 
   return (
     <div className="min-h-screen bg-background pb-10">
@@ -23,19 +58,26 @@ export default function ReportsPage() {
           }}
           className="w-full"
         >
-          <TabsList className="flex flex-wrap justify-between items-start bg-muted/30 rounded-xl p-1 mb-1 h-auto gap-1 border border-border">
-            {AVAILABLE_REPORTS.map((report) => (
-              <TabsTrigger
-                key={report.id}
-                value={report.id}
-                className="min-w-[82px] max-w-[96px] py-2.5 px-2 text-[11px] font-bold uppercase data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all rounded-lg"
-              >
-                {report.title.split(" ").pop()}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          {filteredReports.length > 0 ? (
+            <StandardTabList
+              tabs={filteredReports.map((report) => ({
+                value: report.id,
+                label: report.title.split(" ").pop() || report.title,
+                icon: iconMap[report.icon],
+              }))}
+              activeTab={selectedReport?.id || ""}
+              onTabChange={(id) => {
+                const report = AVAILABLE_REPORTS.find((r) => r.id === id);
+                if (report) selectReport(report);
+              }}
+            />
+          ) : (
+            <div className="py-10 text-center text-muted-foreground text-sm bg-muted/20 rounded-xl border border-dashed mb-4">
+              Nenhum relatório disponível para esta categoria.
+            </div>
+          )}
 
-          <div className="mt-2">
+          <div className="mt-4">
             {AVAILABLE_REPORTS.map((report) => (
               <TabsContent
                 key={report.id}

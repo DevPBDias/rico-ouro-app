@@ -13,11 +13,6 @@ const globalDataLinks: Links[] = [
   },
   {
     id: 3,
-    name: "Clientes",
-    href: "/gerenciar/clientes",
-  },
-  {
-    id: 4,
     name: "Importar Planilhas",
     href: "/geral/planilhas",
   },
