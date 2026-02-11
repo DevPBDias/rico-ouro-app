@@ -1,4 +1,4 @@
-# 🐄 Rico Ouro App (Nelore Índi Ouro)
+# 🐄 INDI Ouro App
 
 > **PWA Offline-First de nível corporativo para gestão de rebanhos bovinos.**
 > **Enterprise-grade Offline-First PWA for Cattle Herd Management.**
@@ -15,10 +15,9 @@
 
 ## 📖 Visão do Projeto e Contexto
 
-O **Rico Ouro App** é um sistema de gestão especializado projetado para a **Nelore Índi Ouro**, uma operação de pecuária de alto desempenho. Este projeto nasceu da necessidade de uma solução robusta e orientada a dados que funcione nas realidades remotas das fazendas rurais.
+O **INDI Ouro App** é um sistema de gestão especializado projetado para a **Nelore INDI OURO**, uma operação de pecuária de alto desempenho. Este projeto nasceu da necessidade de uma solução robusta e orientada a dados que funcione nas realidades remotas das fazendas rurais.
 
 ### A Jornada de Engenharia
-Esta aplicação demonstra uma **mentalidade de engenharia de nível pleno**:
 - **Desenvolvimento Iterativo**: Desenvolvido em múltiplos sprints com sincronizações semanais com o cliente.
 - **Centrado no Usuário**: Cada funcionalidade foi validada no ambiente real da fazenda.
 - **Qualidade em Primeiro Lugar**: Foco em tipagem segura, padrões de dados reativos e UI/UX premium.
@@ -234,10 +233,9 @@ rico-ouro-app/
 
 ## 📖 Project Vision & Context
 
-The **Rico Ouro App** is a specialized management system designed for **Nelore Índi Ouro**, a high-performance cattle breeding operation. This project was born from the need for a robust, data-driven solution that works in the remote realities of rural farms.
+The **INDI Ouro App** is a specialized management system designed for **Nelore INDI Ouro**, a high-performance cattle breeding operation. This project was born from the need for a robust, data-driven solution that works in the remote realities of rural farms.
 
 ### The Engineering Journey
-This application demonstrates a **mid-level engineering mindset**:
 - **Iterative Development**: Built across multiple sprints with weekly client syncs.
 - **User-Centric**: Every feature was validated in the actual farm environment.
 - **Quality First**: Focus on type safety, reactive data patterns, and premium UI/UX.
