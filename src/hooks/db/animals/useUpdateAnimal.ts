@@ -30,6 +30,7 @@ export function useUpdateAnimal() {
         ...oldData,
         ...data,
         updated_at: Date.now(),
+        created_at: (oldData as any).created_at || Date.now(),
         _deleted: false,
       };
       await animalsColl.insert(newData);

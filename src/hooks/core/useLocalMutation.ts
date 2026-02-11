@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 import type { RxCollection } from "rxdb";
 
 export function useLocalMutation<
-  T extends { updated_at: number; _deleted: boolean }
+  T extends { updated_at: number; _deleted: boolean; created_at: number }
 >(collectionName: string) {
   const db = useRxDatabase();
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +28,7 @@ export function useLocalMutation<
           ...data,
           _deleted: false,
           updated_at: Date.now(),
+          created_at: (data as any).created_at || Date.now(),
         };
 
         const doc = await collection.insert(documentData as unknown as T);
@@ -66,6 +67,7 @@ export function useLocalMutation<
           ...data,
           _deleted: false,
           updated_at: Date.now(),
+          created_at: (data as any).created_at || Date.now(),
         };
 
         const doc = await collection.upsert(documentData as unknown as T);
@@ -188,6 +190,7 @@ export function useLocalMutation<
           ...doc,
           _deleted: false,
           updated_at: Date.now(),
+          created_at: (doc as any).created_at || Date.now(),
         }));
 
         await collection.bulkInsert(documentsWithMeta as unknown as T[]);

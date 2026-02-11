@@ -63,7 +63,7 @@ export interface ReproductionEvent {
   final_diagnostic?: Diagnostic;
 
   /** Audit */
-  created_at?: string; // ISO DateTime
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

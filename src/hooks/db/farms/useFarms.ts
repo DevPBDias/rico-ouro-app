@@ -47,6 +47,7 @@ export function useFarms() {
     const newFarm: Farm = {
       id: uuidv4(),
       farm_name: farmName,
+      created_at: Date.now(),
       updated_at: Date.now(),
       _deleted: false,
     };

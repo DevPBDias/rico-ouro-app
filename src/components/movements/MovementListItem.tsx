@@ -123,7 +123,7 @@ export function MovementListItem({
                 <InfoRow
                   label="Valor das Parcelas"
                   value={
-                    sale.value_parcels?.toLocaleString("pt-BR", {
+                    sale.installment_value?.toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     }) || "R$ 0,00"

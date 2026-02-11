@@ -47,6 +47,7 @@ export function useVaccines() {
     const newVaccine: Vaccine = {
       id: uuidv4(),
       vaccine_name: vaccineName,
+      created_at: Date.now(),
       updated_at: Date.now(),
       _deleted: false,
     };

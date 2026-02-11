@@ -171,10 +171,17 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
   }, []);
 
   const addLocalDose = useCallback(
-    (doseData: Omit<SemenDose, "id" | "updated_at" | "_deleted">) => {
+    (
+      doseData: Omit<
+        SemenDose,
+        "id" | "updated_at" | "_deleted" | "created_at"
+      >,
+    ) => {
       const newDose: SemenDose = {
         id: uuidv4(),
         ...doseData,
+        created_at: Date.now(),
+        updated_at: Date.now(),
         _deleted: false,
       };
 
@@ -185,7 +192,7 @@ export function useDoseLocalState(persistedDoses: SemenDose[]) {
 
       return newDose;
     },
-    []
+    [],
   );
 
   const revert = useCallback(() => {

@@ -96,7 +96,7 @@ export function BuyListItem({ sale }: BuyListItemProps) {
           <DetailItem
             icon={<ListChecks size={14} />}
             label="Valor Parcela"
-            value={formatCurrency(sale.value_parcels)}
+            value={formatCurrency(sale.installment_value)}
           />
 
           <DetailItem

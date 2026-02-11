@@ -11,7 +11,6 @@ export function useCreateSituation() {
     const situationData = {
       ...data,
       id: data.id || uuidv4(),
-      _deleted: false,
     };
     return await create(situationData);
   };

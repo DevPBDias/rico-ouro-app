@@ -10,7 +10,6 @@ export function useCreateAnimal() {
   const createAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
       ...data,
-      _deleted: false,
     } as Animal;
 
     // Returns the created animal document
@@ -20,7 +19,6 @@ export function useCreateAnimal() {
   const saveAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
       ...data,
-      _deleted: false,
     } as Animal;
 
     // Returns the upserted animal document
