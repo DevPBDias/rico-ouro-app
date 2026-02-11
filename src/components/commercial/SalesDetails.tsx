@@ -14,7 +14,16 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Legend,
+} from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const MONTHS_SHORT = [
@@ -69,16 +78,18 @@ export function SalesDetails() {
       const yearSales = allSales.filter(
         (s) => new Date(s.date).getFullYear() === year,
       );
-      const totalValue = yearSales.reduce(
-        (sum, s) => sum + (s.total_value || 0),
-        0,
-      );
-      const count = yearSales.length;
+
+      const abateCount = yearSales.filter(
+        (s) => s.sale_type === "abate",
+      ).length;
+      const reproducaoCount = yearSales.filter(
+        (s) => s.sale_type === "comprado",
+      ).length;
 
       return {
         year: String(year),
-        animais: count,
-        valor: totalValue,
+        abate: abateCount,
+        reproducao: reproducaoCount,
       };
     });
   }, [allSales, currentYear]);
@@ -93,8 +104,8 @@ export function SalesDetails() {
   }
 
   const chartConfig = {
-    animais: { label: "Animais", color: "#3B82F6" },
-    valor: { label: "Valor (R$)", color: "#60A5FA" },
+    abate: { label: "Abate", color: "#3B82F6" },
+    reproducao: { label: "Reprodução", color: "#60A5FA" },
   };
 
   return (
@@ -169,25 +180,55 @@ export function SalesDetails() {
       {/* Bar Chart - 3 Year Comparison */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
         <h3 className="text-sm font-bold uppercase text-primary mb-4">
-          Comparativo dos últimos 3 anos
+          Comparativo dos últimos 3 anos (Abate vs Reprodução)
         </h3>
 
-        <ChartContainer config={chartConfig} className="h-48 w-full">
-          <BarChart data={barData}>
+        <ChartContainer config={chartConfig} className="h-64 w-full">
+          <BarChart
+            data={barData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
             <XAxis dataKey="year" tickLine={false} axisLine={false} />
             <YAxis tickLine={false} axisLine={false} width={40} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="animais" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+            <Legend verticalAlign="top" height={36} />
+            <Bar
+              dataKey="abate"
+              fill="#3B82F6"
+              radius={[4, 4, 0, 0]}
+              name="Abate"
+            />
+            <Bar
+              dataKey="reproducao"
+              fill="#60A5FA"
+              radius={[4, 4, 0, 0]}
+              name="Reprodução"
+            />
           </BarChart>
         </ChartContainer>
 
         <div className="grid grid-cols-3 gap-2 mt-4 text-center text-sm">
           {barData.map((item) => (
-            <div key={item.year}>
-              <p className="font-bold text-primary">{item.animais}</p>
-              <p className="text-xs text-muted-foreground">
-                animais em {item.year}
+            <div key={item.year} className="flex flex-col gap-1">
+              <p className="font-bold text-[10px] text-muted-foreground">
+                {item.year}
               </p>
+              <div className="flex justify-center gap-2">
+                <div className="flex flex-col">
+                  <span className="font-bold text-primary">{item.abate}</span>
+                  <span className="text-[8px] uppercase text-muted-foreground">
+                    Abate
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-blue-400">
+                    {item.reproducao}
+                  </span>
+                  <span className="text-[8px] uppercase text-muted-foreground">
+                    Repr.
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

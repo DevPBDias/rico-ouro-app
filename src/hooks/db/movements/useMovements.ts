@@ -89,7 +89,10 @@ export function useMovements() {
                 installments: vendaDetails.installments || 0,
                 installment_value: vendaDetails.installment_value || 0,
                 value_parcels: vendaDetails.value_parcels || 0,
-                financial_status: "pendente",
+                financial_status:
+                  vendaDetails.payment_method === "À Vista"
+                    ? "pago"
+                    : "pendente",
                 gta_number: vendaDetails.gta_number || "",
                 invoice_number: vendaDetails.invoice_number || "",
                 sale_type: vendaDetails.sale_type || "comprado",
@@ -163,6 +166,10 @@ export function useMovements() {
                   installments: vendaDetails.installments || 0,
                   installment_value: vendaDetails.installment_value || 0,
                   value_parcels: vendaDetails.value_parcels || 0,
+                  financial_status:
+                    vendaDetails.payment_method === "À Vista"
+                      ? "pago"
+                      : "pendente",
                   gta_number: vendaDetails.gta_number || "",
                   invoice_number: vendaDetails.invoice_number || "",
                   sale_type: vendaDetails.sale_type || "comprado",
@@ -192,7 +199,10 @@ export function useMovements() {
                   installments: vendaDetails.installments || 0,
                   installment_value: vendaDetails.installment_value || 0,
                   value_parcels: vendaDetails.value_parcels || 0,
-                  financial_status: "pendente",
+                  financial_status:
+                    vendaDetails.payment_method === "À Vista"
+                      ? "pago"
+                      : "pendente",
                   gta_number: vendaDetails.gta_number || "",
                   invoice_number: vendaDetails.invoice_number || "",
                   sale_type: vendaDetails.sale_type || "comprado",

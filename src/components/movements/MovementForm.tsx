@@ -346,8 +346,8 @@ export function MovementForm({
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="comprado">Compra Cliente</SelectItem>
-                      <SelectItem value="abate">Abate Frigorífico</SelectItem>
+                      <SelectItem value="comprado">Reprodução</SelectItem>
+                      <SelectItem value="abate">Abate</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -379,7 +379,7 @@ export function MovementForm({
                   </Select>
                   {saleType === "abate" && !clientId && (
                     <p className="text-[10px] text-orange-500 font-semibold mt-1 px-1 leading-tight">
-                      Atenção: Cliente "Frigorífico" não encontrado no cadastro.
+                      Atenção: Cliente não encontrado no cadastro.
                     </p>
                   )}
                   {movementType === "venda" && !clientId && (
@@ -475,7 +475,6 @@ export function MovementForm({
                       placeholder="0,00"
                     />
                   </div>
-
                 </div>
               )}
 

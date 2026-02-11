@@ -1,6 +1,7 @@
 "use client";
 
 import { useSales } from "@/hooks/db/sales/useSales";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useMemo, useState } from "react";
 import {
   Select,
@@ -14,18 +15,26 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  RadialBarChart,
-  RadialBar,
-  PolarAngleAxis,
-} from "recharts";
+import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
 
 export function SalesSummary() {
-  const { allSales, isLoading, availableYears } = useSales();
+  const { allSales, isLoading: isSalesLoading, availableYears } = useSales();
+  const { animals, isLoading: isAnimalsLoading } = useAnimals();
+  const isLoading = isSalesLoading || isAnimalsLoading;
+
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  // Map animals for quick lookup
+  const animalMap = useMemo(() => {
+    const map = new Map();
+    if (animals) {
+      animals.forEach((a) => map.set(a.rgn, a));
+    }
+    return map;
+  }, [animals]);
 
   // Summary stats
   const summaryData = useMemo(() => {
@@ -38,43 +47,57 @@ export function SalesSummary() {
       0,
     );
 
-    // Count by sale_type
+    // Count by sale_type and sex
     const abateSales = yearSales.filter((s) => s.sale_type === "abate");
-    const compradosSales = yearSales.filter((s) => s.sale_type === "comprado");
+    const reproducaoSales = yearSales.filter((s) => s.sale_type === "comprado");
 
-    // For this we would need animal data to determine sex
-    // For now, return counts
+    const getSexCounts = (salesList: any[]) => {
+      let m = 0;
+      let f = 0;
+      salesList.forEach((s) => {
+        const animal = animalMap.get(s.animal_rgn);
+        if (animal?.sex === "M") m++;
+        if (animal?.sex === "F") f++;
+      });
+      return { m, f };
+    };
+
+    const abateSex = getSexCounts(abateSales);
+    const reproducaoSex = getSexCounts(reproducaoSales);
+
     return {
       totalValue,
       totalAnimals: yearSales.length,
       abate: {
         total: abateSales.length,
-        m: 0, // Would need animal lookup
-        f: 0,
+        ...abateSex,
       },
-      comprados: {
-        total: compradosSales.length,
-        m: 0,
-        f: 0,
+      reproducao: {
+        total: reproducaoSales.length,
+        ...reproducaoSex,
       },
     };
-  }, [allSales, selectedYear]);
+  }, [allSales, selectedYear, animalMap]);
 
-  // Radial chart data for 3 year comparison
+  // Radial chart data for 3 year comparison (ONLY MALES as requested)
   const radialData = useMemo(() => {
     const years = [currentYear - 2, currentYear - 1, currentYear];
 
     return years.map((year, idx) => {
-      const yearSales = allSales.filter(
-        (s) => new Date(s.date).getFullYear() === year,
-      );
+      const yearMaleSales = allSales.filter((s) => {
+        const isYear = new Date(s.date).getFullYear() === year;
+        if (!isYear) return false;
+        const animal = animalMap.get(s.animal_rgn);
+        return animal?.sex === "M";
+      });
+
       return {
         name: String(year),
-        value: yearSales.length,
+        value: yearMaleSales.length,
         fill: idx === 2 ? "#3B82F6" : idx === 1 ? "#60A5FA" : "#93C5FD",
       };
     });
-  }, [allSales, currentYear]);
+  }, [allSales, currentYear, animalMap]);
 
   // Accumulated totals per year
   const accumulatedData = useMemo(() => {
@@ -155,7 +178,10 @@ export function SalesSummary() {
 
         {/* Alert for bulls > 3 years */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-4 flex items-start gap-3">
-          <AlertTriangle className="text-yellow-600 shrink-0 mt-0.5" size={18} />
+          <AlertTriangle
+            className="text-yellow-600 shrink-0 mt-0.5"
+            size={18}
+          />
           <div>
             <p className="text-sm font-medium text-yellow-800">
               Touros com mais de 3 anos
@@ -184,7 +210,7 @@ export function SalesSummary() {
         </div>
       </div>
 
-      {/* Total Sales + Abate vs Comprados */}
+      {/* Total Sales + Abate vs Reprodução */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold uppercase text-primary">
@@ -237,17 +263,17 @@ export function SalesSummary() {
             </div>
           </div>
 
-          {/* Comprados */}
+          {/* Reprodução */}
           <div className="bg-muted/30 rounded-xl p-3 text-center">
             <p className="text-xs font-bold uppercase text-muted-foreground mb-2">
-              Comprados
+              Reprodução
             </p>
             <p className="text-lg font-bold text-primary">
-              {summaryData.comprados.total}
+              {summaryData.reproducao.total}
             </p>
             <div className="flex justify-center gap-4 mt-2 text-xs">
-              <span>M: {summaryData.comprados.m}</span>
-              <span>F: {summaryData.comprados.f}</span>
+              <span>M: {summaryData.reproducao.m}</span>
+              <span>F: {summaryData.reproducao.f}</span>
             </div>
           </div>
         </div>
