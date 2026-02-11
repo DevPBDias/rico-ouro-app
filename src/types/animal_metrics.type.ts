@@ -4,6 +4,7 @@ export interface AnimalMetric {
   born_metric?: boolean;
   date: string;
   value: number;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

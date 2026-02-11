@@ -9,8 +9,9 @@ export const animalStatusSchema: RxJsonSchema<AnimalStatus> = {
   properties: {
     id: { type: "string", maxLength: 36 },
     status_name: { type: "string" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "status_name", "_deleted", "updated_at"],
+  required: ["id", "status_name", "_deleted", "created_at", "updated_at"],
 };

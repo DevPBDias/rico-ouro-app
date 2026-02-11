@@ -26,14 +26,23 @@ export const movementSchema: RxJsonSchema<any> = {
       type: "object", // Generic JSON container for type-specific payloads
     },
     created_at: {
-      type: "string",
+      type: "number",
     },
     updated_at: {
-      type: "string",
+      type: "number",
     },
     _deleted: {
       type: "boolean",
     },
   },
-  required: ["id", "type", "date", "animal_id", "details"],
+  required: [
+    "id",
+    "type",
+    "date",
+    "animal_id",
+    "details",
+    "created_at",
+    "updated_at",
+    "_deleted",
+  ],
 };

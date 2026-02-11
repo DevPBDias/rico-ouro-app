@@ -36,8 +36,8 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     d110_date: { type: "string", format: "date" },
     final_diagnostic: { type: "string", maxLength: 20 },
     pregnancy_origin: { type: "string", maxLength: 20 },
-    created_at: { type: "string" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
   required: [
@@ -46,6 +46,7 @@ export const reproductionEventSchema: RxJsonSchema<ReproductionEvent> = {
     "event_type",
     "d0_date",
     "_deleted",
+    "created_at",
     "updated_at",
   ],
   indexes: ["rgn", "event_type"],

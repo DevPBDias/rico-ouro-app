@@ -45,6 +45,24 @@ export function cleanSupabaseDocument<T extends Record<string, any>>(
     if (value === null) {
       continue;
     }
+
+    // Force numeric technical timestamps for Supabase compatibility (bigint)
+    if (["created_at", "updated_at"].includes(key) && value) {
+      if (typeof value === "string") {
+        const parsed = Date.parse(value);
+        cleaned[key] = isNaN(parsed)
+          ? isNaN(Number(value))
+            ? Date.now()
+            : Number(value)
+          : parsed;
+      } else if (value instanceof Date) {
+        cleaned[key] = value.getTime();
+      } else {
+        cleaned[key] = value;
+      }
+      continue;
+    }
+
     cleaned[key] = value;
   }
 

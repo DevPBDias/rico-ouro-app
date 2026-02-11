@@ -15,8 +15,9 @@ export const clientSchema: RxJsonSchema<Client> = {
     farm: { type: "string" },
     city: { type: "string" },
     email: { type: "string" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "name", "cpf_cnpj", "_deleted"],
+  required: ["id", "name", "cpf_cnpj", "_deleted", "created_at", "updated_at"],
 };

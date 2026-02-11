@@ -28,8 +28,13 @@ describe("createReplication", () => {
     count: vi.fn().mockReturnValue({
       exec: vi.fn().mockResolvedValue(10),
     }),
+    schema: {
+      jsonSchema: {
+        primaryKey: "id",
+      },
+    },
   } as any;
-  
+
   mockDb.animals = mockCollection;
 
   const config = {
@@ -50,7 +55,7 @@ describe("createReplication", () => {
     expect(replicateRxCollection).toHaveBeenCalledWith(
       expect.objectContaining({
         replicationIdentifier: "test-replication",
-      })
+      }),
     );
   });
 
@@ -59,16 +64,18 @@ describe("createReplication", () => {
       const replicationFactory = createReplication(config);
       await replicationFactory(mockDb, "https://test.supabase.co", "key");
 
-      const { replicateRxCollection } = await import("rxdb/plugins/replication");
-      const pullHandler = (replicateRxCollection as any).mock.calls[0][0].pull.handler;
+      const { replicateRxCollection } =
+        await import("rxdb/plugins/replication");
+      const pullHandler = (replicateRxCollection as any).mock.calls[0][0].pull
+        .handler;
 
       vi.mocked(authHelper.getAuthHeaders).mockResolvedValue({
         Authorization: "Bearer token",
       });
 
       const mockData = [
-        { id: "1", updated_at: "2024-01-01T10:00:00Z" },
-        { id: "2", updated_at: "2024-01-01T11:00:00Z" },
+        { id: "1", updated_at: 1704103200000 },
+        { id: "2", updated_at: 1704106800000 },
       ];
 
       vi.mocked(fetch).mockResolvedValue({
@@ -76,26 +83,34 @@ describe("createReplication", () => {
         json: async () => mockData,
       } as Response);
 
-      const result = await pullHandler({ updated_at: "2024-01-01T00:00:00Z" }, 10);
+      const result = await pullHandler(
+        { updated_at: 1704067200000, last_id: null },
+        10,
+      );
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("order=updated_at.asc&limit=10"),
-        expect.any(Object)
+        expect.stringContaining("order=updated_at.asc,id.asc&limit=10"),
+        expect.any(Object),
       );
       expect(result.documents).toHaveLength(2);
-      expect(result.checkpoint.updated_at).toBe("2024-01-01T11:00:00Z");
+      expect(result.checkpoint.updated_at).toBe(1704106800000);
+      expect(result.checkpoint.last_id).toBe("2");
     });
 
     it("should throw error if auth token is missing", async () => {
       const replicationFactory = createReplication(config);
       await replicationFactory(mockDb, "https://test.supabase.co", "key");
 
-      const { replicateRxCollection } = await import("rxdb/plugins/replication");
-      const pullHandler = (replicateRxCollection as any).mock.calls[0][0].pull.handler;
+      const { replicateRxCollection } =
+        await import("rxdb/plugins/replication");
+      const pullHandler = (replicateRxCollection as any).mock.calls[0][0].pull
+        .handler;
 
       vi.mocked(authHelper.getAuthHeaders).mockResolvedValue({});
 
-      await expect(pullHandler({}, 10)).rejects.toThrow("Authentication required for sync");
+      await expect(pullHandler({}, 10)).rejects.toThrow(
+        "Authentication required for sync",
+      );
     });
   });
 
@@ -104,8 +119,10 @@ describe("createReplication", () => {
       const replicationFactory = createReplication(config);
       await replicationFactory(mockDb, "https://test.supabase.co", "key");
 
-      const { replicateRxCollection } = await import("rxdb/plugins/replication");
-      const pushHandler = (replicateRxCollection as any).mock.calls[0][0].push.handler;
+      const { replicateRxCollection } =
+        await import("rxdb/plugins/replication");
+      const pushHandler = (replicateRxCollection as any).mock.calls[0][0].push
+        .handler;
 
       vi.mocked(authHelper.getAuthHeaders).mockResolvedValue({
         Authorization: "Bearer token",
@@ -113,11 +130,10 @@ describe("createReplication", () => {
 
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
+        json: async () => [],
       } as Response);
 
-      const rows = [
-        { newDocumentState: { id: "1", name: "Animal 1" } },
-      ];
+      const rows = [{ newDocumentState: { id: "1", name: "Animal 1" } }];
 
       await pushHandler(rows);
 
@@ -126,10 +142,10 @@ describe("createReplication", () => {
         expect.objectContaining({
           method: "POST",
           headers: expect.objectContaining({
-            Prefer: "resolution=merge-duplicates",
+            Prefer: "resolution=merge-duplicates,return=representation",
           }),
           body: JSON.stringify([{ id: "1", name: "Animal 1" }]),
-        })
+        }),
       );
     });
 
@@ -137,8 +153,10 @@ describe("createReplication", () => {
       const replicationFactory = createReplication(config);
       await replicationFactory(mockDb, "https://test.supabase.co", "key");
 
-      const { replicateRxCollection } = await import("rxdb/plugins/replication");
-      const pushHandler = (replicateRxCollection as any).mock.calls[0][0].push.handler;
+      const { replicateRxCollection } =
+        await import("rxdb/plugins/replication");
+      const pushHandler = (replicateRxCollection as any).mock.calls[0][0].push
+        .handler;
 
       vi.mocked(authHelper.getAuthHeaders).mockResolvedValue({
         Authorization: "Bearer token",
@@ -150,7 +168,9 @@ describe("createReplication", () => {
         text: async () => "Internal Server Error",
       } as Response);
 
-      await expect(pushHandler([{ newDocumentState: {} }])).rejects.toThrow("Push failed: 500");
+      await expect(pushHandler([{ newDocumentState: {} }])).rejects.toThrow(
+        "Push failed: 500",
+      );
     });
   });
 });

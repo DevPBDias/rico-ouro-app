@@ -57,26 +57,14 @@ export function createReplication<T extends ReplicableEntity>(
       // ==================== PULL (Supabase → RxDB) ====================
       pull: {
         async handler(checkpoint, batchSize) {
-          const lastModified = checkpoint?.updated_at || "1970-01-01T00:00:00Z";
+          const lastModified = checkpoint?.updated_at || 0;
           const lastId = checkpoint?.last_id || null;
           const effectiveBatchSize = batchSize || pullBatchSize;
-
-          // Subtrai 1 segundo do checkpoint para garantir que não perdemos dados
-          // devido a diferenças de precisão em milissegundos
-          let safeCheckpointDate = lastModified;
-          try {
-            const checkpointDate = new Date(lastModified);
-            checkpointDate.setSeconds(checkpointDate.getSeconds() - 1);
-            safeCheckpointDate = checkpointDate.toISOString();
-          } catch (e) {
-            safeCheckpointDate = lastModified;
-          }
 
           console.log(
             `🔽 [${String(collectionName)}] Pulling from Supabase...`,
             {
-              originalCheckpoint: lastModified,
-              safeCheckpoint: safeCheckpointDate,
+              lastModified,
               lastId,
               batchSize: effectiveBatchSize,
             },
@@ -90,14 +78,19 @@ export function createReplication<T extends ReplicableEntity>(
                 collectionName,
               )}] No auth token available. Skipping pull.`,
             );
-            return { documents: [], checkpoint };
+            throw new Error("Authentication required for sync");
           }
 
-          const encodedDate = encodeURIComponent(safeCheckpointDate);
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
-          let url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&updated_at=gte.${encodedDate}`;
+          // Cursor composto real para garantir progressão e evitar duplicados
+          // PostgREST: (updated_at, id) > (last_modified, last_id)
+          const filter = lastId
+            ? `or(updated_at.gt.${lastModified},and(updated_at.eq.${lastModified},${primaryKey}.gt.${lastId}))`
+            : `updated_at.gte.${lastModified}`;
+
+          let url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&${filter}`;
 
           console.log(
             `🔗 [${String(collectionName)}] Pull URL:`,
@@ -118,15 +111,6 @@ export function createReplication<T extends ReplicableEntity>(
           const rawDocuments: Record<string, any>[] = await response.json();
           let data = Array.isArray(rawDocuments) ? rawDocuments : [];
 
-          if (
-            data.length > 0 &&
-            lastId &&
-            data[0].updated_at === lastModified &&
-            data[0][primaryKey] === lastId
-          ) {
-            data.shift();
-          }
-
           const processedDocuments = data.map((doc) => {
             if (mapFromSupabase) {
               return mapFromSupabase(doc);
@@ -146,8 +130,8 @@ export function createReplication<T extends ReplicableEntity>(
 
           const lastDoc = data.length > 0 ? data[data.length - 1] : null;
           const newCheckpoint: ReplicationCheckpoint = {
-            updated_at: lastDoc ? lastDoc.updated_at : lastModified,
-            last_id: lastDoc ? lastDoc[primaryKey] : lastId,
+            updated_at: lastDoc ? Number(lastDoc.updated_at) : lastModified,
+            last_id: lastDoc ? String(lastDoc[primaryKey]) : lastId,
           };
 
           return {

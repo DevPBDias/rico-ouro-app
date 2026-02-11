@@ -9,8 +9,9 @@ export const vaccineSchema: RxJsonSchema<Vaccine> = {
   properties: {
     id: { type: "string", maxLength: 36 },
     vaccine_name: { type: "string", maxLength: 200 },
-    _deleted: { type: "boolean", default: false },
-    updated_at: { type: "string", maxLength: 40 },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
+    _deleted: { type: "boolean" },
   },
-  required: ["id", "vaccine_name", "_deleted", "updated_at"],
+  required: ["id", "vaccine_name", "_deleted", "created_at", "updated_at"],
 };

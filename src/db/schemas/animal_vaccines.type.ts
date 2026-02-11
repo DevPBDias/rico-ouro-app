@@ -11,9 +11,10 @@ export const animalVaccineSchema: RxJsonSchema<AnimalVaccine> = {
     rgn: { type: "string", maxLength: 10 },
     vaccine_id: { type: "string", maxLength: 36 },
     date: { type: "string", format: "date" },
-    updated_at: { type: "string" },
+    updated_at: { type: "number" },
+    created_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "rgn", "vaccine_id", "_deleted", "updated_at"],
+  required: ["id", "rgn", "vaccine_id", "_deleted", "updated_at", "created_at"],
   indexes: ["rgn", "vaccine_id"],
 };

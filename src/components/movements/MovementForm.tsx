@@ -83,9 +83,6 @@ export function MovementForm({
   const [installmentValue, setInstallmentValue] = useState(
     getSaleDetail("installment_value")?.toString() || "",
   );
-  const [valueParcels, setValueParcels] = useState(
-    getSaleDetail("value_parcels")?.toString() || "",
-  );
   const [gtaNumber, setGtaNumber] = useState(getSaleDetail("gta_number") || "");
   const [invoiceNumber, setInvoiceNumber] = useState(
     getSaleDetail("invoice_number") || "",
@@ -123,7 +120,6 @@ export function MovementForm({
             payment_method: paymentMethod,
             installments: parseInt(installments) || 0,
             installment_value: parseFloat(installmentValue) || 0,
-            value_parcels: parseFloat(valueParcels) || 0,
             gta_number: gtaNumber,
             invoice_number: invoiceNumber,
             // Preserve sale_id if editing

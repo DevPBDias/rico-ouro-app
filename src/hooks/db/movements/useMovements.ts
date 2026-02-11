@@ -41,7 +41,7 @@ export function useMovements() {
       try {
         const db = await getDatabase();
         const id = uuidv4();
-        const timestamp = new Date().toISOString();
+        const timestamp = Date.now();
 
         console.log("📝 Creating movement:", { id, type: data.type });
 
@@ -88,7 +88,6 @@ export function useMovements() {
                 payment_method: vendaDetails.payment_method || "",
                 installments: vendaDetails.installments || 0,
                 installment_value: vendaDetails.installment_value || 0,
-                value_parcels: vendaDetails.value_parcels || 0,
                 financial_status:
                   vendaDetails.payment_method === "À Vista"
                     ? "pago"
@@ -135,7 +134,7 @@ export function useMovements() {
     async (id: string, data: Partial<Movement>) => {
       try {
         const db = await getDatabase();
-        const timestamp = new Date().toISOString();
+        const timestamp = Date.now();
 
         console.log("📝 Updating movement:", { id, data });
 
@@ -165,7 +164,6 @@ export function useMovements() {
                   payment_method: vendaDetails.payment_method || "",
                   installments: vendaDetails.installments || 0,
                   installment_value: vendaDetails.installment_value || 0,
-                  value_parcels: vendaDetails.value_parcels || 0,
                   financial_status:
                     vendaDetails.payment_method === "À Vista"
                       ? "pago"
@@ -198,7 +196,6 @@ export function useMovements() {
                   payment_method: vendaDetails.payment_method || "",
                   installments: vendaDetails.installments || 0,
                   installment_value: vendaDetails.installment_value || 0,
-                  value_parcels: vendaDetails.value_parcels || 0,
                   financial_status:
                     vendaDetails.payment_method === "À Vista"
                       ? "pago"
@@ -269,7 +266,7 @@ export function useMovements() {
         }
 
         const movement = movementDoc.toJSON() as Movement;
-        const timestamp = new Date().toISOString();
+        const timestamp = Date.now();
 
         console.log("🗑️ Deleting movement:", { id, type: movement.type });
 

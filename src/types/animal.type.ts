@@ -30,6 +30,7 @@ export interface Animal {
   maternal_grandfather_name?: string;
   paternal_grandfather_name?: string;
   partnership?: string;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

@@ -10,9 +10,9 @@ export interface Sale {
   installment_value?: number;
   financial_status?: string;
   gta_number?: string;
-  value_parcels?: number;
   invoice_number?: string;
-  updated_at: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
   sale_type?: string; // 'abate' | 'comprado'
 }

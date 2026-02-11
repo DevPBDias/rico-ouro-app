@@ -29,7 +29,7 @@ export function useUpdateAnimal() {
       const newData = {
         ...oldData,
         ...data,
-        updated_at: new Date().toISOString(),
+        updated_at: Date.now(),
         _deleted: false,
       };
       await animalsColl.insert(newData);
@@ -52,7 +52,7 @@ export function useUpdateAnimal() {
               records.map((rec: any) =>
                 rec.patch({
                   rgn: data.rgn,
-                  updated_at: new Date().toISOString(),
+                  updated_at: Date.now(),
                 }),
               ),
             );
@@ -63,7 +63,7 @@ export function useUpdateAnimal() {
       // 4. Soft delete do animal antigo para manter sincronia com Supabase
       await oldDoc.patch({
         _deleted: true,
-        updated_at: new Date().toISOString(),
+        updated_at: Date.now(),
       });
 
       return;

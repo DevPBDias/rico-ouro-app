@@ -7,6 +7,7 @@ export interface Client {
   farm?: string;
   city?: string;
   email?: string;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

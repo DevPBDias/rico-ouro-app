@@ -15,12 +15,8 @@ export function lastWriteWins<T extends ReplicableEntity>(
   localDoc: T,
   remoteDoc: T
 ): T {
-  const localTime = new Date(
-    localDoc.updated_at || "1970-01-01T00:00:00.000Z"
-  ).getTime();
-  const remoteTime = new Date(
-    remoteDoc.updated_at || "1970-01-01T00:00:00.000Z"
-  ).getTime();
+  const localTime = localDoc.updated_at || 0;
+  const remoteTime = remoteDoc.updated_at || 0;
 
   if (localTime > remoteTime) {
     console.log(

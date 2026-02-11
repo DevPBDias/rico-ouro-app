@@ -9,7 +9,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
  * mas precisamos garantir que são obrigatórios para a replicação.
  */
 interface ReplicableAnimal extends Omit<Animal, "_deleted" | "updated_at"> {
-  updated_at: string;
+  updated_at: number;
   _deleted: boolean;
 }
 

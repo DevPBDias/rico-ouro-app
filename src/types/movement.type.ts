@@ -24,7 +24,7 @@ export interface Movement {
   animal_id: string; // RGN of the main animal involved
   description: string;
   details: MortePayload | SalePayload | TrocaPayload;
-  created_at?: string;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

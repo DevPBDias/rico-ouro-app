@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import {
   Loader2,
   AlertCircle,
-  Calendar,
   Weight,
   User,
   Palette,
   ArrowRight,
   VenusAndMars,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Select,
@@ -26,28 +26,38 @@ import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useCreateAnimalWeight } from "@/hooks/db/animal_weights/useCreateAnimalWeight";
 import { Animal } from "@/types/animal.type";
 import { AnimalMetric } from "@/types/animal_metrics.type";
+import { toast } from "sonner";
 
 interface BirthFormProps {
   onSuccess?: () => void;
 }
 
+const DEFAULT_FORM_DATA = {
+  rgn: "",
+  data: new Date().toISOString().split("T")[0],
+  peso: "",
+  mae: "",
+  cor: "Branco",
+  sexo: "",
+};
+
 export function BirthForm({ onSuccess }: BirthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const [formData, setFormData] = useState({
-    rgn: "",
-    data: new Date().toISOString().split("T")[0],
-    peso: "",
-    mae: "",
-    cor: "Branco",
-    sexo: "",
-  });
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
 
   const { createAnimal } = useCreateAnimal();
   const { updateAnimal } = useUpdateAnimal();
   const { createWeight } = useCreateAnimalWeight();
   const { animals } = useAnimals();
+
+  const resetForm = () => {
+    setFormData(DEFAULT_FORM_DATA);
+    setErrorMessage(null);
+    setShowSuccess(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +100,8 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
         status: "Ativo",
         animal_state: "ATIVO",
         farm_id: mother?.farm_id,
+        updated_at: Date.now(),
+        _deleted: false,
       };
 
       const bornWeightAnimal: Partial<AnimalMetric> = {
@@ -97,6 +109,8 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
         value: Number(formData.peso.replace(",", ".")),
         born_metric: true,
         date: formData.data,
+        updated_at: Date.now(),
+        _deleted: false,
       };
 
       // 1. Create the animal
@@ -115,17 +129,49 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
             baby_sex: (formData.sexo === "Macho" ? "M" : "F") as any,
             baby_rgn: finalRgn,
           },
+          updated_at: Date.now(),
         });
       }
 
+      toast.success("Nascimento registrado com sucesso!");
+      setShowSuccess(true);
       onSuccess?.();
     } catch (error: any) {
       console.error("Erro ao cadastrar nascimento:", error);
       setErrorMessage(error?.message || "Ocorreu um erro ao salvar os dados.");
+      toast.error("Erro ao registrar nascimento.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (showSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 py-16 animate-in fade-in duration-300">
+        <div className="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center">
+          <CheckCircle2
+            className="w-10 h-10 text-green-500"
+            strokeWidth={2.5}
+          />
+        </div>
+        <div className="space-y-2 text-center">
+          <h3 className="text-foreground text-2xl font-bold">
+            Nascimento Registrado!
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            O novo animal foi adicionado ao seu rebanho e a condição da mãe foi
+            atualizada para "Parida".
+          </p>
+        </div>
+        <Button
+          onClick={resetForm}
+          className="h-14 w-full max-w-xs rounded-2xl font-bold shadow-lg shadow-primary/20"
+        >
+          Novo Nascimento
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 border-t border-border pt-3">

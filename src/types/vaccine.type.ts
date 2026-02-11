@@ -1,7 +1,8 @@
 export interface Vaccine {
   id: string;
   vaccine_name: string;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }
 
@@ -10,6 +11,7 @@ export interface AnimalVaccine {
   rgn: string;
   vaccine_id: string;
   date?: string;
-  updated_at?: string;
+  created_at: number;
+  updated_at: number;
   _deleted: boolean;
 }

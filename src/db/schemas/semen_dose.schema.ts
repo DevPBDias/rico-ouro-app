@@ -37,8 +37,11 @@ export const semenDoseSchema: RxJsonSchema<SemenDose> = {
     quantity: {
       type: "number",
     },
+    created_at: {
+      type: "number",
+    },
     updated_at: {
-      type: "string",
+      type: "number",
     },
     _deleted: {
       type: "boolean",
@@ -49,7 +52,8 @@ export const semenDoseSchema: RxJsonSchema<SemenDose> = {
     "animal_name",
     "breed",
     "quantity",
-    "_deleted",
+    "created_at",
     "updated_at",
+    "_deleted",
   ],
 };

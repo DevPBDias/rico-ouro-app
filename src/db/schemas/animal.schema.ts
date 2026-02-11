@@ -39,8 +39,9 @@ export const animalSchema: RxJsonSchema<Animal> = {
     maternal_grandfather_name: { type: "string" },
     paternal_grandfather_name: { type: "string" },
     partnership: { type: "string" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["rgn", "serie_rgd", "_deleted"],
+  required: ["rgn", "serie_rgd", "_deleted", "created_at", "updated_at"],
 };

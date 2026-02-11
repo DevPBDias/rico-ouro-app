@@ -8,7 +8,7 @@ import { MyDatabaseCollections } from "../../collections";
  * Ao criar novos documentos, sempre defina _deleted: false.
  */
 export interface ReplicableEntity {
-  updated_at?: string;
+  updated_at: number;
   _deleted: boolean;
 }
 
@@ -26,7 +26,7 @@ export type ConflictResolver<T> = (localDoc: T, remoteDoc: T) => T;
  * O campo updated_at marca o último documento sincronizado.
  */
 export interface ReplicationCheckpoint {
-  updated_at?: string;
+  updated_at: number;
   last_id?: string | null;
 }
 

@@ -12,9 +12,10 @@ export const animalMetricWeightSchema: RxJsonSchema<AnimalMetric> = {
     born_metric: { type: "boolean" },
     date: { type: "string" },
     value: { type: "number" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "rgn", "_deleted", "updated_at"],
+  required: ["id", "rgn", "_deleted", "created_at", "updated_at"],
   indexes: ["rgn"],
 };

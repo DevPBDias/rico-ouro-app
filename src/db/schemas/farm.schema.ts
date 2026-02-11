@@ -9,8 +9,9 @@ export const farmSchema: RxJsonSchema<Farm> = {
   properties: {
     id: { type: "string", maxLength: 36 },
     farm_name: { type: "string" },
-    updated_at: { type: "string" },
+    created_at: { type: "number" },
+    updated_at: { type: "number" },
     _deleted: { type: "boolean" },
   },
-  required: ["id", "farm_name", "_deleted", "updated_at"],
+  required: ["id", "farm_name", "_deleted", "created_at", "updated_at"],
 };
