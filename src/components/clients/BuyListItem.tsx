@@ -11,8 +11,10 @@ import {
   ArrowUpRight,
   ListChecks,
   Hash,
+  Dna,
 } from "lucide-react";
 import { formatDate } from "@/utils/formatDates";
+import { useAnimalById } from "@/hooks/db/animals/useAnimalById";
 
 interface BuyListItemProps {
   sale: Sale;
@@ -21,6 +23,7 @@ interface BuyListItemProps {
 
 export function BuyListItem({ sale }: BuyListItemProps) {
   const isPaid = sale.financial_status?.toLowerCase() === "pago";
+  const { animal } = useAnimalById(sale.animal_rgn);
 
   const formatCurrency = (value?: number) => {
     if (value === undefined || value === null) return "—";
@@ -46,6 +49,7 @@ export function BuyListItem({ sale }: BuyListItemProps) {
             <div className="flex flex-col text-left gap-0.5">
               <span className="text-sm font-black text-primary uppercase tracking-tight">
                 INDI {sale.animal_rgn}
+                {animal?.sex ? ` - ${animal.sex}` : ""}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase font-black tracking-wider opacity-70">
                 {formatDate(sale.date)}
@@ -93,6 +97,18 @@ export function BuyListItem({ sale }: BuyListItemProps) {
             icon={<ListChecks size={14} />}
             label="Valor Parcela"
             value={formatCurrency(sale.value_parcels)}
+          />
+
+          <DetailItem
+            icon={<Dna size={14} />}
+            label="DECA"
+            value={animal?.deca}
+          />
+
+          <DetailItem
+            icon={<Dna size={14} />}
+            label="IABCZG"
+            value={animal?.iabcgz}
           />
 
           {sale.gta_number && (

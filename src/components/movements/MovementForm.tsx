@@ -91,30 +91,7 @@ export function MovementForm({
     getSaleDetail("invoice_number") || "",
   );
 
-  // Auto-select Frigorífico when saleType is "abate"
-  useEffect(() => {
-    if (saleType === "abate" && !initialMovement) {
-      const frigorifico = clients.find((c) =>
-        c.name.toLowerCase().includes("frigorífico"),
-      );
-      if (frigorifico) {
-        setClientId(frigorifico.id);
-      }
-    } else if (
-      !initialMovement &&
-      clientId &&
-      clients
-        .find((c) => c.id === clientId)
-        ?.name.toLowerCase()
-        .includes("frigorífico")
-    ) {
-      if (saleType !== "abate") {
-        setClientId("");
-      }
-    }
-  }, [saleType, clients, initialMovement]);
-
-  // Troca fields
+  // TROCA fields
   const [substituteAnimalRgn, setSubstituteAnimalRgn] = useState(
     initialMovement?.type === "troca"
       ? (initialMovement.details as any).substitute_animal_rgn
@@ -359,11 +336,7 @@ export function MovementForm({
                       <span className="text-red-500">*</span>
                     )}
                   </label>
-                  <Select
-                    value={clientId}
-                    onValueChange={setClientId}
-                    disabled={saleType === "abate"}
-                  >
+                  <Select value={clientId} onValueChange={setClientId}>
                     <SelectTrigger
                       className={`bg-muted border-0 rounded-sm mt-1 w-full text-left ${movementType === "venda" && !clientId ? "ring-1 ring-orange-400" : ""}`}
                     >
