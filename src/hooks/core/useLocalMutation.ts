@@ -108,15 +108,7 @@ export function useLocalMutation<
           updated_at: Date.now(),
         };
 
-        if (typeof (doc as any).update === "function") {
-          const updateOp: any = {
-            $set: updateData,
-          };
-
-          await (doc as any).update(updateOp);
-        } else {
-          await doc.patch(updateData);
-        }
+        await doc.patch(updateData);
 
         setIsLoading(false);
       } catch (err) {
