@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
 import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
@@ -248,25 +249,14 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-primary px-1">
-                    Data
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="birth-date-input"
-                      name="birthDate"
-                      type="date"
-                      value={formData.data}
-                      onChange={({ target }) =>
-                        setFormData({ ...formData, data: target.value })
-                      }
-                      autoComplete="off"
-                      className="bg-muted border-0 rounded-sm mt-1 text-sm placeholder:text-xs"
-                      required
-                    />
-                  </div>
-                </div>
+                <DatePicker
+                  label="Data"
+                  value={formData.data}
+                  onChange={(value) =>
+                    setFormData({ ...formData, data: value })
+                  }
+                  required
+                />
 
                 <div className="space-y-2">
                   <label className="text-xs uppercase font-bold text-primary px-1">

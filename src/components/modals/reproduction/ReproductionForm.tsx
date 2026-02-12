@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -215,20 +216,12 @@ export function ReproductionForm({
             </Select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Data D0
-            </label>
-            <Input
-              type="date"
-              value={formData.d0_date || ""}
-              onChange={(e) => {
-                handleChange("d0_date", e.target.value);
-              }}
-              className="bg-muted/40 border-0 h-11"
-              required
-            />
-          </div>
+          <DatePicker
+            label="Data D0"
+            value={formData.d0_date || ""}
+            onChange={(v) => handleChange("d0_date", v)}
+            required
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1 w-full">
@@ -272,17 +265,11 @@ export function ReproductionForm({
         </h3>
 
         <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-primary uppercase tracking-tight">
-              Data Avaliação
-            </label>
-            <Input
-              type="date"
-              value={formData.evaluation_date || ""}
-              onChange={(e) => handleChange("evaluation_date", e.target.value)}
-              className="bg-muted/40 border-0 h-11"
-            />
-          </div>
+          <DatePicker
+            label="Data Avaliação"
+            value={formData.evaluation_date || ""}
+            onChange={(v) => handleChange("evaluation_date", v)}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1 w-full">

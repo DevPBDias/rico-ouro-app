@@ -5,6 +5,7 @@ import { useClients } from "@/hooks/db/clients/useClients";
 import { MovementType, Movement, SalePayload } from "@/types/movement.type";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -294,21 +295,7 @@ export function MovementForm({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-primary px-1">
-                Data
-              </label>
-              <Input
-                id="movement-date"
-                name="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                autoComplete="off"
-                className="mt-1 bg-muted border-0 rounded-sm w-fit text-sm"
-                required
-              />
-            </div>
+            <DatePicker label="Data" value={date} onChange={setDate} required />
           </div>
 
           {movementType === "morte" && (

@@ -7,6 +7,7 @@ import { StandardTabList } from "@/components/ui/StandardTabList";
 import { Search, X as XIcon } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import { Movement } from "@/types/movement.type";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface MovementListProps {
   onEdit?: (movement: Movement) => void;
@@ -77,14 +78,13 @@ export function MovementList({ onEdit }: MovementListProps) {
 
         <div className="flex gap-1">
           <div className="relative w-4/5">
-            <Input
-              type="date"
-              className="bg-muted border-0 rounded-md h-10 w-full text-sm"
-              onChange={(e) =>
-                setDateFilter(
-                  e.target.value ? new Date(e.target.value) : undefined,
-                )
+            <DatePicker
+              value={dateFilter ? dateFilter.toISOString().split("T")[0] : ""}
+              onChange={(value) =>
+                setDateFilter(value ? new Date(value) : undefined)
               }
+              placeholder="Data"
+              className="h-10"
             />
           </div>
           {dateFilter && (

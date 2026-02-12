@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
 import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
+import { DatePicker } from "@/components/ui/date-picker";
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -71,8 +72,8 @@ const VaccinesPage = () => {
     return formData.vacinas.filter((selectedVaccine) =>
       existingVaccinesWithNames.some(
         (existing) =>
-          existing.name.toLowerCase() === selectedVaccine.toLowerCase()
-      )
+          existing.name.toLowerCase() === selectedVaccine.toLowerCase(),
+      ),
     );
   }, [formData.vacinas, existingVaccinesWithNames]);
 
@@ -99,7 +100,7 @@ const VaccinesPage = () => {
       }
 
       const animal = animals.find(
-        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase()
+        (a) => a.rgn?.toLowerCase() === formData.rgn.toLowerCase(),
       );
 
       if (!animal) {
@@ -111,7 +112,7 @@ const VaccinesPage = () => {
       for (const vacinaNome of formData.vacinas) {
         // Encontrar o ID da vacina
         const vaccine = vaccines.find(
-          (v) => v.vaccine_name.toLowerCase() === vacinaNome.toLowerCase()
+          (v) => v.vaccine_name.toLowerCase() === vacinaNome.toLowerCase(),
         );
 
         if (vaccine) {
@@ -145,14 +146,14 @@ const VaccinesPage = () => {
     try {
       const normalizedName = name.trim();
       const existing = vaccines.find(
-        (v) => v.vaccine_name.toLowerCase() === normalizedName.toLowerCase()
+        (v) => v.vaccine_name.toLowerCase() === normalizedName.toLowerCase(),
       );
 
       if (existing) {
         setFormData((prev) => ({
           ...prev,
           vacinas: prev.vacinas.some(
-            (v) => v.toLowerCase() === normalizedName.toLowerCase()
+            (v) => v.toLowerCase() === normalizedName.toLowerCase(),
           )
             ? prev.vacinas
             : [...prev.vacinas, existing.vaccine_name],
@@ -187,7 +188,7 @@ const VaccinesPage = () => {
           ...prev,
           vacinas: prev.vacinas.filter(
             (v) =>
-              v.toLowerCase() !== vaccineToDelete.vaccine_name.toLowerCase()
+              v.toLowerCase() !== vaccineToDelete.vaccine_name.toLowerCase(),
           ),
         }));
       }
@@ -307,7 +308,7 @@ const VaccinesPage = () => {
               <div className="flex items-start gap-2">
                 <AlertTriangle
                   size={18}
-                  className="text-amber-600 mt-0.5 flex-shrink-0"
+                  className="text-amber-600 mt-0.5 shrink-0"
                 />
                 <div>
                   <span className="text-sm font-semibold text-amber-800 block mb-1">
@@ -323,25 +324,12 @@ const VaccinesPage = () => {
           )}
         </div>
 
-        <div className="flex flex-col justify-start items-start w-full gap-2">
-          <label
-            htmlFor="date"
-            className="text-primary font-bold text-sm uppercase w-full text-left"
-          >
-            Data da vacinação:
-          </label>
-          <Input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.data}
-            onChange={({ target }) =>
-              setFormData({ ...formData, data: target.value })
-            }
-            className="w-3/5 bg-muted border-0 rounded-md px-4 py-3 text-foreground text-sm"
-            required
-          />
-        </div>
+        <DatePicker
+          label="Data da vacinação"
+          value={formData.data}
+          onChange={(value) => setFormData({ ...formData, data: value })}
+          required
+        />
 
         <Button
           variant="default"

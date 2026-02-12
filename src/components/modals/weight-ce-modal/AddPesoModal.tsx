@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -109,23 +110,12 @@ export function AddPesoModal({
             />
           </div>
 
-          <div className="space-y-2">
-            <label
-              htmlFor="data"
-              className="text-lg font-semibold text-[#1162AE]"
-            >
-              Data da medição
-            </label>
-            <Input
-              id="data"
-              type="date"
-              value={data}
-              className="my-2 h-10"
-              onChange={(e) => setData(e.target.value)}
-              required
-              max={new Date().toISOString().split("T")[0]}
-            />
-          </div>
+          <DatePicker
+            label="Data da medição"
+            value={data}
+            onChange={setData}
+            required
+          />
 
           <div className="flex items-center gap-2">
             <Checkbox

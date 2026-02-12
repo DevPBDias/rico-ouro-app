@@ -2,29 +2,18 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
-import {
-  User,
-  Calendar,
-  Palette,
-  Hash,
-  MapPin,
-  Activity,
-  ArrowRight,
-  Loader2,
-} from "lucide-react";
+import { User, Hash, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useFarms } from "@/hooks/db/farms/useFarms";
-import { useStatuses } from "@/hooks/db/statuses/useStatuses";
 import { Animal } from "@/types/animal.type";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface AnimalFormProps {
   onSubmit: (data: Partial<Animal>) => Promise<void>;
@@ -209,22 +198,12 @@ export function AnimalForm({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col items-start justify-start gap-1.5 w-full">
-            <label className="text-xs uppercase font-bold text-primary px-1">
-              Nascimento
-            </label>
-            <div className="relative">
-              <Input
-                type="date"
-                value={formData.born_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, born_date: e.target.value })
-                }
-                className="py-5 px-4 bg-muted/50 border-0 rounded-sm focus:ring-2 focus:ring-primary/20 shadow-sm w-full"
-                required
-              />
-            </div>
-          </div>
+          <DatePicker
+            label="Nascimento"
+            value={formData.born_date}
+            onChange={(value) => setFormData({ ...formData, born_date: value })}
+            required
+          />
         </div>
 
         {/* Genealogia (Pai e Mãe) */}
