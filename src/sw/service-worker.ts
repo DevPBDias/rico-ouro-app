@@ -46,7 +46,6 @@ const APP_SHELL_ASSETS = [
 
   // Geral / Relatórios
   "/geral",
-  "/geral/bois",
   "/geral/relatorios",
   "/geral/relatorios/pdf",
   "/geral/relatorios/planilhas",
