@@ -24,6 +24,8 @@ import { animalSituationSchema } from "./schemas/animal_situation.schema";
 import { clientSchema } from "./schemas/client.schema";
 import { movementSchema } from "./schemas/movement.schema";
 import { saleSchema } from "./schemas/sale.schema";
+import { deathSchema } from "./schemas/death.schema";
+import { exchangeSchema } from "./schemas/exchange.schema";
 
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -47,7 +49,7 @@ async function loadDevModePlugin(): Promise<void> {
   }
 }
 
-const DB_VERSION = "v12"; // Composite cursor pull sync fix
+const DB_VERSION = "v13"; // Added deaths and exchanges collections
 const DB_NAME = `indi_ouro_db_${DB_VERSION}`;
 
 let storageInstance: RxStorage<any, any> | null = null;
@@ -145,6 +147,14 @@ async function createDatabase(): Promise<MyDatabase> {
         },
         sales: {
           schema: saleSchema,
+          conflictHandler: customConflictHandler,
+        },
+        deaths: {
+          schema: deathSchema,
+          conflictHandler: customConflictHandler,
+        },
+        exchanges: {
+          schema: exchangeSchema,
           conflictHandler: customConflictHandler,
         },
       });

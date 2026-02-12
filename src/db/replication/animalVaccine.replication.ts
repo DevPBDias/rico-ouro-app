@@ -15,6 +15,7 @@ export const animalVaccineReplication = createReplication<AnimalVaccine>({
     rgn: doc.rgn,
     vaccine_id: doc.vaccine_id,
     date: doc.date ?? null,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

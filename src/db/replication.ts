@@ -12,6 +12,8 @@ import { replicateAnimalSituationsNew as replicateAnimalSituations } from "./rep
 import { replicateClientsNew as replicateClients } from "./replication/client.replication";
 import { replicateMovementsNew as replicateMovements } from "./replication/movement.replication";
 import { replicateSalesNew as replicateSales } from "./replication/sale.replication";
+import { replicateDeathsNew as replicateDeaths } from "./replication/death.replication";
+import { replicateExchangesNew as replicateExchanges } from "./replication/exchange.replication";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -187,6 +189,18 @@ export async function setupReplication(db: MyDatabase) {
       SUPABASE_KEY,
     );
 
+    const deathsReplication = await replicateDeaths(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY,
+    );
+
+    const exchangesReplication = await replicateExchanges(
+      db,
+      SUPABASE_URL,
+      SUPABASE_KEY,
+    );
+
     (
       db as {
         replications: {
@@ -203,6 +217,8 @@ export async function setupReplication(db: MyDatabase) {
           clients: typeof clientsReplication;
           movements: typeof movementsReplication;
           sales: typeof salesReplication;
+          deaths: typeof deathsReplication;
+          exchanges: typeof exchangesReplication;
         };
       }
     ).replications = {
@@ -219,6 +235,8 @@ export async function setupReplication(db: MyDatabase) {
       clients: clientsReplication,
       movements: movementsReplication,
       sales: salesReplication,
+      deaths: deathsReplication,
+      exchanges: exchangesReplication,
     };
 
     console.log("✅ Replication setup complete");

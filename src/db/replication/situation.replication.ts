@@ -10,6 +10,7 @@ export const animalSituationReplication = createReplication<AnimalSituation>({
   mapToSupabase: (doc) => ({
     id: doc.id,
     situation_name: doc.situation_name,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

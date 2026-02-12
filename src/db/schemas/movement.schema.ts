@@ -15,18 +15,20 @@ export const movementSchema: RxJsonSchema<any> = {
     },
     date: {
       type: "string", // ISO Date
+      maxLength: 50,
     },
     animal_id: {
       type: "string",
     },
-    description: {
+    details_id: {
       type: "string",
-    },
-    details: {
-      type: "object", // Generic JSON container for type-specific payloads
+      maxLength: 100,
     },
     created_at: {
       type: "number",
+      multipleOf: 1,
+      minimum: 0,
+      maximum: 1000000000000000,
     },
     updated_at: {
       type: "number",
@@ -40,9 +42,10 @@ export const movementSchema: RxJsonSchema<any> = {
     "type",
     "date",
     "animal_id",
-    "details",
+    "details_id",
     "created_at",
     "updated_at",
     "_deleted",
   ],
+  indexes: ["date", "created_at"],
 };

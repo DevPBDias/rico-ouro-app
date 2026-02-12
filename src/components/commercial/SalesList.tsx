@@ -2,6 +2,7 @@
 
 import { useSales } from "@/hooks/db/sales/useSales";
 import { useClients } from "@/hooks/db/clients/useClients";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,7 +20,8 @@ import {
 import { Search, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/utils/formatDates";
 
 const MONTHS = [
   "Janeiro",
@@ -36,6 +38,51 @@ const MONTHS = [
   "Dezembro",
 ];
 
+const InfoRow = ({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string | number | React.ReactNode;
+  highlight?: boolean;
+}) => (
+  <div className="flex justify-between gap-2 items-center border-b border-border/50 py-0.5 last:border-0">
+    <span className="text-[11px] text-muted-foreground uppercase font-bold tracking-tight">
+      {label}
+    </span>
+    <span
+      className={cn(
+        "text-[13px] font-semibold uppercase",
+        highlight ? "text-primary" : "text-foreground",
+      )}
+    >
+      {value || "-"}
+    </span>
+  </div>
+);
+
+const statusConfig: Record<
+  string,
+  { color: string; bg: string; border: string }
+> = {
+  pago: {
+    color: "text-green-500",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  pendente: {
+    color: "text-yellow-600",
+    bg: "bg-yellow-500/10",
+    border: "border-yellow-500/20",
+  },
+  parcelado: {
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+};
+
 export function SalesList() {
   const {
     sales,
@@ -49,6 +96,7 @@ export function SalesList() {
   } = useSales();
 
   const { clients } = useClients();
+  const { animals } = useAnimals();
 
   const clientsMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -56,45 +104,25 @@ export function SalesList() {
     return map;
   }, [clients]);
 
+  const animalsMap = useMemo(() => {
+    const map: Record<
+      string,
+      { sex?: string; iabcgz?: string; deca?: string }
+    > = {};
+    animals.forEach((a) => {
+      if (a.rgn) {
+        map[a.rgn] = { sex: a.sex, iabcgz: a.iabcgz, deca: a.deca };
+      }
+    });
+    return map;
+  }, [animals]);
+
   const formatCurrency = (value?: number) => {
     if (value === undefined || value === null) return "—";
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("pt-BR");
-  };
-
-  const getStatusBadge = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case "pago":
-        return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-            Pago
-          </Badge>
-        );
-      case "pendente":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-            Pendente
-          </Badge>
-        );
-      case "parcelado":
-        return (
-          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-            Parcelado
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">
-            {status || "—"}
-          </Badge>
-        );
-    }
   };
 
   return (
@@ -195,7 +223,7 @@ export function SalesList() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+              <Skeleton key={i} className="h-20 w-full rounded-xl" />
             ))}
           </div>
         ) : sales.length > 0 ? (
@@ -203,88 +231,120 @@ export function SalesList() {
             type="single"
             collapsible
             defaultValue={sales[0]?.id}
-            className="space-y-2"
+            className="space-y-3"
           >
-            {sales.map((sale) => (
-              <AccordionItem
-                key={sale.id}
-                value={sale.id}
-                className="bg-white rounded-2xl border-none shadow-sm overflow-hidden"
-              >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <div className="flex flex-col items-start text-left w-full">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="font-bold text-primary">
-                        INDI {sale.animal_rgn}
+            {sales.map((sale) => {
+              const animalInfo = animalsMap[sale.animal_rgn];
+              const status = sale.financial_status?.toLowerCase() || "";
+              const config = statusConfig[status] || {
+                color: "text-gray-500",
+                bg: "bg-gray-500/10",
+                border: "border-gray-500/20",
+              };
+
+              return (
+                <AccordionItem
+                  key={sale.id}
+                  value={sale.id}
+                  className="border-2 border-primary/20 bg-card/50 rounded-xl overflow-hidden shadow-sm"
+                >
+                  <AccordionTrigger className="flex flex-1 items-center justify-between px-4 py-3 hover:no-underline transition-all hover:bg-primary/5">
+                    <div className="flex flex-col items-start justify-start gap-1">
+                      <div className="flex flex-col items-start truncate">
+                        <span className="font-bold text-base text-primary tracking-tight">
+                          INDI {sale.animal_rgn}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-medium uppercase">
+                          {formatDate(sale.date)}
+                        </span>
+                      </div>
+                      {/* Animal Info */}
+                      {animalInfo && (
+                        <div className="flex flex-row items-start justify-start gap-3">
+                          <p className="text-[9px] text-muted-foreground">
+                            Sexo:{" "}
+                            <span className="font-bold text-primary text-xs">
+                              {animalInfo.sex || "-"}
+                            </span>
+                          </p>
+                          <p className="text-[9px] text-muted-foreground">
+                            iABCZg:{" "}
+                            <span className="font-bold text-primary text-xs">
+                              {animalInfo.iabcgz || "-"}
+                            </span>
+                          </p>
+                          <p className="text-[9px] text-muted-foreground">
+                            DECA:{" "}
+                            <span className="font-bold text-primary text-xs">
+                              {animalInfo.deca || "-"}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <span
+                        className={cn(
+                          "text-[10px] font-black uppercase px-3 py-1 rounded-md border shadow-sm",
+                          config.bg,
+                          config.color,
+                          config.border,
+                        )}
+                      >
+                        {sale.financial_status || "—"}
                       </span>
-                      {getStatusBadge(sale.financial_status)}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                      <span>{clientsMap[sale.client_id] || "—"}</span>
-                      <span>•</span>
-                      <span>{formatDate(sale.date)}</span>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground text-xs">
-                        Tipo de pagamento
-                      </p>
-                      <p className="font-medium">
-                        {sale.payment_method || "—"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs">Entrada</p>
-                      <p className="font-medium">
-                        {formatCurrency(sale.down_payment)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs">
-                        Valor Total
-                      </p>
-                      <p className="font-medium text-primary">
-                        {formatCurrency(sale.total_value)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs">Parcelas</p>
-                      <p className="font-medium">{sale.installments || "—"}</p>
-                    </div>
-                    {sale.installment_value !== undefined && (
-                      <div>
-                        <p className="text-muted-foreground text-xs">
-                          Valor das Parcelas
-                        </p>
-                        <p className="font-medium text-primary">
-                          {formatCurrency(sale.installment_value)}
-                        </p>
+                  </AccordionTrigger>
+
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="pt-2 border-t border-border/50">
+                      <div className="flex flex-col gap-0.5">
+                        {/* Sale Info */}
+                        <InfoRow
+                          label="Cliente"
+                          value={clientsMap[sale.client_id] || "—"}
+                        />
+                        <InfoRow
+                          label="Valor Total"
+                          value={formatCurrency(sale.total_value)}
+                          highlight
+                        />
+                        <InfoRow
+                          label="Pagamento"
+                          value={sale.payment_method || "-"}
+                        />
+                        {sale.payment_method === "Boleto" && (
+                          <>
+                            <InfoRow
+                              label="Entrada"
+                              value={formatCurrency(sale.down_payment)}
+                            />
+                            <InfoRow
+                              label="Parcelas"
+                              value={sale.installments || "0"}
+                            />
+                            <InfoRow
+                              label="Valor das Parcelas"
+                              value={formatCurrency(sale.installment_value)}
+                              highlight
+                            />
+                          </>
+                        )}
+                        <InfoRow label="GTA" value={sale.gta_number || "-"} />
+                        <InfoRow
+                          label="Nota Fiscal"
+                          value={sale.invoice_number || "-"}
+                        />
                       </div>
-                    )}
-                    {sale.gta_number && (
-                      <div>
-                        <p className="text-muted-foreground text-xs">GTA</p>
-                        <p className="font-medium">{sale.gta_number}</p>
-                      </div>
-                    )}
-                    {sale.invoice_number && (
-                      <div>
-                        <p className="text-muted-foreground text-xs">
-                          Nota Fiscal
-                        </p>
-                        <p className="font-medium">{sale.invoice_number}</p>
-                      </div>
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         ) : (
-          <div className="bg-white rounded-2xl p-10 flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="bg-card/50 border-2 border-dashed border-primary/20 rounded-xl p-10 flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center text-muted-foreground mb-4">
               <Search size={32} />
             </div>

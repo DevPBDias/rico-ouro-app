@@ -100,3 +100,28 @@ export function useSales() {
     refetch,
   };
 }
+
+/**
+ * Hook reativo para buscar uma venda específica pelo ID.
+ */
+export function useSaleById(id: string | null | undefined) {
+  const query = useMemo<MangoQuery<Sale> | null>(
+    () => {
+      if (!id) return null;
+      return {
+        selector: {
+          id: { $eq: id },
+        },
+      };
+    },
+    [id],
+  );
+
+  const { data, isLoading, error } = useLocalQuery<Sale>("sales", query);
+
+  return {
+    sale: data?.[0],
+    isLoading,
+    error,
+  };
+}

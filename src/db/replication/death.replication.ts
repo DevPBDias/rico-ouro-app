@@ -1,22 +1,21 @@
 import { createReplication } from "./base";
-import { Movement } from "@/types/movement.type";
+import { Death } from "@/types/death.type";
 import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 
 /**
- * Replicação de Movimentações usando o template padronizado.
+ * Replicação de Mortes usando o template padronizado.
  */
-export const movementReplication = createReplication<Movement>({
-  collectionName: "movements",
-  tableName: "movements",
-  replicationIdentifier: "movements-replication-v1",
+export const deathReplication = createReplication<Death>({
+  collectionName: "deaths",
+  tableName: "deaths",
+  replicationIdentifier: "deaths-replication-v1",
 
   // Mapeia documento RxDB → Supabase
   mapToSupabase: (doc) => ({
     id: doc.id,
-    type: doc.type,
+    animal_rgn: doc.animal_rgn,
     date: doc.date,
-    animal_id: doc.animal_id,
-    details_id: doc.details_id,
+    reason: doc.reason,
     created_at: doc.created_at,
     updated_at: doc.updated_at,
     _deleted: doc._deleted,
@@ -30,17 +29,17 @@ export const movementReplication = createReplication<Movement>({
   autoStart: false,
 
   mapFromSupabase: (doc) => {
-    return cleanSupabaseDocument(doc) as unknown as Movement;
+    return cleanSupabaseDocument(doc) as unknown as Death;
   },
 });
 
 /**
  * Função wrapper para compatibilidade.
  */
-export async function replicateMovementsNew(
-  db: Parameters<typeof movementReplication>[0],
+export async function replicateDeathsNew(
+  db: Parameters<typeof deathReplication>[0],
   supabaseUrl: string,
   supabaseKey: string,
 ) {
-  return movementReplication(db, supabaseUrl, supabaseKey);
+  return deathReplication(db, supabaseUrl, supabaseKey);
 }

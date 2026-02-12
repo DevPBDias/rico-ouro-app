@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { useDeathById } from "@/hooks/db/deaths/useDeathById";
+import { useSaleById } from "@/hooks/db/sales/useSales";
+import { useExchangeById } from "@/hooks/db/exchanges/useExchangeById";
 
 interface MovementListItemProps {
   movement: Movement;
@@ -72,6 +75,107 @@ const InfoRow = ({
   </div>
 );
 
+const MorteDetails = ({ details_id }: { details_id: string }) => {
+  const { death, isLoading } = useDeathById(details_id);
+
+  if (isLoading)
+    return (
+      <div className="animate-pulse h-4 bg-muted rounded w-3/4 my-2 px-2" />
+    );
+  if (!death) return null;
+
+  return <InfoRow label="Motivo" value={death.reason || "-"} />;
+};
+
+const VendaDetails = ({ details_id }: { details_id: string }) => {
+  const { sale: fetchedSale, isLoading } = useSaleById(details_id);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2 animate-pulse my-2 px-2">
+        <div className="h-4 bg-muted rounded w-full" />
+        <div className="h-4 bg-muted rounded w-2/3" />
+      </div>
+    );
+  }
+
+  if (!fetchedSale) return null;
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <InfoRow
+        label={fetchedSale.sale_type === "abate" ? "Frigorífico" : "Cliente"}
+        value={(<ClientName clientId={fetchedSale.client_id!} />) as any}
+      />
+      <InfoRow
+        label="Valor Total"
+        value={
+          fetchedSale.total_value?.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }) || "-"
+        }
+        highlight
+      />
+      <InfoRow label="Pagamento" value={fetchedSale.payment_method || "-"} />
+      {fetchedSale.payment_method === "Boleto" && (
+        <>
+          <InfoRow
+            label="Entrada"
+            value={
+              fetchedSale.down_payment?.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }) || "R$ 0,00"
+            }
+          />
+          <InfoRow label="Parcelas" value={fetchedSale.installments || "0"} />
+          <InfoRow
+            label="Valor das Parcelas"
+            value={
+              fetchedSale.installment_value?.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }) || "R$ 0,00"
+            }
+            highlight
+          />
+        </>
+      )}
+      <InfoRow label="GTA" value={fetchedSale.gta_number || "-"} />
+      <InfoRow label="Nota Fiscal" value={fetchedSale.invoice_number || "-"} />
+    </div>
+  );
+};
+
+const TrocaDetails = ({ details_id }: { details_id: string }) => {
+  const { exchange: fetchedExchange, isLoading } = useExchangeById(details_id);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2 animate-pulse my-2 px-2">
+        <div className="h-4 bg-muted rounded w-3/4" />
+        <div className="h-4 bg-muted rounded w-1/2" />
+      </div>
+    );
+  }
+
+  if (!fetchedExchange) return null;
+
+  return (
+    <div className="space-y-1">
+      <InfoRow
+        label="Cliente"
+        value={(<ClientName clientId={fetchedExchange.client_id} />) as any}
+      />
+      <InfoRow
+        label="Animal Substituto"
+        value={fetchedExchange.substitute_animal_rgn || "-"}
+      />
+    </div>
+  );
+};
+
 export function MovementListItem({
   movement,
   onEdit,
@@ -84,72 +188,11 @@ export function MovementListItem({
   const renderContent = () => {
     switch (movement.type) {
       case "morte":
-        return (
-          <div className="space-y-1">
-            <InfoRow label="Motivo" value={(movement.details as any).reason} />
-          </div>
-        );
+        return <MorteDetails details_id={movement.details_id} />;
       case "venda":
-        const sale = movement.details as SalePayload;
-        return (
-          <div className="flex flex-col gap-0.5">
-            <InfoRow
-              label={sale.sale_type === "abate" ? "Frigorífico" : "Cliente"}
-              value={(<ClientName clientId={sale.client_id} />) as any}
-            />
-            <InfoRow
-              label="Valor Total"
-              value={
-                sale.total_value?.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }) || "-"
-              }
-              highlight
-            />
-            <InfoRow label="Pagamento" value={sale.payment_method || "-"} />
-            {sale.payment_method === "Boleto" && (
-              <>
-                <InfoRow
-                  label="Entrada"
-                  value={
-                    sale.down_payment?.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }) || "R$ 0,00"
-                  }
-                />
-                <InfoRow label="Parcelas" value={sale.installments || "0"} />
-                <InfoRow
-                  label="Valor das Parcelas"
-                  value={
-                    sale.installment_value?.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }) || "R$ 0,00"
-                  }
-                  highlight
-                />
-              </>
-            )}
-            <InfoRow label="GTA" value={sale.gta_number || "-"} />
-            <InfoRow label="Nota Fiscal" value={sale.invoice_number || "-"} />
-          </div>
-        );
+        return <VendaDetails details_id={movement.details_id} />;
       case "troca":
-        const exchange = movement.details as any;
-        return (
-          <div className="space-y-1">
-            <InfoRow
-              label="Cliente"
-              value={(<ClientName clientId={exchange.client_id} />) as any}
-            />
-            <InfoRow
-              label="Animal Substituto"
-              value={exchange.substitute_animal_rgn || "-"}
-            />
-          </div>
-        );
+        return <TrocaDetails details_id={movement.details_id} />;
       default:
         return null;
     }

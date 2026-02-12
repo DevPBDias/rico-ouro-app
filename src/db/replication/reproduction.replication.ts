@@ -38,6 +38,7 @@ export const reproductionEventReplication = createReplication<ReproductionEvent>
     final_diagnostic: doc.final_diagnostic ?? null,
     pregnancy_origin: doc.pregnancy_origin ?? null,
     created_at: doc.created_at ?? null,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

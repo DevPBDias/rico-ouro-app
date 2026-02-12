@@ -35,3 +35,13 @@ export {
   replicateAnimalSituationsNew,
 } from "./situation.replication";
 export { saleReplication, replicateSalesNew } from "./sale.replication";
+export { clientReplication, replicateClientsNew } from "./client.replication";
+export {
+  movementReplication,
+  replicateMovementsNew,
+} from "./movement.replication";
+export { deathReplication, replicateDeathsNew } from "./death.replication";
+export {
+  exchangeReplication,
+  replicateExchangesNew,
+} from "./exchange.replication";

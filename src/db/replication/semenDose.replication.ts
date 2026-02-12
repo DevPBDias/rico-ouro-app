@@ -27,6 +27,7 @@ export const semenDoseReplication = createReplication<SemenDose>({
     center_name: doc.center_name ?? null,
     breed: doc.breed,
     quantity: doc.quantity,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

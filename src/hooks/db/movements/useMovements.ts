@@ -2,8 +2,15 @@
 
 import { useMemo, useCallback } from "react";
 import { useLocalQuery, useLocalMutation } from "@/hooks/core";
-import { Movement, SalePayload } from "@/types/movement.type";
+import {
+  Movement,
+  SalePayload,
+  MortePayload,
+  TrocaPayload,
+} from "@/types/movement.type";
 import { Sale } from "@/types/sale.type";
+import { Death } from "@/types/death.type";
+import { Exchange } from "@/types/exchange.type";
 import { getDatabase } from "@/db/client";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -33,10 +40,17 @@ export function useMovements() {
 
   const { create: createSaleLocal, update: updateSaleLocal } =
     useLocalMutation<Sale>("sales");
+  const { create: createDeathLocal, update: updateDeathLocal } =
+    useLocalMutation<Death>("deaths");
+  const { create: createExchangeLocal, update: updateExchangeLocal } =
+    useLocalMutation<Exchange>("exchanges");
 
   const createMovement = useCallback(
     async (
-      data: Omit<Movement, "id" | "created_at" | "updated_at" | "_deleted">,
+      data: Omit<
+        Movement,
+        "id" | "created_at" | "updated_at" | "_deleted" | "details_id"
+      > & { details: any },
     ) => {
       try {
         const db = await getDatabase();
@@ -47,7 +61,10 @@ export function useMovements() {
 
         // 1. Create the Movement record
         await createMovementLocal({
-          ...data,
+          type: data.type,
+          animal_id: data.animal_id,
+          date: data.date,
+          details_id: "", // Will be patched later
           id,
           created_at: timestamp,
           updated_at: timestamp,
@@ -81,7 +98,7 @@ export function useMovements() {
               await createSaleLocal({
                 id: saleId,
                 animal_rgn: data.animal_id,
-                client_id: vendaDetails.client_id,
+                client_id: vendaDetails.client_id || "",
                 date: data.date,
                 total_value: vendaDetails.total_value || 0,
                 down_payment: vendaDetails.down_payment || 0,
@@ -95,6 +112,7 @@ export function useMovements() {
                 gta_number: vendaDetails.gta_number || "",
                 invoice_number: vendaDetails.invoice_number || "",
                 sale_type: vendaDetails.sale_type || "comprado",
+                created_at: timestamp,
                 updated_at: timestamp,
                 _deleted: false,
               });
@@ -106,16 +124,71 @@ export function useMovements() {
               );
             }
 
-            // Update movement details with the generated sale_id
+            // Update movement details with only the reference ID
             const movementDoc = await db.movements.findOne(id).exec();
             if (movementDoc) {
               console.log(`🔗 Linking sale ${saleId} to movement ${id}`);
               await movementDoc.patch({
-                details: {
-                  ...vendaDetails,
-                  sale_id: saleId,
-                },
+                details_id: saleId,
               });
+            }
+          }
+
+          // 5. If it's a Morte, also create a record in the 'deaths' collection
+          if (data.type === "morte") {
+            const morteDetails = data.details as MortePayload;
+            const deathId = uuidv4();
+
+            try {
+              await createDeathLocal({
+                id: deathId,
+                animal_rgn: data.animal_id,
+                date: data.date,
+                reason: morteDetails.reason || "",
+                created_at: timestamp,
+                updated_at: timestamp,
+                _deleted: false,
+              });
+              console.log("✅ Death record created successfully");
+
+              const movementDoc = await db.movements.findOne(id).exec();
+              if (movementDoc) {
+                await movementDoc.patch({
+                  details_id: deathId,
+                });
+              }
+            } catch (deathErr) {
+              console.error("❌ Error inserting death record:", deathErr);
+            }
+          }
+
+          // 6. If it's a Troca, also create a record in the 'exchanges' collection
+          if (data.type === "troca") {
+            const trocaDetails = data.details as TrocaPayload;
+            const exchangeId = uuidv4();
+
+            try {
+              await createExchangeLocal({
+                id: exchangeId,
+                animal_rgn: data.animal_id,
+                date: data.date,
+                client_id: trocaDetails.client_id || "",
+                traded_animal_rgn: data.animal_id,
+                substitute_animal_rgn: trocaDetails.substitute_animal_rgn || "",
+                created_at: timestamp,
+                updated_at: timestamp,
+                _deleted: false,
+              });
+              console.log("✅ Exchange record created successfully");
+
+              const movementDoc = await db.movements.findOne(id).exec();
+              if (movementDoc) {
+                await movementDoc.patch({
+                  details_id: exchangeId,
+                });
+              }
+            } catch (exchangeErr) {
+              console.error("❌ Error inserting exchange record:", exchangeErr);
             }
           }
         }
@@ -127,11 +200,16 @@ export function useMovements() {
         throw err;
       }
     },
-    [createMovementLocal, createSaleLocal],
+    [
+      createMovementLocal,
+      createSaleLocal,
+      createDeathLocal,
+      createExchangeLocal,
+    ],
   );
 
   const updateMovement = useCallback(
-    async (id: string, data: Partial<Movement>) => {
+    async (id: string, data: Partial<Movement> & { details?: any }) => {
       try {
         const db = await getDatabase();
         const timestamp = Date.now();
@@ -139,89 +217,69 @@ export function useMovements() {
         console.log("📝 Updating movement:", { id, data });
 
         await updateMovementLocal(id, {
-          ...data,
+          type: data.type,
+          animal_id: data.animal_id,
+          date: data.date,
+          details_id: data.details_id,
           id,
           updated_at: timestamp,
         } as Movement);
 
-        // Update corresponding sale if it's a venda
-        if (data.type === "venda" || (!data.type && id)) {
-          const movementDoc = await db.movements.findOne(id).exec();
-          const movement = movementDoc?.toJSON() as Movement;
+        // Update corresponding records in specific tables
+        const movementDoc = await db.movements.findOne(id).exec();
+        const movement = movementDoc?.toJSON() as Movement;
 
-          if (movement?.type === "venda") {
-            const vendaDetails = movement.details as SalePayload;
+        if (movement) {
+          const details_id = movement.details_id;
+          const patchData = data.details;
 
-            if (vendaDetails.sale_id) {
-              console.log(`💰 Patching existing sale: ${vendaDetails.sale_id}`);
-              const saleDoc = await db.sales
-                .findOne(vendaDetails.sale_id)
-                .exec();
-              if (saleDoc) {
-                await saleDoc.patch({
-                  total_value: vendaDetails.total_value || 0,
-                  down_payment: vendaDetails.down_payment || 0,
-                  payment_method: vendaDetails.payment_method || "",
-                  installments: vendaDetails.installments || 0,
-                  installment_value: vendaDetails.installment_value || 0,
-                  financial_status:
-                    vendaDetails.payment_method === "À Vista"
-                      ? "pago"
-                      : "pendente",
-                  gta_number: vendaDetails.gta_number || "",
-                  invoice_number: vendaDetails.invoice_number || "",
-                  sale_type: vendaDetails.sale_type || "comprado",
-                  updated_at: timestamp,
-                });
-                console.log("✅ Sale patched successfully");
-              } else {
-                console.warn(
-                  `⚠️ Sale doc ${vendaDetails.sale_id} not found, but referenced in movement.`,
-                );
-              }
-            } else {
-              // Missing sale_id in movement details, try to create it
-              console.log(
-                "💰 Sale ID missing in movement, creating new sale record...",
-              );
-              const saleId = uuidv4();
-              try {
-                await createSaleLocal({
-                  id: saleId,
-                  animal_rgn: movement.animal_id,
-                  client_id: vendaDetails.client_id,
-                  date: movement.date,
-                  total_value: vendaDetails.total_value || 0,
-                  down_payment: vendaDetails.down_payment || 0,
-                  payment_method: vendaDetails.payment_method || "",
-                  installments: vendaDetails.installments || 0,
-                  installment_value: vendaDetails.installment_value || 0,
-                  financial_status:
-                    vendaDetails.payment_method === "À Vista"
-                      ? "pago"
-                      : "pendente",
-                  gta_number: vendaDetails.gta_number || "",
-                  invoice_number: vendaDetails.invoice_number || "",
-                  sale_type: vendaDetails.sale_type || "comprado",
-                  updated_at: timestamp,
-                  _deleted: false,
-                });
+          // Sync Venda
+          if (movement.type === "venda" && details_id) {
+            const saleDoc = await db.sales.findOne(details_id).exec();
+            if (saleDoc && patchData) {
+              await saleDoc.patch({
+                date: data.date || movement.date,
+                animal_rgn: data.animal_id || movement.animal_id,
+                client_id: patchData.client_id,
+                total_value: patchData.total_value,
+                down_payment: patchData.down_payment,
+                payment_method: patchData.payment_method,
+                installments: patchData.installments,
+                installment_value: patchData.installment_value,
+                financial_status:
+                  patchData.payment_method === "À Vista" ? "pago" : "pendente",
+                gta_number: patchData.gta_number,
+                invoice_number: patchData.invoice_number,
+                sale_type: patchData.sale_type,
+                updated_at: timestamp,
+              });
+            }
+          }
 
-                if (movementDoc) {
-                  await movementDoc.patch({
-                    details: {
-                      ...vendaDetails,
-                      sale_id: saleId,
-                    },
-                  });
-                }
-                console.log("✅ New sale record created and linked");
-              } catch (saleErr) {
-                console.error(
-                  "❌ Error creating missing sale record:",
-                  saleErr,
-                );
-              }
+          // Sync Morte
+          if (movement.type === "morte" && details_id) {
+            const deathDoc = await db.deaths.findOne(details_id).exec();
+            if (deathDoc && patchData) {
+              await deathDoc.patch({
+                date: data.date || movement.date,
+                animal_rgn: data.animal_id || movement.animal_id,
+                reason: patchData.reason,
+                updated_at: timestamp,
+              });
+            }
+          }
+
+          // Sync Troca
+          if (movement.type === "troca" && details_id) {
+            const exchangeDoc = await db.exchanges.findOne(details_id).exec();
+            if (exchangeDoc && patchData) {
+              await exchangeDoc.patch({
+                date: data.date || movement.date,
+                animal_rgn: data.animal_id || movement.animal_id,
+                client_id: patchData.client_id,
+                substitute_animal_rgn: patchData.substitute_animal_rgn,
+                updated_at: timestamp,
+              });
             }
           }
         }
@@ -233,7 +291,12 @@ export function useMovements() {
         throw err;
       }
     },
-    [updateMovementLocal, createSaleLocal],
+    [
+      updateMovementLocal,
+      createSaleLocal,
+      createDeathLocal,
+      createExchangeLocal,
+    ],
   );
 
   const getMovementsByAnimal = useCallback(
@@ -270,19 +333,22 @@ export function useMovements() {
 
         console.log("🗑️ Deleting movement:", { id, type: movement.type });
 
-        // 1. If it's a "venda", delete the associated sale record
-        if (movement.type === "venda") {
-          const vendaDetails = movement.details as SalePayload;
-          if (vendaDetails.sale_id) {
-            console.log(`💰 Deleting associated sale: ${vendaDetails.sale_id}`);
-            const saleDoc = await db.sales.findOne(vendaDetails.sale_id).exec();
-            if (saleDoc) {
-              await saleDoc.patch({
-                _deleted: true,
-                updated_at: timestamp,
-              });
-            }
-          }
+        // 1. Delete associated records
+        const details_id = movement.details_id;
+        if (movement.type === "venda" && details_id) {
+          const saleDoc = await db.sales.findOne(details_id).exec();
+          if (saleDoc)
+            await saleDoc.patch({ _deleted: true, updated_at: timestamp });
+        }
+        if (movement.type === "morte" && details_id) {
+          const deathDoc = await db.deaths.findOne(details_id).exec();
+          if (deathDoc)
+            await deathDoc.patch({ _deleted: true, updated_at: timestamp });
+        }
+        if (movement.type === "troca" && details_id) {
+          const exchangeDoc = await db.exchanges.findOne(details_id).exec();
+          if (exchangeDoc)
+            await exchangeDoc.patch({ _deleted: true, updated_at: timestamp });
         }
 
         // 2. If it's "morte", "venda" or "troca", restore animal state to "ATIVO"

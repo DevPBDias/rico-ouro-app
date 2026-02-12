@@ -13,6 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useDeathById } from "@/hooks/db/deaths/useDeathById";
+import { useSaleById } from "@/hooks/db/sales/useSales";
+import { useExchangeById } from "@/hooks/db/exchanges/useExchangeById";
 
 interface MovementFormProps {
   onSuccess?: () => void;
@@ -50,50 +53,85 @@ export function MovementForm({
   const showRgnError = animalId.length > 0 && !animalExists;
 
   // Morte fields
-  const [reason, setReason] = useState(
-    initialMovement?.type === "morte"
-      ? (initialMovement.details as any).reason
-      : "",
-  );
+  const [reason, setReason] = useState("");
 
-  // Venda fields
-  const getSaleDetail = <K extends keyof SalePayload>(key: K): any => {
-    if (initialMovement?.type === "venda") {
-      return (initialMovement.details as SalePayload)[key];
-    }
-    return "";
-  };
-
-  const [saleType, setSaleType] = useState<"abate" | "comprado">(
-    getSaleDetail("sale_type") || "comprado",
-  );
-  const [clientId, setClientId] = useState(getSaleDetail("client_id") || "");
-  const [totalValue, setTotalValue] = useState(
-    getSaleDetail("total_value")?.toString() || "",
-  );
-  const [downPayment, setDownPayment] = useState(
-    getSaleDetail("down_payment")?.toString() || "",
-  );
-  const [paymentMethod, setPaymentMethod] = useState(
-    getSaleDetail("payment_method") || "",
-  );
-  const [installments, setInstallments] = useState(
-    getSaleDetail("installments")?.toString() || "",
-  );
-  const [installmentValue, setInstallmentValue] = useState(
-    getSaleDetail("installment_value")?.toString() || "",
-  );
-  const [gtaNumber, setGtaNumber] = useState(getSaleDetail("gta_number") || "");
-  const [invoiceNumber, setInvoiceNumber] = useState(
-    getSaleDetail("invoice_number") || "",
-  );
+  const [saleType, setSaleType] = useState<"abate" | "comprado">("comprado");
+  const [clientId, setClientId] = useState("");
+  const [totalValue, setTotalValue] = useState("");
+  const [downPayment, setDownPayment] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [installments, setInstallments] = useState("");
+  const [installmentValue, setInstallmentValue] = useState("");
+  const [gtaNumber, setGtaNumber] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
 
   // TROCA fields
-  const [substituteAnimalRgn, setSubstituteAnimalRgn] = useState(
-    initialMovement?.type === "troca"
-      ? (initialMovement.details as any).substitute_animal_rgn
-      : "",
+  const [substitute_animal_rgn, setSubstituteAnimalRgn] = useState("");
+
+  // Relational Data Fetching (if editing and only ID is present)
+  const { death: fetchedDeath } = useDeathById(
+    initialMovement?.type === "morte" ? initialMovement.details_id : null,
   );
+  const { sale: fetchedSale } = useSaleById(
+    initialMovement?.type === "venda" ? initialMovement.details_id : null,
+  );
+  const { exchange: fetchedExchange } = useExchangeById(
+    initialMovement?.type === "troca" ? initialMovement.details_id : null,
+  );
+
+  // Legacy data population (if details still has data in old format)
+  useEffect(() => {
+    if (initialMovement && (initialMovement as any).details) {
+      const d = (initialMovement as any).details;
+      if (initialMovement.type === "morte") {
+        if (d.reason) setReason(d.reason);
+      } else if (initialMovement.type === "venda") {
+        if (d.client_id) {
+          setSaleType(d.sale_type || "comprado");
+          setClientId(d.client_id || "");
+          setTotalValue(d.total_value?.toString() || "");
+          setDownPayment(d.down_payment?.toString() || "");
+          setPaymentMethod(d.payment_method || "");
+          setInstallments(d.installments?.toString() || "");
+          setInstallmentValue(d.installment_value?.toString() || "");
+          setGtaNumber(d.gta_number || "");
+          setInvoiceNumber(d.invoice_number || "");
+        }
+      } else if (initialMovement.type === "troca") {
+        if (d.client_id) {
+          setClientId(d.client_id || "");
+          setSubstituteAnimalRgn(d.substitute_animal_rgn || "");
+        }
+      }
+    }
+  }, [initialMovement]);
+
+  useEffect(() => {
+    if (fetchedDeath) {
+      setReason(fetchedDeath.reason || "");
+    }
+  }, [fetchedDeath]);
+
+  useEffect(() => {
+    if (fetchedSale) {
+      setSaleType((fetchedSale.sale_type as any) || "comprado");
+      setClientId(fetchedSale.client_id || "");
+      setTotalValue(fetchedSale.total_value?.toString() || "");
+      setDownPayment(fetchedSale.down_payment?.toString() || "");
+      setPaymentMethod(fetchedSale.payment_method || "");
+      setInstallments(fetchedSale.installments?.toString() || "");
+      setInstallmentValue(fetchedSale.installment_value?.toString() || "");
+      setGtaNumber(fetchedSale.gta_number || "");
+      setInvoiceNumber(fetchedSale.invoice_number || "");
+    }
+  }, [fetchedSale]);
+
+  useEffect(() => {
+    if (fetchedExchange) {
+      setClientId(fetchedExchange.client_id || "");
+      setSubstituteAnimalRgn(fetchedExchange.substitute_animal_rgn || "");
+    }
+  }, [fetchedExchange]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,12 +142,10 @@ export function MovementForm({
 
     try {
       let details: any = {};
-      let description = "";
 
       switch (movementType) {
         case "morte":
           details = { reason };
-          description = `Morte: ${reason}`;
           break;
         case "venda":
           details = {
@@ -122,22 +158,14 @@ export function MovementForm({
             installment_value: parseFloat(installmentValue) || 0,
             gta_number: gtaNumber,
             invoice_number: invoiceNumber,
-            // Preserve sale_id if editing
-            ...(initialMovement?.type === "venda"
-              ? { sale_id: (initialMovement.details as any).sale_id }
-              : {}),
           };
-          const clientName =
-            clients.find((c) => c.id === clientId)?.name || "Cliente";
-          description = `Venda (${saleType === "abate" ? "Abate" : "Comprado"}): ${clientName}`;
           break;
         case "troca":
           details = {
             client_id: clientId,
             traded_animal_rgn: animalId,
-            substitute_animal_rgn: substituteAnimalRgn,
+            substitute_animal_rgn: substitute_animal_rgn,
           };
-          description = `Troca por ${substituteAnimalRgn || "N/A"}`;
           break;
         default:
           break;
@@ -148,7 +176,6 @@ export function MovementForm({
           type: movementType as MovementType,
           animal_id: animalId,
           date,
-          description,
           details,
         });
       } else {
@@ -156,7 +183,6 @@ export function MovementForm({
           type: movementType as MovementType,
           animal_id: animalId,
           date,
-          description,
           details,
         });
       }
@@ -199,10 +225,12 @@ export function MovementForm({
   }
 
   const isFormValid =
-    !!movementType &&
-    !!animalId &&
+    movementType &&
+    animalId &&
     animalExists &&
-    (movementType !== "venda" || !!clientId);
+    (movementType === "morte" ? !!reason : true) &&
+    (movementType === "venda" ? !!clientId && !!totalValue : true) &&
+    (movementType === "troca" ? !!clientId && !!substitute_animal_rgn : true);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
@@ -509,7 +537,7 @@ export function MovementForm({
                 <Input
                   id="substitute-animal-rgn"
                   name="substituteAnimalRgn"
-                  value={substituteAnimalRgn}
+                  value={substitute_animal_rgn}
                   onChange={(e) =>
                     setSubstituteAnimalRgn(e.target.value.toUpperCase())
                   }

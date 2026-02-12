@@ -26,11 +26,11 @@ export function MovementList({ onEdit }: MovementListProps) {
           return false;
         }
 
-        // Filter by Search (RGN or Description)
+        // Filter by Search (RGN)
         const searchLower = searchTerm.toLowerCase();
-        const matchesSearch =
-          movement.animal_id.toLowerCase().includes(searchLower) ||
-          movement.description.toLowerCase().includes(searchLower);
+        const matchesSearch = movement.animal_id
+          .toLowerCase()
+          .includes(searchLower);
 
         if (!matchesSearch) return false;
 

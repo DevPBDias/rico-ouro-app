@@ -9,13 +9,13 @@ export const animalMetricWeightReplication = createReplication<AnimalMetric>({
   collectionName: "animal_metrics_weight",
   tableName: "animal_metrics_weight",
   replicationIdentifier: "animal-metrics-weight-replication-v11",
-
   mapToSupabase: (doc) => ({
     id: doc.id,
     rgn: doc.rgn,
     born_metric: doc.born_metric ?? false,
     date: doc.date,
     value: doc.value,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 
@@ -30,7 +30,7 @@ export const animalMetricWeightReplication = createReplication<AnimalMetric>({
 export async function replicateAnimalMetricWeightNew(
   db: Parameters<typeof animalMetricWeightReplication>[0],
   supabaseUrl: string,
-  supabaseKey: string
+  supabaseKey: string,
 ) {
   return animalMetricWeightReplication(db, supabaseUrl, supabaseKey);
 }
@@ -42,13 +42,13 @@ export const animalMetricCEReplication = createReplication<AnimalMetric>({
   collectionName: "animal_metrics_ce",
   tableName: "animal_metrics_ce",
   replicationIdentifier: "animal-metrics-ce-replication-v11",
-
   mapToSupabase: (doc) => ({
     id: doc.id,
     rgn: doc.rgn,
     born_metric: doc.born_metric ?? false,
     date: doc.date,
     value: doc.value,
+    updated_at: doc.updated_at,
     _deleted: doc._deleted,
   }),
 

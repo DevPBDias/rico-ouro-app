@@ -6,14 +6,12 @@ export interface MortePayload {
   reason: string;
 }
 
-export interface SalePayload extends Sale {
-  sale_id?: string;
-}
+export interface SalePayload extends Partial<Sale> {}
 
 export interface TrocaPayload {
   client_id: string;
-  traded_animal_rgn: string; // The animal being traded out
-  substitute_animal_rgn?: string; // The animal coming in (optional at this stage?)
+  traded_animal_rgn: string;
+  substitute_animal_rgn?: string;
   value_difference?: number;
 }
 
@@ -22,8 +20,7 @@ export interface Movement {
   type: MovementType;
   date: string; // ISO Date
   animal_id: string; // RGN of the main animal involved
-  description: string;
-  details: MortePayload | SalePayload | TrocaPayload;
+  details_id: string;
   created_at: number;
   updated_at: number;
   _deleted: boolean;

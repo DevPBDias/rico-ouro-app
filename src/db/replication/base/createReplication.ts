@@ -86,9 +86,14 @@ export function createReplication<T extends ReplicableEntity>(
 
           // Cursor composto real para garantir progressão e evitar duplicados
           // PostgREST: (updated_at, id) > (last_modified, last_id)
+          // Convertendo lastModified (ms) para ISO string para compatibilidade com timestamptz
+          const lastModifiedISO = (typeof lastModified === 'number')
+            ? new Date(lastModified).toISOString()
+            : lastModified;
+
           const filter = lastId
-            ? `or(updated_at.gt.${lastModified},and(updated_at.eq.${lastModified},${primaryKey}.gt.${lastId}))`
-            : `updated_at.gte.${lastModified}`;
+            ? `or(updated_at.gt."${lastModifiedISO}",and(updated_at.eq."${lastModifiedISO}",${primaryKey}.gt."${lastId}"))`
+            : `updated_at.gte."${lastModifiedISO}"`;
 
           let url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&${filter}`;
 
@@ -128,10 +133,17 @@ export function createReplication<T extends ReplicableEntity>(
             } unique documents`,
           );
 
-          const lastDoc = data.length > 0 ? data[data.length - 1] : null;
+          // USAR processedDocuments em vez de data para o checkpoint,
+          // pois cleanSupabaseDocuments já converteu ISO strings para números (ms)
+          const lastDoc =
+            processedDocuments.length > 0
+              ? processedDocuments[processedDocuments.length - 1]
+              : null;
           const newCheckpoint: ReplicationCheckpoint = {
-            updated_at: lastDoc ? Number(lastDoc.updated_at) : lastModified,
-            last_id: lastDoc ? String(lastDoc[primaryKey]) : lastId,
+            updated_at: lastDoc
+              ? Number((lastDoc as any).updated_at)
+              : lastModified,
+            last_id: lastDoc ? String((lastDoc as any)[primaryKey]) : lastId,
           };
 
           return {
@@ -153,10 +165,17 @@ export function createReplication<T extends ReplicableEntity>(
 
           const documents = rows.map((row) => {
             const doc = row.newDocumentState as T;
-            if (mapToSupabase) {
-              return mapToSupabase(doc);
+            let mapped = mapToSupabase ? mapToSupabase(doc) : { ...doc as Record<string, any> };
+            
+            // Garantir que timestamps técnicos sejam enviados como ISO strings para timestamptz
+            if (typeof mapped.updated_at === 'number') {
+              mapped.updated_at = new Date(mapped.updated_at).toISOString();
             }
-            return doc as Record<string, unknown>;
+            if (typeof mapped.created_at === 'number') {
+              mapped.created_at = new Date(mapped.created_at).toISOString();
+            }
+            
+            return mapped;
           });
 
           const headers = await getAuthHeaders();
