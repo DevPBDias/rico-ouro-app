@@ -10,6 +10,7 @@ export function useCreateAnimal() {
   const createAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
       ...data,
+      animal_state: "ATIVO",
     } as Animal;
 
     // Returns the created animal document

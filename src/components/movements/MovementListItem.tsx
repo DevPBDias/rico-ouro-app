@@ -57,7 +57,7 @@ const InfoRow = ({
   value: string | number;
   highlight?: boolean;
 }) => (
-  <div className="flex justify-between items-center border-b border-border/50 py-2 last:border-0">
+  <div className="flex justify-between items-center border-b border-border/50 py-0.5 last:border-0">
     <span className="text-[11px] text-muted-foreground uppercase font-bold tracking-tight">
       {label}
     </span>
@@ -92,7 +92,7 @@ export function MovementListItem({
       case "venda":
         const sale = movement.details as SalePayload;
         return (
-          <div className="space-y-1">
+          <div className="flex flex-col gap-0.5">
             <InfoRow
               label={sale.sale_type === "abate" ? "Frigorífico" : "Cliente"}
               value={(<ClientName clientId={sale.client_id} />) as any}
