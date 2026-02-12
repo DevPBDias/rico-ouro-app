@@ -49,6 +49,8 @@ const initialFilters: ReportFilters = {
   farmFilterMode: undefined,
   sex: "Ambos" as GenderFilterValue,
   sexFilterMode: undefined,
+  animalState: "ATIVO",
+  animalStateFilterMode: undefined,
   startDate: undefined,
   endDate: undefined,
   selectedColumns: DEFAULT_SELECTED_COLUMNS,

@@ -142,6 +142,7 @@ export function ReproductionForm({
       // Recalculate Calving if origin or relevant dates change
       const relevantFields: (keyof ReproductionEvent)[] = [
         "pregnancy_origin",
+        "protocol_name",
         "d0_date",
         "natural_mating_d35_entry",
         "natural_mating_d80_exit",

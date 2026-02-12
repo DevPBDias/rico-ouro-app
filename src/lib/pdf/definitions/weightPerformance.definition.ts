@@ -18,12 +18,23 @@ async function generateWeightReport(
   if (!db) throw new Error("Database not initialized");
 
   // Fetch animals from the selected farm
+  const animalSelector: any = {
+    _deleted: { $eq: false },
+    farm_id: { $eq: filters.farmId },
+  };
+
+  // Add animal_state filter only if animalStateFilterMode is "specific"
+  if (
+    filters.animalState &&
+    filters.animalStateFilterMode === "specific" &&
+    filters.animalState !== "Ambos"
+  ) {
+    animalSelector.animal_state = { $eq: filters.animalState };
+  }
+
   const animalDocs = await db.animals
     .find({
-      selector: {
-        _deleted: { $eq: false },
-        farm_id: { $eq: filters.farmId },
-      },
+      selector: animalSelector,
     })
     .exec();
 

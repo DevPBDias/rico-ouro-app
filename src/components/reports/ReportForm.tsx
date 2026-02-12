@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2, AlertCircle } from "lucide-react";
-import { GenderFilterValue } from "@/lib/pdf/definitions/types";
+import {
+  GenderFilterValue,
+  AnimalStateFilterValue,
+} from "@/lib/pdf/definitions/types";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
 import { useStatuses } from "@/hooks/db/statuses/useStatuses";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
@@ -29,6 +32,7 @@ import { SexFilterModal } from "./SexFilterModal";
 import { StatusFilterModal } from "./StatusFilterModal";
 import { ClassFilterModal } from "./ClassFilterModal";
 import { SocietyFilterModal } from "./SocietyFilterModal";
+import { AnimalStateFilterModal } from "./AnimalStateFilterModal";
 import { TableColumn } from "@/lib/pdf/types";
 
 export function ReportForm() {
@@ -53,6 +57,7 @@ export function ReportForm() {
   const [statusModalOpen, setStatusModalOpen] = React.useState(false);
   const [classModalOpen, setClassModalOpen] = React.useState(false);
   const [societyModalOpen, setSocietyModalOpen] = React.useState(false);
+  const [animalStateModalOpen, setAnimalStateModalOpen] = React.useState(false);
 
   // Filter animals by selected farm (or all if no farm selected or filterMode is "all")
   const farmAnimals = useMemo(() => {
@@ -169,6 +174,17 @@ export function ReportForm() {
     });
   };
 
+  // Handle animal state filter from modal
+  const handleAnimalStateFilterConfirm = (
+    animalState: AnimalStateFilterValue | undefined,
+    filterMode: "all" | "specific",
+  ) => {
+    updateFilters({
+      animalState: animalState || "Ambos",
+      animalStateFilterMode: filterMode,
+    });
+  };
+
   // Custom toggle for filter columns - opens modal instead
   const handleColumnToggle = (column: TableColumn) => {
     if (column.dataKey === "farmName") {
@@ -242,6 +258,21 @@ export function ReportForm() {
       } else {
         // Se está marcando, abrir modal
         setSocietyModalOpen(true);
+      }
+    } else if (column.dataKey === "animalState") {
+      // Se está desmarcando, remover filtro
+      const isChecked =
+        filters.selectedColumns?.some((c) => c.dataKey === "animalState") ??
+        false;
+      if (isChecked) {
+        updateFilters({
+          animalState: undefined,
+          animalStateFilterMode: undefined,
+        });
+        toggleColumn(column);
+      } else {
+        // Se está marcando, abrir modal
+        setAnimalStateModalOpen(true);
       }
     } else {
       toggleColumn(column);
@@ -541,6 +572,22 @@ export function ReportForm() {
           handleSocietyFilterConfirm(society, filterMode);
           if (!isSocietyColumnSelected) {
             toggleColumn({ header: "SOCIEDADE", dataKey: "society" });
+          }
+        }}
+      />
+
+      <AnimalStateFilterModal
+        open={animalStateModalOpen}
+        onOpenChange={setAnimalStateModalOpen}
+        currentValue={filters.animalState}
+        currentFilterMode={filters.animalStateFilterMode || "all"}
+        onConfirm={(animalState, filterMode) => {
+          handleAnimalStateFilterConfirm(animalState, filterMode || "all");
+          const isAnimalStateColumnSelected =
+            filters.selectedColumns?.some((c) => c.dataKey === "animalState") ??
+            false;
+          if (!isAnimalStateColumnSelected) {
+            toggleColumn({ header: "ATIVIDADE", dataKey: "animalState" });
           }
         }}
       />

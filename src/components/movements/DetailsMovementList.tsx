@@ -1,41 +1,18 @@
-import { useState, useEffect } from "react";
+import { useMovementsByAnimal } from "@/hooks/db/movements/useMovementsByAnimal";
 import { useMovements } from "@/hooks/db/movements/useMovements";
 import { MovementListItem } from "./MovementListItem";
 import { Loader2 } from "lucide-react";
+import { Accordion } from "@/components/ui/accordion";
 
 interface DetailsMovementListProps {
   rgn: string;
 }
 
 export function DetailsMovementList({ rgn }: DetailsMovementListProps) {
-  const { getMovementsByAnimal, deleteMovement } = useMovements();
-  const [movements, setMovements] = useState<any[]>([]); // TODO: Type correctly after fetch fix
-  const [loading, setLoading] = useState(true);
+  const { deleteMovement } = useMovements();
+  const { movements, isLoading } = useMovementsByAnimal(rgn);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchMovements() {
-      try {
-        const data = await getMovementsByAnimal(rgn);
-        if (mounted) {
-          setMovements(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchMovements();
-
-    return () => {
-      mounted = false;
-    };
-  }, [rgn, getMovementsByAnimal]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -52,14 +29,16 @@ export function DetailsMovementList({ rgn }: DetailsMovementListProps) {
   }
 
   return (
-    <div className="space-y-2">
-      {movements.map((movement) => (
-        <MovementListItem
-          key={movement.id}
-          movement={movement}
-          onDelete={deleteMovement}
-        />
-      ))}
-    </div>
+    <Accordion type="single" collapsible className="w-full">
+      <div className="space-y-2">
+        {movements.map((movement) => (
+          <MovementListItem
+            key={movement.id}
+            movement={movement}
+            onDelete={deleteMovement}
+          />
+        ))}
+      </div>
+    </Accordion>
   );
 }

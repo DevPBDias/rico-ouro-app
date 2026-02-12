@@ -20,8 +20,18 @@ export default function ExcelExport() {
   const [successMethod, setSuccessMethod] = useState<
     "share" | "save-picker" | "download"
   >("download");
-  const { animals: dados } = useAnimals();
+  const [filterState, setFilterState] = useState<"ATIVO" | "INATIVO" | "Ambos">(
+    "ATIVO",
+  );
+  const { animals: rawData } = useAnimals();
   const { farms } = useFarms();
+
+  const filteredData = useMemo(() => {
+    if (!rawData) return [];
+    if (filterState === "Ambos") return rawData;
+    return rawData.filter((a) => a.animal_state === filterState);
+  }, [rawData, filterState]);
+
   const { statuses } = useStatuses();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { situations } = useSituations();
@@ -49,7 +59,7 @@ export default function ExcelExport() {
   }, [statuses]);
 
   const handleExportFile = async () => {
-    if (!dados || dados.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
       alert("Não há dados para exportar.");
       return;
     }
@@ -57,7 +67,7 @@ export default function ExcelExport() {
     setIsExporting(true);
 
     try {
-      const flattenedData = dados.map((item: Animal) => {
+      const flattenedData = filteredData.map((item: Animal) => {
         // Resolve Farm Name
         const farmName = item.farm_id
           ? farmMap[item.farm_id] || item.farm_id
@@ -143,7 +153,7 @@ export default function ExcelExport() {
       // Static import usage
       const result = await saveBlobAsFile(blob, fileName, {
         shareTitle: "📊 Planilha de Animais",
-        shareText: `Planilha com ${dados.length} animais - INDI Ouro`,
+        shareText: `Planilha com ${filteredData.length} animais - INDI Ouro`,
       });
 
       if (result.success) {
@@ -172,13 +182,25 @@ export default function ExcelExport() {
         <div className="space-y-6">
           <div className="space-y-4">
             <label className="text-base font-bold uppercase text-primary">
-              Exportar arquivo:
+              Filtro de Atividade:
             </label>
+            <div className="flex gap-2">
+              {(["ATIVO", "INATIVO", "Ambos"] as const).map((state) => (
+                <Button
+                  key={state}
+                  onClick={() => setFilterState(state)}
+                  variant={filterState === state ? "default" : "outline"}
+                  className="flex-1 h-10 text-xs font-bold"
+                >
+                  {state}
+                </Button>
+              ))}
+            </div>
 
             <div className="rounded-lg bg-muted px-4 py-3 mt-4">
               <p className="text-sm italic text-muted-foreground">
-                Os dados serão exportados em formato Excel (.xlsx) com todos os
-                registros.
+                Os dados serão exportados em formato Excel (.xlsx) com os
+                registros selecionados no filtro acima.
               </p>
             </div>
 
@@ -191,7 +213,7 @@ export default function ExcelExport() {
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-foreground">Registros:</span>
                 <span className="text-muted-foreground">
-                  {dados?.length || 0}
+                  {filteredData?.length || 0}
                 </span>
               </div>
             </div>
@@ -199,7 +221,7 @@ export default function ExcelExport() {
 
           <Button
             onClick={handleExportFile}
-            disabled={!dados || dados.length === 0 || isExporting}
+            disabled={!filteredData || filteredData.length === 0 || isExporting}
             className="w-full rounded-lg bg-primary py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isExporting ? "Exportando..." : "Exportar arquivo"}

@@ -5,7 +5,8 @@ import { useAnimalsByAgeAndSex } from "@/hooks/utils/useAnimalsByAgeAndSex";
 
 export function StatsFooter() {
   const { animals } = useAnimals();
-  const { total, male, female } = useAnimalsByAgeAndSex(animals);
+  const activeAnimals = animals.filter((a) => a.animal_state === "ATIVO");
+  const { total, male, female } = useAnimalsByAgeAndSex(activeAnimals);
 
   const StatCard = ({ value, label }: { value: number; label: string }) => (
     <div className="flex flex-col items-center justify-center gap-1 rounded-lg border border-white/50 bg-transparent py-2 px-1 shadow-sm">

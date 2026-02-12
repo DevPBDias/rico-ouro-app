@@ -21,6 +21,7 @@ export const ANIMAL_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
   { header: "CATEGORIA", dataKey: "category" },
   { header: "GENOTIPAGEM", dataKey: "genotype" },
   { header: "SITUAÇÃO", dataKey: "document_situation" },
+  { header: "ATIVIDADE", dataKey: "animalState" },
 ];
 
 export const DEFAULT_SELECTED_COLUMNS: TableColumn[] = [

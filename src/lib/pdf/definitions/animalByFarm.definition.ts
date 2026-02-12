@@ -68,6 +68,15 @@ async function generateAnimalByFarmReport(
     selector.partnership = { $eq: filters.society };
   }
 
+  // Add animal_state filter only if animalStateFilterMode is "specific"
+  if (
+    filters.animalState &&
+    filters.animalStateFilterMode === "specific" &&
+    filters.animalState !== "Ambos"
+  ) {
+    selector.animal_state = { $eq: filters.animalState };
+  }
+
   // Fetch animals from database
   const docs = await db.animals
     .find({
@@ -95,6 +104,8 @@ async function generateAnimalByFarmReport(
   const isSituationColumnSelected =
     filters.selectedColumns?.some((c) => c.dataKey === "document_situation") ??
     false;
+  const isAnimalStateColumnSelected =
+    filters.selectedColumns?.some((c) => c.dataKey === "animalState") ?? false;
 
   const showFarmColumn = isFarmColumnSelected;
   const showSexColumn = isSexColumnSelected;
@@ -102,6 +113,7 @@ async function generateAnimalByFarmReport(
   const showClassColumn = isClassColumnSelected;
   const showSocietyColumn = isSocietyColumnSelected;
   const showSituationColumn = isSituationColumnSelected;
+  const showAnimalStateColumn = isAnimalStateColumnSelected;
 
   // Transform data for report
   const reportData = {
@@ -114,6 +126,7 @@ async function generateAnimalByFarmReport(
     showClassColumn,
     showSocietyColumn,
     showSituationColumn,
+    showAnimalStateColumn,
     sortBy: filters.sortBy || "rgn", // Ordenação: RGN (padrão) ou Classe
     data: animals.map((animal) => ({
       rgd: animal.serie_rgd || "",
@@ -146,6 +159,9 @@ async function generateAnimalByFarmReport(
       society: showSocietyColumn ? animal.partnership || "---" : undefined,
       document_situation: showSituationColumn
         ? animal.document_situation || "---"
+        : undefined,
+      animalState: showAnimalStateColumn
+        ? animal.animal_state || "---"
         : undefined,
       genotype: animal.genotyping || "---",
       category: getAgeRange(calculateAgeInMonths(animal.born_date)),

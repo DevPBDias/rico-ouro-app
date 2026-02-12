@@ -37,7 +37,7 @@ function calculateAge(birthDate: string | Date | undefined): string {
 }
 
 async function generateReproductionReport(
-  params: ReportGeneratorParams
+  params: ReportGeneratorParams,
 ): Promise<void> {
   const { filters } = params;
 
@@ -55,7 +55,7 @@ async function generateReproductionReport(
     farms.map((f: { id: string; farm_name?: string }) => [
       f.id,
       f.farm_name || "",
-    ])
+    ]),
   );
 
   // Build selector for animals
@@ -72,6 +72,16 @@ async function generateReproductionReport(
   // Add farm filter only if farmId is provided and filterMode is "specific"
   if (filters.farmId && filters.farmFilterMode === "specific") {
     animalSelector.farm_id = { $eq: filters.farmId };
+  }
+
+  // Add animal_state filter only if animalStateFilterMode is "specific"
+  if (
+    filters.animalState &&
+    filters.animalStateFilterMode === "specific" &&
+    filters.animalState !== "Ambos"
+  ) {
+    // @ts-ignore
+    animalSelector.animal_state = { $eq: filters.animalState };
   }
 
   // Fetch animals from the selected farm(s)
@@ -92,7 +102,7 @@ async function generateReproductionReport(
     animals.map((a) => [
       a.rgn,
       { ...a, farmName: farmMap.get(a.farm_id || "") || "---" },
-    ])
+    ]),
   );
 
   // Fetch reproduction events

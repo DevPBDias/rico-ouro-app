@@ -23,12 +23,18 @@ export type FilterType =
   | "managementDates"
   | "status"
   | "class"
-  | "society";
+  | "society"
+  | "animalState";
 
 /**
  * Gender filter options
  */
 export type GenderFilterValue = "M" | "F" | "Ambos";
+
+/**
+ * Animal state filter options
+ */
+export type AnimalStateFilterValue = "ATIVO" | "INATIVO" | "Ambos";
 
 /**
  * Sort options for animal report
@@ -44,6 +50,8 @@ export interface ReportFilters {
   farmFilterMode?: "all" | "specific"; // "all" para todas as fazendas, "specific" para uma específica
   sex?: GenderFilterValue;
   sexFilterMode?: "all" | "specific"; // "all" para ambos (mostra coluna), "specific" para M/F (filtra, não mostra)
+  animalState?: AnimalStateFilterValue;
+  animalStateFilterMode?: "all" | "specific";
   startDate?: string;
   endDate?: string;
   selectedColumns?: TableColumn[];

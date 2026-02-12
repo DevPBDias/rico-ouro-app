@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  calculateAgeInMonths,
-  getAgeRange,
-} from "@/hooks/utils/useAnimalsByAgeAndSex";
+import React, { useMemo } from "react";
+import { calculateAgeInMonths } from "@/hooks/utils/useAnimalsByAgeAndSex";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { Animal } from "@/types/animal.type";
 import { useFarms } from "@/hooks/db/farms/useFarms";
-import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface SearchCardProps {
   animal: Animal;
@@ -52,67 +49,57 @@ export default function SearchCard({
             </h3>
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
-                Fazenda
-              </span>
-              <span className="text-sm font-medium text-primary">
-                {farmName}
-              </span>
-            </div>
+          <div className="flex items-end gap-2 border-b border-border pb-0.5 w-fit">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
+              Status
+            </span>
+            <span className={cn("font-medium text-primary uppercase text-xs")}>
+              {animal?.status}
+            </span>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
-                Status
-              </span>
-              <span
-                className={cn("font-medium text-primary uppercase text-xs")}
-              >
-                {animal?.status}
-              </span>
-            </div>
+          <div className="flex items-end gap-2 border-b border-border pb-0.5 w-fit">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
+              Fazenda
+            </span>
+            <span className="text-sm font-medium text-primary">{farmName}</span>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
-                Classe
-              </span>
-              <span className="text-sm font-medium text-primary">
-                {animal?.classification}
-              </span>
-            </div>
+          <div className="flex items-end gap-2 border-b border-border pb-0.5 w-fit">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
+              Atividade
+            </span>
+            <span className={cn("font-medium text-primary uppercase text-xs")}>
+              {animal?.animal_state}
+            </span>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
-                Categoria
-              </span>
-              <span className="text-sm font-medium text-primary">
-                {getAgeRange(getMonths)}
-                <span className="text-sm text-gray-500 ml-1">
-                  ({getMonths}m)
-                </span>
-              </span>
-            </div>
+          <div className="flex items-end gap-2 border-b border-border pb-0.5 w-fit">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
+              Classe
+            </span>
+            <span className="text-sm font-medium text-primary">
+              {animal?.classification}
+            </span>
+          </div>
+
+          <div className="flex items-end gap-2 border-b border-border pb-0.5 w-fit">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide w-20">
+              Sexo
+            </span>
+            <span className="text-sm font-medium text-primary">
+              {animal?.sex}
+            </span>
           </div>
         </div>
 
-        {onDetailsClick ? (
-          <button
-            onClick={handleDetailsClick}
-            className="absolute right-4 top-4 z-10 px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center hover:bg-primary/90 transition-colors"
-          >
-            Detalhes
-            <ChevronRight size={16} color="white" />
-          </button>
-        ) : (
-          <Link
-            href={`/${pathName}/${animal?.rgn}/detalhes`}
-            className="absolute right-4 top-4 z-10 px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center"
-          >
-            Detalhes
-            <ChevronRight size={16} color="white" />
-          </Link>
-        )}
+        <Button
+          onClick={handleDetailsClick}
+          className="absolute right-4 top-4 z-10 h-auto px-3 py-2 gap-1 bg-primary text-white text-[11px] font-semibold rounded-sm flex items-center hover:bg-primary/90 transition-colors"
+        >
+          Detalhes
+          <ChevronRight size={16} color="white" />
+        </Button>
       </div>
     </div>
   );
