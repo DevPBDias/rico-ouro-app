@@ -57,7 +57,7 @@ export function useMovements() {
         const id = uuidv4();
         const timestamp = Date.now();
 
-        console.log("📝 Creating movement:", { id, type: data.type });
+
 
         // 1. Create the Movement record
         await createMovementLocal({
@@ -76,7 +76,7 @@ export function useMovements() {
           // 3. Update Animal Status to INATIVO
           const animalDoc = await db.animals.findOne(data.animal_id).exec();
           if (animalDoc) {
-            console.log(`🐾 Updating animal ${data.animal_id} to INATIVO`);
+
             await animalDoc.patch({
               animal_state: "INATIVO",
               updated_at: timestamp,
@@ -88,11 +88,7 @@ export function useMovements() {
             const vendaDetails = data.details as SalePayload;
             const saleId = uuidv4();
 
-            console.log("💰 Creating sale record (LocalMutation):", {
-              saleId,
-              animal_rgn: data.animal_id,
-              client_id: vendaDetails.client_id,
-            });
+
 
             try {
               await createSaleLocal({
@@ -116,7 +112,7 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-              console.log("✅ Sale record created successfully");
+
             } catch (saleErr) {
               console.error("❌ Error inserting sale record:", saleErr);
               toast.error(
@@ -127,7 +123,7 @@ export function useMovements() {
             // Update movement details with only the reference ID
             const movementDoc = await db.movements.findOne(id).exec();
             if (movementDoc) {
-              console.log(`🔗 Linking sale ${saleId} to movement ${id}`);
+
               await movementDoc.patch({
                 details_id: saleId,
               });
@@ -149,7 +145,7 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-              console.log("✅ Death record created successfully");
+
 
               const movementDoc = await db.movements.findOne(id).exec();
               if (movementDoc) {
@@ -179,7 +175,7 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-              console.log("✅ Exchange record created successfully");
+
 
               const movementDoc = await db.movements.findOne(id).exec();
               if (movementDoc) {
@@ -214,7 +210,7 @@ export function useMovements() {
         const db = await getDatabase();
         const timestamp = Date.now();
 
-        console.log("📝 Updating movement:", { id, data });
+
 
         await updateMovementLocal(id, {
           type: data.type,
@@ -331,7 +327,7 @@ export function useMovements() {
         const movement = movementDoc.toJSON() as Movement;
         const timestamp = Date.now();
 
-        console.log("🗑️ Deleting movement:", { id, type: movement.type });
+
 
         // 1. Delete associated records
         const details_id = movement.details_id;
@@ -355,7 +351,7 @@ export function useMovements() {
         if (["morte", "venda", "troca"].includes(movement.type)) {
           const animalDoc = await db.animals.findOne(movement.animal_id).exec();
           if (animalDoc) {
-            console.log(`🐾 Restoring animal ${movement.animal_id} to ATIVO`);
+
             await animalDoc.patch({
               animal_state: "ATIVO",
               updated_at: timestamp,

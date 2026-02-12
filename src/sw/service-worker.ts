@@ -113,9 +113,8 @@ self.addEventListener("install", (event: ExtendableEvent) => {
       const cachePromises = APP_SHELL_ASSETS.map(async (url) => {
         try {
           await cache.add(url);
-          console.log(`Service Worker: Cached ${url}`);
         } catch (error) {
-          console.warn(`Service Worker: Failed to cache ${url}`, error);
+          // Silent fail for missing assets
         }
       });
 
