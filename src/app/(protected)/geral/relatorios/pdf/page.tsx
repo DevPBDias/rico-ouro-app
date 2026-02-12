@@ -6,43 +6,39 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import { ReportForm } from "@/components/reports";
 import { StandardTabList } from "@/components/ui/StandardTabList";
-import { useState, useMemo, useEffect } from "react";
-import { Syringe, Scale, Heart, FlaskConical, HouseIcon } from "lucide-react";
-
-type MainTab = "vendas" | "clientes";
-
-// Map icon strings from definitions to Lucide components
-const iconMap: Record<string, any> = {
+import { useEffect } from "react";
+import {
   HouseIcon,
   Syringe,
-  Scale,
-  Heart,
+  RulerDimensionLine,
+  VenusAndMars,
+  FlaskConical,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+// Map icon strings from report definitions to Lucide components
+const iconMap: Record<string, LucideIcon> = {
+  Beef: HouseIcon,
+  Syringe,
+  Scale: RulerDimensionLine,
+  Heart: VenusAndMars,
   FlaskConical,
 };
 
 export default function ReportsPage() {
   const { selectedReport, selectReport } = useReports();
-  const [mainTab, setMainTab] = useState<MainTab>("clientes");
 
-  // Filter reports based on the selected main category
-  const filteredReports = useMemo(() => {
-    if (mainTab === "clientes") {
-      return AVAILABLE_REPORTS;
-    }
-    return [];
-  }, [mainTab]);
-
-  // Ensure a report is selected when the category changes
+  // Ensure a report is selected on mount
   useEffect(() => {
-    if (filteredReports.length > 0) {
+    if (AVAILABLE_REPORTS.length > 0) {
       if (
         !selectedReport ||
-        !filteredReports.find((r) => r.id === selectedReport.id)
+        !AVAILABLE_REPORTS.find((r) => r.id === selectedReport.id)
       ) {
-        selectReport(filteredReports[0]);
+        selectReport(AVAILABLE_REPORTS[0]);
       }
     }
-  }, [filteredReports, selectedReport, selectReport]);
+  }, [selectedReport, selectReport]);
 
   return (
     <div className="min-h-screen bg-background pb-10">
@@ -58,24 +54,18 @@ export default function ReportsPage() {
           }}
           className="w-full"
         >
-          {filteredReports.length > 0 ? (
-            <StandardTabList
-              tabs={filteredReports.map((report) => ({
-                value: report.id,
-                label: report.title.split(" ").pop() || report.title,
-                icon: iconMap[report.icon],
-              }))}
-              activeTab={selectedReport?.id || ""}
-              onTabChange={(id) => {
-                const report = AVAILABLE_REPORTS.find((r) => r.id === id);
-                if (report) selectReport(report);
-              }}
-            />
-          ) : (
-            <div className="py-10 text-center text-muted-foreground text-sm bg-muted/20 rounded-xl border border-dashed mb-4">
-              Nenhum relatório disponível para esta categoria.
-            </div>
-          )}
+          <StandardTabList
+            tabs={AVAILABLE_REPORTS.map((report) => ({
+              value: report.id,
+              label: report.title.split(" ").pop() || report.title,
+              icon: iconMap[report.icon],
+            }))}
+            activeTab={selectedReport?.id || ""}
+            onTabChange={(id) => {
+              const report = AVAILABLE_REPORTS.find((r) => r.id === id);
+              if (report) selectReport(report);
+            }}
+          />
 
           <div className="mt-4">
             {AVAILABLE_REPORTS.map((report) => (

@@ -33,8 +33,6 @@ import Link from "next/link";
 import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { DetailsCircunfList } from "@/components/lists/DetailsCircunfList";
 import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
-
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
 import { Accordion } from "@/components/ui/accordion";
