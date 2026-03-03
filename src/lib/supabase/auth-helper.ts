@@ -10,6 +10,13 @@ export async function getAuthToken(): Promise<string> {
     if (session?.access_token) {
       return session.access_token;
     }
+
+    // Tentar refresh se não tem sessão válida
+    const { data: refreshData } = await supabase.auth.refreshSession();
+    if (refreshData?.session?.access_token) {
+      console.log("🔑 Auth token refreshed successfully");
+      return refreshData.session.access_token;
+    }
   } catch (error) {
     console.warn("⚠️ Failed to get auth session:", error);
   }
@@ -19,9 +26,6 @@ export async function getAuthToken(): Promise<string> {
 
 export async function getAuthHeaders(): Promise<Record<string, string>> {
   const supabase = getSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
   const headers: Record<string, string> = {
@@ -29,8 +33,45 @@ export async function getAuthHeaders(): Promise<Record<string, string>> {
     "Content-Type": "application/json",
   };
 
-  if (session?.access_token) {
-    headers["Authorization"] = `Bearer ${session.access_token}`;
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.access_token) {
+      // Verificar se o token está perto de expirar (menos de 60s)
+      const expiresAt = session.expires_at;
+      const now = Math.floor(Date.now() / 1000);
+
+      if (expiresAt && expiresAt - now < 60) {
+        console.log("🔑 Token expiring soon, attempting refresh...");
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (refreshData?.session?.access_token) {
+          headers["Authorization"] =
+            `Bearer ${refreshData.session.access_token}`;
+          console.log("🔑 Token refreshed successfully");
+          return headers;
+        }
+      }
+
+      headers["Authorization"] = `Bearer ${session.access_token}`;
+      return headers;
+    }
+
+    // Sem sessão ativa — tentar refresh
+    console.log("🔑 No active session, attempting refresh...");
+    const { data: refreshData } = await supabase.auth.refreshSession();
+    if (refreshData?.session?.access_token) {
+      headers["Authorization"] = `Bearer ${refreshData.session.access_token}`;
+      console.log("🔑 Session restored via refresh");
+      return headers;
+    }
+
+    console.warn(
+      "⚠️ No auth session available. Replication will fail if RLS is enabled.",
+    );
+  } catch (error) {
+    console.warn("⚠️ Failed to get auth headers:", error);
   }
 
   return headers;

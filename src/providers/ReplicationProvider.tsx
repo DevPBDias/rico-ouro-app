@@ -10,6 +10,16 @@ import React, {
 import { useRxDB } from "./RxDBProvider";
 import { combineLatest } from "rxjs";
 import { forceSyncAll } from "../db/replication";
+import { SyncLogger } from "@/lib/sync/syncLogger";
+import { PendingQueue } from "@/lib/sync/pendingQueue";
+import type { SyncLogEntry } from "@/lib/sync/syncLogger";
+
+interface SyncStats {
+  pending: number;
+  syncing: number;
+  error: number;
+  total: number;
+}
 
 interface ReplicationContextType {
   isSyncing: boolean;
@@ -18,7 +28,20 @@ interface ReplicationContextType {
   replicationErrors: Error[];
   triggerSync: () => void;
   entityStatus: Record<string, { isSyncing: boolean; error: Error | null }>;
+  /** Estatísticas da fila de documentos pendentes */
+  syncStats: SyncStats;
+  /** Exporta os logs de sincronização como JSON (para debug/suporte) */
+  exportSyncLogs: () => string;
+  /** Retorna os últimos erros de sincronização do SyncLogger */
+  getRecentSyncErrors: () => SyncLogEntry[];
 }
+
+const defaultSyncStats: SyncStats = {
+  pending: 0,
+  syncing: 0,
+  error: 0,
+  total: 0,
+};
 
 const ReplicationContext = createContext<ReplicationContextType>({
   isSyncing: false,
@@ -27,6 +50,9 @@ const ReplicationContext = createContext<ReplicationContextType>({
   replicationErrors: [],
   triggerSync: () => {},
   entityStatus: {},
+  syncStats: defaultSyncStats,
+  exportSyncLogs: () => "[]",
+  getRecentSyncErrors: () => [],
 });
 
 export const useReplication = () => useContext(ReplicationContext);
@@ -44,16 +70,14 @@ export function ReplicationProvider({
   const [entityStatus, setEntityStatus] = useState<
     Record<string, { isSyncing: boolean; error: Error | null }>
   >({});
+  const [syncStats, setSyncStats] = useState<SyncStats>(defaultSyncStats);
 
   useEffect(() => {
-    console.log(
-      "📡 [ReplicationProvider] Replication initialized. Direct sync disabled.",
-      {
-        hasDb: !!db,
-        isLoading,
-        hasReplications: !!(db as any)?.replications,
-      },
-    );
+    SyncLogger.info("provider", "ReplicationProvider initialized", {
+      hasDb: !!db,
+      isLoading,
+      hasReplications: !!(db as any)?.replications,
+    });
   }, [db, isLoading]);
 
   useEffect(() => {
@@ -69,13 +93,24 @@ export function ReplicationProvider({
     };
   }, []);
 
+  // Atualização periódica das stats do PendingQueue
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const stats = PendingQueue.getStats();
+      setSyncStats(stats);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (!isLoading && db && (db as any).replications) {
       const replicationsMap = (db as any).replications;
       const replicationEntries = Object.entries(replicationsMap);
 
-      console.log(
-        `📡 [ReplicationProvider] Tracking ${replicationEntries.length} entities:`,
+      SyncLogger.info(
+        "provider",
+        `Tracking ${replicationEntries.length} entities`,
         Object.keys(replicationsMap),
       );
 
@@ -108,7 +143,9 @@ export function ReplicationProvider({
         // Track errors (error$)
         subscriptions.push(
           rep.error$.subscribe((error: Error | null) => {
-            if (error) console.error(`❌ [Sync Error] ${name}:`, error);
+            if (error) {
+              SyncLogger.error("provider", `Sync error for ${name}`, error);
+            }
             setEntityStatus((prev) => ({
               ...prev,
               [name]: { ...prev[name], error },
@@ -145,11 +182,20 @@ export function ReplicationProvider({
         subscriptions.forEach((sub) => sub.unsubscribe());
       };
     }
-  }, [isLoading, db, (db as any)?.replications]); // Adicionado replications como dependência "fake"
+  }, [isLoading, db, (db as any)?.replications]);
 
   const triggerSync = useCallback(() => {
+    SyncLogger.info("provider", "Manual sync triggered by user");
     forceSyncAll(db as any);
   }, [db]);
+
+  const exportSyncLogs = useCallback(() => {
+    return SyncLogger.export();
+  }, []);
+
+  const getRecentSyncErrors = useCallback(() => {
+    return SyncLogger.getErrors();
+  }, []);
 
   return (
     <ReplicationContext.Provider
@@ -160,6 +206,9 @@ export function ReplicationProvider({
         replicationErrors,
         triggerSync,
         entityStatus,
+        syncStats,
+        exportSyncLogs,
+        getRecentSyncErrors,
       }}
     >
       {children}

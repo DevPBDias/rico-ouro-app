@@ -14,6 +14,7 @@ import { replicateMovementsNew as replicateMovements } from "./replication/movem
 import { replicateSalesNew as replicateSales } from "./replication/sale.replication";
 import { replicateDeathsNew as replicateDeaths } from "./replication/death.replication";
 import { replicateExchangesNew as replicateExchanges } from "./replication/exchange.replication";
+import { SyncLogger } from "@/lib/sync/syncLogger";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,11 +27,11 @@ function getSupabaseConfig() {
   try {
     const parsedUrl = new URL(url);
     if (!parsedUrl.hostname.includes("supabase")) {
-      console.error("❌ Invalid Supabase URL format:", url);
+      SyncLogger.error("config", "Invalid Supabase URL format", { url });
       return null;
     }
   } catch (error) {
-    console.error("❌ Invalid Supabase URL:", url);
+    SyncLogger.error("config", "Invalid Supabase URL", { url });
     return null;
   }
 
@@ -39,7 +40,7 @@ function getSupabaseConfig() {
 
 async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
   try {
-    console.log("🏥 Checking Supabase health...");
+    SyncLogger.info("health", "Checking Supabase health...");
 
     const response = await fetch(`${url}/rest/v1/`, {
       method: "HEAD",
@@ -51,28 +52,33 @@ async function checkSupabaseHealth(url: string, key: string): Promise<boolean> {
     });
 
     const isHealthy = response.ok || response.status === 404;
-    console.log(
-      `🏥 Supabase health check: ${isHealthy ? "✅ OK" : "❌ FAILED"}`,
-    );
+    if (isHealthy) {
+      SyncLogger.info("health", "Supabase health check: ✅ OK");
+    } else {
+      SyncLogger.warn(
+        "health",
+        `Supabase health check: ❌ FAILED (${response.status})`,
+      );
+    }
 
     return isHealthy;
   } catch (error) {
-    console.error("❌ Supabase health check failed:", error);
+    SyncLogger.error("health", "Supabase health check failed", error);
     return false;
   }
 }
 
 export async function setupReplication(db: MyDatabase) {
-  console.log("🔄 Setting up replication...");
+  SyncLogger.info("setup", "Setting up replication...");
 
   const config = getSupabaseConfig();
 
   if (!config) {
-    console.warn(
-      "⚠️ Supabase not configured properly. Replication disabled.\n" +
-        "   This is normal in development if you haven't set up Supabase yet.\n" +
-        "   The app will work in offline-only mode.\n" +
-        "   To enable sync, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    SyncLogger.warn(
+      "setup",
+      "Supabase not configured properly. Replication disabled. " +
+        "This is normal in development if you haven't set up Supabase yet. " +
+        "The app will work in offline-only mode.",
     );
     return;
   }
@@ -82,13 +88,14 @@ export async function setupReplication(db: MyDatabase) {
   // Aguarda um pouco para garantir que o banco local esteja totalmente inicializado
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY).then((isHealthy) => {
-    if (!isHealthy) {
-      console.warn(
-        "⚠️ Supabase unreachable initially. Replication will retry automatically when online.",
-      );
-    }
-  });
+  // Bug #3 fix: Aguardar health check (non-blocking mas informativo)
+  const isHealthy = await checkSupabaseHealth(SUPABASE_URL, SUPABASE_KEY);
+  if (!isHealthy) {
+    SyncLogger.warn(
+      "setup",
+      "Supabase unreachable initially. Replication will start anyway and retry automatically when online.",
+    );
+  }
 
   try {
     // Verifica quantos dados locais existem antes de iniciar a replicação
@@ -97,7 +104,7 @@ export async function setupReplication(db: MyDatabase) {
     const farmsCount = await db.farms.count().exec();
     const clientsCount = await db.clients.count().exec();
 
-    console.log(`📊 [Local DB] Data counts before sync:`, {
+    SyncLogger.info("setup", "Local DB data counts before sync", {
       animals: animalsCount,
       vaccines: vaccinesCount,
       farms: farmsCount,
@@ -106,8 +113,9 @@ export async function setupReplication(db: MyDatabase) {
 
     // Se há dados locais, prioriza o uso do banco local
     if (animalsCount > 0 || vaccinesCount > 0 || farmsCount > 0) {
-      console.log(
-        "✅ [Local DB] Local data detected. Replication will merge with local data.",
+      SyncLogger.info(
+        "setup",
+        "Local data detected. Replication will merge with local data.",
       );
     }
 
@@ -239,26 +247,24 @@ export async function setupReplication(db: MyDatabase) {
       exchanges: exchangesReplication,
     };
 
-    console.log("✅ Replication setup complete");
+    SyncLogger.info("setup", "Replication setup complete");
 
     // Inicia a replicação manualmente após um delay para garantir que o banco local esteja pronto
-    // Se houver dados locais, a replicação fará merge, não sobrescreverá
     setTimeout(() => {
-      console.log(
-        "🔄 Starting replication after delay to ensure local DB is ready...",
-      );
+      SyncLogger.info("setup", "Starting all replications...");
 
       // Verifica novamente os dados locais antes de iniciar
       db.animals
         .count()
         .exec()
         .then((count) => {
-          console.log(
-            `📊 [Animals] Local count before starting replication: ${count}`,
+          SyncLogger.info(
+            "setup",
+            `Animals local count before starting replication: ${count}`,
           );
         });
 
-      // Inicia todas as replicações
+      // Inicia TODAS as replicações (incluindo deaths e exchanges)
       animalsReplication.start();
       vaccinesReplication.start();
       farmsReplication.start();
@@ -272,92 +278,63 @@ export async function setupReplication(db: MyDatabase) {
       clientsReplication.start();
       movementsReplication.start();
       salesReplication.start();
+      deathsReplication.start();
+      exchangesReplication.start();
 
-      console.log("✅ All replications started");
-    }, 500); // Aguarda 0.5 segundos antes de iniciar
+      SyncLogger.info("setup", "All 15 replications started ✅");
+    }, 500);
 
-    let animalsErrorCount = 0;
+    // Monitoramento de erros por coleção
+    const monitoredCollections = [
+      { name: "animals", rep: animalsReplication },
+      { name: "vaccines", rep: vaccinesReplication },
+      { name: "farms", rep: farmsReplication },
+      { name: "metrics_weight", rep: animalMetricsWeightReplication },
+      { name: "metrics_ce", rep: animalMetricsCEReplication },
+      { name: "animal_vaccines", rep: animalVaccinesReplication },
+      { name: "reproduction", rep: reproductionEventsReplication },
+      { name: "statuses", rep: animalStatusesReplication },
+      { name: "situations", rep: animalSituationsReplication },
+      { name: "semen_doses", rep: semenDosesReplication },
+      { name: "clients", rep: clientsReplication },
+      { name: "movements", rep: movementsReplication },
+      { name: "sales", rep: salesReplication },
+      { name: "deaths", rep: deathsReplication },
+      { name: "exchanges", rep: exchangesReplication },
+    ];
+
+    const errorCounts: Record<string, number> = {};
     const MAX_ERRORS = 5;
 
-    animalsReplication.error$.subscribe((error) => {
-      if (error) {
-        animalsErrorCount++;
-        console.error(
-          `❌ [Animals] Replication error (${animalsErrorCount}/${MAX_ERRORS}):`,
-          error,
-        );
+    for (const { name, rep } of monitoredCollections) {
+      errorCounts[name] = 0;
 
-        if (animalsErrorCount >= MAX_ERRORS) {
-          console.warn(
-            "⚠️ [Animals] High error rate, but keeping replication alive for retry.",
+      rep.error$.subscribe((error) => {
+        if (error) {
+          errorCounts[name]++;
+          SyncLogger.error(
+            name,
+            `Replication error (${errorCounts[name]}/${MAX_ERRORS})`,
+            error,
           );
+
+          if (errorCounts[name] >= MAX_ERRORS) {
+            SyncLogger.warn(
+              name,
+              "High error rate, but keeping replication alive for retry.",
+            );
+          }
         }
-      }
-    });
+      });
 
-    let lastActiveState = false;
-    animalsReplication.active$.subscribe((active) => {
-      // Só loga mudanças de estado para reduzir spam no console
-      if (active !== lastActiveState) {
-        console.log(
-          `🔄 [Animals] Replication ${active ? "started" : "completed"}`,
-        );
-        lastActiveState = active;
-      }
-      if (active) {
-        animalsErrorCount = 0; // Reset error count on successful activity
-      }
-    });
-
-    // Vaccines error handling
-    let vaccinesErrorCount = 0;
-    vaccinesReplication.error$.subscribe((error) => {
-      if (error) {
-        vaccinesErrorCount++;
-        console.error(
-          `❌ [Vaccines] Replication error (${vaccinesErrorCount}/${MAX_ERRORS}):`,
-          error,
-        );
-
-        if (vaccinesErrorCount >= MAX_ERRORS) {
-          console.warn(
-            "⚠️ [Vaccines] High error rate, but keeping replication alive for retry.",
-          );
+      rep.active$.subscribe((active: boolean) => {
+        if (active) {
+          errorCounts[name] = 0; // Reset error count on successful activity
         }
-      }
-    });
-
-    vaccinesReplication.active$.subscribe((active) => {
-      if (active) {
-        vaccinesErrorCount = 0;
-      }
-    });
-
-    // Farms error handling
-    let farmsErrorCount = 0;
-    farmsReplication.error$.subscribe((error) => {
-      if (error) {
-        farmsErrorCount++;
-        console.error(
-          `❌ [Farms] Replication error (${farmsErrorCount}/${MAX_ERRORS}):`,
-          error,
-        );
-
-        if (farmsErrorCount >= MAX_ERRORS) {
-          console.warn(
-            "⚠️ [Farms] High error rate, but keeping replication alive for retry.",
-          );
-        }
-      }
-    });
-
-    farmsReplication.active$.subscribe((active) => {
-      if (active) {
-        farmsErrorCount = 0;
-      }
-    });
+      });
+    }
   } catch (error) {
-    console.error("❌ Replication setup error:", error);
+    SyncLogger.error("setup", "Replication setup error", error);
     console.warn("⚠️ App will continue in offline-only mode");
   }
 }
@@ -367,15 +344,19 @@ export async function setupReplication(db: MyDatabase) {
  */
 export function forceSyncAll(db: MyDatabase) {
   if (!db || !(db as any).replications) {
-    console.warn("⚠️ Cannot force sync: replications not initialized");
+    SyncLogger.warn(
+      "manual-sync",
+      "Cannot force sync: replications not initialized",
+    );
     return;
   }
 
-  console.log("🔄 [Manual Sync] Triggering reSync for all collections...");
+  SyncLogger.info("manual-sync", "Triggering reSync for all collections...");
   const replications = (db as any).replications;
-  Object.values(replications).forEach((rep: any) => {
+  Object.entries(replications).forEach(([name, rep]: [string, any]) => {
     if (rep && typeof rep.reSync === "function") {
       rep.reSync();
+      SyncLogger.info("manual-sync", `reSync triggered for ${name}`);
     }
   });
 }
