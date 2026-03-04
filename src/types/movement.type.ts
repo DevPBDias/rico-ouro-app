@@ -1,6 +1,6 @@
 import { Sale } from "./sale.type";
 
-export type MovementType = "morte" | "venda" | "troca";
+export type MovementType = "nascimento" | "morte" | "venda" | "troca";
 
 export interface MortePayload {
   reason: string;
@@ -20,7 +20,7 @@ export interface Movement {
   type: MovementType;
   date: string; // ISO Date
   animal_id: string; // RGN of the main animal involved
-  details_id: string;
+  details_id?: string | null;
   created_at: number;
   updated_at: number;
   _deleted: boolean;
