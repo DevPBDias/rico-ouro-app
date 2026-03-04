@@ -8,7 +8,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 export const animalMetricWeightReplication = createReplication<AnimalMetric>({
   collectionName: "animal_metrics_weight",
   tableName: "animal_metrics_weight",
-  replicationIdentifier: "animal-metrics-weight-replication-v12",
+  replicationIdentifier: "animal-metrics-weight-replication-v13",
   mapToSupabase: (doc) => ({
     id: doc.id,
     rgn: doc.rgn,
@@ -41,7 +41,7 @@ export async function replicateAnimalMetricWeightNew(
 export const animalMetricCEReplication = createReplication<AnimalMetric>({
   collectionName: "animal_metrics_ce",
   tableName: "animal_metrics_ce",
-  replicationIdentifier: "animal-metrics-ce-replication-v12",
+  replicationIdentifier: "animal-metrics-ce-replication-v13",
   mapToSupabase: (doc) => ({
     id: doc.id,
     rgn: doc.rgn,

@@ -5,7 +5,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 export const animalSituationReplication = createReplication<AnimalSituation>({
   collectionName: "animal_situations",
   tableName: "animal_situations",
-  replicationIdentifier: "animal-situations-replication-v2",
+  replicationIdentifier: "animal-situations-replication-v13",
 
   mapToSupabase: (doc) => ({
     id: doc.id,

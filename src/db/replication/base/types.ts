@@ -24,12 +24,11 @@ export type ConflictResolver<T> = (localDoc: T, remoteDoc: T) => T;
 /**
  * Checkpoint usado para rastrear o progresso do pull.
  * 
- * IMPORTANTE: updated_at aceita string | number para preservar a precisão
- * de microsegundos do Supabase (timestamptz). Se armazenado como number (ms),
- * perde-se microsegundos e o pull reenvia os mesmos documentos infinitamente.
+ * NOTA: updated_at é number (milissegundos) porque Supabase usa bigint,
+ * não timestamptz. A precisão é de milissegundos em ambos os lados.
  */
 export interface ReplicationCheckpoint {
-  updated_at: string | number;
+  updated_at: number;
   last_id?: string | null;
 }
 

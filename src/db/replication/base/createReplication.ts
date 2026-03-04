@@ -22,7 +22,7 @@ export function createReplication<T extends ReplicableEntity>(
   const {
     collectionName,
     tableName,
-    replicationIdentifier = `${String(collectionName)}-replication-v12`,
+    replicationIdentifier = `${String(collectionName)}-replication-v13`,
     pullBatchSize = 1000,
     pushBatchSize = 1000,
     mapToSupabase,
@@ -80,21 +80,16 @@ export function createReplication<T extends ReplicableEntity>(
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
-          // CORREÇÃO: Preservar a string ISO original do Supabase para manter
-          // precisão de microsegundos. Converter number → ISO apenas se necessário.
-          let lastModifiedISO: string;
-          if (typeof lastModified === "string") {
-            // Já é string ISO vinda do Supabase — usar como está (preserva microsegundos)
-            lastModifiedISO = lastModified;
-          } else if (lastModified === 0) {
-            lastModifiedISO = new Date(0).toISOString();
-          } else {
-            lastModifiedISO = new Date(lastModified).toISOString();
-          }
+          // CORREÇÃO: Supabase usa bigint para updated_at (milissegundos).
+          // O filtro deve comparar com NÚMERO, não com ISO string.
+          const lastModifiedNum =
+            typeof lastModified === "number"
+              ? lastModified
+              : Number(lastModified) || 0;
 
           const filter = lastId
-            ? `or(updated_at.gt."${lastModifiedISO}",and(updated_at.eq."${lastModifiedISO}",${primaryKey}.gt."${lastId}"))`
-            : `updated_at.gte."${lastModifiedISO}"`;
+            ? `or(updated_at.gt.${lastModifiedNum},and(updated_at.eq.${lastModifiedNum},${primaryKey}.gt."${lastId}"))`
+            : `updated_at.gte.${lastModifiedNum}`;
 
           const url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&${filter}`;
 
@@ -130,14 +125,13 @@ export function createReplication<T extends ReplicableEntity>(
             `Received ${processedDocuments.length} documents`,
           );
 
-          // CORREÇÃO CRÍTICA: Usar o updated_at RAW do Supabase (string com microsegundos)
-          // para o checkpoint, NÃO o valor convertido para number (que perde precisão).
-          // Isso evita o loop infinito de pull.
+          // Checkpoint usa o updated_at numérico (bigint) do último documento RAW.
+          // Supabase retorna bigint como number no JSON, então não há perda de precisão.
           const lastRawDoc = data.length > 0 ? data[data.length - 1] : null;
           const newCheckpoint: ReplicationCheckpoint = {
             updated_at: lastRawDoc
-              ? lastRawDoc.updated_at // String ISO com precisão total do Supabase
-              : lastModified,
+              ? Number(lastRawDoc.updated_at)
+              : lastModifiedNum,
             last_id: lastRawDoc ? String(lastRawDoc[primaryKey]) : lastId,
           };
 
@@ -189,16 +183,14 @@ export function createReplication<T extends ReplicableEntity>(
               ? mapToSupabase(doc)
               : { ...(doc as Record<string, any>) };
 
-            // SEMPRE converter timestamps numéricos para ISO antes de enviar ao Supabase
-            if (typeof mapped.updated_at === "number") {
-              mapped.updated_at = new Date(
-                mapped.updated_at as number,
-              ).toISOString();
+            // CORREÇÃO: Supabase usa bigint para timestamps.
+            // NÃO converter para ISO string — manter como número.
+            // Garantir que são números válidos.
+            if (mapped.updated_at !== undefined && mapped.updated_at !== null) {
+              mapped.updated_at = Number(mapped.updated_at);
             }
-            if (typeof mapped.created_at === "number") {
-              mapped.created_at = new Date(
-                mapped.created_at as number,
-              ).toISOString();
+            if (mapped.created_at !== undefined && mapped.created_at !== null) {
+              mapped.created_at = Number(mapped.created_at);
             }
 
             return mapped;
