@@ -42,6 +42,7 @@ export const movementSchema: RxJsonSchema<any> = {
     "type",
     "date",
     "animal_id",
+    "details_id",
     "created_at",
     "updated_at",
     "_deleted",

@@ -21,13 +21,6 @@ interface MovementListItemProps {
 }
 
 const typeConfig = {
-  nascimento: {
-    icon: Skull, // Birth typically doesn't have its own icon here yet, reused Skull for now or something else? Lucide Baby/Birth?
-    label: "Nascimento",
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-  },
   morte: {
     icon: Skull,
     label: "Morte",
@@ -82,8 +75,7 @@ const InfoRow = ({
   </div>
 );
 
-const MorteDetails = ({ details_id }: { details_id?: string | null }) => {
-  if (!details_id) return null;
+const MorteDetails = ({ details_id }: { details_id: string }) => {
   const { death, isLoading } = useDeathById(details_id);
 
   if (isLoading)
@@ -95,8 +87,7 @@ const MorteDetails = ({ details_id }: { details_id?: string | null }) => {
   return <InfoRow label="Motivo" value={death.reason || "-"} />;
 };
 
-const VendaDetails = ({ details_id }: { details_id?: string | null }) => {
-  if (!details_id) return null;
+const VendaDetails = ({ details_id }: { details_id: string }) => {
   const { sale: fetchedSale, isLoading } = useSaleById(details_id);
 
   if (isLoading) {
@@ -157,8 +148,7 @@ const VendaDetails = ({ details_id }: { details_id?: string | null }) => {
   );
 };
 
-const TrocaDetails = ({ details_id }: { details_id?: string | null }) => {
-  if (!details_id) return null;
+const TrocaDetails = ({ details_id }: { details_id: string }) => {
   const { exchange: fetchedExchange, isLoading } = useExchangeById(details_id);
 
   if (isLoading) {
@@ -197,8 +187,6 @@ export function MovementListItem({
 
   const renderContent = () => {
     switch (movement.type) {
-      case "nascimento":
-        return <InfoRow label="Tipo" value="Nascimento Interno" />;
       case "morte":
         return <MorteDetails details_id={movement.details_id} />;
       case "venda":
