@@ -13,19 +13,32 @@ import { ConflictResolver, ReplicableEntity } from "./types";
  */
 export function lastWriteWins<T extends ReplicableEntity>(
   localDoc: T,
-  remoteDoc: T
+  remoteDoc: T,
 ): T {
+  // MODO DE RECUPERAÇÃO: Se a flag estiver ativa, o cliente SEMPRE vence.
+  // Útil quando o servidor tem timestamps corrompidos no futuro.
+  const forceClient =
+    typeof window !== "undefined" &&
+    (window as any).NEXT_PUBLIC_SYNC_FORCE_CLIENT_WINS === "true";
+
+  if (forceClient) {
+    console.warn(
+      `🚀 [Conflict] Force Client Wins mode active for ${localDoc.updated_at}`,
+    );
+    return localDoc;
+  }
+
   const localTime = localDoc.updated_at || 0;
   const remoteTime = remoteDoc.updated_at || 0;
 
   if (localTime > remoteTime) {
     console.log(
-      `🔀 [Conflict] Local wins (${localDoc.updated_at} > ${remoteDoc.updated_at})`
+      `🔀 [Conflict] Local wins (${localDoc.updated_at} > ${remoteDoc.updated_at})`,
     );
     return localDoc;
   } else {
     console.log(
-      `🔀 [Conflict] Remote wins (${remoteDoc.updated_at} >= ${localDoc.updated_at})`
+      `🔀 [Conflict] Remote wins (${remoteDoc.updated_at} >= ${localDoc.updated_at})`,
     );
     return remoteDoc;
   }

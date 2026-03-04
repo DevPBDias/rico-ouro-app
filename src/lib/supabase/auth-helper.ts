@@ -83,7 +83,11 @@ export function cleanSupabaseDocument<T extends Record<string, any>>(
   const cleaned: any = {};
 
   for (const [key, value] of Object.entries(doc)) {
-    if (value === null) {
+    // Don't skip nulls for critical replication fields - let the mapper handle them
+    if (
+      value === null &&
+      !["_deleted", "created_at", "updated_at"].includes(key)
+    ) {
       continue;
     }
 

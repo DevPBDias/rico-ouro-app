@@ -9,6 +9,7 @@ import { MyDatabaseCollections } from "../../collections";
  */
 export interface ReplicableEntity {
   updated_at: number;
+  created_at: number;
   _deleted: boolean;
 }
 

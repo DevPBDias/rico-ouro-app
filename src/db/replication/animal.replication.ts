@@ -26,13 +26,12 @@ export const animalReplication = createReplication<ReplicableAnimal>({
   replicationIdentifier: "animals-replication-v13",
 
   // Mapeia documento RxDB → Supabase
-  // Normaliza todos os campos para valores válidos do PostgreSQL
   mapToSupabase: (doc) => ({
     rgn: doc.rgn,
     name: doc.name ?? null,
     sex: doc.sex ?? null,
     born_date: doc.born_date ?? null,
-    serie_rgd: doc.serie_rgd ?? null,
+    serie_rgd: doc.serie_rgd,
     born_color: doc.born_color ?? null,
     iabcgz: doc.iabcgz ?? null,
     deca: doc.deca ?? null,
@@ -40,8 +39,8 @@ export const animalReplication = createReplication<ReplicableAnimal>({
     f: doc.f ?? null,
     status: doc.status ?? null,
     document_situation: doc.document_situation ?? null,
-    animal_state: doc.animal_state ?? null,
-    defects: doc.defects ?? null,
+    animal_state: doc.animal_state ?? "ATIVO",
+    defects: doc.defects ?? [],
     farm_id: doc.farm_id ?? null,
     type: doc.type ?? null,
     genotyping: doc.genotyping ?? null,
@@ -54,8 +53,9 @@ export const animalReplication = createReplication<ReplicableAnimal>({
     maternal_grandfather_name: doc.maternal_grandfather_name ?? null,
     paternal_grandfather_name: doc.paternal_grandfather_name ?? null,
     partnership: doc.partnership ?? null,
+    created_at: doc.created_at,
     updated_at: doc.updated_at,
-    _deleted: doc._deleted,
+    _deleted: !!doc._deleted,
   }),
 
   // Configurações
@@ -67,8 +67,13 @@ export const animalReplication = createReplication<ReplicableAnimal>({
 
   mapFromSupabase: (doc) => {
     const cleaned = cleanSupabaseDocument(doc);
-    delete cleaned.id; // Remove Supabase-specific ID as we use rgn
-    return cleaned as unknown as ReplicableAnimal;
+    delete cleaned.id; // Remove Supabase-specific ID
+    return {
+      ...cleaned,
+      _deleted: !!cleaned._deleted,
+      updated_at: Number(cleaned.updated_at) || Date.now(),
+      created_at: Number(cleaned.created_at) || Date.now(),
+    } as unknown as ReplicableAnimal;
   },
 });
 

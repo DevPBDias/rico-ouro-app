@@ -80,12 +80,15 @@ export function createReplication<T extends ReplicableEntity>(
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
-          // CORREÇÃO: Supabase usa bigint para updated_at (milissegundos).
-          // O filtro deve comparar com NÚMERO, não com ISO string.
-          const lastModifiedNum =
-            typeof lastModified === "number"
-              ? lastModified
-              : Number(lastModified) || 0;
+          // CORREÇÃO: Conversão segura de timestamp do checkpoint.
+          // Se for uma string ISO (vinda de versões anteriores), converte para milisegundos.
+          let lastModifiedNum: number;
+          if (typeof lastModified === "number") {
+            lastModifiedNum = lastModified;
+          } else {
+            const parsed = Date.parse(String(lastModified));
+            lastModifiedNum = isNaN(parsed) ? 0 : parsed;
+          }
 
           const filter = lastId
             ? `or(updated_at.gt.${lastModifiedNum},and(updated_at.eq.${lastModifiedNum},${primaryKey}.gt."${lastId}"))`
@@ -110,13 +113,20 @@ export function createReplication<T extends ReplicableEntity>(
 
           // Processar documentos para o RxDB
           const processedDocuments = data.map((doc) => {
+            let processed: T;
             if (mapFromSupabase) {
-              return mapFromSupabase(doc);
+              processed = mapFromSupabase(doc);
+            } else {
+              processed = cleanSupabaseDocuments([doc])[0] as T;
             }
-            const cleaned = cleanSupabaseDocuments([doc])[0];
+
+            // SEGURANÇA: RxDB exige _deleted, created_at e updated_at.
+            // Se vierem nulos do Supabase, garantimos valores válidos para evitar erro de schema.
             return {
-              ...cleaned,
-              _deleted: cleaned._deleted ?? false,
+              ...processed,
+              _deleted: !!processed._deleted, // Força boolean
+              created_at: processed.created_at || Date.now(),
+              updated_at: processed.updated_at || Date.now(),
             } as T;
           });
 
