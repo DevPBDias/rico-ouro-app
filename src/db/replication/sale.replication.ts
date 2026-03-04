@@ -8,7 +8,7 @@ import { cleanSupabaseDocument } from "@/lib/supabase/auth-helper";
 export const saleReplication = createReplication<Sale>({
   collectionName: "sales",
   tableName: "sales",
-  replicationIdentifier: "sales-replication-v1",
+  replicationIdentifier: "sales-replication-v2",
 
   // Mapeia documento RxDB → Supabase
   mapToSupabase: (doc) => ({

@@ -22,7 +22,7 @@ export function createReplication<T extends ReplicableEntity>(
   const {
     collectionName,
     tableName,
-    replicationIdentifier = `${String(collectionName)}-replication-v11`, // v11 for clean start after timestamptz change
+    replicationIdentifier = `${String(collectionName)}-replication-v12`,
     pullBatchSize = 1000,
     pushBatchSize = 1000,
     mapToSupabase,
@@ -34,7 +34,6 @@ export function createReplication<T extends ReplicableEntity>(
 
   const colName = String(collectionName);
 
-  // Retorna a factory function
   return async (
     db: MyDatabase,
     supabaseUrl: string,
@@ -73,7 +72,7 @@ export function createReplication<T extends ReplicableEntity>(
           if (!headers.Authorization) {
             SyncLogger.error(
               colName,
-              "No auth token available. Skipping pull. Session may have expired.",
+              "No auth token available. Skipping pull.",
             );
             throw new Error("Authentication required for sync");
           }
@@ -81,11 +80,17 @@ export function createReplication<T extends ReplicableEntity>(
           const primaryKey =
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
-          // Cursor composto real para garantir progressão e evitar duplicados
-          const lastModifiedISO =
-            typeof lastModified === "number"
-              ? new Date(lastModified).toISOString()
-              : lastModified;
+          // CORREÇÃO: Preservar a string ISO original do Supabase para manter
+          // precisão de microsegundos. Converter number → ISO apenas se necessário.
+          let lastModifiedISO: string;
+          if (typeof lastModified === "string") {
+            // Já é string ISO vinda do Supabase — usar como está (preserva microsegundos)
+            lastModifiedISO = lastModified;
+          } else if (lastModified === 0) {
+            lastModifiedISO = new Date(0).toISOString();
+          } else {
+            lastModifiedISO = new Date(lastModified).toISOString();
+          }
 
           const filter = lastId
             ? `or(updated_at.gt."${lastModifiedISO}",and(updated_at.eq."${lastModifiedISO}",${primaryKey}.gt."${lastId}"))`
@@ -108,6 +113,7 @@ export function createReplication<T extends ReplicableEntity>(
           const rawDocuments: Record<string, any>[] = await response.json();
           const data = Array.isArray(rawDocuments) ? rawDocuments : [];
 
+          // Processar documentos para o RxDB
           const processedDocuments = data.map((doc) => {
             if (mapFromSupabase) {
               return mapFromSupabase(doc);
@@ -124,16 +130,25 @@ export function createReplication<T extends ReplicableEntity>(
             `Received ${processedDocuments.length} documents`,
           );
 
-          const lastDoc =
-            processedDocuments.length > 0
-              ? processedDocuments[processedDocuments.length - 1]
-              : null;
+          // CORREÇÃO CRÍTICA: Usar o updated_at RAW do Supabase (string com microsegundos)
+          // para o checkpoint, NÃO o valor convertido para number (que perde precisão).
+          // Isso evita o loop infinito de pull.
+          const lastRawDoc = data.length > 0 ? data[data.length - 1] : null;
           const newCheckpoint: ReplicationCheckpoint = {
-            updated_at: lastDoc
-              ? Number((lastDoc as any).updated_at)
+            updated_at: lastRawDoc
+              ? lastRawDoc.updated_at // String ISO com precisão total do Supabase
               : lastModified,
-            last_id: lastDoc ? String((lastDoc as any)[primaryKey]) : lastId,
+            last_id: lastRawDoc ? String(lastRawDoc[primaryKey]) : lastId,
           };
+
+          if (data.length > 0) {
+            SyncLogger.info(colName, "Checkpoint advanced", {
+              updated_at: newCheckpoint.updated_at,
+              last_id: newCheckpoint.last_id,
+              docsInBatch: data.length,
+              hasMore: data.length >= effectiveBatchSize,
+            });
+          }
 
           return {
             documents: processedDocuments,
@@ -166,7 +181,6 @@ export function createReplication<T extends ReplicableEntity>(
               SyncLogger.warn(
                 colName,
                 "Document missing updated_at, adding now",
-                { doc },
               );
               (doc as any).updated_at = Date.now();
             }
@@ -175,12 +189,16 @@ export function createReplication<T extends ReplicableEntity>(
               ? mapToSupabase(doc)
               : { ...(doc as Record<string, any>) };
 
-            // Garantir que timestamps técnicos sejam enviados como ISO strings para timestamptz
+            // SEMPRE converter timestamps numéricos para ISO antes de enviar ao Supabase
             if (typeof mapped.updated_at === "number") {
-              mapped.updated_at = new Date(mapped.updated_at).toISOString();
+              mapped.updated_at = new Date(
+                mapped.updated_at as number,
+              ).toISOString();
             }
             if (typeof mapped.created_at === "number") {
-              mapped.created_at = new Date(mapped.created_at).toISOString();
+              mapped.created_at = new Date(
+                mapped.created_at as number,
+              ).toISOString();
             }
 
             return mapped;
@@ -194,7 +212,6 @@ export function createReplication<T extends ReplicableEntity>(
               "No auth token for push. Session may have expired.",
             );
 
-            // Marcar todos como erro
             rows.forEach((row) => {
               const docId = String((row.newDocumentState as any)[primaryKey]);
               PendingQueue.markError(colName, docId, "No auth token");
@@ -202,6 +219,11 @@ export function createReplication<T extends ReplicableEntity>(
 
             throw new Error("Authentication required for sync");
           }
+
+          SyncLogger.info(
+            colName,
+            `Pushing ${documents.length} docs to Supabase...`,
+          );
 
           const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
             method: "POST",
@@ -215,7 +237,6 @@ export function createReplication<T extends ReplicableEntity>(
           if (!response.ok) {
             const errorText = await response.text();
 
-            // Marcar todos como erro
             rows.forEach((row) => {
               const docId = String((row.newDocumentState as any)[primaryKey]);
               PendingQueue.markError(
@@ -244,14 +265,17 @@ export function createReplication<T extends ReplicableEntity>(
 
           SyncLogger.info(
             colName,
-            `Push successful: ${updatedDocs.length} docs synced`,
+            `Push successful: ${updatedDocs.length} docs synced ✅`,
           );
 
           if (updatedDocs.length > 0) {
             const mappedResults = updatedDocs.map((doc) => {
               if (mapFromSupabase) return mapFromSupabase(doc);
               const cleaned = cleanSupabaseDocument(doc);
-              return { ...cleaned, _deleted: cleaned._deleted ?? false } as T;
+              return {
+                ...cleaned,
+                _deleted: cleaned._deleted ?? false,
+              } as T;
             });
             return mappedResults;
           }

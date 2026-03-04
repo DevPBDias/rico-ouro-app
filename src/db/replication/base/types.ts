@@ -23,10 +23,13 @@ export type ConflictResolver<T> = (localDoc: T, remoteDoc: T) => T;
 
 /**
  * Checkpoint usado para rastrear o progresso do pull.
- * O campo updated_at marca o último documento sincronizado.
+ * 
+ * IMPORTANTE: updated_at aceita string | number para preservar a precisão
+ * de microsegundos do Supabase (timestamptz). Se armazenado como number (ms),
+ * perde-se microsegundos e o pull reenvia os mesmos documentos infinitamente.
  */
 export interface ReplicationCheckpoint {
-  updated_at: number;
+  updated_at: string | number;
   last_id?: string | null;
 }
 
