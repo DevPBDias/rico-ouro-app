@@ -1,4 +1,4 @@
-const SkeletonSearchAnimal = () => {
+export const SkeletonSearchAnimal = () => {
   return (
     <div className="rounded-lg border bg-card text-card-foreground p-4">
       <div className="flex items-center space-x-4">
@@ -18,5 +18,3 @@ const SkeletonSearchAnimal = () => {
     </div>
   );
 };
-
-export default SkeletonSearchAnimal;

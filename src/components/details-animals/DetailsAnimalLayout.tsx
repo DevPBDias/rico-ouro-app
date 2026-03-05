@@ -32,7 +32,7 @@ import { formatDate } from "@/utils/formatDates";
 import Link from "next/link";
 import { DetailsWeightList } from "@/components/lists/DetailsWeightList";
 import { DetailsCircunfList } from "@/components/lists/DetailsCircunfList";
-import { DetailsSkeleton } from "@/components/skeletons/DetailsSkeleton";
+import { DetailsSkeleton } from "@/components/ui/skeletons/DetailsSkeleton";
 import { cn } from "@/lib/utils";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
 import { Accordion } from "@/components/ui/accordion";

@@ -3,7 +3,7 @@
 import { Search, ArrowLeft, Plus, Edit2, Edit } from "lucide-react";
 import { Input } from "../ui/input";
 import { useMemo, useState } from "react";
-import SkeletonSearchAnimal from "../skeletons/SkeletonSearchAnimal";
+import { SkeletonSearchAnimal } from "@/components/ui/skeletons/SkeletonSearchAnimal";
 import Link from "next/link";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import SearchCard from "../cards/SearchCard";
