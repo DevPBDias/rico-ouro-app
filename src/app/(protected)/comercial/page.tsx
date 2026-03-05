@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/layout/Header";
-import { CommercialDashboard } from "@/components/commercial";
+import { CommercialDashboard } from "@/components/features/commercial/commercial";
 
 export default function ComercialPage() {
   return (

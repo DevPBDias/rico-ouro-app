@@ -16,7 +16,7 @@ import {
   AddDoseModal,
   EditDoseModal,
   type SortOption,
-} from "@/components/doses";
+} from "@/components/features/doses";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { SemenDose } from "@/types/semen_dose.type";
 

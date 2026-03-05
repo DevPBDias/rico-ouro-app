@@ -1,5 +1,5 @@
 import ShortHeader from "@/components/layout/ShortHeader";
-import SearchAnimal from "@/components/search/SearchAnimal";
+import SearchAnimal from "@/components/features/animals/SearchAnimal";
 
 const ConsultAnimals = () => {
   return (

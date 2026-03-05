@@ -1,6 +1,6 @@
 "use client";
 
-import { BirthForm } from "@/components/movements/BirthForm";
+import { BirthForm } from "@/components/features/commercial/movements/BirthForm";
 import Header from "@/components/layout/Header";
 
 export default function NascimentosPage() {

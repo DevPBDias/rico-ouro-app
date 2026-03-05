@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/layout/Header";
-import { ClientForm } from "@/components/clients/ClientForm";
+import { ClientForm } from "@/components/features/commercial/clients/ClientForm";
 import { useClients } from "@/hooks/db/clients/useClients";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

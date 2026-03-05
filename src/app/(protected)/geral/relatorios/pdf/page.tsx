@@ -4,7 +4,7 @@ import { useReports } from "@/context/ReportsContext";
 import { AVAILABLE_REPORTS } from "@/lib/pdf/definitions";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
-import { ReportForm } from "@/components/reports";
+import { ReportForm } from "@/components/features/reports";
 import { StandardTabList } from "@/components/ui/StandardTabList";
 import { useEffect } from "react";
 import {

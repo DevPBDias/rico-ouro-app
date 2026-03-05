@@ -1,12 +1,12 @@
 "use client";
 
 import Header from "@/components/layout/Header";
-import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
+import { RgnAutocomplete } from "@/components/features/animals/RgnAutocomplete";
 import { useMemo, useState } from "react";
-import { AddPesoModal } from "@/components/modals/weight-ce-modal/AddPesoModal";
-import { WeightList } from "@/components/lists/WeightList";
+import { AddPesoModal } from "@/components/features/animals/modals/weight-ce-modal/AddPesoModal";
+import { WeightList } from "@/components/features/animals/lists/WeightList";
 import { Button } from "@/components/ui/button";
-import { CircunfList } from "@/components/lists/CircunfList";
+import { CircunfList } from "@/components/features/animals/lists/CircunfList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SuccessModal } from "@/components/modals/SuccessModal";
 import { X } from "lucide-react";

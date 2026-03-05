@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/layout/Header";
-import { AnimalForm } from "@/components/forms/AnimalForm";
+import { AnimalForm } from "@/components/features/animals/form/AnimalForm";
 import { useCreateAnimal } from "@/hooks/db/animals/useCreateAnimal";
 import { Animal } from "@/types/animal.type";
 

@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
+import { RgnAutocomplete } from "@/components/features/animals/RgnAutocomplete";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { Animal } from "@/types/animal.type";
-import { ManageFarms } from "@/components/manage/ManageFarms";
-import { ManageStatus } from "@/components/manage/ManageStatus";
-import { ManageClassification } from "@/components/manage/ManageClassification";
-import { ManageSociety } from "@/components/manage/ManageSociety";
-import { ManageSituation } from "@/components/manage/ManageSituation";
+import { ManageFarms } from "@/components/features/animals/manage/ManageFarms";
+import { ManageStatus } from "@/components/features/animals/manage/ManageStatus";
+import { ManageClassification } from "@/components/features/animals/manage/ManageClassification";
+import { ManageSociety } from "@/components/features/animals/manage/ManageSociety";
+import { ManageSituation } from "@/components/features/animals/manage/ManageSituation";
 import {
   X,
   Landmark,

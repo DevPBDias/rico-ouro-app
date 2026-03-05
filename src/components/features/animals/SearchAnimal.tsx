@@ -1,0 +1,181 @@
+"use client";
+
+import { Search, ArrowLeft, Plus, Edit2, Edit } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useMemo, useState } from "react";
+import { SkeletonSearchAnimal } from "@/components/ui/skeletons/SkeletonSearchAnimal";
+import Link from "next/link";
+import { useAnimals } from "@/hooks/db/animals/useAnimals";
+import SearchCard from "@/components/features/animals/lists/SearchCard";
+import DetailsAnimalLayout from "./details/DetailsAnimalLayout";
+import { EditAnimalModal } from "./modals/edit-animal/EditAnimalModal";
+import { Button } from "@/components/ui/button";
+
+function SearchAnimal() {
+  const { animals, isLoading } = useAnimals();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+
+    const exactMatch = animals.find(
+      (animal) => animal.rgn?.toLowerCase() === query,
+    );
+    if (exactMatch) return [exactMatch];
+
+    return animals.filter((animal) => {
+      const rgn = animal.rgn?.toString().toLowerCase() || "";
+      const name = animal.name?.toLowerCase() || "";
+      const serieRgd = animal.serie_rgd?.toLowerCase() || "";
+
+      return (
+        rgn.includes(query) || name.includes(query) || serieRgd.includes(query)
+      );
+    });
+  }, [animals, searchQuery]);
+
+  const selectedAnimal = useMemo(() => {
+    if (!selectedRgn) return null;
+    return animals.find((a) => a.rgn === selectedRgn) || null;
+  }, [animals, selectedRgn]);
+
+  const hasSearched = searchQuery.trim().length > 0;
+
+  const handleSelectAnimal = (rgn: string) => {
+    setSelectedRgn(rgn);
+    setShowDetails(true);
+  };
+
+  const handleBackToSearch = () => {
+    setShowDetails(false);
+    setSelectedRgn(null);
+  };
+
+  if (showDetails && selectedAnimal) {
+    return (
+      <section className="px-4 py-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Button
+              onClick={handleBackToSearch}
+              variant="outline"
+              className="flex items-center text-primary font-semibold bg-transparent border-primary/20"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Buscar RGN
+            </Button>
+            <p className="text-2xl text-primary font-black">
+              {selectedAnimal.serie_rgd} {selectedAnimal.rgn}
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsEditModalOpen(true)}
+            variant="outline"
+            className="p-2 rounded-sm bg-transparent text-primary transition-colors border-primary/20"
+            title="Editar dados cadastrais"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <DetailsAnimalLayout rgn={selectedAnimal.rgn} />
+
+        <EditAnimalModal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          animal={selectedAnimal}
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section className="px-4">
+      <div className="py-3 border-b border-border">
+        <label
+          htmlFor="search-animal"
+          className="text-base font-bold text-[#1162AE] uppercase"
+        >
+          Buscar Animal:
+        </label>
+        <div className="relative mt-1">
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Input
+            id="search-animal"
+            type="text"
+            className="placeholder:text-sm placeholder:text-gray-400 pl-2 bg-white border border-gray-200 rounded-lg text-base"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Digite o RGN, nome ou série do animal..."
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3 my-4">
+          <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
+            Carregando...
+          </h2>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonSearchAnimal key={index} />
+          ))}
+        </div>
+      ) : (
+        <div className="my-4">
+          {hasSearched && (
+            <>
+              {searchResults.length > 0 ? (
+                <div className="space-y-3">
+                  <h2 className="text-lg font-semibold text-[#1162AE] mb-1">
+                    {searchResults.length === 1
+                      ? "Animal encontrado:"
+                      : `Resultados encontrados (${searchResults.length}):`}
+                  </h2>
+                  {searchResults.length > 1 && (
+                    <p className="text-sm text-gray-500 mb-3">
+                      Toque em um animal para ver os detalhes
+                    </p>
+                  )}
+                  <div className="grid gap-3">
+                    {searchResults.map((animal) => (
+                      <div
+                        key={animal.rgn}
+                        onClick={() => handleSelectAnimal(animal.rgn)}
+                        className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-lg transition-all active:scale-[0.98]"
+                      >
+                        <SearchCard
+                          animal={animal}
+                          onDetailsClick={() => handleSelectAnimal(animal.rgn)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-4 py-8">
+                  <p className="text-base text-center font-medium text-red-500">
+                    Animal não encontrado... <br />
+                    Verifique o RGN ou cadastre o animal.
+                  </p>
+                  <Link
+                    href="/cadastro"
+                    className="w-full flex flex-row justify-center items-center gap-1 font-medium bg-primary text-white py-2.5 px-4 rounded-lg"
+                  >
+                    <Plus size={16} color="white" />
+                    Cadastrar
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default SearchAnimal;

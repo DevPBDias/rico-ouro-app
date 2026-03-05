@@ -1,15 +1,15 @@
 "use client";
 
 import Header from "@/components/layout/Header";
-import { ClientList } from "@/components/clients/ClientList";
-import { ClientDetails } from "@/components/clients/ClientDetails";
+import { ClientList } from "@/components/features/commercial/clients/ClientList";
+import { ClientDetails } from "@/components/features/commercial/clients/ClientDetails";
 import { useClientById } from "@/hooks/db/clients/useClientById";
 import { useClients } from "@/hooks/db/clients/useClients";
 import { useState } from "react";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 import { SuccessModal } from "@/components/modals/SuccessModal";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClientForm } from "@/components/clients/ClientForm";
+import { ClientForm } from "@/components/features/commercial/clients/ClientForm";
 import { X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

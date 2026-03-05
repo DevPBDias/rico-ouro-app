@@ -9,12 +9,12 @@ import Header from "@/components/layout/Header";
 import { useMatrizes } from "@/hooks/matrizes/useMatrizes";
 import { Animal } from "@/types/animal.type";
 import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproductionEvents";
-import { CreateReproductionModal } from "@/components/modals/reproduction/CreateReproductionModal";
-import { EditReproductionModal } from "@/components/modals/reproduction/EditReproductionModal";
-import { DeleteReproductionModal } from "@/components/modals/reproduction/DeleteReproductionModal";
+import { CreateReproductionModal } from "@/components/features/reproduction/modals/reproduction/CreateReproductionModal";
+import { EditReproductionModal } from "@/components/features/reproduction/modals/reproduction/EditReproductionModal";
+import { DeleteReproductionModal } from "@/components/features/reproduction/modals/reproduction/DeleteReproductionModal";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { Accordion } from "@/components/ui/accordion";
-import { ReproductionEventCard } from "@/components/cards/ReproductionEventCard";
+import { ReproductionEventCard } from "@/components/features/reproduction/ReproductionEventCard";
 
 export default function ReproducaoPage() {
   const router = useRouter();

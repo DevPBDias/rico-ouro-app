@@ -1,6 +1,6 @@
 "use client";
 import Header from "@/components/layout/Header";
-import SearchCsvFile from "@/components/search/SearchCsvFile";
+import SearchCsvFile from "@/components/features/animals/import/SearchCsvFile";
 import { Button } from "@/components/ui/button";
 import { useRxDatabase } from "@/providers/RxDBProvider";
 import { Trash2, RefreshCw } from "lucide-react";

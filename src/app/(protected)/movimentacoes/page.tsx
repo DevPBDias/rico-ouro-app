@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Header from "@/components/layout/Header";
-import { MovementList } from "@/components/movements/MovementList";
+import { MovementList } from "@/components/features/commercial/movements/MovementList";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft } from "lucide-react";
-import { MovementForm } from "@/components/movements";
+import { MovementForm } from "@/components/features/commercial/movements";
 import { Movement } from "@/types/movement.type";
 
 type ViewMode = "list" | "create" | "edit";

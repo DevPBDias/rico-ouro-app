@@ -3,17 +3,17 @@
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { VaccinesMultiSelect } from "@/components/vaccines/VaccinesMultiSelect";
-import { RgnAutocomplete } from "@/components/vaccines/RgnAutocomplete";
+import { VaccinesMultiSelect } from "@/components/features/vaccines/vaccines/VaccinesMultiSelect";
+import { RgnAutocomplete } from "@/components/features/animals/RgnAutocomplete";
 import { DatePicker } from "@/components/ui/date-picker";
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCreateAnimalVaccine } from "@/hooks/db/animal_vaccines/useCreateAnimalVaccine";
 import { useAnimalVaccines } from "@/hooks/db/animal_vaccines/useAnimalVaccines";
-import { AddVaccineModal } from "@/components/modals/vaccines/AddVaccineModal";
-import { VaccineSuccessModal } from "@/components/modals/vaccines/VaccineSuccessModal";
-import { DeleteVaccineModal } from "@/components/modals/vaccines/DeleteVaccineModal";
+import { AddVaccineModal } from "@/components/features/vaccines/modals/vaccines/AddVaccineModal";
+import { VaccineSuccessModal } from "@/components/features/vaccines/modals/vaccines/VaccineSuccessModal";
+import { DeleteVaccineModal } from "@/components/features/vaccines/modals/vaccines/DeleteVaccineModal";
 import { Plus, Trash, Syringe, AlertTriangle } from "lucide-react";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useCreateVaccine } from "@/hooks/db/vaccines/useCreateVaccine";
