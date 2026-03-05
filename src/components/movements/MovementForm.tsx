@@ -137,7 +137,7 @@ export function MovementForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!movementType || !animalId || !animalExists) return;
-    if (movementType === "venda" && !clientId) return;
+    if (movementType === "venda" && !clientId && !initialMovement) return;
 
     setIsSubmitting(true);
 
@@ -230,8 +230,12 @@ export function MovementForm({
     animalId &&
     animalExists &&
     (movementType === "morte" ? !!reason : true) &&
-    (movementType === "venda" ? !!clientId && !!totalValue : true) &&
-    (movementType === "troca" ? !!clientId && !!substitute_animal_rgn : true);
+    (movementType === "venda"
+      ? (!!initialMovement || !!clientId) && !!totalValue
+      : true) &&
+    (movementType === "troca"
+      ? (!!initialMovement || !!clientId) && !!substitute_animal_rgn
+      : true);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">

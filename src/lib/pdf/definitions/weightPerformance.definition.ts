@@ -10,18 +10,30 @@ import { generateWeightPerformancePDF } from "../generators/weight-performance";
  * @param params - Filters from the context
  */
 async function generateWeightReport(
-  params: ReportGeneratorParams
+  params: ReportGeneratorParams,
 ): Promise<void> {
   const { filters } = params;
 
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
 
-  // Fetch animals from the selected farm
+  // Add farm filter — single or multiple
   const animalSelector: any = {
     _deleted: { $eq: false },
-    farm_id: { $eq: filters.farmId },
   };
+
+  if (
+    filters.farmIds &&
+    filters.farmIds.length > 0 &&
+    filters.farmFilterMode !== "all"
+  ) {
+    animalSelector.farm_id =
+      filters.farmIds.length === 1
+        ? { $eq: filters.farmIds[0] }
+        : { $in: filters.farmIds };
+  } else if (filters.farmId && filters.farmFilterMode === "specific") {
+    animalSelector.farm_id = { $eq: filters.farmId };
+  }
 
   // Add animal_state filter only if animalStateFilterMode is "specific"
   if (
@@ -71,7 +83,10 @@ async function generateWeightReport(
 
   // Transform data for report
   const reportData = {
-    farmName: filters.farmName || "Fazenda",
+    farmName:
+      filters.farmNames && filters.farmNames.length > 0
+        ? filters.farmNames.join(", ")
+        : filters.farmName || "Todas as Fazendas",
     gender: filters.sex || "Ambos",
     data: animals
       .filter((a) => weightsByRgn.has(a.rgn))
@@ -85,7 +100,7 @@ async function generateWeightReport(
           const lastW = animalWeights[0];
           const days = Math.abs(
             (new Date(lastW.date).getTime() - new Date(firstW.date).getTime()) /
-              (1000 * 60 * 60 * 24)
+              (1000 * 60 * 60 * 24),
           );
           if (days > 0) {
             gmd = (lastW.value - firstW.value) / days;

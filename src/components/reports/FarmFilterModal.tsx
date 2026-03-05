@@ -11,13 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Farm } from "@/types/farm.type";
 
@@ -25,40 +18,62 @@ interface FarmFilterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   farms: Farm[];
-  currentFarmId?: string;
-  currentFilterMode?: "all" | "specific";
-  onConfirm: (farmId: string | undefined, filterMode: "all" | "specific") => void;
+  currentFarmIds?: string[];
+  currentFilterMode?: "all" | "specific" | "multiple";
+  onConfirm: (
+    farmIds: string[],
+    farmNames: string[],
+    filterMode: "all" | "specific" | "multiple",
+  ) => void;
 }
 
 export function FarmFilterModal({
   open,
   onOpenChange,
   farms,
-  currentFarmId,
+  currentFarmIds = [],
   currentFilterMode = "all",
   onConfirm,
 }: FarmFilterModalProps) {
-  const [filterMode, setFilterMode] = React.useState<"all" | "specific">(
-    currentFilterMode
-  );
-  const [selectedFarmId, setSelectedFarmId] = React.useState<string | undefined>(
-    currentFarmId
-  );
+  const [filterMode, setFilterMode] = React.useState<
+    "all" | "specific" | "multiple"
+  >(currentFilterMode);
+  const [selectedFarmIds, setSelectedFarmIds] =
+    React.useState<string[]>(currentFarmIds);
 
   React.useEffect(() => {
     if (open) {
       setFilterMode(currentFilterMode);
-      setSelectedFarmId(currentFarmId);
+      setSelectedFarmIds(currentFarmIds);
     }
-  }, [open, currentFarmId, currentFilterMode]);
+  }, [open, currentFarmIds, currentFilterMode]);
+
+  const toggleFarm = (farmId: string) => {
+    setSelectedFarmIds((prev) =>
+      prev.includes(farmId)
+        ? prev.filter((id) => id !== farmId)
+        : [...prev, farmId],
+    );
+  };
 
   const handleConfirm = () => {
-    if (filterMode === "specific" && !selectedFarmId) {
-      return; // Não permite confirmar sem selecionar fazenda
+    if (filterMode === "all") {
+      onConfirm([], [], "all");
+    } else {
+      if (selectedFarmIds.length === 0) return;
+      const names = selectedFarmIds
+        .map((id) => farms.find((f) => f.id === id)?.farm_name || "")
+        .filter(Boolean);
+      onConfirm(
+        selectedFarmIds,
+        names,
+        selectedFarmIds.length === 1 ? "specific" : "multiple",
+      );
     }
-    onConfirm(filterMode === "all" ? undefined : selectedFarmId, filterMode);
     onOpenChange(false);
   };
+
+  const isSpecific = filterMode !== "all";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,8 +81,8 @@ export function FarmFilterModal({
         <DialogHeader>
           <DialogTitle>Filtrar por Fazenda</DialogTitle>
           <DialogDescription>
-            Escolha se deseja mostrar animais de todas as fazendas ou de uma
-            fazenda específica.
+            Escolha se deseja mostrar animais de todas as fazendas ou selecione
+            as fazendas desejadas.
           </DialogDescription>
         </DialogHeader>
 
@@ -76,21 +91,23 @@ export function FarmFilterModal({
             <div
               className="flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-colors hover:bg-muted/50"
               style={{
-                borderColor:
-                  filterMode === "all" ? "hsl(var(--primary))" : "hsl(var(--border))",
-                backgroundColor:
-                  filterMode === "all" ? "hsl(var(--primary) / 0.05)" : "transparent",
+                borderColor: !isSpecific
+                  ? "hsl(var(--primary))"
+                  : "hsl(var(--border))",
+                backgroundColor: !isSpecific
+                  ? "hsl(var(--primary) / 0.05)"
+                  : "transparent",
               }}
               onClick={() => {
                 setFilterMode("all");
-                setSelectedFarmId(undefined);
+                setSelectedFarmIds([]);
               }}
             >
               <Checkbox
-                checked={filterMode === "all"}
+                checked={!isSpecific}
                 onCheckedChange={() => {
                   setFilterMode("all");
-                  setSelectedFarmId(undefined);
+                  setSelectedFarmIds([]);
                 }}
                 className="h-5 w-5"
               />
@@ -101,48 +118,61 @@ export function FarmFilterModal({
             <div
               className="flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-colors hover:bg-muted/50"
               style={{
-                borderColor:
-                  filterMode === "specific"
-                    ? "hsl(var(--primary))"
-                    : "hsl(var(--border))",
-                backgroundColor:
-                  filterMode === "specific"
-                    ? "hsl(var(--primary) / 0.05)"
-                    : "transparent",
+                borderColor: isSpecific
+                  ? "hsl(var(--primary))"
+                  : "hsl(var(--border))",
+                backgroundColor: isSpecific
+                  ? "hsl(var(--primary) / 0.05)"
+                  : "transparent",
               }}
-              onClick={() => setFilterMode("specific")}
+              onClick={() => setFilterMode("multiple")}
             >
               <Checkbox
-                checked={filterMode === "specific"}
-                onCheckedChange={() => setFilterMode("specific")}
+                checked={isSpecific}
+                onCheckedChange={() => setFilterMode("multiple")}
                 className="h-5 w-5"
               />
               <Label className="text-sm font-medium cursor-pointer flex-1">
-                Fazenda Específica
+                Selecionar Fazendas
               </Label>
             </div>
           </div>
 
-          {filterMode === "specific" && (
-            <div className="space-y-2 pl-6">
-              <Label htmlFor="farm-select" className="text-sm">
-                Selecione a Fazenda
+          {isSpecific && (
+            <div className="space-y-2 pl-2">
+              <Label className="text-xs font-bold uppercase text-muted-foreground">
+                Selecione as fazendas desejadas
               </Label>
-              <Select
-                value={selectedFarmId || ""}
-                onValueChange={setSelectedFarmId}
-              >
-                <SelectTrigger id="farm-select">
-                  <SelectValue placeholder="Selecione uma fazenda" />
-                </SelectTrigger>
-                <SelectContent>
-                  {farms.map((farm) => (
-                    <SelectItem key={farm.id} value={farm.id}>
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {farms.map((farm) => (
+                  <div
+                    key={farm.id}
+                    className={`flex items-center space-x-2 p-2.5 rounded-lg border cursor-pointer transition-colors hover:bg-muted/30 ${
+                      selectedFarmIds.includes(farm.id)
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                    onClick={() => toggleFarm(farm.id)}
+                  >
+                    <Checkbox
+                      checked={selectedFarmIds.includes(farm.id)}
+                      onCheckedChange={() => toggleFarm(farm.id)}
+                      className="h-4 w-4"
+                    />
+                    <Label className="text-sm cursor-pointer flex-1">
                       {farm.farm_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedFarmIds.length > 0 && (
+                <p className="text-[10px] text-primary font-semibold mt-1">
+                  {selectedFarmIds.length}{" "}
+                  {selectedFarmIds.length === 1
+                    ? "fazenda selecionada"
+                    : "fazendas selecionadas"}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -153,7 +183,7 @@ export function FarmFilterModal({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={filterMode === "specific" && !selectedFarmId}
+            disabled={isSpecific && selectedFarmIds.length === 0}
           >
             Confirmar
           </Button>
@@ -162,4 +192,3 @@ export function FarmFilterModal({
     </Dialog>
   );
 }
-

@@ -46,8 +46,10 @@ export type AnimalReportSortBy = "rgn" | "classification";
  */
 export interface ReportFilters {
   farmId?: string;
+  farmIds?: string[];
   farmName?: string;
-  farmFilterMode?: "all" | "specific"; // "all" para todas as fazendas, "specific" para uma específica
+  farmNames?: string[];
+  farmFilterMode?: "all" | "specific" | "multiple"; // "all" para todas, "specific" para uma, "multiple" para várias
   sex?: GenderFilterValue;
   sexFilterMode?: "all" | "specific"; // "all" para ambos (mostra coluna), "specific" para M/F (filtra, não mostra)
   animalState?: AnimalStateFilterValue;

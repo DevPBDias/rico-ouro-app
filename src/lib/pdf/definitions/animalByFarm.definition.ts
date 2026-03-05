@@ -31,8 +31,17 @@ async function generateAnimalByFarmReport(
     _deleted: { $eq: false },
   };
 
-  // Add farm filter only if farmId is provided and filterMode is "specific"
-  if (filters.farmId && filters.farmFilterMode === "specific") {
+  // Add farm filter — single or multiple
+  if (
+    filters.farmIds &&
+    filters.farmIds.length > 0 &&
+    filters.farmFilterMode !== "all"
+  ) {
+    selector.farm_id =
+      filters.farmIds.length === 1
+        ? { $eq: filters.farmIds[0] }
+        : { $in: filters.farmIds };
+  } else if (filters.farmId && filters.farmFilterMode === "specific") {
     selector.farm_id = { $eq: filters.farmId };
   }
 
@@ -117,7 +126,10 @@ async function generateAnimalByFarmReport(
 
   // Transform data for report
   const reportData = {
-    farmName: filters.farmName || "Todas as Fazendas",
+    farmName:
+      filters.farmNames && filters.farmNames.length > 0
+        ? filters.farmNames.join(", ")
+        : filters.farmName || "Todas as Fazendas",
     gender: filters.sex || "Ambos",
     totalItems: animals.length,
     showFarmColumn,
@@ -168,7 +180,10 @@ async function generateAnimalByFarmReport(
       observations: "---",
     })),
     reportDate: new Date().toLocaleDateString("pt-BR"),
-    systemName: filters.farmName || "Todas as Fazendas",
+    systemName:
+      filters.farmNames && filters.farmNames.length > 0
+        ? filters.farmNames.join(", ")
+        : filters.farmName || "Todas as Fazendas",
   };
 
   let selectedColumns =

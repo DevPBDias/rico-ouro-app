@@ -45,7 +45,9 @@ type ReportsContextType = ReportsContextState & ReportsContextActions;
 
 const initialFilters: ReportFilters = {
   farmId: undefined,
+  farmIds: [],
   farmName: undefined,
+  farmNames: [],
   farmFilterMode: undefined,
   sex: "Ambos" as GenderFilterValue,
   sexFilterMode: undefined,

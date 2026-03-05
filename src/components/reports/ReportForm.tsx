@@ -61,11 +61,19 @@ export function ReportForm() {
 
   // Filter animals by selected farm (or all if no farm selected or filterMode is "all")
   const farmAnimals = useMemo(() => {
-    if (!filters.farmId || filters.farmFilterMode === "all") {
+    if (
+      (!filters.farmId && (!filters.farmIds || filters.farmIds.length === 0)) ||
+      filters.farmFilterMode === "all"
+    ) {
       return animals;
     }
+    // Multi-farm support
+    if (filters.farmIds && filters.farmIds.length > 0) {
+      const farmIdSet = new Set(filters.farmIds);
+      return animals.filter((a) => a.farm_id && farmIdSet.has(a.farm_id));
+    }
     return animals.filter((a) => a.farm_id === filters.farmId);
-  }, [animals, filters.farmId, filters.farmFilterMode]);
+  }, [animals, filters.farmId, filters.farmIds, filters.farmFilterMode]);
 
   const farmAnimalRgns = useMemo(
     () => new Set(farmAnimals.map((a) => a.rgn)),
@@ -119,13 +127,15 @@ export function ReportForm() {
 
   // Handle farm filter from modal
   const handleFarmFilterConfirm = (
-    farmId: string | undefined,
-    filterMode: "all" | "specific",
+    farmIds: string[],
+    farmNames: string[],
+    filterMode: "all" | "specific" | "multiple",
   ) => {
-    const farm = farms.find((f) => f.id === farmId);
     updateFilters({
-      farmId,
-      farmName: farm?.farm_name || "",
+      farmId: farmIds.length === 1 ? farmIds[0] : undefined,
+      farmIds,
+      farmName: farmNames.length === 1 ? farmNames[0] : undefined,
+      farmNames,
       farmFilterMode: filterMode,
     });
   };
@@ -194,7 +204,9 @@ export function ReportForm() {
       if (isChecked) {
         updateFilters({
           farmId: undefined,
+          farmIds: [],
           farmName: undefined,
+          farmNames: [],
           farmFilterMode: undefined,
         });
         toggleColumn(column);
@@ -504,10 +516,12 @@ export function ReportForm() {
         open={farmModalOpen}
         onOpenChange={setFarmModalOpen}
         farms={farms}
-        currentFarmId={filters.farmId}
+        currentFarmIds={
+          filters.farmIds || (filters.farmId ? [filters.farmId] : [])
+        }
         currentFilterMode={filters.farmFilterMode || "all"}
-        onConfirm={(farmId, filterMode) => {
-          handleFarmFilterConfirm(farmId, filterMode);
+        onConfirm={(farmIds, farmNames, filterMode) => {
+          handleFarmFilterConfirm(farmIds, farmNames, filterMode);
           const isFarmColumnSelected =
             filters.selectedColumns?.some((c) => c.dataKey === "farmName") ??
             false;

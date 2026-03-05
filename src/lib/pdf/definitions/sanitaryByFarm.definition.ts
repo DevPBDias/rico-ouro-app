@@ -1,39 +1,34 @@
-/**
- * Report Definition: Sanitary by Farm (Sanitário - Vacinas)
- *
- * This report lists all vaccine applications for animals in a farm
- * within a specified date range. One row per vaccine application.
- *
- * Required Filters: farm, dateRange
- * Allows Column Selection: No (fixed columns)
- */
-
 import { getDatabase } from "@/db/client";
 import { Animal } from "@/types/animal.type";
 import { AnimalVaccine, Vaccine } from "@/types/vaccine.type";
 import { ReportDefinition, ReportGeneratorParams } from "./types";
 import { generateSanitaryByFarmPDF } from "../generators/sanitary-by-farm";
 
-/**
- * Fetches sanitary/vaccine data and generates the PDF report.
- *
- * @param params - Filters from the context
- */
 async function generateSanitaryReport(
-  params: ReportGeneratorParams
+  params: ReportGeneratorParams,
 ): Promise<void> {
   const { filters } = params;
 
   const db = await getDatabase();
   if (!db) throw new Error("Database not initialized");
 
-  // Fetch animals from the selected farm
   const animalSelector: any = {
     _deleted: { $eq: false },
-    farm_id: { $eq: filters.farmId },
   };
 
-  // Add animal_state filter only if animalStateFilterMode is "specific"
+  if (
+    filters.farmIds &&
+    filters.farmIds.length > 0 &&
+    filters.farmFilterMode !== "all"
+  ) {
+    animalSelector.farm_id =
+      filters.farmIds.length === 1
+        ? { $eq: filters.farmIds[0] }
+        : { $in: filters.farmIds };
+  } else if (filters.farmId && filters.farmFilterMode === "specific") {
+    animalSelector.farm_id = { $eq: filters.farmId };
+  }
+
   if (
     filters.animalState &&
     filters.animalStateFilterMode === "specific" &&
@@ -51,7 +46,6 @@ async function generateSanitaryReport(
   const animals = animalDocs.map((doc) => doc.toJSON() as Animal);
   const animalRgns = animals.map((a) => a.rgn);
 
-  // Fetch all vaccines for name lookup
   const vaccineDocs = await db.vaccines
     .find({
       selector: { _deleted: { $eq: false } },
@@ -60,7 +54,6 @@ async function generateSanitaryReport(
   const vaccines = vaccineDocs.map((doc) => doc.toJSON() as Vaccine);
   const vaccineMap = new Map(vaccines.map((v) => [v.id, v.vaccine_name]));
 
-  // Fetch animal vaccines within date range
   const vaccinationDocs = await db.animal_vaccines
     .find({
       selector: {
@@ -76,15 +69,16 @@ async function generateSanitaryReport(
     .exec();
 
   const vaccinations = vaccinationDocs.map(
-    (doc) => doc.toJSON() as AnimalVaccine
+    (doc) => doc.toJSON() as AnimalVaccine,
   );
 
-  // Create animal lookup map
   const animalMap = new Map(animals.map((a) => [a.rgn, a]));
 
-  // Transform data for report - one row per vaccination
   const reportData = {
-    farmName: filters.farmName || "Fazenda",
+    farmName:
+      filters.farmNames && filters.farmNames.length > 0
+        ? filters.farmNames.join(", ")
+        : filters.farmName || "Todas as Fazendas",
     startDate: filters.startDate
       ? new Date(filters.startDate).toLocaleDateString("pt-BR")
       : "",
@@ -109,9 +103,6 @@ async function generateSanitaryReport(
   await generateSanitaryByFarmPDF(reportData);
 }
 
-/**
- * Report definition for "Sanitary (Vaccines)"
- */
 export const sanitaryByFarmDefinition: ReportDefinition = {
   id: "sanitary-by-farm",
   title: "Sanitário Vacinas",

@@ -41,7 +41,7 @@ const MONTHS_SHORT = [
   "Dez",
 ];
 
-const COLORS = ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE"];
+const COLORS = ["#3B82F6", "#FFCC04", "#93C5FD", "#BFDBFE"];
 
 export function SalesDetails() {
   const { allSales, isLoading, availableYears } = useSales();
@@ -105,7 +105,7 @@ export function SalesDetails() {
 
   const chartConfig = {
     abate: { label: "Abate", color: "#3B82F6" },
-    reproducao: { label: "Reprodução", color: "#60A5FA" },
+    reproducao: { label: "Reprodução", color: "#FFCC04" },
   };
 
   return (
@@ -200,7 +200,7 @@ export function SalesDetails() {
             />
             <Bar
               dataKey="reproducao"
-              fill="#60A5FA"
+              fill="#FFCC04"
               radius={[4, 4, 0, 0]}
               name="Reprodução"
             />
@@ -221,7 +221,7 @@ export function SalesDetails() {
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-blue-400">
+                  <span className="font-bold text-[#FFCC04]">
                     {item.reproducao}
                   </span>
                   <span className="text-[8px] uppercase text-muted-foreground">
