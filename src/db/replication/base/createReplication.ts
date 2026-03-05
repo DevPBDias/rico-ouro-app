@@ -81,7 +81,6 @@ export function createReplication<T extends ReplicableEntity>(
             (collection as any).schema.jsonSchema.primaryKey || "id";
 
           // CORREÇÃO: Conversão segura de timestamp do checkpoint.
-          // Se for uma string ISO (vinda de versões anteriores), converte para milisegundos.
           let lastModifiedNum: number;
           if (typeof lastModified === "number") {
             lastModifiedNum = lastModified;
@@ -90,11 +89,19 @@ export function createReplication<T extends ReplicableEntity>(
             lastModifiedNum = isNaN(parsed) ? 0 : parsed;
           }
 
-          const filter = lastId
-            ? `or(updated_at.gt.${lastModifiedNum},and(updated_at.eq.${lastModifiedNum},${primaryKey}.gt."${lastId}"))`
-            : `updated_at.gte.${lastModifiedNum}`;
+          // Usar a Nova API Sync do Next.js
+          const params = new URLSearchParams({
+            table: tableName,
+            lastModified: String(lastModifiedNum),
+            primaryKey,
+            limit: String(effectiveBatchSize),
+          });
 
-          const url = `${supabaseUrl}/rest/v1/${tableName}?select=*&order=updated_at.asc,${primaryKey}.asc&limit=${effectiveBatchSize}&${filter}`;
+          if (lastId) params.append("lastId", String(lastId));
+
+          const url = `/api/sync?${params.toString()}`;
+
+          SyncLogger.info(colName, "Pulling from Sync API...", { url });
 
           const response = await fetch(url, { headers });
 
@@ -224,16 +231,20 @@ export function createReplication<T extends ReplicableEntity>(
 
           SyncLogger.info(
             colName,
-            `Pushing ${documents.length} docs to Supabase...`,
+            `Pushing ${documents.length} docs to Sync API...`,
           );
 
-          const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
+          const response = await fetch("/api/sync", {
             method: "POST",
             headers: {
               ...headers,
-              Prefer: "resolution=merge-duplicates,return=representation",
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify(documents),
+            body: JSON.stringify({
+              table: tableName,
+              documents,
+              primaryKey,
+            }),
           });
 
           if (!response.ok) {
