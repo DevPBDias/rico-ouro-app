@@ -42,21 +42,22 @@ import { ReproductionEvent } from "@/types/reproduction_event.type";
 import { ReproductionEventCard } from "@/components/features/reproduction/ReproductionEventCard";
 
 const DetailsAnimalLayout = ({ rgn }: { rgn: string }) => {
-  const { animal, isLoading: animalLoading } = useAnimalById(rgn);
-  const { animalVaccines, isLoading: vaccinesLoading } = useAnimalVaccines(rgn);
-  const { vaccines, isLoading: allVaccinesLoading } = useVaccines();
-  const { deleteAnimalVaccine, isLoading: isDeleting } =
-    useDeleteAnimalVaccine();
+  const { data: animal, loading: animalLoading } = useAnimalById(rgn);
+  const { data: animalVaccines, loading: vaccinesLoading } =
+    useAnimalVaccines(rgn);
+  const { data: vaccines, loading: allVaccinesLoading } = useVaccines();
+  const {
+    actions: { deleteAnimalVaccine },
+    loading: isDeleting,
+  } = useDeleteAnimalVaccine();
   const isLoading = animalLoading || vaccinesLoading || allVaccinesLoading;
-  const { farms } = useFarms();
+  const { data: farms } = useFarms();
   const getMonths = getAgeMonths(animal?.born_date);
-  const { weights, isLoading: weightsLoading } = useAnimalWeights(
+  const { data: weights, loading: weightsLoading } = useAnimalWeights(
     rgn ?? undefined,
   );
-  const { metrics: ceMetrics, isLoading: ceLoading } = useAnimalCE(
-    rgn ?? undefined,
-  );
-  const { events: reproductionEvents, isLoading: reproductionLoading } =
+  const { data: ceMetrics, loading: ceLoading } = useAnimalCE(rgn ?? undefined);
+  const { data: reproductionEvents, loading: reproductionLoading } =
     useReproductionEvents(rgn);
 
   const [activeTab, setActiveTab] = useState("dados");

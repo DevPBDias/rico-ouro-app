@@ -23,11 +23,21 @@ import { formatDate } from "@/utils/formatDates";
 
 const VaccinesPage = () => {
   const router = useRouter();
-  const { animals } = useAnimals();
-  const { createVaccine } = useCreateVaccine();
-  const { deleteVaccine } = useDeleteVaccine();
-  const { createAnimalVaccine } = useCreateAnimalVaccine();
-  const { vaccines, isLoading, error: vaccinesError } = useVaccines();
+  const { data: animals = [] } = useAnimals();
+  const {
+    actions: { createVaccine },
+  } = useCreateVaccine();
+  const {
+    actions: { deleteVaccine },
+  } = useDeleteVaccine();
+  const {
+    actions: { createAnimalVaccine },
+  } = useCreateAnimalVaccine();
+  const {
+    data: vaccines = [],
+    loading: isLoading,
+    error: vaccinesError,
+  } = useVaccines();
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -40,7 +50,7 @@ const VaccinesPage = () => {
   });
 
   // Buscar vacinas já registradas para o animal selecionado
-  const { animalVaccines, isLoading: loadingAnimalVaccines } =
+  const { data: animalVaccines = [], loading: loadingAnimalVaccines } =
     useAnimalVaccines(formData.rgn || undefined);
 
   // Mapear vacinas do animal com nomes

@@ -24,7 +24,7 @@ export function SemenDoseSelector({
   placeholder = "Selecione um touro",
   label,
 }: SemenDoseSelectorProps) {
-  const { doses, isLoading } = useSemenDoses();
+  const { data: doses = [], loading: isLoading } = useSemenDoses();
 
   const handleValueChange = (bullName: string) => {
     const selectedDose = doses.find((d) => d.animal_name === bullName);

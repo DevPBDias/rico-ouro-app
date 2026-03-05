@@ -21,10 +21,16 @@ import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { SemenDose } from "@/types/semen_dose.type";
 
 export default function DosesSemenPage() {
-  const { doses, isLoading } = useSemenDoses();
-  const { createDose } = useCreateDose();
-  const { updateDose, updateQuantity } = useUpdateDose();
-  const { deleteDose } = useDeleteDose();
+  const { data: doses = [], loading: isLoading } = useSemenDoses();
+  const {
+    actions: { createDose },
+  } = useCreateDose();
+  const {
+    actions: { updateDose },
+  } = useUpdateDose();
+  const {
+    actions: { deleteDose },
+  } = useDeleteDose();
 
   const localState = useDoseLocalState(doses);
 

@@ -216,10 +216,13 @@ export function useAuth() {
   }, [getClient]);
 
   return {
-    user,
+    data: user,
     loading,
-    signIn,
-    signOut,
+    error: null,
+    actions: {
+      signIn,
+      signOut,
+    },
     /** True if using cached auth (offline mode) */
     isOfflineAuth,
   };

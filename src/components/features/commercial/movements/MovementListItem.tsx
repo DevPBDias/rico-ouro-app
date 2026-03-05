@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
 import { useDeathById } from "@/hooks/db/deaths/useDeathById";
-import { useSaleById } from "@/hooks/db/sales/useSales";
+import { useSaleById } from "@/hooks/db/sales/useSaleById";
 import { useExchangeById } from "@/hooks/db/exchanges/useExchangeById";
 
 interface MovementListItemProps {
@@ -45,7 +45,7 @@ const typeConfig = {
 };
 
 const ClientName = ({ clientId }: { clientId: string }) => {
-  const { client, isLoading } = useClientById(clientId);
+  const { data: client, loading: isLoading } = useClientById(clientId);
 
   if (isLoading) return <span className="animate-pulse">...</span>;
   return <span>{client?.name || clientId}</span>;
@@ -76,7 +76,7 @@ const InfoRow = ({
 );
 
 const MorteDetails = ({ details_id }: { details_id: string }) => {
-  const { death, isLoading } = useDeathById(details_id);
+  const { data: death, loading: isLoading } = useDeathById(details_id);
 
   if (isLoading)
     return (
@@ -88,7 +88,7 @@ const MorteDetails = ({ details_id }: { details_id: string }) => {
 };
 
 const VendaDetails = ({ details_id }: { details_id: string }) => {
-  const { sale: fetchedSale, isLoading } = useSaleById(details_id);
+  const { data: fetchedSale, loading: isLoading } = useSaleById(details_id);
 
   if (isLoading) {
     return (
@@ -149,7 +149,8 @@ const VendaDetails = ({ details_id }: { details_id: string }) => {
 };
 
 const TrocaDetails = ({ details_id }: { details_id: string }) => {
-  const { exchange: fetchedExchange, isLoading } = useExchangeById(details_id);
+  const { data: fetchedExchange, loading: isLoading } =
+    useExchangeById(details_id);
 
   if (isLoading) {
     return (

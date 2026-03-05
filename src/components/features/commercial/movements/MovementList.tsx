@@ -14,7 +14,11 @@ interface MovementListProps {
 }
 
 export function MovementList({ onEdit }: MovementListProps) {
-  const { movements, loading, deleteMovement } = useMovements();
+  const {
+    data: movements = [],
+    loading,
+    actions: { deleteMovement },
+  } = useMovements();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);

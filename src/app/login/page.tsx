@@ -11,7 +11,11 @@ import logoImg from "@/assets/icons/logo-hor-indiouro.png";
 import { hasCachedAuth } from "@/lib/auth/offlineAuthCache";
 
 export default function LoginPage() {
-  const { signIn, user, loading } = useAuth();
+  const {
+    actions: { signIn },
+    data: user,
+    loading,
+  } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,8 +70,8 @@ export default function LoginPage() {
         typeof error === "string"
           ? error
           : error instanceof Error
-          ? error.message
-          : "Erro ao autenticar";
+            ? error.message
+            : "Erro ao autenticar";
       setErr(message);
     } finally {
       setLoadingLocal(false);
@@ -103,7 +107,7 @@ export default function LoginPage() {
           alt="cow login page"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/60" />
       </div>
       <form
         onSubmit={handleSubmit}

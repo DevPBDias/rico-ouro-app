@@ -4,18 +4,24 @@ import { useLocalMutation } from "@/hooks/core";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 
 export function useUpdateAnimalWeight() {
-  const { update, isLoading, error } = useLocalMutation<AnimalMetric>("animal_metrics_weight");
+  const { loading, error, actions } = useLocalMutation<AnimalMetric>(
+    "animal_metrics_weight",
+  );
 
-  const updateWeight = async (
+  const updateAnimalWeight = async (
     id: string,
-    data: Partial<AnimalMetric>
+    data: Partial<AnimalMetric>,
   ): Promise<void> => {
-    await update(id, data);
+    await actions.update(id, data);
   };
 
   return {
-    updateWeight,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      updateAnimalWeight,
+    },
   };
 }

@@ -4,15 +4,19 @@ import { useLocalMutation } from "@/hooks/core";
 import { SemenDose } from "@/types/semen_dose.type";
 
 export function useDeleteDose() {
-  const { remove, isLoading, error } = useLocalMutation<SemenDose>("semen_doses");
+  const { loading, error, actions } =
+    useLocalMutation<SemenDose>("semen_doses");
 
   const deleteDose = async (id: string): Promise<void> => {
-    await remove(id);
+    await actions.remove(id);
   };
 
   return {
-    deleteDose,
-    isLoading,
+    loading,
     error,
+    actions: {
+      ...actions,
+      deleteDose,
+    },
   };
 }

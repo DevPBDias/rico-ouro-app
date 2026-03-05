@@ -16,7 +16,9 @@ export default function CadastroAnimalPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdRgn, setCreatedRgn] = useState("");
 
-  const { createAnimal } = useCreateAnimal();
+  const {
+    actions: { createAnimal },
+  } = useCreateAnimal();
 
   const handleFormSubmit = async (data: Partial<Animal>) => {
     setIsSubmitting(true);

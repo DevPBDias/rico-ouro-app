@@ -1,95 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRxDB } from "@/providers/RxDBProvider";
+import { useMemo } from "react";
+import { useLocalQuery, useLocalMutation } from "@/hooks/core";
 import { Farm } from "@/types/farm.type";
-import { v4 as uuidv4 } from "uuid";
 
 export function useFarms() {
-  const { db, isLoading: dbLoading } = useRxDB();
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const query = useMemo(
+    () => ({
+      selector: {
+        _deleted: { $eq: false },
+      },
+      sort: [{ farm_name: "asc" } as any],
+    }),
+    [],
+  );
 
-  useEffect(() => {
-    if (!db) {
-      setIsLoading(dbLoading);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const subscription = db.farms
-      .find({
-        selector: {
-          _deleted: { $eq: false },
-        },
-        sort: [{ farm_name: "asc" }],
-      })
-      .$.subscribe({
-        next: (docs) => {
-          const data = docs.map((doc) => doc.toJSON() as Farm);
-          setFarms(data);
-          setIsLoading(false);
-        },
-        error: (err) => {
-          setError(err);
-          setIsLoading(false);
-        },
-      });
-
-    return () => subscription.unsubscribe();
-  }, [db, dbLoading]);
+  const {
+    data,
+    loading,
+    error,
+    actions: queryActions,
+  } = useLocalQuery<Farm>("farms", query);
+  const { actions: mutationActions, loading: mutationLoading } =
+    useLocalMutation<Farm>("farms");
 
   const createFarm = async (farmName: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const newFarm: Farm = {
-      id: uuidv4(),
+    return await mutationActions.create({
       farm_name: farmName,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-      _deleted: false,
-    };
-
-    await db.farms.insert(newFarm);
-    return newFarm;
+    } as any);
   };
 
   const updateFarm = async (id: string, farmName: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const doc = await db.farms.findOne(id).exec();
-    if (!doc) throw new Error("Farm not found");
-
-    await doc.update({
-      $set: {
-        farm_name: farmName,
-        updated_at: Date.now(),
-      },
-    });
+    return await mutationActions.update(id, {
+      farm_name: farmName,
+    } as any);
   };
 
   const deleteFarm = async (id: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const doc = await db.farms.findOne(id).exec();
-    if (!doc) throw new Error("Farm not found");
-
-    await doc.update({
-      $set: {
-        _deleted: true,
-        updated_at: Date.now(),
-      },
-    });
+    return await mutationActions.remove(id);
   };
 
   return {
-    farms,
-    isLoading,
+    data,
+    loading: loading || mutationLoading,
     error,
-    createFarm,
-    updateFarm,
-    deleteFarm,
+    actions: {
+      ...queryActions,
+      ...mutationActions,
+      createFarm,
+      updateFarm,
+      deleteFarm,
+    },
   };
 }

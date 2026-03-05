@@ -4,7 +4,7 @@ import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { useAnimalsByAgeAndSex } from "@/hooks/utils/useAnimalsByAgeAndSex";
 
 export function StatsFooter() {
-  const { animals } = useAnimals();
+  const { data: animals = [] } = useAnimals();
   const activeAnimals = animals.filter((a) => a.animal_state === "ATIVO");
   const { total, male, female } = useAnimalsByAgeAndSex(activeAnimals);
 

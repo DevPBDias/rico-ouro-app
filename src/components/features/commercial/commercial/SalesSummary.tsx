@@ -20,8 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
 
 export function SalesSummary() {
-  const { allSales, isLoading: isSalesLoading, availableYears } = useSales();
-  const { animals, isLoading: isAnimalsLoading } = useAnimals();
+  const { allSales, loading: isSalesLoading, availableYears } = useSales();
+  const { data: animals = [], loading: isAnimalsLoading } = useAnimals();
   const isLoading = isSalesLoading || isAnimalsLoading;
 
   const currentYear = new Date().getFullYear();

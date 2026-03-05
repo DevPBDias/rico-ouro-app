@@ -4,15 +4,21 @@ import { useLocalMutation } from "@/hooks/core";
 import { AnimalMetric } from "@/types/animal_metrics.type";
 
 export function useDeleteAnimalWeight() {
-  const { remove, isLoading, error } = useLocalMutation<AnimalMetric>("animal_metrics_weight");
+  const { loading, error, actions } = useLocalMutation<AnimalMetric>(
+    "animal_metrics_weight",
+  );
 
-  const deleteWeight = async (id: string): Promise<void> => {
-    await remove(id);
+  const deleteAnimalWeight = async (id: string): Promise<void> => {
+    await actions.remove(id);
   };
 
   return {
-    deleteWeight,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      deleteAnimalWeight,
+    },
   };
 }

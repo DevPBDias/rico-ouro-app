@@ -85,18 +85,20 @@ const statusConfig: Record<
 
 export function SalesList() {
   const {
-    sales,
-    isLoading,
-    searchSales,
-    setYearFilter,
-    setMonthFilter,
-    setClientFilter,
-    setPaymentMethodFilter,
+    data: sales = [],
+    loading: isLoading,
     availableYears,
+    actions: {
+      searchSales,
+      setYearFilter,
+      setMonthFilter,
+      setClientFilter,
+      setPaymentMethodFilter,
+    },
   } = useSales();
 
-  const { clients } = useClients();
-  const { animals } = useAnimals();
+  const { data: clients = [] } = useClients();
+  const { data: animals = [] } = useAnimals();
 
   const clientsMap = useMemo(() => {
     const map: Record<string, string> = {};

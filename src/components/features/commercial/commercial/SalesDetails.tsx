@@ -44,7 +44,7 @@ const MONTHS_SHORT = [
 const COLORS = ["#3B82F6", "#FFCC04", "#93C5FD", "#BFDBFE"];
 
 export function SalesDetails() {
-  const { allSales, isLoading, availableYears } = useSales();
+  const { allSales, loading: isLoading, availableYears } = useSales();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const [selectedYear, setSelectedYear] = useState(currentYear);

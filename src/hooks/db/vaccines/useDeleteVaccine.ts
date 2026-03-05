@@ -4,15 +4,19 @@ import { useLocalMutation } from "@/hooks/core";
 import { Vaccine } from "@/types/vaccine.type";
 
 export function useDeleteVaccine() {
-  const { remove, isLoading, error } = useLocalMutation<Vaccine>("vaccines");
+  const { loading, error, actions } = useLocalMutation<Vaccine>("vaccines");
 
   const deleteVaccine = async (id: string): Promise<void> => {
-    await remove(id);
+    await actions.remove(id);
   };
 
   return {
-    deleteVaccine,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      deleteVaccine,
+    },
   };
 }

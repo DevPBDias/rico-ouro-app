@@ -4,8 +4,7 @@ import { useLocalMutation } from "@/hooks/core";
 import { Animal } from "@/types/animal.type";
 
 export function useCreateAnimal() {
-  const { create, upsert, isLoading, error } =
-    useLocalMutation<Animal>("animals");
+  const { loading, error, actions } = useLocalMutation<Animal>("animals");
 
   const createAnimal = async (data: Partial<Animal>): Promise<Animal> => {
     const animalData: Animal = {
@@ -14,7 +13,7 @@ export function useCreateAnimal() {
     } as Animal;
 
     // Returns the created animal document
-    return await create(animalData);
+    return await actions.create(animalData);
   };
 
   const saveAnimal = async (data: Partial<Animal>): Promise<Animal> => {
@@ -23,13 +22,17 @@ export function useCreateAnimal() {
     } as Animal;
 
     // Returns the upserted animal document
-    return await upsert(animalData);
+    return await actions.upsert(animalData);
   };
 
   return {
-    createAnimal,
-    saveAnimal,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      createAnimal,
+      saveAnimal,
+    },
   };
 }

@@ -17,7 +17,9 @@ export const ManageClassification = ({
   selectedAnimal,
   onSuccess,
 }: ManageClassificationProps) => {
-  const { updateAnimal } = useUpdateAnimal();
+  const {
+    actions: { updateAnimal },
+  } = useUpdateAnimal();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);

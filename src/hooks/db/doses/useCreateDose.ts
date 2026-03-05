@@ -5,7 +5,8 @@ import { SemenDose } from "@/types/semen_dose.type";
 import { v4 as uuidv4 } from "uuid";
 
 export function useCreateDose() {
-  const { create, isLoading, error } = useLocalMutation<SemenDose>("semen_doses");
+  const { loading, error, actions } =
+    useLocalMutation<SemenDose>("semen_doses");
 
   const createDose = async (
     data: Omit<SemenDose, "id" | "updated_at" | "_deleted" | "created_at">,
@@ -15,12 +16,15 @@ export function useCreateDose() {
       ...data,
     };
 
-    return await create(newDose);
+    return await actions.create(newDose);
   };
 
   return {
-    createDose,
-    isLoading,
+    loading,
     error,
+    actions: {
+      ...actions,
+      createDose,
+    },
   };
 }

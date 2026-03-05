@@ -4,6 +4,7 @@ import { useLocalQuery, useLocalMutation } from "@/hooks/core";
 import { Sale } from "@/types/sale.type";
 import { useMemo, useState } from "react";
 import type { MangoQuery } from "rxdb";
+import { useLocalDocument } from "@/hooks/core/useLocalDocument";
 
 /**
  * Hook reativo para gerenciar a lista de vendas.
@@ -45,14 +46,10 @@ export function useSales() {
 
   const {
     data: allSales,
-    isLoading: isQueryLoading,
+    loading: queryLoading,
     error: queryError,
-    refetch,
+    actions: { refetch },
   } = useLocalQuery<Sale>("sales", query);
-
-  if (allSales && allSales.length > 0) {
-    console.log(`📊 [useSales] Loaded ${allSales.length} sales from local DB`);
-  }
 
   // Filter by year and month after fetching (RxDB date handling)
   const sales = useMemo(() => {
@@ -67,10 +64,8 @@ export function useSales() {
   }, [allSales, yearFilter, monthFilter]);
 
   const {
-    create,
-    update,
-    remove,
-    isLoading: isMutationLoading,
+    actions: mutationActions,
+    loading: mutationLoading,
     error: mutationError,
   } = useLocalMutation<Sale>("sales");
 
@@ -84,44 +79,22 @@ export function useSales() {
   }, [allSales]);
 
   return {
-    sales: sales || [],
+    data: sales || [],
     allSales: allSales || [],
-    isLoading: isQueryLoading || isMutationLoading,
+    loading: queryLoading || mutationLoading,
     error: queryError || mutationError,
-    createSale: create,
-    updateSale: update,
-    deleteSale: remove,
-    searchSales: setSearchQuery,
-    setYearFilter,
-    setMonthFilter,
-    setClientFilter,
-    setPaymentMethodFilter,
     availableYears,
-    refetch,
-  };
-}
-
-/**
- * Hook reativo para buscar uma venda específica pelo ID.
- */
-export function useSaleById(id: string | null | undefined) {
-  const query = useMemo<MangoQuery<Sale> | null>(
-    () => {
-      if (!id) return null;
-      return {
-        selector: {
-          id: { $eq: id },
-        },
-      };
+    actions: {
+      ...mutationActions,
+      createSale: mutationActions.create,
+      updateSale: mutationActions.update,
+      deleteSale: mutationActions.remove,
+      searchSales: setSearchQuery,
+      setYearFilter,
+      setMonthFilter,
+      setClientFilter,
+      setPaymentMethodFilter,
+      refetch,
     },
-    [id],
-  );
-
-  const { data, isLoading, error } = useLocalQuery<Sale>("sales", query);
-
-  return {
-    sale: data?.[0],
-    isLoading,
-    error,
   };
 }

@@ -2,26 +2,29 @@
 
 import { useLocalMutation } from "@/hooks/core";
 import { AnimalMetric } from "@/types/animal_metrics.type";
-
 import { v4 as uuidv4 } from "uuid";
 
 export function useCreateAnimalCE() {
-  const { create, isLoading, error } =
+  const { loading, error, actions } =
     useLocalMutation<AnimalMetric>("animal_metrics_ce");
 
-  const createCE = async (
-    data: Partial<AnimalMetric>
+  const createAnimalCE = async (
+    data: Omit<AnimalMetric, "id" | "updated_at" | "_deleted" | "created_at">,
   ): Promise<AnimalMetric> => {
-    const ceData = {
+    const newCE: Partial<AnimalMetric> = {
+      id: uuidv4(),
       ...data,
-      id: data.id || uuidv4(),
     };
-    return await create(ceData);
+
+    return await actions.create(newCE);
   };
 
   return {
-    createCE,
-    isLoading,
+    loading,
     error,
+    actions: {
+      ...actions,
+      createAnimalCE,
+    },
   };
 }

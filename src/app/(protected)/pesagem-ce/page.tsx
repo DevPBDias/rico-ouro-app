@@ -22,7 +22,7 @@ import { useUpdateAnimalCE } from "@/hooks/db/animal_ce/useUpdateAnimalCE";
 import { useDeleteAnimalCE } from "@/hooks/db/animal_ce/useDeleteAnimalCE";
 
 const PesagemPage = () => {
-  const { animals: dados } = useAnimals();
+  const { data: dados = [] } = useAnimals();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ rgn: "" });
   const [type, setType] = useState<string>("pesagem");
@@ -39,19 +39,31 @@ const PesagemPage = () => {
     );
   }, [formData.rgn, dados]);
 
-  const { weights: pesosMedidos, isLoading: loadingWeights } = useAnimalWeights(
+  const { data: pesosMedidos = [], loading: loadingWeights } = useAnimalWeights(
     selectedAnimal?.rgn,
   );
-  const { createWeight } = useCreateAnimalWeight();
-  const { updateWeight } = useUpdateAnimalWeight();
-  const { deleteWeight } = useDeleteAnimalWeight();
+  const {
+    actions: { createAnimalWeight: createWeight },
+  } = useCreateAnimalWeight();
+  const {
+    actions: { updateAnimalWeight: updateWeight },
+  } = useUpdateAnimalWeight();
+  const {
+    actions: { deleteAnimalWeight: deleteWeight },
+  } = useDeleteAnimalWeight();
 
-  const { metrics: circunferenciaEscrotal, isLoading: loadingCE } = useAnimalCE(
+  const { data: circunferenciaEscrotal = [], loading: loadingCE } = useAnimalCE(
     selectedAnimal?.rgn,
   );
-  const { createCE } = useCreateAnimalCE();
-  const { updateCE } = useUpdateAnimalCE();
-  const { deleteCE } = useDeleteAnimalCE();
+  const {
+    actions: { createAnimalCE: createCE },
+  } = useCreateAnimalCE();
+  const {
+    actions: { updateAnimalCE: updateCE },
+  } = useUpdateAnimalCE();
+  const {
+    actions: { deleteAnimalCE: deleteCE },
+  } = useDeleteAnimalCE();
 
   const rgnOptions = useMemo(() => {
     return dados

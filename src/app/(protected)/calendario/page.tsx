@@ -23,7 +23,7 @@ const CYCLE_COLORS = [
 ];
 
 export default function CalendarPage() {
-  const { events, isLoading } = useReproductionEvents();
+  const { data: events = [], loading: isLoading } = useReproductionEvents();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [dayEvents, setDayEvents] = useState<CalendarEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);

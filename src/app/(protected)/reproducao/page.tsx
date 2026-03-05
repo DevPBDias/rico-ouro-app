@@ -39,7 +39,7 @@ export default function ReproducaoPage() {
   );
 
   // Hook de Eventos (carrega quando matriz selecionada)
-  const { events: reproductionEvents, isLoading: eventsLoading } =
+  const { data: reproductionEvents = [], loading: eventsLoading } =
     useReproductionEvents(selectedMatriz?.rgn);
 
   // Lógica de Busca

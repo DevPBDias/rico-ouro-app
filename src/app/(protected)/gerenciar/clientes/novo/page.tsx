@@ -9,7 +9,10 @@ import { SuccessModal } from "@/components/modals/SuccessModal";
 import { v4 as uuidv4 } from "uuid";
 
 export default function NovoClientePage() {
-  const { createClient, isLoading } = useClients();
+  const {
+    actions: { createClient },
+    loading: isLoading,
+  } = useClients();
   const router = useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
 

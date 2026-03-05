@@ -14,7 +14,11 @@ interface ClientListProps {
 }
 
 export function ClientList({ onSelectClient }: ClientListProps) {
-  const { clients, isLoading, searchClients } = useClients();
+  const {
+    data: clients = [],
+    loading: isLoading,
+    actions: { searchClients },
+  } = useClients();
   const router = useRouter();
 
   return (

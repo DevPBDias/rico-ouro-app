@@ -27,7 +27,10 @@ export function DeleteReproductionModal({
   event,
   onSuccess,
 }: DeleteReproductionModalProps) {
-  const { deleteEvent, isLoading } = useDeleteReproductionEvent();
+  const {
+    actions: { deleteReproductionEvent: deleteEvent },
+    loading: isLoading,
+  } = useDeleteReproductionEvent();
 
   const handleDelete = async () => {
     try {

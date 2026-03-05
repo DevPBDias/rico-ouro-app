@@ -1,55 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRxDB } from "@/providers/RxDBProvider";
+import { useMemo } from "react";
+import { useLocalQuery } from "@/hooks/core";
 import { AnimalVaccine } from "@/types/vaccine.type";
 
 export function useAnimalVaccines(rgn?: string) {
-  const { db, isLoading: dbLoading } = useRxDB();
-  const [animalVaccines, setAnimalVaccines] = useState<AnimalVaccine[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!db) {
-      setIsLoading(dbLoading);
-      return;
-    }
-
-    if (!rgn) {
-      setAnimalVaccines([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const query = db.animal_vaccines.find({
+  const query = useMemo(() => {
+    if (!rgn) return null;
+    return {
       selector: {
         _deleted: { $eq: false },
-        rgn: { $eq: rgn || "__NON_EXISTENT_RGN__" },
+        rgn: { $eq: rgn },
       },
-      sort: [{ date: "desc" }],
-    });
+      sort: [{ date: "desc" } as any],
+    };
+  }, [rgn]);
 
-    const subscription = query.$.subscribe({
-      next: (docs) => {
-        const data = docs.map((doc) => doc.toJSON() as AnimalVaccine);
-        setAnimalVaccines(data);
-        setIsLoading(false);
-      },
-      error: (err) => {
-        setError(err);
-        setIsLoading(false);
-      },
-    });
-
-    return () => subscription.unsubscribe();
-  }, [db, dbLoading, rgn]);
+  const { data, loading, error, actions } = useLocalQuery<AnimalVaccine>(
+    "animal_vaccines",
+    query,
+  );
 
   return {
-    animalVaccines,
-    isLoading,
+    data,
+    loading,
     error,
+    actions,
   };
 }

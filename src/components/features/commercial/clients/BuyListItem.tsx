@@ -23,7 +23,7 @@ interface BuyListItemProps {
 
 export function BuyListItem({ sale }: BuyListItemProps) {
   const isPaid = sale.financial_status?.toLowerCase() === "pago";
-  const { animal } = useAnimalById(sale.animal_rgn);
+  const { data: animal } = useAnimalById(sale.animal_rgn);
 
   const formatCurrency = (value?: number) => {
     if (value === undefined || value === null) return "—";

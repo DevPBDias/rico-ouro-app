@@ -6,7 +6,9 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { LucideArrowLeftFromLine, LucideClockFading } from "lucide-react";
 
 export default function LogoutButton() {
-  const { signOut } = useAuth();
+  const {
+    actions: { signOut },
+  } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

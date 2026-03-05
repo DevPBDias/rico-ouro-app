@@ -1,23 +1,15 @@
 "use client";
 
-import { useLocalQuery } from "@/hooks/core";
+import { useLocalDocument } from "@/hooks/core/useLocalDocument";
 import { Sale } from "@/types/sale.type";
-import { useMemo } from "react";
-import type { MangoQuery } from "rxdb";
 
-export function useSaleById(id: string) {
-  const query = useMemo<MangoQuery<Sale>>(() => ({
-    selector: {
-      id: { $eq: id },
-      _deleted: { $eq: false },
-    },
-  }), [id]);
-
-  const { data, isLoading, error } = useLocalQuery<Sale>("sales", query);
+export function useSaleById(id: string | null | undefined) {
+  const { data, loading, error, actions } = useLocalDocument<Sale>("sales", id);
 
   return {
-    sale: data?.[0] || null,
-    isLoading,
+    data,
+    loading,
     error,
+    actions,
   };
 }

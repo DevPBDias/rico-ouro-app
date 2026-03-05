@@ -25,9 +25,14 @@ export function EditReproductionModal({
   event,
   onSuccess,
 }: EditReproductionModalProps) {
-  const { updateEvent, isLoading } = useUpdateReproductionEvent();
-  const { doses } = useSemenDoses();
-  const { updateQuantity } = useUpdateDose();
+  const {
+    actions: { updateReproductionEvent: updateEvent },
+    loading: isLoading,
+  } = useUpdateReproductionEvent();
+  const { data: doses = [] } = useSemenDoses();
+  const {
+    actions: { updateQuantity },
+  } = useUpdateDose();
 
   const handleSubmit = async (data: Partial<ReproductionEvent>) => {
     try {

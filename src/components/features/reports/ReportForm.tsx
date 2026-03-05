@@ -47,10 +47,10 @@ export function ReportForm() {
   } = useReports();
 
   // Hooks must be called unconditionally (before any early returns)
-  const { farms } = useFarms();
-  const { statuses } = useStatuses();
-  const { events: allEvents } = useReproductionEvents();
-  const { animals } = useAnimals();
+  const { data: farms = [] } = useFarms();
+  const { data: statuses = [] } = useStatuses();
+  const { data: allEvents = [] } = useReproductionEvents();
+  const { data: animals = [] } = useAnimals();
 
   const [farmModalOpen, setFarmModalOpen] = React.useState(false);
   const [sexModalOpen, setSexModalOpen] = React.useState(false);

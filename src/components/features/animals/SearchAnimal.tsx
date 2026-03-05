@@ -12,7 +12,11 @@ import { EditAnimalModal } from "./modals/edit-animal/EditAnimalModal";
 import { Button } from "@/components/ui/button";
 
 function SearchAnimal() {
-  const { animals, isLoading } = useAnimals();
+  const {
+    data: animals,
+    loading: isLoading,
+    actions: { refetch },
+  } = useAnimals();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRgn, setSelectedRgn] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -22,12 +26,12 @@ function SearchAnimal() {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return [];
 
-    const exactMatch = animals.find(
+    const exactMatch = (animals || []).find(
       (animal) => animal.rgn?.toLowerCase() === query,
     );
     if (exactMatch) return [exactMatch];
 
-    return animals.filter((animal) => {
+    return (animals || []).filter((animal) => {
       const rgn = animal.rgn?.toString().toLowerCase() || "";
       const name = animal.name?.toLowerCase() || "";
       const serieRgd = animal.serie_rgd?.toLowerCase() || "";
@@ -40,7 +44,7 @@ function SearchAnimal() {
 
   const selectedAnimal = useMemo(() => {
     if (!selectedRgn) return null;
-    return animals.find((a) => a.rgn === selectedRgn) || null;
+    return (animals || []).find((a) => a.rgn === selectedRgn) || null;
   }, [animals, selectedRgn]);
 
   const hasSearched = searchQuery.trim().length > 0;

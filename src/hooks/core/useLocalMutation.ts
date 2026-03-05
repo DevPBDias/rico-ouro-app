@@ -8,14 +8,14 @@ export function useLocalMutation<
   T extends { updated_at: number; _deleted: boolean; created_at: number }
 >(collectionName: string) {
   const db = useRxDatabase();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const create = useCallback(
     async (data: Partial<T>): Promise<T> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -33,7 +33,7 @@ export function useLocalMutation<
 
         const doc = await collection.insert(documentData as unknown as T);
 
-        setIsLoading(false);
+        setLoading(false);
         return doc.toJSON() as T;
       } catch (err) {
         console.error(
@@ -43,7 +43,7 @@ export function useLocalMutation<
         const errorObj =
           err instanceof Error ? err : new Error("Failed to create document");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -54,7 +54,7 @@ export function useLocalMutation<
     async (data: Partial<T>): Promise<T> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -72,13 +72,13 @@ export function useLocalMutation<
 
         const doc = await collection.upsert(documentData as unknown as T);
 
-        setIsLoading(false);
+        setLoading(false);
         return doc.toJSON() as T;
       } catch (err) {
         const errorObj =
           err instanceof Error ? err : new Error("Failed to upsert document");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -89,7 +89,7 @@ export function useLocalMutation<
     async (id: string, data: Partial<T>): Promise<void> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -110,12 +110,12 @@ export function useLocalMutation<
 
         await doc.patch(updateData);
 
-        setIsLoading(false);
+        setLoading(false);
       } catch (err) {
         const errorObj =
           err instanceof Error ? err : new Error("Failed to update document");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -130,7 +130,7 @@ export function useLocalMutation<
     async (id: string): Promise<void> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -149,12 +149,12 @@ export function useLocalMutation<
           updated_at: Date.now(),
         } as any);
 
-        setIsLoading(false);
+        setLoading(false);
       } catch (err) {
         const errorObj =
           err instanceof Error ? err : new Error("Failed to remove document");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -169,7 +169,7 @@ export function useLocalMutation<
     async (documents: Partial<T>[]): Promise<void> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -187,14 +187,14 @@ export function useLocalMutation<
 
         await collection.bulkInsert(documentsWithMeta as unknown as T[]);
 
-        setIsLoading(false);
+        setLoading(false);
       } catch (err) {
         const errorObj =
           err instanceof Error
             ? err
             : new Error("Failed to bulk insert documents");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -209,7 +209,7 @@ export function useLocalMutation<
     async (ids: string[]): Promise<void> => {
       if (!db) throw new Error("Database not initialized");
 
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       try {
@@ -235,14 +235,14 @@ export function useLocalMutation<
           ),
         );
 
-        setIsLoading(false);
+        setLoading(false);
       } catch (err) {
         const errorObj =
           err instanceof Error
             ? err
             : new Error("Failed to bulk remove documents");
         setError(errorObj);
-        setIsLoading(false);
+        setLoading(false);
         throw errorObj;
       }
     },
@@ -254,18 +254,20 @@ export function useLocalMutation<
    */
   const reset = useCallback(() => {
     setError(null);
-    setIsLoading(false);
+    setLoading(false);
   }, []);
 
   return {
-    create,
-    upsert,
-    update,
-    remove,
-    bulkInsert,
-    bulkRemove,
-    isLoading,
+    loading,
     error,
-    reset,
+    actions: {
+      create,
+      upsert,
+      update,
+      remove,
+      bulkInsert,
+      bulkRemove,
+      reset,
+    },
   };
 }

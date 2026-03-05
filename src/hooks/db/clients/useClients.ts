@@ -16,7 +16,6 @@ export function useClients() {
     const baseSelector: any = { _deleted: { $eq: false } };
 
     if (searchQuery) {
-      // Usamos string para o $regex para garantir que o JSON.stringify no useLocalQuery funcione corretamente
       baseSelector.$or = [
         { name: { $regex: searchQuery, $options: "i" } },
         { cpf_cnpj: { $regex: searchQuery, $options: "i" } },
@@ -30,28 +29,29 @@ export function useClients() {
   }, [searchQuery]);
 
   const {
-    data: clients,
-    isLoading: isQueryLoading,
+    data,
+    loading: queryLoading,
     error: queryError,
-    refetch,
+    actions: { refetch },
   } = useLocalQuery<Client>("clients", query);
 
   const {
-    create,
-    update,
-    remove,
-    isLoading: isMutationLoading,
+    actions: mutationActions,
+    loading: mutationLoading,
     error: mutationError,
   } = useLocalMutation<Client>("clients");
 
   return {
-    clients: clients || [],
-    isLoading: isQueryLoading || isMutationLoading,
+    data: data || [],
+    loading: queryLoading || mutationLoading,
     error: queryError || mutationError,
-    createClient: create,
-    updateClient: update,
-    deleteClient: remove,
-    searchClients: setSearchQuery,
-    refetch,
+    actions: {
+      ...mutationActions,
+      createClient: mutationActions.create,
+      updateClient: mutationActions.update,
+      deleteClient: mutationActions.remove,
+      searchClients: setSearchQuery,
+      refetch,
+    },
   };
 }

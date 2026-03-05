@@ -8,7 +8,7 @@ export default function ProtectedClient({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, isOfflineAuth } = useAuth();
+  const { data: user, loading, isOfflineAuth } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

@@ -23,10 +23,16 @@ export const ManageStatus = ({
   selectedAnimal,
   onSuccess,
 }: ManageStatusProps) => {
-  const { updateAnimal } = useUpdateAnimal();
-  const { statuses, isLoading } = useStatuses();
-  const { createStatus } = useCreateStatus();
-  const { deleteStatus } = useDeleteStatus();
+  const {
+    actions: { updateAnimal },
+  } = useUpdateAnimal();
+  const { data: statuses = [], loading: isLoading } = useStatuses();
+  const {
+    actions: { createStatus },
+  } = useCreateStatus();
+  const {
+    actions: { deleteStatus },
+  } = useDeleteStatus();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);

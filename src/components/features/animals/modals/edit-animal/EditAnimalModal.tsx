@@ -22,7 +22,10 @@ export function EditAnimalModal({
   onClose,
   animal,
 }: EditAnimalModalProps) {
-  const { updateAnimal, isLoading } = useUpdateAnimal();
+  const {
+    actions: { updateAnimal },
+    loading: isLoading,
+  } = useUpdateAnimal();
 
   const handleSave = async (data: Partial<Animal>) => {
     try {
@@ -36,8 +39,8 @@ export function EditAnimalModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 flex flex-col h-[85vh] overflow-hidden border-0 rounded-[2rem]">
-        <DialogHeader className="px-8 py-6 border-b border-border flex-shrink-0 bg-white dark:bg-zinc-900 rounded-t-[2rem]">
+      <DialogContent className="max-w-2xl p-0 flex flex-col h-[85vh] overflow-hidden border-0 rounded-4xl">
+        <DialogHeader className="px-8 py-6 border-b border-border shrink-0 bg-white dark:bg-zinc-900 rounded-t-4xl">
           <DialogTitle className="text-[#1162AE] uppercase font-black text-xl flex items-center gap-2">
             Editar Cadastro
           </DialogTitle>

@@ -23,8 +23,8 @@ export default function ExcelExport() {
   const [filterState, setFilterState] = useState<"ATIVO" | "INATIVO" | "Ambos">(
     "ATIVO",
   );
-  const { animals: rawData } = useAnimals();
-  const { farms } = useFarms();
+  const { data: rawData = [] } = useAnimals();
+  const { data: farms = [] } = useFarms();
 
   const filteredData = useMemo(() => {
     if (!rawData) return [];
@@ -32,9 +32,9 @@ export default function ExcelExport() {
     return rawData.filter((a) => a.animal_state === filterState);
   }, [rawData, filterState]);
 
-  const { statuses } = useStatuses();
+  const { data: statuses = [] } = useStatuses();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { situations } = useSituations();
+  const { data: situations = [] } = useSituations();
   const router = useRouter();
 
   // Create lookup maps for performance

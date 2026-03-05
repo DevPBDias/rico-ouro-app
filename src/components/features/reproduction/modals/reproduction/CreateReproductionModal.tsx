@@ -25,17 +25,21 @@ export function CreateReproductionModal({
   rgn,
   onSuccess,
 }: CreateReproductionModalProps) {
-  const { createEvent, isLoading } = useCreateReproductionEvent();
-  const { doses } = useSemenDoses();
-  const { updateQuantity } = useUpdateDose();
+  const {
+    actions: { createReproductionEvent: createEvent },
+    loading: isLoading,
+  } = useCreateReproductionEvent();
+  const { data: doses = [] } = useSemenDoses();
+  const {
+    actions: { updateQuantity },
+  } = useUpdateDose();
 
   const handleSubmit = async (data: Partial<ReproductionEvent>) => {
     try {
       // 1. Criar o evento
       await createEvent({
-        ...data,
+        ...(data as any),
         rgn,
-        _deleted: false,
       });
 
       // 2. Subtrair doses do estoque (Touro D0 e Resync)
@@ -49,7 +53,7 @@ export function CreateReproductionModal({
         if (doseD0 && doseD0.quantity > 0) {
           const quantityToDebit = bullD0 === bullResync ? 2 : 1;
           console.log(
-            `📉 Criando evento: Subtraindo ${quantityToDebit} dose(s) de ${bullD0} (ID: ${doseD0.id})`
+            `📉 Criando evento: Subtraindo ${quantityToDebit} dose(s) de ${bullD0} (ID: ${doseD0.id})`,
           );
           await updateQuantity(doseD0.id, doseD0.quantity - quantityToDebit);
         }
@@ -60,7 +64,7 @@ export function CreateReproductionModal({
         const doseResync = doses.find((d) => d.animal_name === bullResync);
         if (doseResync && doseResync.quantity > 0) {
           console.log(
-            `📉 Criando evento: Subtraindo 1 dose de ${bullResync} (ID: ${doseResync.id})`
+            `📉 Criando evento: Subtraindo 1 dose de ${bullResync} (ID: ${doseResync.id})`,
           );
           await updateQuantity(doseResync.id, doseResync.quantity - 1);
         }

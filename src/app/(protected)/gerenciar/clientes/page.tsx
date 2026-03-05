@@ -15,13 +15,12 @@ import { Button } from "@/components/ui/button";
 
 export default function ClientesPage() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const { client, isLoading: isClientLoading } = useClientById(
+  const { data: client, loading: isClientLoading } = useClientById(
     selectedClientId || "",
   );
   const {
-    updateClient,
-    deleteClient,
-    isLoading: isMutationLoading,
+    actions: { updateClient, deleteClient },
+    loading: isMutationLoading,
   } = useClients();
 
   const [isEditing, setIsEditing] = useState(false);

@@ -10,7 +10,7 @@ export function useLocalQuery<T>(
 ) {
   const db = useRxDatabase();
   const [data, setData] = useState<T[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const refetch = useCallback(() => {
@@ -33,38 +33,38 @@ export function useLocalQuery<T>(
   useEffect(() => {
     if (!db) {
       setData([]);
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     if (!query) {
       setData([]);
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     const collection = (db as any)[collectionName] as RxCollection<T>;
     if (!collection) {
       setError(new Error(`Collection ${collectionName} not found`));
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     try {
-      setIsLoading(true);
+      setLoading(true);
       const rxQuery = collection.find(query);
 
       const subscription = rxQuery.$.subscribe({
         next: (results: RxDocument<T>[]) => {
           setData(results.map((doc) => doc.toJSON() as T));
-          setIsLoading(false);
+          setLoading(false);
           setError(null);
         },
         error: (err: any) => {
           setError(
-            err instanceof Error ? err : new Error("Query subscription error")
+            err instanceof Error ? err : new Error("Query subscription error"),
           );
-          setIsLoading(false);
+          setLoading(false);
         },
       });
 
@@ -73,9 +73,14 @@ export function useLocalQuery<T>(
       };
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Query creation error"));
-      setIsLoading(false);
+      setLoading(false);
     }
   }, [db, collectionName, JSON.stringify(query)]);
 
-  return { data, isLoading, error, refetch };
+  return {
+    data,
+    loading,
+    error,
+    actions: { refetch },
+  };
 }

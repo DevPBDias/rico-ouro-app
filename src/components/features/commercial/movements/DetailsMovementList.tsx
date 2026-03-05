@@ -9,8 +9,11 @@ interface DetailsMovementListProps {
 }
 
 export function DetailsMovementList({ rgn }: DetailsMovementListProps) {
-  const { deleteMovement } = useMovements();
-  const { movements, isLoading } = useMovementsByAnimal(rgn);
+  const {
+    actions: { deleteMovement },
+  } = useMovements();
+  const { data: movements = [], loading: isLoading } =
+    useMovementsByAnimal(rgn);
 
   if (isLoading) {
     return (

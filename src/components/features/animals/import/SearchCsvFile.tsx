@@ -18,7 +18,9 @@ interface DuplicateInfo {
 }
 
 const SearchCsvFile = () => {
-  const { saveAnimal } = useCreateAnimal();
+  const {
+    actions: { saveAnimal },
+  } = useCreateAnimal();
   const db = useRxDatabase();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);

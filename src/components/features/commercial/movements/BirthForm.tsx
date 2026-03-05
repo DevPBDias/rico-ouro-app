@@ -49,10 +49,16 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
 
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
 
-  const { createAnimal } = useCreateAnimal();
-  const { updateAnimal } = useUpdateAnimal();
-  const { createWeight } = useCreateAnimalWeight();
-  const { animals } = useAnimals();
+  const {
+    actions: { createAnimal },
+  } = useCreateAnimal();
+  const {
+    actions: { updateAnimal },
+  } = useUpdateAnimal();
+  const {
+    actions: { createAnimalWeight: createWeight },
+  } = useCreateAnimalWeight();
+  const { data: animals = [] } = useAnimals();
 
   const resetForm = () => {
     setFormData(DEFAULT_FORM_DATA);
@@ -119,7 +125,12 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
 
       // 2. Add weight record
       if (formData.peso) {
-        await createWeight(bornWeightAnimal);
+        await createWeight({
+          rgn: finalRgn,
+          value: Number(formData.peso.replace(",", ".")),
+          born_metric: true,
+          date: formData.data,
+        } as any);
       }
 
       // 3. Update mother if she exists

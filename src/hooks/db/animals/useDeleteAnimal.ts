@@ -4,15 +4,19 @@ import { useLocalMutation } from "@/hooks/core";
 import { Animal } from "@/types/animal.type";
 
 export function useDeleteAnimal() {
-  const { remove, isLoading, error } = useLocalMutation<Animal>("animals");
+  const { loading, error, actions } = useLocalMutation<Animal>("animals");
 
   const deleteAnimal = async (rgn: string): Promise<void> => {
-    await remove(rgn);
+    await actions.remove(rgn);
   };
 
   return {
-    deleteAnimal,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      deleteAnimal,
+    },
   };
 }

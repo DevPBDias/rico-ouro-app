@@ -5,7 +5,7 @@ import { Animal } from "@/types/animal.type";
 import { useRxDatabase } from "@/providers";
 
 export function useUpdateAnimal() {
-  const { update, isLoading, error } = useLocalMutation<Animal>("animals");
+  const { loading, error, actions } = useLocalMutation<Animal>("animals");
   const db = useRxDatabase();
 
   const updateAnimal = async (
@@ -74,12 +74,16 @@ export function useUpdateAnimal() {
       ...data,
     };
 
-    await update(rgn, updateData);
+    await actions.update(rgn, updateData);
   };
 
   return {
-    updateAnimal,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      updateAnimal,
+    },
   };
 }

@@ -1,95 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRxDB } from "@/providers/RxDBProvider";
+import { useMemo } from "react";
+import { useLocalQuery, useLocalMutation } from "@/hooks/core";
 import { Vaccine } from "@/types/vaccine.type";
-import { v4 as uuidv4 } from "uuid";
 
 export function useVaccines() {
-  const { db, isLoading: dbLoading } = useRxDB();
-  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const query = useMemo(
+    () => ({
+      selector: {
+        _deleted: { $eq: false },
+      },
+      sort: [{ vaccine_name: "asc" } as any],
+    }),
+    [],
+  );
 
-  useEffect(() => {
-    if (!db) {
-      setIsLoading(dbLoading);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const subscription = db.vaccines
-      .find({
-        selector: {
-          _deleted: { $eq: false },
-        },
-        sort: [{ vaccine_name: "asc" }],
-      })
-      .$.subscribe({
-        next: (docs) => {
-          const data = docs.map((doc) => doc.toJSON() as Vaccine);
-          setVaccines(data);
-          setIsLoading(false);
-        },
-        error: (err) => {
-          setError(err);
-          setIsLoading(false);
-        },
-      });
-
-    return () => subscription.unsubscribe();
-  }, [db, dbLoading]);
+  const {
+    data,
+    loading,
+    error,
+    actions: queryActions,
+  } = useLocalQuery<Vaccine>("vaccines", query);
+  const { actions: mutationActions, loading: mutationLoading } =
+    useLocalMutation<Vaccine>("vaccines");
 
   const createVaccine = async (vaccineName: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const newVaccine: Vaccine = {
-      id: uuidv4(),
+    return await mutationActions.create({
       vaccine_name: vaccineName,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-      _deleted: false,
-    };
-
-    await db.vaccines.insert(newVaccine);
-    return newVaccine;
+    } as any);
   };
 
   const updateVaccine = async (id: string, vaccineName: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const doc = await db.vaccines.findOne(id).exec();
-    if (!doc) throw new Error("Vaccine not found");
-
-    await doc.update({
-      $set: {
-        vaccine_name: vaccineName,
-        updated_at: Date.now(),
-      },
-    });
+    return await mutationActions.update(id, {
+      vaccine_name: vaccineName,
+    } as any);
   };
 
   const deleteVaccine = async (id: string) => {
-    if (!db) throw new Error("Database not ready");
-
-    const doc = await db.vaccines.findOne(id).exec();
-    if (!doc) throw new Error("Vaccine not found");
-
-    await doc.update({
-      $set: {
-        _deleted: true,
-        updated_at: Date.now(),
-      },
-    });
+    return await mutationActions.remove(id);
   };
 
   return {
-    vaccines,
-    isLoading,
+    data,
+    loading: loading || mutationLoading,
     error,
-    createVaccine,
-    updateVaccine,
-    deleteVaccine,
+    actions: {
+      ...queryActions,
+      ...mutationActions,
+      createVaccine,
+      updateVaccine,
+      deleteVaccine,
+    },
   };
 }

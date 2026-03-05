@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useDeathById } from "@/hooks/db/deaths/useDeathById";
-import { useSaleById } from "@/hooks/db/sales/useSales";
+import { useSaleById } from "@/hooks/db/sales/useSaleById";
 import { useExchangeById } from "@/hooks/db/exchanges/useExchangeById";
 
 interface MovementFormProps {
@@ -27,9 +27,11 @@ export function MovementForm({
   onSuccess,
   initialMovement,
 }: MovementFormProps) {
-  const { createMovement, updateMovement } = useMovements();
-  const { animals } = useAnimals();
-  const { clients } = useClients();
+  const {
+    actions: { createMovement, updateMovement },
+  } = useMovements();
+  const { data: animals = [] } = useAnimals();
+  const { data: clients = [] } = useClients();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -48,7 +50,7 @@ export function MovementForm({
   );
 
   // Animal Validation
-  const animalExists = animals.some(
+  const animalExists = (animals || []).some(
     (a) => a.rgn?.toLowerCase() === animalId.toLowerCase(),
   );
   const showRgnError = animalId.length > 0 && !animalExists;
@@ -70,13 +72,13 @@ export function MovementForm({
   const [substitute_animal_rgn, setSubstituteAnimalRgn] = useState("");
 
   // Relational Data Fetching (if editing and only ID is present)
-  const { death: fetchedDeath } = useDeathById(
+  const { data: fetchedDeath } = useDeathById(
     initialMovement?.type === "morte" ? initialMovement.details_id : null,
   );
-  const { sale: fetchedSale } = useSaleById(
+  const { data: fetchedSale } = useSaleById(
     initialMovement?.type === "venda" ? initialMovement.details_id : null,
   );
-  const { exchange: fetchedExchange } = useExchangeById(
+  const { data: fetchedExchange } = useExchangeById(
     initialMovement?.type === "troca" ? initialMovement.details_id : null,
   );
 

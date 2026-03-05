@@ -24,7 +24,7 @@ import { StandardTabList } from "@/components/ui/StandardTabList";
 import Link from "next/link";
 
 const GerenciarPage = () => {
-  const { animals } = useAnimals();
+  const { data: animals = [] } = useAnimals();
   const [selectedRgn, setSelectedRgn] = useState("");
   const [activeTab, setActiveTab] = useState("fazenda");
 

@@ -5,19 +5,31 @@ import { AnimalSituation } from "@/types/situation.type";
 import { v4 as uuidv4 } from "uuid";
 
 export function useCreateSituation() {
-  const { create, isLoading, error } = useLocalMutation<AnimalSituation>("animal_situations");
+  const { loading, error, actions } = useLocalMutation<AnimalSituation>(
+    "document_situations",
+  );
 
-  const createSituation = async (data: Partial<AnimalSituation>): Promise<AnimalSituation> => {
-    const situationData = {
+  const createSituation = async (
+    data: Omit<
+      AnimalSituation,
+      "id" | "updated_at" | "_deleted" | "created_at"
+    >,
+  ): Promise<AnimalSituation> => {
+    const newSituation: Partial<AnimalSituation> = {
+      id: uuidv4(),
       ...data,
-      id: data.id || uuidv4(),
     };
-    return await create(situationData);
+
+    return await actions.create(newSituation);
   };
 
   return {
-    createSituation,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      createSituation,
+    },
   };
 }

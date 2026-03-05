@@ -21,10 +21,20 @@ export const ManageFarms = ({
   selectedAnimal,
   onSuccess,
 }: ManageFarmsProps) => {
-  const { updateAnimal } = useUpdateAnimal();
-  const { farms, isLoading, error: farmsError } = useFarms();
-  const { createFarm } = useCreateFarm();
-  const { deleteFarm } = useDeleteFarm();
+  const {
+    actions: { updateAnimal },
+  } = useUpdateAnimal();
+  const {
+    data: farms = [],
+    loading: isLoading,
+    error: farmsError,
+  } = useFarms();
+  const {
+    actions: { createFarm },
+  } = useCreateFarm();
+  const {
+    actions: { deleteFarm },
+  } = useDeleteFarm();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);

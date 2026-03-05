@@ -2,26 +2,29 @@
 
 import { useLocalMutation } from "@/hooks/core";
 import { AnimalVaccine } from "@/types/vaccine.type";
-
 import { v4 as uuidv4 } from "uuid";
 
 export function useCreateAnimalVaccine() {
-  const { create, isLoading, error } =
+  const { loading, error, actions } =
     useLocalMutation<AnimalVaccine>("animal_vaccines");
 
   const createAnimalVaccine = async (
-    data: Partial<AnimalVaccine>
+    data: Omit<AnimalVaccine, "id" | "updated_at" | "_deleted" | "created_at">,
   ): Promise<AnimalVaccine> => {
-    const vaccineData = {
+    const newVaccine: Partial<AnimalVaccine> = {
+      id: uuidv4(),
       ...data,
-      id: data.id || uuidv4(),
     };
-    return await create(vaccineData);
+
+    return await actions.create(newVaccine);
   };
 
   return {
-    createAnimalVaccine,
-    isLoading,
+    loading,
     error,
+    actions: {
+      ...actions,
+      createAnimalVaccine,
+    },
   };
 }

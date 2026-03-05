@@ -24,10 +24,16 @@ export const ManageSituation = ({
   selectedAnimal,
   onSuccess,
 }: ManageSituationProps) => {
-  const { updateAnimal } = useUpdateAnimal();
-  const { situations, isLoading } = useSituations();
-  const { createSituation } = useCreateSituation();
-  const { deleteSituation } = useDeleteSituation();
+  const {
+    actions: { updateAnimal },
+  } = useUpdateAnimal();
+  const { data: situations = [], loading: isLoading } = useSituations();
+  const {
+    actions: { createSituation },
+  } = useCreateSituation();
+  const {
+    actions: { deleteSituation },
+  } = useDeleteSituation();
 
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);

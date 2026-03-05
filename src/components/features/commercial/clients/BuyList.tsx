@@ -9,7 +9,11 @@ interface BuyListProps {
 }
 
 export function BuyList({ clientId }: BuyListProps) {
-  const { allSales, isLoading, setClientFilter } = useSales();
+  const {
+    allSales,
+    loading: isLoading,
+    actions: { setClientFilter },
+  } = useSales();
 
   useEffect(() => {
     setClientFilter(clientId);

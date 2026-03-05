@@ -18,15 +18,15 @@ export function useMovementsByAnimal(rgn: string | null) {
 
   const {
     data: movements,
-    isLoading,
+    loading: isLoading,
     error,
-    refetch,
+    actions: { refetch },
   } = useLocalQuery<Movement>("movements", query);
 
   return {
-    movements,
-    isLoading,
+    data: movements || [],
+    loading: isLoading,
     error,
-    refetch,
+    actions: { refetch },
   };
 }

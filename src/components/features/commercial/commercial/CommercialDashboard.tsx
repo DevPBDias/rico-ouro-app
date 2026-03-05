@@ -37,13 +37,12 @@ export function CommercialDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditSuccess, setShowEditSuccess] = useState(false);
 
-  const { client, isLoading: isClientLoading } = useClientById(
+  const { data: client, loading: isClientLoading } = useClientById(
     selectedClientId || "",
   );
   const {
-    updateClient,
-    deleteClient,
-    isLoading: isMutationLoading,
+    actions: { updateClient, deleteClient },
+    loading: isMutationLoading,
   } = useClients();
 
   const handleClientUpdate = async (data: any) => {

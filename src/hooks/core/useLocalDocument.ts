@@ -10,7 +10,7 @@ export function useLocalDocument<T>(
 ) {
   const db = useRxDatabase();
   const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const refetch = useCallback(() => {
@@ -27,38 +27,37 @@ export function useLocalDocument<T>(
       .then((doc: RxDocument<T> | null) => {
         setData(doc ? (doc.toJSON() as T) : null);
       })
-      .catch((err: any) => {
-      });
+      .catch((err: any) => {});
   }, [db, collectionName, id]);
 
   useEffect(() => {
     if (!db || !id) {
       setData(null);
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     const collection = (db as any)[collectionName] as RxCollection<T>;
     if (!collection) {
       setError(new Error(`Collection ${collectionName} not found`));
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
     try {
-      setIsLoading(true);
+      setLoading(true);
 
       const subscription = collection.findOne(id).$.subscribe({
         next: (doc: RxDocument<T> | null) => {
           setData(doc ? (doc.toJSON() as T) : null);
-          setIsLoading(false);
+          setLoading(false);
           setError(null);
         },
         error: (err: any) => {
           setError(
-            err instanceof Error ? err : new Error("Document fetch error")
+            err instanceof Error ? err : new Error("Document fetch error"),
           );
-          setIsLoading(false);
+          setLoading(false);
         },
       });
 
@@ -67,9 +66,14 @@ export function useLocalDocument<T>(
       };
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Document query error"));
-      setIsLoading(false);
+      setLoading(false);
     }
   }, [db, collectionName, id]);
 
-  return { data, isLoading, error, refetch };
+  return {
+    data,
+    loading,
+    error,
+    actions: { refetch },
+  };
 }

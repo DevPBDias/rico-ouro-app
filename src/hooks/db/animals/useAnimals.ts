@@ -20,17 +20,15 @@ export function useAnimals() {
     []
   );
 
-  const {
-    data: animals,
-    isLoading,
-    error,
-    refetch,
-  } = useLocalQuery<Animal>("animals", query);
+  const { data, loading, error, actions } = useLocalQuery<Animal>(
+    "animals",
+    query,
+  );
 
   return {
-    animals,
-    isLoading,
+    data,
+    loading,
     error,
-    refetch,
+    actions,
   };
 }

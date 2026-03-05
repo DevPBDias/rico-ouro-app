@@ -4,18 +4,22 @@ import { useLocalMutation } from "@/hooks/core";
 import { AnimalVaccine } from "@/types/vaccine.type";
 
 export function useUpdateAnimalVaccine() {
-  const { update, isLoading, error } = useLocalMutation<AnimalVaccine>("animal_vaccines");
+  const { loading, error, actions } =
+    useLocalMutation<AnimalVaccine>("animal_vaccines");
 
   const updateAnimalVaccine = async (
-    id: number,
-    data: Partial<AnimalVaccine>
+    id: string,
+    data: Partial<AnimalVaccine>,
   ): Promise<void> => {
-    await update(id.toString(), data);
+    await actions.update(id, data);
   };
 
   return {
-    updateAnimalVaccine,
-    isLoading,
+    loading,
     error,
+    actions: {
+      ...actions,
+      updateAnimalVaccine,
+    },
   };
 }

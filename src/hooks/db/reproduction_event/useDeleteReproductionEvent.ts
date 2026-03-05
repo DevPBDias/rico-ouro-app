@@ -4,15 +4,21 @@ import { useLocalMutation } from "@/hooks/core";
 import { ReproductionEvent } from "@/types/reproduction_event.type";
 
 export function useDeleteReproductionEvent() {
-  const { remove, isLoading, error } = useLocalMutation<ReproductionEvent>("reproduction_events");
+  const { loading, error, actions } = useLocalMutation<ReproductionEvent>(
+    "reproduction_events",
+  );
 
-  const deleteEvent = async (id: string): Promise<void> => {
-    await remove(id);
+  const deleteReproductionEvent = async (id: string): Promise<void> => {
+    await actions.remove(id);
   };
 
   return {
-    deleteEvent,
-    isLoading,
+    data: null,
+    loading,
     error,
+    actions: {
+      ...actions,
+      deleteReproductionEvent,
+    },
   };
 }

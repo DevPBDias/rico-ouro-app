@@ -26,24 +26,21 @@ export function useMovements() {
   );
 
   const {
-    data: movements,
-    isLoading,
-    error,
-    refetch,
+    data,
+    loading: queryLoading,
+    error: queryError,
+    actions: { refetch },
   } = useLocalQuery<Movement>("movements", query);
 
   const {
-    create: createMovementLocal,
-    update: updateMovementLocal,
-    isLoading: isMutationLoading,
+    actions: movementActions,
+    loading: movementMutationLoading,
+    error: movementMutationError,
   } = useLocalMutation<Movement>("movements");
 
-  const { create: createSaleLocal, update: updateSaleLocal } =
-    useLocalMutation<Sale>("sales");
-  const { create: createDeathLocal, update: updateDeathLocal } =
-    useLocalMutation<Death>("deaths");
-  const { create: createExchangeLocal, update: updateExchangeLocal } =
-    useLocalMutation<Exchange>("exchanges");
+  const { actions: saleActions } = useLocalMutation<Sale>("sales");
+  const { actions: deathActions } = useLocalMutation<Death>("deaths");
+  const { actions: exchangeActions } = useLocalMutation<Exchange>("exchanges");
 
   const createMovement = useCallback(
     async (
@@ -57,10 +54,8 @@ export function useMovements() {
         const id = uuidv4();
         const timestamp = Date.now();
 
-
-
         // 1. Create the Movement record
-        await createMovementLocal({
+        await movementActions.create({
           type: data.type,
           animal_id: data.animal_id,
           date: data.date,
@@ -76,7 +71,6 @@ export function useMovements() {
           // 3. Update Animal Status to INATIVO
           const animalDoc = await db.animals.findOne(data.animal_id).exec();
           if (animalDoc) {
-
             await animalDoc.patch({
               animal_state: "INATIVO",
               updated_at: timestamp,
@@ -88,10 +82,8 @@ export function useMovements() {
             const vendaDetails = data.details as SalePayload;
             const saleId = uuidv4();
 
-
-
             try {
-              await createSaleLocal({
+              await saleActions.create({
                 id: saleId,
                 animal_rgn: data.animal_id,
                 client_id: vendaDetails.client_id || "",
@@ -112,7 +104,6 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-
             } catch (saleErr) {
               console.error("❌ Error inserting sale record:", saleErr);
               toast.error(
@@ -123,7 +114,6 @@ export function useMovements() {
             // Update movement details with only the reference ID
             const movementDoc = await db.movements.findOne(id).exec();
             if (movementDoc) {
-
               await movementDoc.patch({
                 details_id: saleId,
               });
@@ -136,7 +126,7 @@ export function useMovements() {
             const deathId = uuidv4();
 
             try {
-              await createDeathLocal({
+              await deathActions.create({
                 id: deathId,
                 animal_rgn: data.animal_id,
                 date: data.date,
@@ -145,7 +135,6 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-
 
               const movementDoc = await db.movements.findOne(id).exec();
               if (movementDoc) {
@@ -164,7 +153,7 @@ export function useMovements() {
             const exchangeId = uuidv4();
 
             try {
-              await createExchangeLocal({
+              await exchangeActions.create({
                 id: exchangeId,
                 animal_rgn: data.animal_id,
                 date: data.date,
@@ -175,7 +164,6 @@ export function useMovements() {
                 updated_at: timestamp,
                 _deleted: false,
               });
-
 
               const movementDoc = await db.movements.findOne(id).exec();
               if (movementDoc) {
@@ -196,12 +184,7 @@ export function useMovements() {
         throw err;
       }
     },
-    [
-      createMovementLocal,
-      createSaleLocal,
-      createDeathLocal,
-      createExchangeLocal,
-    ],
+    [movementActions, saleActions, deathActions, exchangeActions],
   );
 
   const updateMovement = useCallback(
@@ -210,9 +193,7 @@ export function useMovements() {
         const db = await getDatabase();
         const timestamp = Date.now();
 
-
-
-        await updateMovementLocal(id, {
+        await movementActions.update(id, {
           type: data.type,
           animal_id: data.animal_id,
           date: data.date,
@@ -287,12 +268,7 @@ export function useMovements() {
         throw err;
       }
     },
-    [
-      updateMovementLocal,
-      createSaleLocal,
-      createDeathLocal,
-      createExchangeLocal,
-    ],
+    [movementActions],
   );
 
   const getMovementsByAnimal = useCallback(
@@ -327,8 +303,6 @@ export function useMovements() {
         const movement = movementDoc.toJSON() as Movement;
         const timestamp = Date.now();
 
-
-
         // 1. Delete associated records
         const details_id = movement.details_id;
         if (movement.type === "venda" && details_id) {
@@ -351,7 +325,6 @@ export function useMovements() {
         if (["morte", "venda", "troca"].includes(movement.type)) {
           const animalDoc = await db.animals.findOne(movement.animal_id).exec();
           if (animalDoc) {
-
             await animalDoc.patch({
               animal_state: "ATIVO",
               updated_at: timestamp,
@@ -377,13 +350,16 @@ export function useMovements() {
   );
 
   return {
-    movements: movements || [],
-    loading: isLoading || isMutationLoading,
-    error,
-    createMovement,
-    updateMovement,
-    deleteMovement,
-    getMovementsByAnimal,
-    refetch,
+    data: data || [],
+    loading: queryLoading || movementMutationLoading,
+    error: queryError || movementMutationError,
+    actions: {
+      ...movementActions,
+      createMovement,
+      updateMovement,
+      deleteMovement,
+      getMovementsByAnimal,
+      refetch,
+    },
   };
 }

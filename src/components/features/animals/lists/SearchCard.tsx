@@ -17,7 +17,7 @@ export default function SearchCard({
   animal,
   onDetailsClick,
 }: SearchCardProps) {
-  const { farms } = useFarms();
+  const { data: farms = [] } = useFarms();
 
   const farmName = useMemo(() => {
     if (!animal.farm_id) return "SEM DADO";
