@@ -14,13 +14,22 @@ import { AnimalSituation } from "@/types/situation.type";
 import { SituationSuccessModal } from "@/components/features/animals/modals/situation/SituationSuccessModal";
 import { AddSituationModal } from "@/components/features/animals/modals/situation/AddSituationModal";
 import { DeleteSituationModal } from "@/components/features/animals/modals/situation/DeleteSituationModal";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 interface ManageSituationProps {
   selectedAnimal: Animal | null;
   onSuccess?: () => void;
 }
 
-export const ManageSituation = ({
+export const ManageSituation = (props: ManageSituationProps) => {
+  return (
+    <FeatureErrorBoundary featureName="Gerenciar Situação">
+      <ManageSituationContent {...props} />
+    </FeatureErrorBoundary>
+  );
+};
+
+const ManageSituationContent = ({
   selectedAnimal,
   onSuccess,
 }: ManageSituationProps) => {

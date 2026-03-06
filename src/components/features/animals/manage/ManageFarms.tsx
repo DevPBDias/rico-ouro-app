@@ -11,13 +11,22 @@ import { Animal } from "@/types/animal.type";
 import { AddFarmModal } from "@/components/features/farm/modals/farm/AddFarmModal";
 import { DeleteFarmModal } from "@/components/features/farm/modals/farm/DeleteFarmModal";
 import { FarmSuccessModal } from "@/components/features/farm/modals/farm/FarmSuccessModal";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 interface ManageFarmsProps {
   selectedAnimal: Animal | null;
   onSuccess?: () => void;
 }
 
-export const ManageFarms = ({
+export const ManageFarms = (props: ManageFarmsProps) => {
+  return (
+    <FeatureErrorBoundary featureName="Gerenciar Fazenda">
+      <ManageFarmsContent {...props} />
+    </FeatureErrorBoundary>
+  );
+};
+
+const ManageFarmsContent = ({
   selectedAnimal,
   onSuccess,
 }: ManageFarmsProps) => {

@@ -15,6 +15,7 @@ import {
 } from "@/lib/supabase/auth-helper";
 import { SyncLogger } from "@/lib/sync/syncLogger";
 import { PendingQueue } from "@/lib/sync/pendingQueue";
+import { toast } from "sonner";
 
 export function createReplication<T extends ReplicableEntity>(
   config: ReplicationConfig<T>,
@@ -112,6 +113,14 @@ export function createReplication<T extends ReplicableEntity>(
               `Pull failed: ${response.status}`,
               errorText,
             );
+
+            // Notification so user knows why sync is failing instead of silent death
+            if (response.status !== 401 && response.status !== 403) {
+              toast.error(
+                `Falha ao sincronizar: ${colName}. Tentaremos novamente em breve.`,
+              );
+            }
+
             throw new Error(`Pull failed: ${response.status}`);
           }
 

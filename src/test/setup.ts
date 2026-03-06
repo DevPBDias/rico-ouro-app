@@ -1,6 +1,8 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { vi, beforeAll, afterEach, afterAll } from "vitest";
 import React from "react";
+import { server } from "./mocks/server";
+
 // Mock window.matchMedia for components that use it
 Object.defineProperty(window, "matchMedia", {
   writable: true,
@@ -36,18 +38,18 @@ vi.mock("framer-motion", () => ({
     div: vi
       .fn()
       .mockImplementation(({ children, ...props }) =>
-        React.createElement("div", props, children)
+        React.createElement("div", props, children),
       ),
     span: vi
       .fn()
       .mockImplementation(({ children, ...props }) =>
-        React.createElement("span", props, children)
+        React.createElement("span", props, children),
       ),
   },
   AnimatePresence: vi
     .fn()
     .mockImplementation(({ children }) =>
-      React.createElement(React.Fragment, {}, children)
+      React.createElement(React.Fragment, {}, children),
     ),
 }));
 
@@ -61,3 +63,8 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "",
   useSearchParams: () => new URLSearchParams(),
 }));
+
+// Setup MSW Interception
+beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());

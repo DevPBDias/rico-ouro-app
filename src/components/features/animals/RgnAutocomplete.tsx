@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 export interface RgnOption {
   label: string;
@@ -17,7 +18,15 @@ interface RgnAutocompleteProps {
   placeholder?: string;
 }
 
-export function RgnAutocomplete({
+export function RgnAutocomplete(props: RgnAutocompleteProps) {
+  return (
+    <FeatureErrorBoundary featureName="Busca de RGN">
+      <RgnAutocompleteContent {...props} />
+    </FeatureErrorBoundary>
+  );
+}
+
+function RgnAutocompleteContent({
   options,
   value,
   onSelect,
@@ -37,7 +46,7 @@ export function RgnAutocomplete({
     const q = searchTerm.toLowerCase();
     return options.filter(
       (o) =>
-        o.value.toLowerCase().includes(q) || o.label.toLowerCase().includes(q)
+        o.value.toLowerCase().includes(q) || o.label.toLowerCase().includes(q),
     );
   }, [options, searchTerm]);
 
@@ -64,7 +73,7 @@ export function RgnAutocomplete({
               key={option.value}
               className={cn(
                 "px-4 py-2 cursor-pointer hover:bg-muted",
-                value === option.value && "bg-muted"
+                value === option.value && "bg-muted",
               )}
               onClick={() => {
                 onSelect(option.value);

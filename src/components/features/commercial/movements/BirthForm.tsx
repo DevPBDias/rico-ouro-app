@@ -235,7 +235,10 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
           {formData.sexo && (
             <div className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-primary px-1">
+                <label
+                  htmlFor="baby-rgn-input"
+                  className="text-xs uppercase font-bold text-primary px-1"
+                >
                   RGN (Bezerro)
                 </label>
                 <div className="relative">
@@ -270,7 +273,10 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
                 />
 
                 <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-primary px-1">
+                  <label
+                    htmlFor="birth-weight-input"
+                    className="text-xs uppercase font-bold text-primary px-1"
+                  >
                     Peso (kg)
                   </label>
                   <div className="relative">
@@ -294,7 +300,10 @@ export function BirthForm({ onSuccess }: BirthFormProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-primary px-1">
+                <label
+                  htmlFor="mother-rgn-input"
+                  className="text-xs uppercase font-bold text-primary px-1"
+                >
                   RGN da Mãe
                 </label>
                 <div className="relative">

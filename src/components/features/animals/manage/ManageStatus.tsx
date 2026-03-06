@@ -13,13 +13,22 @@ import { Animal } from "@/types/animal.type";
 import { StatusSuccessModal } from "@/components/features/animals/modals/status/StatusSuccessModal";
 import { AddStatusModal } from "@/components/features/animals/modals/status/AddStatusModal";
 import { DeleteStatusModal } from "@/components/features/animals/modals/status/DeleteStatusModal";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 interface ManageStatusProps {
   selectedAnimal: Animal | null;
   onSuccess?: () => void;
 }
 
-export const ManageStatus = ({
+export const ManageStatus = (props: ManageStatusProps) => {
+  return (
+    <FeatureErrorBoundary featureName="Gerenciar Status">
+      <ManageStatusContent {...props} />
+    </FeatureErrorBoundary>
+  );
+};
+
+const ManageStatusContent = ({
   selectedAnimal,
   onSuccess,
 }: ManageStatusProps) => {

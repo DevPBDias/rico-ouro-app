@@ -7,13 +7,22 @@ import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { Animal } from "@/types/animal.type";
 import { ClassificationSuccessModal } from "@/components/features/animals/modals/classe/ClassificationSuccessModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 interface ManageClassificationProps {
   selectedAnimal: Animal | null;
   onSuccess?: () => void;
 }
 
-export const ManageClassification = ({
+export const ManageClassification = (props: ManageClassificationProps) => {
+  return (
+    <FeatureErrorBoundary featureName="Gerenciar Classificação">
+      <ManageClassificationContent {...props} />
+    </FeatureErrorBoundary>
+  );
+};
+
+const ManageClassificationContent = ({
   selectedAnimal,
   onSuccess,
 }: ManageClassificationProps) => {

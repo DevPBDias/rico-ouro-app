@@ -7,6 +7,7 @@ import { useUpdateAnimal } from "@/hooks/db/animals/useUpdateAnimal";
 import { Animal } from "@/types/animal.type";
 import { PartnershipSuccessModal } from "@/components/features/animals/modals/sociedade/PartnershipSuccessModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { FeatureErrorBoundary } from "@/components/ui/FeatureErrorBoundary";
 
 const PARTNERSHIPS = [
   { name: "Alex", initial: "Alex" },
@@ -34,7 +35,15 @@ interface ManageSocietyProps {
   onSuccess?: () => void;
 }
 
-export const ManageSociety = ({
+export const ManageSociety = (props: ManageSocietyProps) => {
+  return (
+    <FeatureErrorBoundary featureName="Gerenciar Sociedade">
+      <ManageSocietyContent {...props} />
+    </FeatureErrorBoundary>
+  );
+};
+
+const ManageSocietyContent = ({
   selectedAnimal,
   onSuccess,
 }: ManageSocietyProps) => {
