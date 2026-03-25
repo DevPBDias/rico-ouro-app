@@ -107,7 +107,7 @@ async function generateReproductionReport(
   const selector: {
     _deleted: { $eq: false };
     rgn: { $in: string[] };
-    d0_date?: {
+    d10_date?: {
       $gte?: string;
       $lte?: string;
     };
@@ -117,9 +117,9 @@ async function generateReproductionReport(
   };
 
   if (filters.startDate || filters.endDate) {
-    selector.d0_date = {};
-    if (filters.startDate) selector.d0_date.$gte = filters.startDate;
-    if (filters.endDate) selector.d0_date.$lte = filters.endDate;
+    selector.d10_date = {};
+    if (filters.startDate) selector.d10_date.$gte = filters.startDate;
+    if (filters.endDate) selector.d10_date.$lte = filters.endDate;
   }
 
   const eventDocs = await db.reproduction_events
@@ -144,7 +144,7 @@ async function generateReproductionReport(
       .filter((event) => {
         if (!filters.managementDates || filters.managementDates.length === 0)
           return true;
-        return filters.managementDates.includes(event.d0_date);
+        return event.d10_date && filters.managementDates.includes(event.d10_date);
       })
       .map((event) => {
         const animal = animalMap.get(event.rgn);

@@ -33,7 +33,7 @@ export const DEFAULT_SELECTED_COLUMNS: TableColumn[] = [
 export const REPRODUCTION_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
   { header: "NOME", dataKey: "animalName" },
   { header: "MANEJO", dataKey: "managementType" },
-  { header: "DATA D0", dataKey: "date" },
+  { header: "DATA D10", dataKey: "date" },
   { header: "ECC", dataKey: "body_score" },
   { header: "CICLO", dataKey: "cycle_stage" },
   { header: "TAM. OVÁRIO", dataKey: "ovary_size" },
@@ -49,6 +49,6 @@ export const REPRODUCTION_REPORT_AVAILABLE_COLUMNS: TableColumn[] = [
 export const REPRODUCTION_DEFAULT_COLUMNS: TableColumn[] = [
   { header: "NOME", dataKey: "animalName" },
   { header: "MANEJO", dataKey: "managementType" },
-  { header: "DATA D0", dataKey: "date" },
+  { header: "DATA D10", dataKey: "date" },
   { header: "DG FINAL", dataKey: "final_diagnostic" },
 ];

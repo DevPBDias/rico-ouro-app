@@ -94,8 +94,8 @@ export function ReportForm() {
       Array.from(
         new Set(
           farmEvents
-            .filter((e) => e.d0_date)
-            .map((e) => e.d0_date.split("-")[0]),
+            .filter((e) => e.d10_date)
+            .map((e) => e.d10_date!.split("-")[0]),
         ),
       ).sort((a, b) => b.localeCompare(a)),
     [farmEvents],
@@ -107,9 +107,9 @@ export function ReportForm() {
       farmEvents
         .filter(
           (e) =>
-            e.d0_date && (!filters.year || e.d0_date.startsWith(filters.year)),
+            e.d10_date && (!filters.year || e.d10_date.startsWith(filters.year)),
         )
-        .map((e) => e.d0_date)
+        .map((e) => e.d10_date!)
         .filter((value, index, self) => self.indexOf(value) === index) // Unique
         .sort((a, b) => b.localeCompare(a)),
     [farmEvents, filters.year],
