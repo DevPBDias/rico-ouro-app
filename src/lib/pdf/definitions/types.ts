@@ -58,7 +58,7 @@ export interface ReportFilters {
   endDate?: string;
   selectedColumns?: TableColumn[];
   year?: string;
-  managementDates?: string[]; // Selected d0_dates for reproduction report
+  managementDates?: string[]; // Selected d10_dates for reproduction report
   status?: string;
   statusFilterMode?: "all" | "specific"; // "all" para todos (mostra coluna), "specific" para um status (filtra, não mostra)
   sortBy?: AnimalReportSortBy; // Ordenação do relatório de animais

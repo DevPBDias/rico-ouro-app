@@ -104,19 +104,18 @@ async function generateReproductionReport(
     ]),
   );
 
-  const selector: {
-    _deleted: { $eq: false };
-    rgn: { $in: string[] };
-    d10_date?: {
-      $gte?: string;
-      $lte?: string;
-    };
-  } = {
+  const selector: Record<string, any> = {
     _deleted: { $eq: false },
     rgn: { $in: animalRgns },
   };
 
-  if (filters.startDate || filters.endDate) {
+  // Filter by specific management dates (d10_date) at the DB level
+  if (filters.managementDates && filters.managementDates.length > 0) {
+    selector.d10_date =
+      filters.managementDates.length === 1
+        ? { $eq: filters.managementDates[0] }
+        : { $in: filters.managementDates };
+  } else if (filters.startDate || filters.endDate) {
     selector.d10_date = {};
     if (filters.startDate) selector.d10_date.$gte = filters.startDate;
     if (filters.endDate) selector.d10_date.$lte = filters.endDate;
@@ -141,11 +140,6 @@ async function generateReproductionReport(
       ? filters.managementDates.map((d) => formatDate(d)).join(", ")
       : "---",
     data: events
-      .filter((event) => {
-        if (!filters.managementDates || filters.managementDates.length === 0)
-          return true;
-        return event.d10_date && filters.managementDates.includes(event.d10_date);
-      })
       .map((event) => {
         const animal = animalMap.get(event.rgn);
         return {
