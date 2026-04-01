@@ -65,6 +65,16 @@ export interface ReproductionReportData extends ReportBaseData {
   }>;
 }
 
+export interface ReproductionByCowReportData extends ReportBaseData {
+  data: Array<{
+    rgn: string;
+    idade: string;
+    quantity: number;
+    d10_dates: string;
+    bull_names: string;
+  }>;
+}
+
 export interface SemenDoseReportData extends ReportBaseData {
   totalItems: number;
   data: Array<{

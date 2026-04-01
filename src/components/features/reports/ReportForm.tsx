@@ -21,6 +21,7 @@ import { useReproductionEvents } from "@/hooks/db/reproduction_event/useReproduc
 import { useStatuses } from "@/hooks/db/statuses/useStatuses";
 import { useAnimals } from "@/hooks/db/animals/useAnimals";
 import { Checkbox } from "@/components/ui/checkbox";
+import { reproductionByCowDefinition } from "@/lib/pdf/definitions/reproductionByCow.definition";
 import {
   ANIMAL_REPORT_AVAILABLE_COLUMNS,
   REPRODUCTION_REPORT_AVAILABLE_COLUMNS,
@@ -58,6 +59,7 @@ export function ReportForm() {
   const [classModalOpen, setClassModalOpen] = React.useState(false);
   const [societyModalOpen, setSocietyModalOpen] = React.useState(false);
   const [animalStateModalOpen, setAnimalStateModalOpen] = React.useState(false);
+  const [isGeneratingCowReport, setIsGeneratingCowReport] = React.useState(false);
 
   // Filter animals by selected farm (or all if no farm selected or filterMode is "all")
   const farmAnimals = useMemo(() => {
@@ -318,6 +320,17 @@ export function ReportForm() {
       });
     } else {
       updateFilters({ managementDates: [...currentDates, date] });
+    }
+  };
+
+  const handleGenerateReproductionByCowReport = async () => {
+    setIsGeneratingCowReport(true);
+    try {
+      await reproductionByCowDefinition.generate({ filters });
+    } catch (error) {
+      console.error("[ReportForm] Error generating reproduction by cow report:", error);
+    } finally {
+      setIsGeneratingCowReport(false);
     }
   };
 
@@ -606,10 +619,10 @@ export function ReportForm() {
         }}
       />
 
-      <div className="pt-4 flex justify-end">
+      <div className="pt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
         <Button
           onClick={generateReport}
-          disabled={isGenerating}
+          disabled={isGenerating || isGeneratingCowReport}
           className="h-11 px-10 uppercase font-black text-xs tracking-wider shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-all hover:scale-[1.02] active:scale-[0.98] w-full"
         >
           {isGenerating ? (
@@ -621,6 +634,24 @@ export function ReportForm() {
             "Gerar Relatório"
           )}
         </Button>
+
+        {selectedReport.id === "reproduction" && (
+          <Button
+            onClick={handleGenerateReproductionByCowReport}
+            disabled={isGenerating || isGeneratingCowReport}
+            variant="secondary"
+            className="h-11 px-6 uppercase font-black text-xs tracking-wider shadow-lg w-full md:w-auto"
+          >
+            {isGeneratingCowReport ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Gerando relatório por vaca...
+              </>
+            ) : (
+              "Gerar relatório por vaca"
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );
