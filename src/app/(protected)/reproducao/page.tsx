@@ -104,6 +104,14 @@ export default function ReproducaoPage() {
         {!selectedMatriz ? (
           /* --- TELA DE BUSCA --- */
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Button
+                variant="default"
+                onClick={() => router.push("/reproducao/lote")}
+                className="w-full md:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Preencher lote
+              </Button>
             <div>
               <label className="font-bold uppercase text-sm text-primary block mb-3">
                 Buscar Matriz:
