@@ -120,7 +120,7 @@ export function WeightList({
                 {formatDate(p.date)}
               </span>
             </div>
-            <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
+            <div className="text-2xl font-bold text-primary flex flex-row items-center pl-3 gap-1">
               {p.value}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 kg

@@ -70,14 +70,14 @@ export function AddPesoModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="default" variant="default" className="bg-[#1162AE]">
+        <Button size="default" variant="default" className="bg-primary">
           <Plus className="w-4 h-4" />
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="w-full text-xl text-left font-bold text-[#1162AE]">
+          <DialogTitle className="w-full text-xl text-left font-bold text-primary">
             {title}
           </DialogTitle>
           <DialogDescription className="w-full text-base text-left flex justify-between items-center">
@@ -94,7 +94,7 @@ export function AddPesoModal({
           <div className="space-y-2">
             <label
               htmlFor="valor"
-              className="text-lg font-semibold text-[#1162AE]"
+              className="text-lg font-semibold text-primary"
             >
               Valor ({unit})
             </label>
@@ -142,7 +142,7 @@ export function AddPesoModal({
             />
             <Label
               htmlFor="born_metric"
-              className="text-base font-semibold text-[#1162AE]"
+              className="text-base font-semibold text-primary"
             >
               {isPeso ? "Peso Nascimento?" : "Medição Inicial?"}
             </Label>
@@ -159,7 +159,7 @@ export function AddPesoModal({
             </Button>
             <Button
               type="submit"
-              className="w-full text-base bg-[#1162AE]"
+              className="w-full text-base bg-primary"
               disabled={!valor.trim() || !data.trim()}
             >
               Adicionar

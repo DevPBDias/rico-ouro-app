@@ -204,7 +204,7 @@ const SearchCsvFile = () => {
 
             <Button
               onClick={handleChooseFile}
-              className="w-full rounded-lg uppercase bg-[#1162AE] py-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="w-full rounded-lg uppercase bg-primary py-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               Escolher arquivo
             </Button>
@@ -219,12 +219,12 @@ const SearchCsvFile = () => {
             />
           </div>
 
-          <div className="border-t-1 border-[#1162AE]" />
+          <div className="border-t-1 border-primary" />
 
           <Button
             onClick={handleProcessFile}
             disabled={!selectedFile || isProcessing}
-            className="w-full rounded-lg bg-[#1162AE] py-6 text-sm uppercase font-semibold text-primary-foreground hover:bg-[#1162AE]/90 disabled:opacity-50"
+            className="w-full rounded-lg bg-primary py-6 text-sm uppercase font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {isProcessing ? "Processando..." : "Processar arquivo"}
           </Button>
@@ -247,7 +247,7 @@ const SearchCsvFile = () => {
 
             <div className="flex flex-col items-center space-y-4 text-center">
               <CheckCircle2 className="h-12 w-12 text-green-600" />
-              <h2 className="text-xl font-semibold text-[#1162AE]">
+              <h2 className="text-xl font-semibold text-primary">
                 Processamento Concluído
               </h2>
               <p className="text-muted-foreground">
@@ -289,7 +289,7 @@ const SearchCsvFile = () => {
 
               <Link
                 href="/home"
-                className="mt-4 w-full rounded-lg bg-[#1162AE] py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+                className="mt-4 w-full rounded-lg bg-primary py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 Ir para a página inicial
               </Link>
@@ -337,7 +337,7 @@ const SearchCsvFile = () => {
 
               <Button
                 onClick={() => setShowNotificationModal(false)}
-                className="mt-4 w-full rounded-lg bg-[#1162AE] py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+                className="mt-4 w-full rounded-lg bg-primary py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 Entendi
               </Button>

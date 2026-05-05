@@ -23,7 +23,7 @@ export default function NotFoundPage() {
           className="object-contain"
         />
 
-        <h1 className="text-4xl font-bold text-[#1162AE]">404</h1>
+        <h1 className="text-4xl font-bold text-primary">404</h1>
         <p className="text-lg text-gray-700 max-w-xs">
           Oops! A página que você procura está em construção ou não foi
           encontrada.
@@ -31,7 +31,7 @@ export default function NotFoundPage() {
 
         <Link
           href="/home"
-          className="mt-6 bg-[#1162AE] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:scale-105 transition-transform duration-200"
+          className="mt-6 bg-primary text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:scale-105 transition-transform duration-200"
         >
           Voltar ao início
         </Link>

@@ -70,7 +70,7 @@ export function ChartLineLabel({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-[#1162AE]">{title}</CardTitle>
+        <CardTitle className="text-primary">{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
 

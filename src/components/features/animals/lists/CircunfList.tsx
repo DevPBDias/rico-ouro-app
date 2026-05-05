@@ -103,7 +103,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
                 {formatDate(p.date)}
               </span>
             </div>
-            <div className="text-2xl font-bold text-[#1162AE] flex flex-row items-center pl-3 gap-1">
+            <div className="text-2xl font-bold text-primary flex flex-row items-center pl-3 gap-1">
               {p.value}
               <span className="text-xs font-medium text-gray-400 lowercase">
                 cm
@@ -173,7 +173,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="w-full text-left font-bold text-[#1162AE]">
+            <DialogTitle className="w-full text-left font-bold text-primary">
               Editar CE
             </DialogTitle>
           </DialogHeader>
@@ -190,7 +190,7 @@ export function CircunfList({ CEMedidos, editCE, deleteCE }: CircunfListProps) {
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button className="bg-[#1162AE]" onClick={handleSave}>
+            <Button className="bg-primary" onClick={handleSave}>
               Salvar
             </Button>
           </DialogFooter>

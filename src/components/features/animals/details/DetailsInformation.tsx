@@ -9,7 +9,7 @@ const DetailsInformation = ({ label, value }: DetailsInformationProps) => {
       <span className="text-gray-400 text-sm font-medium uppercase">
         {label}
       </span>
-      <span className="font-bold uppercase text-[#1162AE]">{value ?? "-"}</span>
+      <span className="font-bold uppercase text-primary">{value ?? "-"}</span>
     </div>
   );
 };

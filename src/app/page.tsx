@@ -47,7 +47,7 @@ export default function OpeningPage() {
 
   if (!isMounted) {
     return (
-      <main className="relative top-0 left-0 h-dvh w-full overflow-hidden bg-[#1162ae]" />
+      <main className="relative top-0 left-0 h-dvh w-full overflow-hidden bg-primary" />
     );
   }
 
@@ -63,7 +63,7 @@ export default function OpeningPage() {
             duration: 0.8,
             ease: "easeInOut",
           }}
-          className="relative top-0 left-0 h-dvh w-full overflow-hidden bg-[#1162ae]"
+          className="relative top-0 left-0 h-dvh w-full overflow-hidden bg-primary"
         >
           <Image
             src={openingImg}

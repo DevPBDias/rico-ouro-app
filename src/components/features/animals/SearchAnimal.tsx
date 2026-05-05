@@ -102,7 +102,7 @@ function SearchAnimal() {
       <div className="py-3 border-b border-border">
         <label
           htmlFor="search-animal"
-          className="text-base font-bold text-[#1162AE] uppercase"
+          className="text-base font-bold text-primary uppercase"
         >
           Buscar Animal:
         </label>
@@ -121,7 +121,7 @@ function SearchAnimal() {
 
       {isLoading ? (
         <div className="space-y-3 my-4">
-          <h2 className="text-lg font-semibold text-[#1162AE] mb-4">
+          <h2 className="text-lg font-semibold text-primary mb-4">
             Carregando...
           </h2>
           {Array.from({ length: 3 }).map((_, index) => (
@@ -134,7 +134,7 @@ function SearchAnimal() {
             <>
               {searchResults.length > 0 ? (
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-[#1162AE] mb-1">
+                  <h2 className="text-lg font-semibold text-primary mb-1">
                     {searchResults.length === 1
                       ? "Animal encontrado:"
                       : `Resultados encontrados (${searchResults.length}):`}
