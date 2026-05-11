@@ -10,7 +10,7 @@ const ShortHeader = ({ title }: { title: string }) => {
       <div className="flex items-center justify-start gap-20">
         <button
           onClick={() => router.back()}
-          className="p-2 -ml-2 flex-shrink-0"
+          className="p-2 -ml-2 shrink-0"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-6 h-6" />

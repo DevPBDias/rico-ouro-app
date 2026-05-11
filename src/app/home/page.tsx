@@ -6,7 +6,7 @@ import { homeLinks } from "@/constants/HomeLinks";
 import { motion } from "framer-motion";
 import ProtectedClient from "@/components/auth/WrapperAuth";
 import { StatsFooter } from "@/components/home/StatsFooter";
-import logoIndiouro from "@/assets/icons/logo_home.png";
+import logoSiga from "@/assets/icons/SIGA CATTLE ICON.png";
 import abczLogo from "@/assets/icons/ABCZ.png";
 import pmgzLogo from "@/assets/icons/PMGZ.png";
 import cowModel from "@/assets/images/cow_model.png";
@@ -44,7 +44,7 @@ const HomePage = () => {
 
           <div className="relative z-20 flex w-full flex-col items-center justify-center px-6">
             <Image
-              src={logoIndiouro}
+              src={logoSiga}
               alt="Nelore INDI Ouro"
               width={180}
               height={60}
@@ -66,7 +66,7 @@ const HomePage = () => {
           </span>
         </div>
 
-        <div className="relative z-10 mt-1 flex flex-col items-center gap-2">
+        <div className="hidden relative z-10 mt-1 lg:flex flex-col items-center gap-2">
           <div className="flex items-center gap-4">
             <Image
               src={abczLogo}
